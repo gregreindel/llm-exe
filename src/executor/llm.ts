@@ -56,12 +56,12 @@ export class LlmExecutor<
 
   getHandlerInput(_input: PromptInput<Prompt>): any {
     if (this.prompt) {
-      return this.prompt.format(_input || {});
+      return this.prompt.format(_input);
     }
 
     if (this.promptFn) {
-      const prompt = this.promptFn(_input || {});
-      const promptFormatted = prompt.format(_input || {});
+      const prompt = this.promptFn(_input);
+      const promptFormatted = prompt.format(_input);
       return promptFormatted;
     }
     throw new Error("Missing prompt");

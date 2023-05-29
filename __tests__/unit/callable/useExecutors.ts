@@ -82,4 +82,19 @@ describe("llm-exe:callable/useExecutors", () => {
     expect(result).toEqual({ result: 'Hello world', attributes: {} })
   });
   
+  it("CallableExecutor returns error if handler throws", async () => {
+    const callableFn1 = new CallableExecutor({
+      key: "get_appointments",
+      name: "get_appointments",
+      description: "Used to get appointments.",
+      input: `Must be JSON: ${JSON.stringify({ accountId: "12345" })}`,
+      handler: async (_input: any) => {
+        throw new Error("Error from callable")
+        return "Hello world";
+      },
+    });
+    const executors = useExecutors([callableFn1]);
+    const result = await executors.callFunction("get_appointments", "Hello")
+    expect(result).toEqual('Error from callable')
+  });
 });

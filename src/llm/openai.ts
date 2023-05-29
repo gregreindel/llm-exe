@@ -3,7 +3,7 @@ import { OpenAIModelName, OpenAIOptions } from "@/types";
 import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
 import { assert, removeEmptyFromObject } from "@/utils";
-import { OutputOpenAICompletion } from "./output/openai-chat";
+import { OutputOpenAICompletion } from "./output/openai";
 
 /**
  * Create a new instance of the OpenAI API wrapper.
@@ -87,6 +87,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     let total_totalTokens = 0;
 
     for (const item of this.metrics.history) {
+      /* istanbul ignore next */
       const {
         completion_tokens = 0,
         prompt_tokens = 0,
@@ -126,7 +127,6 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     };
 
     const price = cost[this.model];
-    /* istanbul ignore next */
     if(price){
       const [amount, inputAmount, outputAmount] = price;
       if (inputAmount && input_tokens) {
@@ -147,6 +147,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    */
   logMetrics() {
     const metrics = this.getMetrics();
+    /* istanbul ignore next */
     const {
       total_completionTokens = 0,
       total_promptTokens = 0,

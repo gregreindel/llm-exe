@@ -100,6 +100,7 @@ export function inferFunctionName(func: any, defaultName: string) {
     }
   }
   var result = /^function\s+([\w\$]+)\s*\(/.exec(func.toString());
+  /* istanbul ignore next */
   return result ? result[1] : defaultName;
 }
 

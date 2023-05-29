@@ -84,6 +84,13 @@ describe("llm-exe:executor/BaseExecutor", () => {
     expect(executor.hooks.onComplete).toHaveLength(1);
   });
   it("MockExecutor invalid hooks don't get set", async () => {
+    const executor = new MockExecutor("mock-executor", "mock");
+    executor.setHooks(undefined)
+    expect(typeof executor.hooks.onComplete).toEqual("undefined");
+    expect(typeof executor.hooks.filterResult).toEqual("undefined");
+    expect(typeof executor.hooks.onError).toEqual("undefined");
+  });
+  it("MockExecutor invalid hooks don't get set", async () => {
     const executor = new MockExecutorThatThrows("mock-executor", "mock", {
       thisDoesntExist(){} ,
       onComplete: ["not right either"],

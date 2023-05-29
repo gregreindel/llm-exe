@@ -8,7 +8,7 @@ export class OpenAIMock extends BaseLlm<null> {
   constructor(options: Partial<OpenAIOptions> = {}) {
     super(options);
 
-    this.model = `mock-${options.modelName}` || "mock-model";
+    this.model = options?.modelName ? `mock-${options.modelName}` : "mock-model";
     this.promptType = options.promptType ?? "chat";
 
     this.client = null;

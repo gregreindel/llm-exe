@@ -2,7 +2,7 @@ import { uuid } from "@/utils";
 import { BaseLlmOutput } from "./base";
 
 export { BaseLlmOutput };
-export { OutputOpenAIChat } from "./openai-chat";
+export { OutputOpenAIChat, OutputOpenAICompletion } from "./openai";
 
 export class OutputDefault extends BaseLlmOutput {
   constructor(result: any) {

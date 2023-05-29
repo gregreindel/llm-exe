@@ -12,6 +12,13 @@ describe("llm-exe:parser/createParser", () => {
     expect(parser).toHaveProperty("name")
     expect(parser.name).toEqual("string")
   })
+  it('creates string parser', () => {
+    const parser = createParser("string");
+    expect(parser).toBeInstanceOf(BaseParser)
+    expect(parser).toBeInstanceOf(StringParser)
+    expect(parser).toHaveProperty("name")
+    expect(parser.name).toEqual("string")
+  })
   it('creates json parser', () => {
     const parser = createParser("json");
     expect(parser).toBeInstanceOf(BaseParser)

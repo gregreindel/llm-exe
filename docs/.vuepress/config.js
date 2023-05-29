@@ -13,11 +13,11 @@ export default defineUserConfig({
         },
         {
             text: 'Github',
-            link: 'https://github.com',
+            link: 'https://github.com/gregreindel/llm-exe',
           },
           {
             text: 'npm',
-            link: 'https://github.com',
+            link: 'https://www.npmjs.com/package/llm-exe',
           },
       ],
       sidebar: [

@@ -1,6 +1,6 @@
 import { BaseLlm, OpenAI, createLlmOpenAi } from "@/llm";
 import { OutputOpenAIChat } from "@/llm/output";
-import { OutputOpenAICompletion } from "@/llm/output/openai-chat";
+import { OutputOpenAICompletion } from "@/llm/output/openai";
 jest.createMockFromModule("../../__mocks__/openai");
 
 describe("llm-exe:llm/OpenAI", () => {
@@ -94,7 +94,15 @@ describe("llm-exe:llm/OpenAI", () => {
       total_cost: 0.0006000000000000001,
     });
   });
-
+  it("calculates correct price for gpt-3.5-turbo, defaults to prompt metrics", () => {
+    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const prompt = 1000;
+    expect(llm.calculatePrice(prompt)).toEqual({
+      input_cost: 0.002,
+      output_cost: 0,
+      total_cost: 0.002,
+    });
+  });
   it("defaults to chat for gpt-3.5-turbo", () => {
     const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
     const metadata = llm.getMetadata();

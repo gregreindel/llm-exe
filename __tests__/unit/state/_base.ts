@@ -227,7 +227,7 @@ describe("llm-exe:state/BaseState", () => {
     expect(() => state.createContextItem(createStateItem("user", { name: "Greg" }))).toThrowError("key (user) already exists")
   });
 
-  it("state.getContext gets", () => {
+  it("state.getContext gets context item", () => {
     const state = new MockState();
     const value = { name: "Greg" }
     state.createContextItem(createStateItem("user", value))
@@ -235,4 +235,26 @@ describe("llm-exe:state/BaseState", () => {
     expect(context).toBeInstanceOf(DefaultStateItem)
     expect(context.getValue()).toEqual({ name: "Greg" })
   });
+
+  it("state.getContext gets context item", () => {
+    const state = new MockState();
+    const value = { name: "Greg" }
+    state.createContextItem(createStateItem("user", value))
+    const contextValue = state.getContextValue<typeof value>("user")
+    expect(contextValue).toEqual({ name: "Greg" })
+  });
+
+  
+
+  it("DefaultState.saveState logs warning", async () => {
+    const logSpy = jest.spyOn(console, "log");
+    const state = new DefaultState();
+    await state.saveState()
+    expect(logSpy).toHaveBeenCalledWith("Save not implemented in default state.");
+  })
+  it("state.getContext gets context item", async () => {
+    const state = new MockState();
+    await state.saveState()
+  })
+  
 });
