@@ -1,6 +1,6 @@
 {
   "name": "llm-exe",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A package that provides simplified base components to make building and maintaining LLM-powered applications easier.",
   "keywords": ["ai", "llm", "openai", "gpt-3.5-turbo", "gpt-4", "chain", "prompt"],
   "main": "dist/index.js",
