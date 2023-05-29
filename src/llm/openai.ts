@@ -178,7 +178,6 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @returns The chat/completion response from the API.
    */
   async _call(input: any) {
-    console.log("???", this.model)
     if (["gpt-3.5-turbo", "gpt-4"].includes(this.model)) {
       return await this.chat(input);
     } else {

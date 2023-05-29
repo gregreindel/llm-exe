@@ -1,5 +1,6 @@
 import { BaseLlm, OpenAI, createLlmOpenAi } from "@/llm";
 import { OutputOpenAIChat } from "@/llm/output";
+import { OutputOpenAICompletion } from "@/llm/output/openai-chat";
 jest.createMockFromModule("../../__mocks__/openai");
 
 describe("llm-exe:llm/OpenAI", () => {
@@ -120,9 +121,9 @@ describe("llm-exe:llm/OpenAI", () => {
     expect(response).toBeInstanceOf(OutputOpenAIChat);
   });
   it("defaults to ", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
     const response = await llm.completion("Hello??");
-    expect(response).toBeInstanceOf(OutputOpenAIChat);
+    expect(response).toBeInstanceOf(OutputOpenAICompletion);
   });
   it("getMetrics", async () => {
     const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
