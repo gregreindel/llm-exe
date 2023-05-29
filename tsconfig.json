@@ -1,0 +1,40 @@
+{
+  "extends": "@tsconfig/recommended/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "declaration": false,
+    "module": "es2020",
+    "moduleResolution": "nodenext",
+    "target": "es2021",
+    "esModuleInterop": true,
+    "noFallthroughCasesInSwitch": true,
+    "useDefineForClassFields": true,
+    "strictPropertyInitialization": false,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "outDir": "build",
+    "baseUrl": "./",
+    "typeRoots": ["types", "node_modules/@types"],
+    "allowJs": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "lib": ["ES2021", "ES2022.Object", "DOM"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@@/*": ["__tests__/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "build",
+    "logs",
+    "events",
+    "nodejs",
+    "docs",
+    "dist"
+  ]
+}

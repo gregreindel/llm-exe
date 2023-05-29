@@ -1,0 +1,27 @@
+import { JSONSchema7 } from "json-schema-to-ts";
+
+export type CreateParserType =
+  | "json"
+  | "string"
+  | "boolean"
+  | "number"
+  | "listToArray"
+  | "listToJson"
+  | "listToKeyValue"
+  | "replaceStringTemplate"
+  | "markdownCodeBlocks"
+  | "markdownCodeBlock";
+
+export interface ParserOptionsWithSchema {
+  schema?: JSONSchema7;
+}
+
+export interface BaseParserOptions {
+  schema?: JSONSchema7;
+}
+
+export interface BaseParserOptionsWithSchema<
+  S extends JSONSchema7 | undefined = undefined
+> extends BaseParserOptions {
+  schema?: S;
+}
