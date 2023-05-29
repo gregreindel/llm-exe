@@ -29,7 +29,7 @@ import {
   createStateItem,
 } from "./state";
 
-export const simpleChain = {
+export const llmExe = {
   /**
    * Utilities
    */
