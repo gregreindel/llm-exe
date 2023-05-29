@@ -15,6 +15,7 @@ const ThoughtActionResult = `
 
 const ChatConversationHistory = `
 {{~#if title}}{{~#if chat_history.length}}{{title}}\n{{~/if}}{{~/if}}
+{{#each chat_history as | item |}}
 {{~#eq item.role 'user'}}User: {{{item.content}}}\n{{/eq}}
 {{~#eq item.role 'assistant'}}Assistant: {{{item.content}}}\n{{/eq}}
 {{~#eq item.role 'system'}}{{{item.content}}}\n{{/eq}}
