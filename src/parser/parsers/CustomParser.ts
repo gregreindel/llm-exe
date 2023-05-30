@@ -3,10 +3,11 @@ import { BaseParser } from "../_base";
 
 /**
  * CustomParser class, extending the BaseParser class.
- * @template T The type of the parsed value
+ * @template T The type of the parsed value (output)
+ * @template A The expected type of the input
  * @extends {BaseParser<T>}
  */
-export class CustomParser<T, A> extends BaseParser<T> {
+export class CustomParser<T, A = any> extends BaseParser<T> {
   /**
    * Custom parsing function.
    * @type {any}

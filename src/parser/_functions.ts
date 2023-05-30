@@ -216,10 +216,10 @@ export function createParser<S extends JSONSchema | undefined = undefined>(
 
 export function createCustomParser<T>(
   name: string,
-  parserFn: (text: string, inputValues: ExecutorContext<any, any>) => T
+  parserFn: (text: string, inputValues: ExecutorContext<T, any>) => any
 ) {
   return new CustomParser<
     ReturnType<typeof parserFn>,
-    Parameters<typeof parserFn>
+    T
   >(name, parserFn);
 }
