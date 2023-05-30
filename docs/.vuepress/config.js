@@ -125,7 +125,11 @@ export default defineUserConfig({
               link: '/examples/combining',
               children: [],
             },
-            
+            {
+              text: 'ReAct: Search + Calculator',
+              link: '/examples/react',
+              children: [],
+            },
             // string - page file path
             // '/foo/bar.md',
           ],
