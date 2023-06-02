@@ -4,15 +4,20 @@ import { BaseParserOptions } from "@/types";
 
 export interface StringExtractParserOptions extends BaseParserOptions {
   enum: string[];
+  ignoreCase?: boolean;
 }
 
 export class StringExtractParser extends BaseParser<string> {
-  private enum: (string | RegExp)[] = [];
+  private enum: string[] = [];
+  private ignoreCase: boolean;
 
   constructor(options?: StringExtractParserOptions) {
     super("stringExtract", options);
     if (options?.enum) {
       this.enum.push(...options.enum);
+    }
+    if(options?.ignoreCase){
+      this.ignoreCase = true
     }
   }
   parse(text: string) {
@@ -21,21 +26,10 @@ export class StringExtractParser extends BaseParser<string> {
       `Invalid input. Expected string. Received ${typeof text}.`
     );
     for (const option of this.enum) {
-      const match = this.findWord(option, text)
-      if (match) {
-        return match;
+     const regex = this.ignoreCase ? new RegExp(option.toLowerCase(), 'i') : new RegExp(option)
+      if (regex.test(text)) {
+        return option;
       }
-    }
-    return "";
-  }
-  findWord(needle: string | RegExp, haystack: string) {
-    if (!needle || !haystack) return "";
-    if(typeof needle === "string"){
-      const match = haystack.match(RegExp(needle))
-      return match ? match[0] : "";
-    }else if(needle instanceof RegExp){
-      const match = haystack.toLowerCase().match(needle)
-      return match ? match[0] : "";
     }
     return "";
   }

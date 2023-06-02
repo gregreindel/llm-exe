@@ -22,7 +22,7 @@ export interface CallableExecutorInput<
   input: string;
   visibilityHandler?(input: any, attributes: any, state: any): boolean;
   handler?: FunctionOrExecutor<I, O>;
-  validateInput?(input: I): any
+  validateInput?(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
   // ((input: I) => Promise<any> | any) | CoreExecutor<I, O>;
 }
 
@@ -43,7 +43,7 @@ export interface CallableExecutor<I, O> {
   input: string;
   visibilityHandler(input: any, attributes: any, state: any): boolean;
   _handler: BaseExecutor<I, O>;
-  _validateInput?(input: I): any
+  _validateInput?(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
 }
 
 /**
@@ -56,7 +56,7 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   public description: string;
   public input: string;
   public _handler: BaseExecutor<I, O>;
-  public _validateInput?(input: I): any
+  public _validateInput?(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
 
   constructor(options: CallableExecutorInput<I, O>) {
     const defaults = {
@@ -150,7 +150,7 @@ export abstract class UseExecutorsBase<
         handler,
         `[invalid handler] The handler (${name}) does not exist.`
       );
-      const result = await handler.execute(ensureInputIsObject(input) as any);
+      const result = await handler.validateInput(ensureInputIsObject(input) as any);
       return result;
     } catch (error: any) {
       return error.message;

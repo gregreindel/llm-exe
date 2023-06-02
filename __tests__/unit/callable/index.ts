@@ -62,6 +62,26 @@ describe("llm-exe:callable/CallableExecutor", () => {
       const res = await callableFn1.execute({})
       expect(res).toEqual({ result: 'Hello world', attributes: {} });
     });
+
+    
+    it("CallableExecutor.validateInput", async () => {
+      const callableFn1 = new CallableExecutor({
+        key: "get_appointments",
+        name: "get_appointments",
+        description: "Used to get appointments.",
+        input: `Must be JSON: ${JSON.stringify({ accountId: "12345" })}`,
+        handler: async (_input: any) => {
+          return "Hello world";
+        },
+        validateInput: async (_input: any) => {
+          return { result: true, attributes: { hello: "world" }}
+        },
+      });
+
+      const res = await callableFn1.validateInput({})
+      expect(res).toEqual({ result: true, attributes: { hello: "world" } });
+    });
+
     it("CallableExecutor key defaults to name", async () => {
       const callableFn1 = new CallableExecutor({
         name: "get_appointments",

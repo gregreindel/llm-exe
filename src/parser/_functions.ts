@@ -19,7 +19,6 @@ import {
   StringExtractParser,
   StringExtractParserOptions,
 } from "./parsers/StringExtractParser";
-import { defineSchema } from "@/utils";
 
 export type ParserOptions<T extends CreateParserType, S extends JSONSchema | undefined = undefined> = T extends "json"
   ? BaseParserOptionsWithSchema<S>

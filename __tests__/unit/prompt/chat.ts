@@ -135,14 +135,38 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     const prompt = new ChatPrompt("Hello");
 
     prompt.addFromHistory([
-      { content: "Message 2", role: "user" },
-      { content: "Message 3", role: "assistant" },
+      { content: "Message user", role: "user" },
+      { content: "Message assistant", role: "assistant" },
+      { content: "Message system", role: "system" },
     ]);
 
     expect(prompt.format({})).toEqual([
       { content: "Hello", role: "system" },
-      { content: "Message 2", role: "user" },
-      { content: "Message 3", role: "assistant" },
+      { content: "Message user", role: "user" },
+      { content: "Message assistant", role: "assistant" },
+      { content: "Message system", role: "system" },
     ]);
   });
+
+  it("can add messages from addChatHistoryPlaceholder", () => {
+    const prompt = new ChatPrompt("Hello");
+
+    prompt.addChatHistoryPlaceholder("myPlaceholder");
+
+    expect(prompt.format({
+      myPlaceholder: [
+        { content: "Message user", role: "user" },
+        { content: "Message assistant", role: "assistant" },
+        { content: "Message system", role: "system" },
+      ]
+    })).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Message user", role: "user" },
+      { content: "Message assistant", role: "assistant" },
+      { content: "Message system", role: "system" },
+    ]);
+  });
+  
+
+
 });

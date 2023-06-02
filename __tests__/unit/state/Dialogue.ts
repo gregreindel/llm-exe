@@ -1,4 +1,5 @@
 import { BaseStateItem, Dialogue, createDialogue } from "@/state";
+import { IChatUserMessage } from "@/types";
 
 /**
  * Tests Dialogue
@@ -100,7 +101,7 @@ describe("llm-exe:state/Dialogue", () => {
     it("can set multiple messages from history", () => {
         const dialogue = new Dialogue("main");
 
-        dialogue.setHistory([{
+        dialogue.setHistory([{ 
             role: "user",
             content: "Hello?"
         },{
@@ -120,8 +121,8 @@ describe("llm-exe:state/Dialogue", () => {
         expect(history[1].content).toEqual("Hello!!");
         expect(history[1].role).toEqual("assistant");
 
-        expect(history[1].content).toEqual("Stop saying hello");
-        expect(history[1].role).toEqual("system");
+        expect(history[2].content).toEqual("Stop saying hello");
+        expect(history[2].role).toEqual("system");
     });
     it("can set multiple messages from history", () => {
         const dialogue = new Dialogue("main");
@@ -133,11 +134,11 @@ describe("llm-exe:state/Dialogue", () => {
         }])
 
         const history = dialogue.getHistory()
-        expect(history).toHaveLength(3);
+        expect(history).toHaveLength(1);
 
         expect(history[0].content).toEqual("Hello?");
         expect(history[0].role).toEqual("user");
-        expect((history[0] as any).name).toEqual("Greg");
+        expect((history[0] as IChatUserMessage).name).toEqual("Greg");
     });
     it("can serialize state item", () => {
         const dialogue = new Dialogue("main");
