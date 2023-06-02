@@ -22,6 +22,7 @@ export interface CallableExecutorInput<
   input: string;
   visibilityHandler?(input: any, attributes: any, state: any): boolean;
   handler?: FunctionOrExecutor<I, O>;
+  validateInput?(input: I): any
   // ((input: I) => Promise<any> | any) | CoreExecutor<I, O>;
 }
 
@@ -42,6 +43,7 @@ export interface CallableExecutor<I, O> {
   input: string;
   visibilityHandler(input: any, attributes: any, state: any): boolean;
   _handler: BaseExecutor<I, O>;
+  _validateInput?(input: I): any
 }
 
 /**
@@ -54,6 +56,7 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   public description: string;
   public input: string;
   public _handler: BaseExecutor<I, O>;
+  public _validateInput?(input: I): any
 
   constructor(options: CallableExecutorInput<I, O>) {
     const defaults = {
@@ -68,6 +71,8 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
     this.visibilityHandler =
       options?.visibilityHandler || defaults.visibilityHandler;
 
+      this._validateInput = options.validateInput;
+      
     if (options.handler instanceof BaseExecutor) {
       this._handler = options.handler;
     } else if (typeof options.handler === "function") {
@@ -79,6 +84,13 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   async execute(input: I): Promise<{ result: O; attributes: any }> {
     const response = await this._handler.execute(ensureInputIsObject(input));
     return enforceResultAttributes(response);
+  }
+  async validateInput(input: I): Promise<{ result: boolean; attributes: any }> {
+    if(typeof this._validateInput === "function"){
+      const response = await this._validateInput(ensureInputIsObject(input));
+      return enforceResultAttributes(response);
+    }
+    return { result: true, attributes: {}}
   }
 }
 
@@ -116,6 +128,22 @@ export abstract class UseExecutorsBase<
     result: any;
     attributes: any;
   }> {
+    try {
+      const handler = this.getFunction(name);
+      assert(
+        handler,
+        `[invalid handler] The handler (${name}) does not exist.`
+      );
+      const result = await handler.execute(ensureInputIsObject(input) as any);
+      return result;
+    } catch (error: any) {
+      return error.message;
+    }
+  }
+  async validateFunctionInput(
+    name: string,
+    input: string
+  ){
     try {
       const handler = this.getFunction(name);
       assert(
