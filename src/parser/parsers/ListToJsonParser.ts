@@ -1,3 +1,4 @@
+import { camelCase } from '@/utils';
 import { BaseParserOptionsWithSchema } from "@/types";
 import { BaseParser } from "../_base";
 import { FromSchema, JSONSchema } from "json-schema-to-ts";
@@ -15,7 +16,7 @@ export class ListToJsonParser<
     lines.forEach((line) => {
       const [key, value] = line.split(":");
       if (value) {
-        output[key.trim().toLowerCase()] = value.trim();
+        output[camelCase(key)] = value.trim();
       }
     });
     if (this.schema) {

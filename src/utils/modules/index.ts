@@ -5,10 +5,11 @@ import { Narrow } from "json-schema-to-ts/lib/types/type-utils";
 import get from "lodash.get";
 import set from "lodash.set";
 import pick from "lodash.pick";
+import camelCase from "lodash.camelcase"
 
 import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
-export { get, set, pick };
+export { get, set, pick, camelCase };
 
 export { filterObjectOnSchema } from "./json-schema-filter";
 export { replaceTemplateString } from "./replaceTemplateString";
@@ -142,4 +143,23 @@ export function toNumber(value: any): number {
     return Number(value);
   }
   return NaN;
+}
+
+
+export function extractPromptPlaceholderToken(tok: string){
+  if(!tok) return { token: "" }
+  const token = tok.replace(/ /g, "")
+  switch (true) {
+    case token.substring(2, 18) === ">DialogueHistory": {
+      const matchKey = tok.match(/{{> DialogueHistory key='([^']+)'}}/)
+      if(matchKey){
+        return {
+          token: ">DialogueHistory",
+          key: matchKey[1]
+        }
+      }
+      break;
+    } 
+  }
+  return { token: "" }
 }

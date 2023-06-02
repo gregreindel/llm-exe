@@ -5,6 +5,7 @@ export type CreateParserType =
   | "string"
   | "boolean"
   | "number"
+  | "stringExtract"
   | "listToArray"
   | "listToJson"
   | "listToKeyValue"
@@ -12,12 +13,8 @@ export type CreateParserType =
   | "markdownCodeBlocks"
   | "markdownCodeBlock";
 
-export interface ParserOptionsWithSchema {
-  schema?: JSONSchema7;
-}
 
 export interface BaseParserOptions {
-  schema?: JSONSchema7;
 }
 
 export interface BaseParserOptionsWithSchema<
