@@ -19,11 +19,12 @@ import {
   StringExtractParser,
   StringExtractParserOptions,
 } from "./parsers/StringExtractParser";
+import { defineSchema } from "@/utils";
 
-export type ParserOptions<T extends CreateParserType> = T extends "json"
-  ? BaseParserOptionsWithSchema<JSONSchema>
+export type ParserOptions<T extends CreateParserType, S extends JSONSchema | undefined = undefined> = T extends "json"
+  ? BaseParserOptionsWithSchema<S>
   : T extends "listToJson"
-  ? BaseParserOptionsWithSchema<JSONSchema>
+  ? BaseParserOptionsWithSchema<S>
   : T extends "stringExtract"
   ? StringExtractParserOptions
   : T extends "markdownCodeBlocks"
@@ -51,10 +52,9 @@ export type ParserOptions<T extends CreateParserType> = T extends "json"
  * @returns An instance of ListToKeyValueParser.
  */
 export function createParser<
-  T extends CreateParserType,
-  S extends JSONSchema | undefined = undefined
+  T extends Extract<CreateParserType, "markdownCodeBlocks">,
 >(
-  type: Extract<CreateParserType, "markdownCodeBlocks">
+  type: T
 ): MarkdownCodeBlocksParser;
 
 /**
@@ -64,10 +64,9 @@ export function createParser<
  * @returns An instance of ListToKeyValueParser.
  */
 export function createParser<
-  T extends CreateParserType,
-  S extends JSONSchema | undefined = undefined
+  T extends Extract<CreateParserType, "markdownCodeBlock">,
 >(
-  type: Extract<CreateParserType, "markdownCodeBlock">
+  type: T
 ): MarkdownCodeBlockParser;
 
 /**
@@ -77,9 +76,8 @@ export function createParser<
  * @returns An instance of ListToKeyValueParser.
  */
 export function createParser<
-  T extends CreateParserType,
-  S extends JSONSchema | undefined = undefined
->(type: Extract<CreateParserType, "listToKeyValue">): ListToKeyValueParser;
+  T extends Extract<CreateParserType, "listToKeyValue">,
+>(type: T): ListToKeyValueParser;
 
 /**
  * Creates a parser based on the given type and schema.
@@ -91,7 +89,7 @@ export function createParser<
 export function createParser<
   T extends Extract<CreateParserType, "listToJson">,
   S extends JSONSchema | undefined = undefined
->(type: T, options?: ParserOptions<T>): ListToJsonParser<S>;
+>(type: T, options: ParserOptions<T, S>): ListToJsonParser<S>;
 
 /**
  * Creates a parser based on the given type.
@@ -100,9 +98,9 @@ export function createParser<
  * @returns An instance of ListToArrayParser.
  */
 export function createParser<
-  T extends CreateParserType,
+  T extends Extract<CreateParserType, "listToArray">,
   S extends JSONSchema | undefined = undefined
->(type: Extract<CreateParserType, "listToArray">): ListToArrayParser;
+>(type: T): ListToArrayParser;
 
 /**
  * Creates a parser based on the given type.
@@ -111,9 +109,9 @@ export function createParser<
  * @returns An instance of NumberParser.
  */
 export function createParser<
-  T extends CreateParserType,
+  T extends Extract<CreateParserType, "number">,
   S extends JSONSchema | undefined = undefined
->(type: Extract<CreateParserType, "number">): NumberParser;
+>(type: T): NumberParser;
 /**
  * Creates a parser based on the given type.
  * @template S - JSON schema type.
@@ -121,9 +119,9 @@ export function createParser<
  * @returns An instance of NumberParser.
  */
 export function createParser<
-  T extends CreateParserType,
+  T extends Extract<CreateParserType, "boolean">,
   S extends JSONSchema | undefined = undefined
->(type: Extract<CreateParserType, "boolean">): BooleanParser;
+>(type: T): BooleanParser;
 
 /**
  * Creates a parser based on the given type.
@@ -132,10 +130,10 @@ export function createParser<
  * @returns  An instance of ReplaceStringTemplateParser.
  */
 export function createParser<
-  T extends CreateParserType,
+  T extends Extract<CreateParserType, "replaceStringTemplate">,
   S extends JSONSchema | undefined = undefined
 >(
-  type: Extract<CreateParserType, "replaceStringTemplate">
+  type: T
 ): ReplaceStringTemplateParser;
 
 /**
@@ -148,7 +146,7 @@ export function createParser<
 export function createParser<
   T extends Extract<CreateParserType, "json">,
   S extends JSONSchema | undefined = undefined
->(type: T, options?: ParserOptions<T>): JsonParser<S>;
+>(type: T, options: ParserOptions<T, S>): JsonParser<S>;
 
 /**
  * Creates a parser based on the given type.
@@ -157,9 +155,9 @@ export function createParser<
  * @returns  An instance of StringParser.
  */
 export function createParser<
-  T extends CreateParserType,
+  T extends Extract<CreateParserType, "string">,
   S extends JSONSchema | undefined = undefined
->(type: Extract<CreateParserType, "string">): StringParser;
+>(type: T): StringParser;
 
 /**
  * Creates a parser based on the given type.
@@ -189,8 +187,8 @@ export function createParser<
 >(
   type: T,
   options?: ParserOptions<T>
-):
-  | JsonParser<S>
+): JsonParser<S>
+  | ListToJsonParser<S>
   | StringParser
   | NumberParser
   | BooleanParser
@@ -199,7 +197,6 @@ export function createParser<
   | ReplaceStringTemplateParser
   | MarkdownCodeBlockParser
   | MarkdownCodeBlocksParser
-  | ListToJsonParser<S>
   | StringExtractParser;
 
 /**
@@ -254,9 +251,9 @@ export function createParser<
   }
 }
 
-export function createCustomParser<T, I>(
+export function createCustomParser<O>(
   name: string,
-  parserFn: (text: string, inputValues: ExecutorContext<I, T>) => T
-) {
-  return new CustomParser<ReturnType<typeof parserFn>, I>(name, parserFn);
+  parserFn: (text: string, inputValues: ExecutorContext<any, O>) => O
+): CustomParser<ReturnType<typeof parserFn>> {
+  return new CustomParser<ReturnType<typeof parserFn>>(name, parserFn);
 }
