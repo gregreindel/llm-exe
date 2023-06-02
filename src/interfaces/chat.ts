@@ -21,8 +21,28 @@ export interface IChatSystemMessage extends IChatMessageBase {
   content: string;
 }
 
+export interface IChatMessagesPlaceholder {
+  role: "placeholder",
+  content: string
+}
+
+export type IPromptMessages = (
+  | IChatSystemMessage
+  | IChatMessagesPlaceholder
+)[];
+
+
+export type IPromptChatMessages = (
+  | IChatUserMessage
+  | IChatAssistantMessage
+  | IChatSystemMessage
+  | IChatMessagesPlaceholder
+)[];
+
 export type IChatMessages = (
   | IChatUserMessage
   | IChatAssistantMessage
   | IChatSystemMessage
 )[];
+
+export type PromptTemplateHistoryToken = `{{>DialogueHistory key='${string}'}}`

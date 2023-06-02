@@ -5,6 +5,8 @@ import {
   PromptType,
   PromptPartial,
   PromptHelper,
+  IPromptMessages,
+  IPromptChatMessages,
 } from "@/types";
 
 /**
@@ -13,7 +15,7 @@ import {
 export abstract class BasePrompt<I extends Record<string, any>> {
   readonly type: PromptType = "text";
 
-  public messages: IChatMessages = [];
+  public messages: IPromptMessages | IPromptChatMessages = [];
 
   public partials: PromptPartial[] = [];
   public helpers: PromptHelper[] = [];
@@ -106,7 +108,6 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    */
   format(values: I, separator: string = "\n\n"): string | IChatMessages {
     const replacements = this.getReplacements(values);
-
     /* istanbul ignore next */
     return this.messages
       .map((message) => {

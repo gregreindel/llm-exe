@@ -40,6 +40,7 @@ describe("llm-exe:parser/createParser", () => {
     expect(parser).toBeInstanceOf(BaseParser)
     expect(parser).toBeInstanceOf(JsonParser)
     expect(parser).toHaveProperty("name")
+    expect(parser).toHaveProperty("name")
     expect(parser.name).toEqual("json")
   })
   it('creates boolean parser', () => {

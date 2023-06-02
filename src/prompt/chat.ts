@@ -1,4 +1,9 @@
-import { replaceTemplateString } from "@/utils";
+import {
+  extractPromptPlaceholderToken,
+  get,
+  pick,
+  replaceTemplateString,
+} from "@/utils";
 import { BasePrompt } from "./_base";
 import {
   IChatMessages,
@@ -6,7 +11,13 @@ import {
   IChatMessageRole,
   ChatPromptType,
   ChatPromptOptions,
+  IPromptChatMessages,
 } from "@/types";
+
+export interface ChatPrompt<I extends Record<string, any>>
+  extends BasePrompt<I> {
+  messages: IPromptChatMessages;
+}
 
 /**
  * `ChatPrompt` provides a conversation-style prompt enabling various roles.
@@ -36,7 +47,6 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     options?: ChatPromptOptions
   ) {
     super(initialSystemPromptMessage);
-
     if (options?.allowUnsafeUserTemplate) {
       this.parseUserTemplates = true;
     }
@@ -122,9 +132,37 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @return ChatPrompt so it can be chained.
    */
   addFromHistory(history: IChatMessages): ChatPrompt<I> {
-    if (history) {
-      this.messages.push(...history);
+    if (history && Array.isArray(history)) {
+      for (const message of history) {
+        switch (message.role) {
+          case "user":
+            this.addUserMessage(message.content, message?.name);
+            break;
+          case "assistant":
+            this.addAssistantMessage(message.content);
+            break;
+          case "system":
+            this.addSystemMessage(message.content);
+            break;
+        }
+      }
     }
+    return this;
+  }
+
+  /**
+   * addPlaceholder description
+   * @param content The message content
+   * @return returns ChatPrompt so it can be chained.
+   */
+  addChatHistoryPlaceholder(key: keyof I): ChatPrompt<I> {
+    const start = `{{> DialogueHistory `;
+    const params = [`key='${String(key)}'`];
+    const end = `}}`;
+    this.messages.push({
+      role: "placeholder",
+      content: `${start}${params.join(" ")}${end}`,
+    });
     return this;
   }
 
@@ -136,6 +174,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @return formatted prompt.
    */
   format(values: I): IChatMessages {
+    const messagesOut: IChatMessages = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
 
@@ -143,19 +182,57 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
       safeToParseTemplate.push("user");
     }
 
-    return this.messages.map((message) => {
-      if (safeToParseTemplate.includes(message.role)) {
-        return {
-          role: message.role,
-          content: replaceTemplateString(message.content, replacements, {
-            partials: this.partials,
-            helpers: this.helpers,
-          }),
-        };
+    for (const message of this.messages) {
+      if (message.role === "placeholder") {
+        const { token, ...data } = extractPromptPlaceholderToken(
+          message.content
+        );
+        switch (token) {
+          case ">DialogueHistory": {
+            const { key = "" } = data;
+            const history: IChatMessages = get(replacements, key, []);
+            if (history && Array.isArray(history)) {
+              for (const message of history) {
+                switch (message.role) {
+                  case "user":
+                    messagesOut.push(pick(message, ["role", "content", "name"]));
+                    break;
+                  case "assistant":
+                    messagesOut.push({
+                      role: "assistant",
+                      content: message.content,
+                    });
+                    break;
+                  case "system":
+                    messagesOut.push({
+                      role: "system",
+                      content: message.content,
+                    });
+                    break;
+                }
+              }
+            }
+            break;
+          }
+        }
+      } else {
+        if (safeToParseTemplate.includes(message.role)) {
+          messagesOut.push(
+            Object.assign({}, message, {
+              content: replaceTemplateString(message.content, replacements, {
+                partials: this.partials,
+                helpers: this.helpers,
+              }),
+            })
+          );
+        } else {
+          messagesOut.push(message);
+        }
       }
-      return message;
-    });
+    }
+    return messagesOut;
   }
+
   /**
    * validate Ensures there are not unresolved tokens in prompt.
    * @TODO Make this work!

@@ -54,6 +54,23 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
+  setHistory(messages: IChatMessages) {
+    for (const message of messages) {
+      switch (message?.role) {
+        case "user":
+          this.setUserMessage(message?.content, message?.name);
+          break;
+        case "assistant":
+          this.setAssistantMessage(message?.content);
+          break;
+        case "system":
+          this.setSystemMessage(message?.content);
+          break;
+      }
+    }
+    return this;
+  }
+
   getHistory() {
     return this.getValue();
   }

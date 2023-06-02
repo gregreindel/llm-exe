@@ -97,6 +97,48 @@ describe("llm-exe:state/Dialogue", () => {
         expect(history[1].content).toEqual("Yes! we're always here");
         expect(history[1].role).toEqual("assistant");
     });
+    it("can set multiple messages from history", () => {
+        const dialogue = new Dialogue("main");
+
+        dialogue.setHistory([{
+            role: "user",
+            content: "Hello?"
+        },{
+            role: "assistant",
+            content: "Hello!!"
+        },{
+            role: "system",
+            content: "Stop saying hello"
+        }])
+
+        const history = dialogue.getHistory()
+        expect(history).toHaveLength(3);
+
+        expect(history[0].content).toEqual("Hello?");
+        expect(history[0].role).toEqual("user");
+
+        expect(history[1].content).toEqual("Hello!!");
+        expect(history[1].role).toEqual("assistant");
+
+        expect(history[1].content).toEqual("Stop saying hello");
+        expect(history[1].role).toEqual("system");
+    });
+    it("can set multiple messages from history", () => {
+        const dialogue = new Dialogue("main");
+
+        dialogue.setHistory([{
+            role: "user",
+            content: "Hello?",
+            name: "Greg"
+        }])
+
+        const history = dialogue.getHistory()
+        expect(history).toHaveLength(3);
+
+        expect(history[0].content).toEqual("Hello?");
+        expect(history[0].role).toEqual("user");
+        expect((history[0] as any).name).toEqual("Greg");
+    });
     it("can serialize state item", () => {
         const dialogue = new Dialogue("main");
         dialogue.setMessageTurn("Hi, anyone there?", "Yes! we're always here")
