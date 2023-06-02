@@ -27,7 +27,7 @@ export function useHandlebars(
     }
   }
 
-  if (process.env.CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH) {
+  if (process?.env?.CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH) {
     const externalHelpers = require(process.env
       .CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH);
     if (externalHelpers) {
@@ -67,7 +67,7 @@ export function useHandlebars(
     }
   }
 
-  if (process.env.CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH) {
+  if (process?.env?.CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH) {
     const externalPartials = require(process.env
       .CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH);
     if (externalPartials) {

@@ -7,6 +7,15 @@ export function __getDialogueHistory(
   return get(this, key, []);
 }
 
+export function getOr(
+  this: any,
+  arg1: string,
+  arg2: string,
+) {
+  return typeof arg1 !== "undefined" ? arg1 : arg2;
+}
+
+
 export function pluralize(
   this: any,
   arg1: `${string}|${string}`,

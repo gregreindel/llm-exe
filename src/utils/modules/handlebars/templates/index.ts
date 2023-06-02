@@ -1,3 +1,4 @@
+
 export const COMPLETION_END_TOKEN = "<--END";
 export const PROMPT_END_TOKEN = "-->";
 
@@ -16,12 +17,12 @@ const ThoughtActionResult = `
 const ChatConversationHistory = `
 {{~#if title}}{{~#if chat_history.length}}{{title}}\n{{~/if}}{{~/if}}
 {{#each chat_history as | item |}}
-{{~#eq item.role 'user'}}User: {{{item.content}}}\n{{/eq}}
-{{~#eq item.role 'assistant'}}Assistant: {{{item.content}}}\n{{/eq}}
-{{~#eq item.role 'system'}}{{{item.content}}}\n{{/eq}}
+{{~#eq item.role 'user'}}{{../userName}}: {{{item.content}}}\n{{/eq}}
+{{~#eq item.role 'assistant'}}{{../assistantName}}: {{{item.content}}}\n{{/eq}}
+{{~#eq item.role 'system'}}{{../systemName}}: {{{item.content}}}\n{{/eq}}
 {{~/each}}`;
 
-const DialogueHistory = `{{>ChatConversationHistory title=title chat_history=(__getDialogueHistory key)}}`;
+const DialogueHistory = `{{>ChatConversationHistory title=title chat_history=(__getDialogueHistory key) assistantName=(getOr assistant 'Assistant') userName=(getOr user 'User') systemName=(getOr system 'System')}}`;
 
 const ThoughtsAndObservations = `{{~#each thoughts as | step |}}
 {{~#if step.thought}}Thought: {{{step.thought}}}\n{{/if}}
