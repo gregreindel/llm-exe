@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
-import { asyncCallWithTimeout, chunkArray } from "@/utils";
+import { asyncCallWithTimeout, chunkArray, getEnvironmentVariable } from "@/utils";
 import { BaseEmbedding } from "./base";
 import { backOff } from "exponential-backoff";
 import { EmbedOpenAIOptions } from "@/types";
@@ -16,9 +16,10 @@ export class EmbeddingOpenAI extends BaseEmbedding {
     this.batchSize = options.temperature || 0;
     this.stripNewLines = !!options.stripNewLines;
 
+    const apiKey = options.openAIApiKey || getEnvironmentVariable("OPENAI_API_KEY");
     this.client = new OpenAIApi(
       new Configuration({
-        apiKey: options.openAIApiKey,
+        apiKey,
       })
     );
   }

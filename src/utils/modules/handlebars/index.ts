@@ -2,6 +2,7 @@ import { create } from "handlebars";
 import * as helpers from "./helpers";
 import * as contextPartials from "./templates";
 import { PromptTemplateOptions } from "@/types";
+import { getEnvironmentVariable } from "@/utils";
 
 export function useHandlebars(
   configuration: PromptTemplateOptions = {
@@ -27,9 +28,9 @@ export function useHandlebars(
     }
   }
 
-  if (process?.env?.CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH) {
-    const externalHelpers = require(process.env
-      .CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH);
+  const helperPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH');
+  if (helperPath) {
+    const externalHelpers = require(helperPath);
     if (externalHelpers) {
       const externalHelperKeys = Object.keys(
         externalHelpers
@@ -67,9 +68,9 @@ export function useHandlebars(
     }
   }
 
-  if (process?.env?.CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH) {
-    const externalPartials = require(process.env
-      .CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH);
+  const partialsPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH');
+  if (typeof process === "object" && partialsPath) {
+    const externalPartials = require(partialsPath);
     if (externalPartials) {
       const externalPartialKeys = Object.keys(
         externalPartials

@@ -1,3 +1,4 @@
+import { getEnvironmentVariable } from "@/utils";
 import { BaseVectorStore } from "./base";
 
 export class PineconeVectorStore extends BaseVectorStore {
@@ -7,8 +8,8 @@ export class PineconeVectorStore extends BaseVectorStore {
   }
   async initialize() {
     await this.client.init({
-      environment: process.env.PINECONE_CLIENT_ENVIRONMENT,
-      apiKey: process.env.PINECONE_CLIENT_API_KEY,
+      environment: getEnvironmentVariable("PINECONE_CLIENT_ENVIRONMENT"),
+      apiKey: getEnvironmentVariable("PINECONE_CLIENT_API_KEY")
     });
   }
   async useIndex(indexName: string) {
