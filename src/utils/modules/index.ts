@@ -5,7 +5,7 @@ import { Narrow } from "json-schema-to-ts/lib/types/type-utils";
 import get from "lodash.get";
 import set from "lodash.set";
 import pick from "lodash.pick";
-import camelCase from "lodash.camelcase"
+import camelCase from "lodash.camelcase";
 
 import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
@@ -145,21 +145,17 @@ export function toNumber(value: any): number {
   return NaN;
 }
 
-
-export function extractPromptPlaceholderToken(tok: string){
-  if(!tok) return { token: "" }
-  const token = tok.replace(/ /g, "")
-  switch (true) {
-    case token.substring(2, 18) === ">DialogueHistory": {
-      const matchKey = tok.match(/{{> DialogueHistory key='([^']+)'}}/)
-      if(matchKey){
-        return {
-          token: ">DialogueHistory",
-          key: matchKey[1]
-        }
-      }
-      break;
-    } 
+export function extractPromptPlaceholderToken(tok: string) {
+  if (!tok) return { token: "" };
+  const token = tok.replace(/ /g, "");
+  if (token.substring(2, 18) === ">DialogueHistory") {
+    const matchKey = tok.match(/key=(['"`])((?:(?!\1).)*)\1/);
+    if (matchKey) {
+      return {
+        token: ">DialogueHistory",
+        key: matchKey[2],
+      };
+    }
   }
-  return { token: "" }
+  return { token: "" };
 }

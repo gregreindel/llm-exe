@@ -98,6 +98,22 @@ describe("llm-exe:callable/useExecutors", () => {
     expect(result).toEqual('Error from callable')
   });
 
+  it("CallableExecutor validateFunctionInput true if undefined", async () => {
+    const executors = useExecutors([
+      new CallableExecutor({
+        key: "get_appointments",
+        name: "get_appointments",
+        description: "Used to get appointments.",
+        input: `Must be JSON: ${JSON.stringify({ accountId: "12345" })}`,
+        handler: async (_input: any) => {
+          return "Hello world";
+        },
+      })
+    ]);
+    const result = await executors.validateFunctionInput("get_appointments", "Hello")
+    expect(result).toEqual({ result: true, attributes: {} });
+  });
+
   it("CallableExecutor validateFunctionInput ", async () => {
     const executors = useExecutors([
       new CallableExecutor({
@@ -115,5 +131,24 @@ describe("llm-exe:callable/useExecutors", () => {
     ]);
     const result = await executors.validateFunctionInput("get_appointments", "Hello")
     expect(result).toEqual({ result: true, attributes: { hello: "world" } });
+  });
+
+  it("CallableExecutor validateFunctionInput returns error message if throws", async () => {
+    const executors = useExecutors([
+      new CallableExecutor({
+        key: "get_appointments",
+        name: "get_appointments",
+        description: "Used to get appointments.",
+        input: `Must be JSON: ${JSON.stringify({ accountId: "12345" })}`,
+        handler: async (_input: any) => {
+          return "Hello world";
+        },
+        validateInput: async (_input: any) => {
+          throw new Error("validateInput threw an error!")
+        },
+      })
+    ]);
+    const result = await executors.validateFunctionInput("get_appointments", "Hello")
+    expect(result).toEqual({ result: false, attributes: { error: "validateInput threw an error!" } });
   });
 });

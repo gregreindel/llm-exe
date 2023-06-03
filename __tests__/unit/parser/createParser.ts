@@ -1,4 +1,5 @@
 import { BaseParser, BooleanParser, JsonParser, ListToArrayParser, ListToJsonParser, ListToKeyValueParser, MarkdownCodeBlockParser, MarkdownCodeBlocksParser, NumberParser, ReplaceStringTemplateParser, StringParser, createParser } from "@/parser";
+import { StringExtractParser } from "@/parser/parsers/StringExtractParser";
 import { defineSchema } from "@/utils";
 
 /**
@@ -18,6 +19,13 @@ describe("llm-exe:parser/createParser", () => {
     expect(parser).toBeInstanceOf(StringParser)
     expect(parser).toHaveProperty("name")
     expect(parser.name).toEqual("string")
+  })
+  it('creates stringExtract parser', () => {
+    const parser = createParser("stringExtract");
+    expect(parser).toBeInstanceOf(BaseParser)
+    expect(parser).toBeInstanceOf(StringExtractParser)
+    expect(parser).toHaveProperty("name")
+    expect(parser.name).toEqual("stringExtract")
   })
   it('creates json parser', () => {
     const parser = createParser("json");
