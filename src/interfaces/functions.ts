@@ -83,38 +83,22 @@ export interface ExecutorContext<I = any, O = any, A = Record<string, any>>
   attributes: A;
 }
 
-export interface CoreExecutorHookMethods<I = any, O = any> {
-  onError?(execution: ExecutorExecutionMetadata<I, O>, context?: any): void;
-  onComplete?(execution: ExecutorExecutionMetadata<I, O>, context?: any): void;
-  filterResult?<O>(
-    output: O,
-    execution?: ExecutorExecutionMetadata<I, O>,
-    context?: any
-  ): O;
+export interface CoreExecutorHookMethods {
+  onError(...args: any[]): void;
+  onComplete(...args: any[]): void;
 }
 
 export type CoreExecutorHooks = {
   [K in keyof CoreExecutorHookMethods]: CoreExecutorHookMethods[K][];
 };
 
+export type ListenerFunction = (...args: any[]) => void;
+
 export interface CoreExecutorHookInput {
   onError?: (
-    execution: ExecutorExecutionMetadata,
-    context?: any
-  ) => void | ((execution: ExecutorExecutionMetadata, context?: any) => void)[];
+    ...args: any[]
+  ) => void | ListenerFunction[];
   onComplete?: (
-    execution: ExecutorExecutionMetadata,
-    context?: any
-  ) => void | ((execution: ExecutorExecutionMetadata, context?: any) => void)[];
-  filterResult?: <O>(
-    output: O,
-    execution: ExecutorExecutionMetadata,
-    context?: any
-  ) =>
-    | O
-    | (<O>(
-        output: O,
-        execution: ExecutorExecutionMetadata,
-        context?: any
-      ) => O)[];
+    ...args: any[]
+  ) => void | ListenerFunction[];
 }

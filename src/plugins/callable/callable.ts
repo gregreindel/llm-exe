@@ -153,7 +153,7 @@ export abstract class UseExecutorsBase<
       const result = await handler.validateInput(ensureInputIsObject(input) as any);
       return result;
     } catch (error: any) {
-      return error.message;
+      return { result: false, attributes: { error: error.message }}
     }
   }
 }

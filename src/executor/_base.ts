@@ -1,6 +1,7 @@
 import {
   PlainObject,
   ExecutorMetadata,
+  ListenerFunction,
   CoreExecutorHooks,
   CoreExecutorHookInput,
   ExecutorExecutionMetadata,
@@ -13,7 +14,6 @@ import { createMetadataState } from "./_metadata";
 const hookNames: (keyof CoreExecutorHookInput)[] = [
   "onComplete",
   "onError",
-  "filterResult",
 ];
 
 export abstract class BaseExecutor<I extends PlainObject, O = any> {
@@ -57,7 +57,10 @@ export abstract class BaseExecutor<I extends PlainObject, O = any> {
     this.name = name;
     this.created = new Date().getTime();
     this.executions = 0;
-    this.hooks = {};
+    this.hooks = {
+      onError: [],
+      onComplete: []
+    };
 
     if (options?.hooks) {
       this.setHooks(options.hooks);
@@ -110,20 +113,6 @@ export abstract class BaseExecutor<I extends PlainObject, O = any> {
 
       _metadata.setItem({ handlerOutput: result });
 
-      if (this.hooks.filterResult) {
-        for (const filter of this.hooks.filterResult) {
-          if (filter) {
-            const filterResult = filter<typeof result>(
-              result,
-              _metadata.asPlainObject(),
-              this.getMetadata()
-            );
-            result = filterResult;
-            _metadata.setItem({ handlerOutput: filterResult });
-          }
-        }
-      }
-
       const output = this.getHandlerOutput(result, _metadata.asPlainObject());
       _metadata.setItem({ output });
       return output;
@@ -154,24 +143,56 @@ export abstract class BaseExecutor<I extends PlainObject, O = any> {
 
   runHook(hook: keyof CoreExecutorHooks, _metadata: ExecutorExecutionMetadata) {
     const { [hook]: hooks = [] } = this.hooks;
-    for (const hookFn of hooks) {
-      /* istanbul ignore next */
+    for (const hookFn of [...hooks] /** clone hooks */) {
       if (typeof hookFn === "function") {
-        hookFn(_metadata, this.getMetadata());
+        try {
+          hookFn(_metadata, this.getMetadata());
+        } catch (error) { /** We should call an error handler */}
       }
     }
   }
   setHooks(hooks: CoreExecutorHookInput = {}) {
     const hookKeys = Object.keys(hooks) as (keyof typeof hooks)[];
+
     for (const hookKey of hookKeys.filter((k) => hookNames.includes(k))) {
       const hookInput = hooks[hookKey];
       if (hookInput) {
         const hook = Array.isArray(hookInput) ? hookInput : [hookInput];
         const cleanHooks = hook.filter((h) => h && typeof h === "function");
-        if (!this.hooks[hookKey]) this.hooks[hookKey] = [];
-        /* istanbul ignore next */
-        this.hooks[hookKey]?.push(...cleanHooks);
+        this.hooks[hookKey].push(...cleanHooks);
       }
     }
+  }
+
+  removeHook(eventName: keyof CoreExecutorHooks, fn: ListenerFunction) {
+    if (typeof fn !== 'function') return this;
+    const lis = this.hooks[eventName];
+    if (!lis) return this;
+    for(let i = lis.length; i >= 0; i--) {
+      if (lis[i] === fn) {
+        console.log("b")
+        lis.splice(i,1);
+        break;
+      }
+    }
+    return this;
+  }
+  
+  on(eventName: keyof CoreExecutorHooks, fn: ListenerFunction) {
+    return this.setHooks({ [eventName]: fn });
+  }
+
+  off(eventName: keyof CoreExecutorHooks, fn: ListenerFunction) {
+    return this.removeHook(eventName, fn );
+  }
+
+  once(eventName: keyof CoreExecutorHooks, fn: ListenerFunction) {
+    if (typeof fn !== 'function') return this;
+    const onceWrapper: ListenerFunction = (...args: any[]) => {
+      fn(...args);
+      this.off(eventName, onceWrapper);
+    }
+    this.hooks[eventName].push(onceWrapper);
+    return this;
   }
 }
