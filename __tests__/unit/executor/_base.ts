@@ -42,7 +42,7 @@ describe("llm-exe:executor/BaseExecutor", () => {
     const input = { input: "input-value" };
     await executor.execute(input);
 
-    expect(executor.runHook).toHaveBeenCalledTimes(1);
+    expect(executor.runHook).toHaveBeenCalledTimes(2);
 
     expect(executor.getHandlerInput).toHaveBeenCalledWith({
       input: "input-value",
@@ -57,13 +57,13 @@ describe("llm-exe:executor/BaseExecutor", () => {
   });
   it("MockExecutor can setup hooks", async () => {
     const executor = new MockExecutor("mock-executor", "mock", {
-      onComplete(){},
+      onComplete(){ console.log("fn1") },
     });
    
     expect(executor.hooks.onComplete).toHaveLength(1);
 
     executor.setHooks({
-      onComplete(){},
+      onComplete(){ console.log("fn2") },
     })
     expect(executor.hooks.onComplete).toHaveLength(2);
   });

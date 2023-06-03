@@ -44,23 +44,15 @@ describe("llm-exe:executor/LlmExecutor", () => {
 
     jest.spyOn(executor, "getHandlerInput");
     jest.spyOn(executor, "getHandlerOutput");
-    // jest.spyOn(executor, "setExecutionMetadata");
     jest.spyOn(executor, "runHook");
 
     const input = { input: "input-value"}
     await executor.execute(input);
 
-    // expect(executor.setExecutionMetadata).toHaveBeenNthCalledWith(1, "startTime", expect.any(Number));
-    // expect(executor.setExecutionMetadata).toHaveBeenNthCalledWith(2, "input", input);
-    // expect(executor.setExecutionMetadata).toHaveBeenNthCalledWith(3, "handlerInput", [{"content": "This is a prompt.", "role": "system"}]);
-    // expect(executor.setExecutionMetadata).toHaveBeenNthCalledWith(4, "handlerOutput", "Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]");
+    expect(executor.runHook).toHaveBeenCalledTimes(2)
 
-
-    expect(executor.runHook).toHaveBeenCalledTimes(1)
-
-    // expect(executor.runHook).toHaveBeenNthCalledWith(1, "beforeExecute");
-    // expect(executor.runHook).toHaveBeenNthCalledWith(2, "afterExecute");
-    // expect(executor.runHook).toHaveBeenNthCalledWith(3, "onComplete");
+    expect(executor.runHook).toHaveBeenNthCalledWith(1, "onSuccess", expect.any(Object));
+    expect(executor.runHook).toHaveBeenNthCalledWith(2, "onComplete", expect.any(Object));
 
     expect(executor.getHandlerInput).toHaveBeenCalledWith({ input: "input-value"}, expect.objectContaining({input}));
     expect(executor.getHandlerOutput).toHaveBeenCalledWith(`Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]`, expect.objectContaining({input}));

@@ -44,27 +44,4 @@ describe("llm-exe:executor/ExecutorExecutionMetadataState", () => {
     expect(result2.input).toEqual(undefined);
 
   });
-  it("setItem on array", () => {
-    const metadata = new ExecutorExecutionMetadataState();
-    metadata.setItem({"output": "hi", "_output": ["hey"]})
-    const result = metadata.asPlainObject()
-    expect(result).toHaveProperty("output");
-    expect(result.output).toEqual("hi");
-    expect(result).toHaveProperty("_output");
-    expect(result._output).toEqual(["hey"]);
-  });
-  it("setItem on array event if not provided array", () => {
-    const metadata = new ExecutorExecutionMetadataState();
-    metadata.setItem({"output": "hi", "_output": "hey"} as any)
-    const result = metadata.asPlainObject()
-    expect(result).toHaveProperty("output");
-    expect(result.output).toEqual("hi");
-    expect(result).toHaveProperty("_output");
-    expect(result._output).toEqual(["hey"]);
-  });
-//   it("infers name from passed in function", () => {
-//     const executor = new ExecutorExecutionMetadataState();
-//     expect(executor.name).toEqual("handler");
-//   });
-
 });

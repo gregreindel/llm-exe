@@ -8,8 +8,6 @@ export function validateExecutorContext(_executor: ExecutorContext<any,any>){
     assert(typeof _executor.handlerInput === "object", "invalid handlerInput")
     assert(typeof _executor.handlerOutput === "object", "invalid handlerOutput")
     assert(typeof _executor.output === "object", "invalid output")
-    assert(typeof _executor._handlerOutput === "object" && Array.isArray(_executor._handlerOutput), "invalid _handlerOutput")
-    assert(typeof _executor._output === "object" && Array.isArray(_executor._output), "invalid _output")
   
     if(_executor.metadata){
       assert(typeof _executor.metadata === "object", "invalid metadata")

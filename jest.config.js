@@ -26,12 +26,9 @@ module.exports = {
     "!<rootDir>/types/*.js",
     "!<rootDir>/src/types/*.js",
     "!<rootDir>/src/index.js",
-
-    // "!<rootDir>/src/state/*.js",
     "!<rootDir>/src/vector/*.js",
     "!<rootDir>/src/embedding/*.js",
     "!<rootDir>/src/interfaces/*.js",
-
     "!<rootDir>/src/interfaces/*.js",
     "!<rootDir>/src/utils/modules/handlebars/helpers/*.js",
   ],
