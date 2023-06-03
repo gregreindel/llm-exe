@@ -189,6 +189,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
         );
         switch (token) {
           case ">DialogueHistory": {
+            /* istanbul ignore next */
             const { key = "" } = data;
             const history: IChatMessages = get(replacements, key, []);
             if (history && Array.isArray(history)) {

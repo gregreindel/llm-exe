@@ -4,12 +4,12 @@ import {
   CoreExecutorExecuteOptions,
   ExecutorWithLlmOptions,
   ExecutorExecutionMetadata,
+  LlmExecutorHooks,
 } from "@/types";
 import { BaseLlm } from "@/llm";
 import { BaseParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
-
 import { BaseExecutor } from "./_base";
 
 /**
@@ -20,7 +20,11 @@ export class LlmExecutor<
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
   State extends BaseState
-> extends BaseExecutor<PromptInput<Prompt>, ParserOutput<Parser>> {
+> extends BaseExecutor<
+  PromptInput<Prompt>,
+  ParserOutput<Parser>,
+  LlmExecutorHooks
+> {
   public llm;
   public prompt;
   public promptFn: any;
@@ -28,7 +32,7 @@ export class LlmExecutor<
 
   constructor(
     llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
-    options?: CoreExecutorExecuteOptions
+    options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
   ) {
     super(
       llmConfiguration.name || "anonymous-llm-executor",

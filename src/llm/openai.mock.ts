@@ -14,8 +14,6 @@ export class OpenAIMock extends BaseLlm<null> {
     this.client = null;
   }
 
-  getMetrics() {}
-
   async _call(_input: any) {
     return new OutputOpenAIChat({
       id: "0123-45-6789",

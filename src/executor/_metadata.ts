@@ -11,8 +11,6 @@ export class ExecutorExecutionMetadataState<I, O> {
     handlerInput: undefined,
     handlerOutput: undefined,
     output: undefined,
-    _handlerOutput: [],
-    _output: [],
     errorMessage: undefined,
     error: undefined,
     metadata: null,
@@ -36,12 +34,7 @@ export class ExecutorExecutionMetadataState<I, O> {
     const keys = Object.keys(items) as (keyof typeof items)[];
     for (const key of keys) {
       const value = items[key];
-      if (Array.isArray(this.#state[key])) {
-        const asArr = Array.isArray(value) ? value : [value];
-        this.#state[key].push(...asArr);
-      } else {
-        this.#state[key] = value;
-      }
+      this.#state[key] = value;
     }
     return this;
   }
@@ -53,8 +46,6 @@ export class ExecutorExecutionMetadataState<I, O> {
       handlerInput: this.#state.handlerInput,
       handlerOutput: this.#state.handlerOutput,
       output: this.#state.output,
-      _handlerOutput: this.#state._handlerOutput,
-      _output: this.#state._output,
       errorMessage: this.#state.errorMessage,
       error: this.#state.error,
       metadata: this.#state.metadata,

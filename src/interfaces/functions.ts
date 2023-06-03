@@ -2,13 +2,12 @@ import { BaseParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { PlainObject } from "./utils";
 import { BaseExecutor } from "@/executor";
+import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
+
+export type ListenerFunction = (...args: any[]) => void;
 
 export type ParserOutput<P> = P extends BaseParser<infer T> ? T : never;
 export type PromptInput<P> = P extends BasePrompt<infer T> ? T : never;
-
-export interface CoreExecutorExecuteOptions {
-  hooks?: CoreExecutorHookInput;
-}
 
 export interface ExecutorWithLlmOptions<Llm, Prompt, Parser, State> {
   name?: string;
@@ -40,14 +39,6 @@ export interface ExecutorMetadata {
   metadata?: Record<string, any>;
 }
 
-export interface Temporary {
-  id: string;
-  initialInput?: any;
-  currentStepNumber: number;
-  results: any[];
-  attributes: any;
-}
-
 export interface ExecutorExecutionMetadata<I = any, O = any> {
   start: null | number;
   end: null | number;
@@ -55,11 +46,9 @@ export interface ExecutorExecutionMetadata<I = any, O = any> {
   handlerInput?: any;
   handlerOutput?: any;
   output?: O;
-  _handlerOutput: any[];
-  _output: O[];
   errorMessage?: string;
   error?: Error;
-  metadata?: null | ExecutorMetadata | Temporary;
+  metadata?: null | ExecutorMetadata;
 }
 
 export type ExecutorExecutionMetadataProperties = Pick<
@@ -70,8 +59,6 @@ export type ExecutorExecutionMetadataProperties = Pick<
   | "handlerInput"
   | "handlerOutput"
   | "output"
-  | "_handlerOutput"
-  | "_output"
   | "errorMessage"
   | "error"
   | "metadata"
@@ -83,22 +70,23 @@ export interface ExecutorContext<I = any, O = any, A = Record<string, any>>
   attributes: A;
 }
 
-export interface CoreExecutorHookMethods {
-  onError(...args: any[]): void;
-  onComplete(...args: any[]): void;
+export interface BaseExecutorHooks {
+  [hookOnError]: ListenerFunction[];
+  [hookOnSuccess]: ListenerFunction[];
+  [hookOnComplete]: ListenerFunction[];
 }
 
-export type CoreExecutorHooks = {
-  [K in keyof CoreExecutorHookMethods]: CoreExecutorHookMethods[K][];
+export interface LlmExecutorHooks extends BaseExecutorHooks {
+  /** 
+   * If needed, can override allowedHooks on llmExecutor
+   * and add llm-specific hooks here
+   */
+}
+
+export type CoreExecutorHookInput<H = BaseExecutorHooks> = {
+  [key in keyof H]?: ListenerFunction | ListenerFunction[];
 };
 
-export type ListenerFunction = (...args: any[]) => void;
-
-export interface CoreExecutorHookInput {
-  onError?: (
-    ...args: any[]
-  ) => void | ListenerFunction[];
-  onComplete?: (
-    ...args: any[]
-  ) => void | ListenerFunction[];
+export interface CoreExecutorExecuteOptions<T = BaseExecutorHooks> {
+  hooks?: CoreExecutorHookInput<T>;
 }

@@ -2,6 +2,7 @@ import {
   PlainObject,
   ExecutorWithLlmOptions,
   CoreExecutorExecuteOptions,
+  LlmExecutorHooks,
 } from "@/types";
 import { BaseLlm } from "@/llm";
 import { BaseParser } from "@/parser";
@@ -40,7 +41,7 @@ export function createLlmExecutor<
   State extends BaseState
 >(
   llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
-  options?: CoreExecutorExecuteOptions
+  options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
 ) {
   return new LlmExecutor<Llm, Prompt, Parser, State>(llmConfiguration, options);
 }
