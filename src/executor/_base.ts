@@ -152,6 +152,7 @@ export abstract class BaseExecutor<
   }
 
   runHook(hook: keyof H, _metadata: ExecutorExecutionMetadata) {
+    /* istanbul ignore next */
     const { [hook]: hooks = [] } = pick(this.hooks, this.allowedHooks);
     for (const hookFn of [...hooks] /** clone hooks */) {
       if (typeof hookFn === "function") {

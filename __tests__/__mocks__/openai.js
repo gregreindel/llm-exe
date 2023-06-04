@@ -1,7 +1,7 @@
-import { uuid } from "@/utils";
-import { CreateChatCompletionRequest } from "openai";
+// import { uuid } from "@/utils";
+// import { CreateChatCompletionRequest } from "openai";
 
-const chatResponses: any = {
+const chatResponses = {
   "openAiBasicTest": "Hello!!!!!!!",
 };
 
@@ -25,11 +25,11 @@ exports.Configuration = function () {
 exports.OpenAIApi = function () {
   return {
     createCompletion: async (
-      _createChatCompletionRequest: CreateChatCompletionRequest,
-      _options?: any
+      _createChatCompletionRequest,
+      _options
     ) => ({
       data: {
-        id: `mock-chat-${uuid()}`,
+        id: `mock-chat-${Math.random()}`,
         object: "completion",
         created: new Date().getTime(),
         model: _createChatCompletionRequest?.model || "mock-model",
@@ -51,12 +51,12 @@ exports.OpenAIApi = function () {
       },
     }),
     createChatCompletion: async (
-      _createChatCompletionRequest: CreateChatCompletionRequest,
-      _options?: any
+      _createChatCompletionRequest,
+      _options
     ) => {
-      const response: any = {
+      const response = {
         data: {
-          id: `mock-completion-${uuid()}`,
+          id: `mock-completion-${Math.random()}`,
           object: "chat.completion",
           created: new Date().getTime(),
           model: _createChatCompletionRequest?.model || "mock-model",

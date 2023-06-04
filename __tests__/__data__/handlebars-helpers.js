@@ -1,3 +1,3 @@
-export function customImportedHelper(){
+exports.customImportedHelper = () => {
     return `this is from external file`
 }

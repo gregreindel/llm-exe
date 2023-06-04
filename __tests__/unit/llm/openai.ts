@@ -1,7 +1,7 @@
 import { BaseLlm, OpenAI, createLlmOpenAi } from "@/llm";
 import { OutputOpenAIChat } from "@/llm/output";
 import { OutputOpenAICompletion } from "@/llm/output/openai";
-jest.createMockFromModule("../../__mocks__/openai");
+jest.createMockFromModule("../../__mocks__/openai.js");
 
 describe("llm-exe:llm/OpenAI", () => {
   it("defaults to gpt-3.5-turbo", () => {

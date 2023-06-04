@@ -1,14 +1,23 @@
 module.exports = {
-  preset: "ts-jest/presets/default-esm",
+  preset: "ts-jest/presets/default",
   testEnvironment: "node",
-  transform: {
-    "^.+\\.m?[tj]sx?$": ["ts-jest", { useESM: true }],
+  // transform: {},
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
+  transform: {
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+    ],
+  },
+  "transformIgnorePatterns": ["/node_modules/", '/__tests__/__mocks__/openai.ts'],
   testPathIgnorePatterns: [
     "/node_modules/",
     "/__mocks__/",
     "/__utils__/",
     "/__data__/",
+    "/build/",
+    "/dist/",
     // "/unit/parser/",
     // "/unit/prompt/",
     // // "/unit/llm/",
@@ -22,14 +31,16 @@ module.exports = {
     // "/unit/callable/",
   ],
   collectCoverageFrom: [
-    "<rootDir>/src/**/*.js",
-    "!<rootDir>/types/*.js",
-    "!<rootDir>/src/types/*.js",
-    "!<rootDir>/src/index.js",
-    "!<rootDir>/src/vector/*.js",
-    "!<rootDir>/src/embedding/*.js",
-    "!<rootDir>/src/interfaces/*.js",
-    "!<rootDir>/src/interfaces/*.js",
-    "!<rootDir>/src/utils/modules/handlebars/helpers/*.js",
+    "<rootDir>/src/**/*.ts",
+    "!<rootDir>/types/*.ts",
+    "!<rootDir>/types/*.d.ts",
+    "!<rootDir>/src/types/*.ts",
+    "!<rootDir>/src/index.ts",
+    "!<rootDir>/src/vector/*.ts",
+    "!<rootDir>/src/embedding/*.ts",
+    "!<rootDir>/src/interfaces/*.ts",
+    "!<rootDir>/src/interfaces/*.ts",
+    "!<rootDir>/types/*",
+    "!<rootDir>/src/utils/modules/handlebars/helpers/*.ts",
   ],
 };
