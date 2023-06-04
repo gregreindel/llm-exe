@@ -26,6 +26,6 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Build
-      run: npm run tsc-build
+      run: npm run tsc-ci
     - name: Test
       run: npm run test
