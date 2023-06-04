@@ -1,9 +1,5 @@
 
 import { BaseLlmOutput, OutputDefault } from "@/llm/output";
-import * as utils from "@/utils";
-
-// Spy on the replaceTemplateString function
-jest.spyOn(utils, "replaceTemplateString");
 
 /**
  * Tests the TextPrompt class

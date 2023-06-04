@@ -1,10 +1,6 @@
 
 import { BasePrompt } from "@/prompt";
 import { PromptHelper, PromptOptions, PromptPartial } from "@/types";
-import * as utils from "@/utils";
-
-// Spy on the replaceTemplateString function
-jest.spyOn(utils, "replaceTemplateString");
 
 /**
  * Tests the TextPrompt class

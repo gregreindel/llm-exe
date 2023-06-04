@@ -3,8 +3,7 @@ import { PromptHelper, PromptPartial } from "@/interfaces";
 import { BasePrompt, TextPrompt } from "@/prompt";
 import * as utils from "@/utils";
 
-// Spy on the replaceTemplateString function
-jest.spyOn(utils, "replaceTemplateString");
+
 
 /**
  * Tests the TextPrompt class
@@ -95,6 +94,10 @@ describe("llm-exe:prompt/TextPrompt", () => {
     const textPrompt = new TextPrompt();
     textPrompt.addToPrompt("System message");
     textPrompt.format(values);
+
+    // Spy on the replaceTemplateString function
+    jest.spyOn(utils, "replaceTemplateString");
+
     expect(utils.replaceTemplateString).toHaveBeenCalledWith(
       "System message",
       textPrompt.getReplacements(values),

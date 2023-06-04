@@ -1,8 +1,7 @@
 import { BaseParserOptions } from "@/types";
 import { JSONSchema7 } from "json-schema-to-ts";
 import { filterObjectOnSchema } from "@/utils";
-var Validator = require("jsonschema").Validator;
-var v = new Validator();
+import { validate as validateSchema } from "jsonschema"
 
 export interface BaseParser<T> {
   onParseError?(text: string, attributes?: Record<string, any>): any;
@@ -57,7 +56,7 @@ export abstract class BaseParser<T = any> {
 
     let results = filterObjectOnSchema(schema, parsed);
 
-    const validate = v.validate(results, this.schema);
+    const validate = validateSchema(results, this.schema);
 
     if (validate.errors.length) {
       throw new Error("schema error");
