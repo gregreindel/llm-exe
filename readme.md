@@ -1,5 +1,7 @@
 # llm-exe
 
+[![node.js](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml/badge.svg)](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml)
+
 A package that provides simplified base components to make building and maintaining LLM-powered applications easier.
 
 - Write functions powered by LLM's with easy to use building blocks.
