@@ -1,11 +1,11 @@
-## Custom Parser
+# Custom Parser
 You can define a custom parser to have full control over transforming the LLM output into the format you expect.
 
 A custom parser is really just a function that is provided 2 arguments, and is expected to transform/modify before returning the result. 
 
 When using Typescript, as long as you type things well, the types will get inferred into your LLM executors.
 
-Defining a custom parser
+## Defining a custom parser
 ```typescript:no-line-numbers
 function customParserHandler(
   /* input is the response from the LLM */
@@ -27,7 +27,7 @@ export const customParser = createCustomParser(
 );
 ```
 
-Using a custom parser
+## Using a custom parser
 ```typescript:no-line-numbers
 import { customParser } from "the-example-above"
 
@@ -43,5 +43,5 @@ const executor = createLlmExecutor({
 
 ```
 
-### Extending `BaseParser`
+## Extending `BaseParser`
 TODO: Add more info. In meantime, check code, it should have comments.

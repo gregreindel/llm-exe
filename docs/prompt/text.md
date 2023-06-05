@@ -24,7 +24,8 @@ const prompt = createPrompt("text")
 When creating a prompt, you can optionally set an initial message.
 ```typescript:no-line-numbers
 // create a simple text prompt with an initial message
-const prompt = createPrompt("text", "You are a customer service agent for SomeCompany.")
+const initial = "You are a customer service agent for SomeCompany.";
+const prompt = createPrompt("text", initial)
 
 /**
  * 
@@ -47,7 +48,8 @@ const prompt = createPrompt("text", "You are a customer service agent for SomeCo
 You can also add additional content to the prompt by calling `addToPrompt()` on the prompt.
 ```typescript:no-line-numbers
 // create a simple text prompt with an initial system message
-const prompt = createPrompt("text", "You are a customer service agent for SomeCompany.")
+const initial = "You are a customer service agent for SomeCompany.";
+const prompt = createPrompt("text", initial)
 
 // add an additional system message to the prompt
 prompt.addToPrompt("You should never admit that you are AI.");
@@ -77,7 +79,8 @@ To use the prompt as input to an LLM, you can call the `format()` method on the 
 ```typescript:no-line-numbers
 
 // create a simple text prompt with an initial system message
-const prompt = createPrompt("text", "You are a customer service agent for SomeCompany.")
+const initial = "You are a customer service agent for SomeCompany.";
+const prompt = createPrompt("text", initial)
 
 // add an additional system message to the prompt
 prompt.addToPrompt("You should never admit that you are AI.");
@@ -98,7 +101,8 @@ const formatted = prompt.format({});
 ```
 Prompt methods are chainable
 ```typescript:no-line-numbers
-const prompt = createPrompt("text", "You are a customer service agent for SomeCompany.")
+const initial = "You are a customer service agent for SomeCompany.";
+const prompt = createPrompt("text", initial)
 
 // you can also chain all prompt methods (except format)
 prompt
@@ -122,7 +126,8 @@ prompt
 
 By default, formatted text prompt messages are separated using 2 line breaks (\\n\\n). You can override this by defining a custom separator.
 ```typescript:no-line-numbers
-const prompt = createPrompt("text", "You are a customer service agent for SomeCompany.")
+const initial = "You are a customer service agent for SomeCompany.";
+const prompt = createPrompt("text", initial)
   .addToPrompt("You should never admit that you are AI.")
   .addToPrompt("Begin!")
 

@@ -4,7 +4,7 @@ description: A package that provides utilities, wrappers, and base abstractions 
 ---
 # llm-exe
 
-[![node.js](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml/badge.svg)](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml) [![Coverage Status](https://coveralls.io/repos/github/gregreindel/llm-exe/badge.svg?branch=main)](https://coveralls.io/github/gregreindel/llm-exe?branch=main)
+[![node.js](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml/badge.svg)](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml) [![Coverage Status](https://coveralls.io/repos/github/gregreindel/llm-exe/badge.svg?branch=main)](https://coveralls.io/github/gregreindel/llm-exe?branch=main) [![npm version](https://badge.fury.io/js/llm-exe.svg)](https://badge.fury.io/js/llm-exe)
 
 A package that provides simplified base components to make building and maintaining LLM-powered applications easier.
 
@@ -36,7 +36,7 @@ npm i llm-exe
 import * as llmExe from "llm-exe"
 
 // or 
-import { /* specific modules */ } from from "llm-exe/dist"
+import { /* specific modules */ } from from "llm-exe/specific/module"
 ```
 
 ### Basic Example
@@ -139,7 +139,7 @@ LLM is a wrapper around various LLM providers.
 - Use different llms with different configurations for different functions.
 
 ### Prompt
- Prompts are just a string template, so we treat them as that. 
+A prompt is a plain-text instruction for the llm to process. While a prompt is ultimately just a string, constructing  elaborate prompts that are maintainable, reusable, and generally easy to work with can become complex.
 
 - Uses handlebars as template engine, allowing you to use features such as custom templates, partials, functions, etc. See handlebars documentation.
 

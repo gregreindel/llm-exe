@@ -6,12 +6,19 @@ import { createChatPrompt } from "@/prompt";
 
 const llm = new OpenAIMock({});
 
-const PROMPT = `You are a senior typescript developer. I need you make a concise list of test cases that need to be written for the function below. We need to write an extensive test suite that covers all paths and edge-cases. Do not write any tests yet, we need to plan first.
+const PROMPT = `You are a senior typescript developer. I need you make 
+a concise list of test cases that need to be written for the function below. 
+We need to write an extensive test suite that covers all paths and edge-cases. 
+Do not write any tests yet, we need to plan first.
     
 Here is the function:
 {{>MarkdownCode language='typescript' code=functionToTest}}`;
 
-const INSTRUCTION = `Don't explain yourself or ask questions. Think step by step through how the function works, then respond with a plain-text list of tests cases we need to write. Do not list more than {{numberOfTestCases}} test cases.
+const INSTRUCTION = `Don't explain yourself or ask questions. Think step 
+by step through how the function works, then respond with a plain-text 
+list of tests cases we need to write.
+
+Do not list more than {{numberOfTestCases}} test cases.
   
 For Example:
 - <explain a test case we need to write>
@@ -28,7 +35,8 @@ export function llmExecutorThatMakesAListOfTestCases(llm: BaseLlm) {
   });
 }
 
-const PROMPT2 = `You are a senior typescript developer. You need to write a single Jest test for the function below.
+const PROMPT2 = `You are a senior typescript developer. You need to write 
+a single Jest test for the function below.
 
 Here is the function the test needs to be written for:
 {{>MarkdownCode language='typescript' code=functionToTest}}`;

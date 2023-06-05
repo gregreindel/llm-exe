@@ -24,7 +24,7 @@
     "tsc-ci": "tsc --project ./tsconfig.json && tsc-alias -p ./tsconfig.json",
     "tsc-build": "tsc --project ./tsconfig-build.json  && tsc-alias -p tsconfig-build.json -w",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit",
-    "docs:dev": "vuepress dev docs",
+    "docs:dev": "vuepress dev docs --clean-temp --clean-cache ",
     "docs:build": "vuepress build docs",
     "lint": "eslint",
     "format:check": "prettier --check \"src\"",

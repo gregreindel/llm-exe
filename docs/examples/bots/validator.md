@@ -9,15 +9,15 @@ This can be useful as:
 This takes advantage of a custom output parser to not only ensure formatting, but slightly transform the output.
 
 #### Step 1 - Prepare Prompt
-@[code{7-33} ts:no-line-numbers](../../examples/Verify.ts)
+@[code{7-33} ts:no-line-numbers](../../../examples/Verify.ts)
 
 #### Step 2 - Create Custom Output Parser
 While we tell the LLM to format its response as JSON, it's a string. We still need to parse and validate the response so it can be used in our code. A custom output parser will reformat the output from the LLM, and provide typings for our LLM executor.
-@[code{34-62} ts:no-line-numbers](../../examples/Verify.ts)
+@[code{34-62} ts:no-line-numbers](../../../examples/Verify.ts)
 
 #### Step 3 - Create LLM Executor
 Combine the prompt, LLM, and parser into a single function.
-@[code{63-80} ts:no-line-numbers](../../examples/Verify.ts)
+@[code{63-80} ts:no-line-numbers](../../../examples/Verify.ts)
 
 
 #### Step 4 - Use it!
@@ -66,4 +66,4 @@ const response = await checkPolicy().execute({
 
 ```
 ### Complete File
-@[code](../../examples/Verify.ts)
+@[code](../../../examples/Verify.ts)

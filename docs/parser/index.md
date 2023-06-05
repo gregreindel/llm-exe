@@ -1,19 +1,20 @@
 # Parser
-When calling LLM's the response is ultimately a string. While you can (and will) instruct the LLM to respond with a number, or formatted as JSON, and it will, but the response will still be a string.
+When calling LLM's the response is ultimately a string. While you can (and will) instruct the LLM to respond with a number, or formatted as JSON... the response will still be a string.
 
 Parsers are used to take the output from the LLM, and format it into a data type that is usable by your application. 
-
-Note: You can use and call methods on parsers directly, but they are usually passed to an LLM executor and then called internally. 
 
 There are various default parsers included, and the parser class is easily extendable.
 
 When combined with an LLM executor, the parser is responsible for providing type hints to the Typescript compiler on the expected output for the LLM executor.
 
+**Note**: You can use and call methods on parsers directly, but they are usually passed to an [LLM executor](/executor) and then called internally. 
 ## Getting Started
 
 ### Working with Parsers
+When working with output parsers, you have two options:
+
 1. Use a default parser. 
-2. Extend the base parser
+2. Extend the base parser to create a custom output parser
 
 ####  Use a Default Parser
 
@@ -42,7 +43,7 @@ const parsed = parser.parse(exampleOutputFromLlm);
 ```
 
 #### Using a Parser with Schema
-When instructing the LLM to respond with json or a format that can be parsed to json, it can be helpful to define schema. This allows you to validate, provide default values, and have a fully-typed response.
+When instructing the LLM to respond with json or a format that can be parsed to json, it can be helpful to define schema. This allows you to validate, provide default values, and have a fully-typed response. In fact, the JSON Schema you define can be really useful (and re-used!) in your prompt. [See tips](/examples/concepts/working-with-json) for working with JSON.
 
 ```typescript:no-line-numbers
 import { utils, createParser } from "unnamed-package";
@@ -77,5 +78,5 @@ const parsed = parser.parse(exampleOutputFromLlm);
 
 
 
-### Extending `BaseParser`
+## Extending `BaseParser`
 // TODO: elaborate. Until then check the source, it should have comments.

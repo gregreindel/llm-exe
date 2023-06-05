@@ -1,6 +1,6 @@
 
-## What is an LLM function?
-As the usefulness of LLMs grows, your ability to replace (at least consider replacing) complex functionality in your application with simple calls to an LLM.
+# What is an LLM function?
+As the usefulness of LLMs grows, you have the ability to replace (at least consider replacing) complex functionality in your application with simple calls to an LLM.
 
 Consider the following pseudo-code for a function that detects Personal Identifiable Information (PII) within the provided input:
 ```javascript:no-line-numbers

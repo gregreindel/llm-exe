@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
-import { OpenAIModelName, OpenAIOptions } from "@/types";
+import { IChatMessages, OpenAIModelName, OpenAIOptions } from "@/types";
 import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
 import { assert, removeEmptyFromObject } from "@/utils";
@@ -178,10 +178,12 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @param input - The input for the chat/completion API.
    * @returns The chat/completion response from the API.
    */
-  async _call(input: any) {
+  async _call(input: string | IChatMessages) {
     if (["gpt-3.5-turbo", "gpt-4"].includes(this.model)) {
+      assert(Array.isArray(input), "Invalid prompt.");
       return await this.chat(input);
     } else {
+      assert(typeof input === "string")
       return await this.completion(input);
     }
   }
@@ -191,7 +193,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @param messages - A list of message objects for the API call.
    * @returns The chat response from the API.
    */
-  async chat(messages: any[]) {
+  async chat(messages: IChatMessages) {
     assert(Array.isArray(messages), "Invalid prompt.");
     const options = removeEmptyFromObject({
       messages,

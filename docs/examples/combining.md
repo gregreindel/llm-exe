@@ -9,14 +9,14 @@ This can be useful as:
 This is really just a simple loop that combines 2 functions, but using LLM executors keeps the code simple.
 
 #### Step 1 - Create LLM Executor to make list of test cases given a function
-@[code{13-33} ts:no-line-numbers](../../examples/ListInList.ts)
+@[code{17-37} ts:no-line-numbers](../../examples/ListInList.ts)
 
 #### Step 2 - Create LLM Executor to write single test case
-@[code{34-62} ts:no-line-numbers](../../examples/ListInList.ts)
+@[code{38-66} ts:no-line-numbers](../../examples/ListInList.ts)
 
 #### Step 3 - Combine into single method
 Combine the prompt, LLM, and parser into a single function.
-@[code{63-88} ts:no-line-numbers](../../examples/ListInList.ts)
+@[code{67-92} ts:no-line-numbers](../../examples/ListInList.ts)
 
 
 #### Step 4 - Use it!
@@ -61,8 +61,5 @@ const response = await checkPolicy().execute({
  ** 
 ```
 
-```typescript
-
-```
 ### Complete File
 @[code](../../examples/Verify.ts)

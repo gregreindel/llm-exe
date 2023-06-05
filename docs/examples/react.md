@@ -4,13 +4,15 @@ In this example, we will create a series of LLM executor functions which will wo
 
 Steps Overview
 - **Define actions**. llm-exe does not provide pre-built tools or actions, but does provide a way to make any regular javascript function callable. For this example, we will need the ability to perform a Google search via an api, and also a function that calculates basic expressions.
-- Create LLM Executor. Configure a prompt and LLM executor that is directed to think step by step through the question to decide the next action to take. We direct the LLM to respond with a thought/action/input and use an output parser to transform to JSON.
-- Write a loop that will call our LLM executor to decide the next action and pass the result to another function to run the action, until the final answer is reached.
+- **Create LLM Executor**. Configure a prompt and LLM executor that is directed to think step by step through the question to decide the next action to take. We direct the LLM to respond with a thought/action/input and use an output parser to transform to JSON.
+- **Write a loop** that will call our LLM executor to decide the next action and pass the result to another function to run the action. This continues until the final answer is reached (or max iterations is hit).
 
 Note this is a basic example, and should be improved for error handling, etc.
 
 #### Step 1 - Define Search Action
 To allow our LLM to be able to search the internet, we'll need to define a callable function. You can use whatever search API configuration you'd like.
+
+Note that `searchInternetCallable` is the configuration object that makes `searchGoogleApi` callable. Nothing really fancy going on.
 @[code{0-100} ts:no-line-numbers](../../examples/actions/search.ts)
 
 #### Step 2 - Define Calculator Action

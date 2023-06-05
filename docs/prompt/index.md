@@ -1,4 +1,4 @@
-# Prompt
+## Prompt
 
 The prompt is the instruction for the LLM, usually sent in plain-text. When working with certain models, the prompt is formatted like chat messages, allowing you to control a system message, user message, and assistant message.
 
