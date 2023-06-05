@@ -1,9 +1,4 @@
-
-
-
-
-
-## Prompts with Templates
+# Prompts with Templates
 Handlebars is used as a template engine when generating the prompt, so you can take advantage of advanced template features in the prompt. See full capabilities [here](https://handlebarsjs.com/guide/).
 
 Below is a simple example showing syntax for replacing simple variables in the template.
@@ -137,7 +132,7 @@ const formatted = prompt.format({ actions, previousSteps });
 /*
 ```
 
-#### Prompt Template Default Helpers
+## Prompt Template Default Helpers
 Prompts are powered by handlebars, and you are able to register your own custom helpers, adding super powers to your prompt templates. Some core helpers are included by default.
 - pluralize
 - eq
@@ -145,11 +140,11 @@ Prompts are powered by handlebars, and you are able to register your own custom 
 - ifCond
 
 
-### Template Custom Partials & Helpers
+## Template Custom Partials & Helpers
 You can load custom Handlebars partials and helpers a few different ways:
 
 
-#### 1. Pass them in when initializing the prompt
+### 1. Pass them in when initializing the prompt
 
 ```typescript:no-line-numbers
 
@@ -169,7 +164,7 @@ Website: www.example.com`, name: "partialContactInformation"
 const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials })
 ```
 
-#### 2. Set environment variable pointing to a file that exports them (optional)
+### 2. Set environment variable pointing to a file that exports them (optional)
 
 ```env:no-line-numbers
 # .env
@@ -223,5 +218,5 @@ const format = prompt.format({ agentName: "Greg" })
  * /
 ```
 
-#### Extending `BasePrompt`
+## Extending `BasePrompt`
 // TODO: elaborate. Until then check the source, it should have comments.

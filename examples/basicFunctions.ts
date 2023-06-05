@@ -82,7 +82,7 @@ interface ExampleInput {
 
 export function llmExecutorExample2<I extends ExampleInput>() {
   const llm = new OpenAIMock({});
-  const prompt = createChatPrompt<I>(PROMPT);
+  const prompt = createChatPrompt<I>(PROMPT2);
   const parser = createParser("stringExtract", {
     enum: ["forward", "back", "left", "right"],
   });

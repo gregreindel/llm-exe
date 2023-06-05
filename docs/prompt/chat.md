@@ -1,4 +1,4 @@
-## Chat Prompt
+# Chat Prompt
 The other type of prompt is a chat prompt. The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4.
 
 You create a chat prompt using `createPrompt("chat")` or `createChatPrompt()`.
@@ -88,7 +88,7 @@ console.log(prompt.format({}))
 
 See [prompt templates](prompt/advanced.html) for more advanced prompt usage.
 
-#### Chat Prompt Methods
+## Chat Prompt Methods
 `addUserMessage`
 Appends a user message to the prompt.
 

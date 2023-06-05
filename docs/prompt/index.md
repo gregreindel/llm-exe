@@ -1,4 +1,4 @@
-## Prompt
+# Prompt
 
 The prompt is the instruction for the LLM, usually sent in plain-text. When working with certain models, the prompt is formatted like chat messages, allowing you to control a system message, user message, and assistant message.
 
@@ -16,7 +16,7 @@ See:
 - [Text Prompt](/prompt/text.html)
 - [Chat Prompt](/prompt/chat.html)
 
-### Basic Replacements
+## Basic Replacements
 The object that you pass to `prompt.format` (or `.execute` when a prompt is part of an LLM executor) gets passed to the template engine, making all those variables available to you in your prompt template.
 ```typescript
 const prompt = createPrompt("text", "You are a customer service agent for SomeCompany. Your name is {{agentName}}.")

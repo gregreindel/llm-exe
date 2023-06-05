@@ -1,4 +1,4 @@
-## Text Prompt
+# Text Prompt
 The default prompt is a text prompt, and is meant for models such as xx and xx. 
 
 You create a prompt using `createPrompt()`.
