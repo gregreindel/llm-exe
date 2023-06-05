@@ -2,7 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "declaration": true,
-    "module": "es2020",
+    "module": "commonjs",
     "moduleResolution": "nodenext",
     "target": "es2021",
     "esModuleInterop": true,
