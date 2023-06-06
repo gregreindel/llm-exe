@@ -6,10 +6,12 @@ import get from "lodash.get";
 import set from "lodash.set";
 import pick from "lodash.pick";
 import camelCase from "lodash.camelcase";
+import unEscape from "lodash.unescape";
+import escape from "lodash.escape";
 
 import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
-export { get, set, pick, camelCase };
+export { get, set, pick, camelCase, unEscape, escape };
 
 export { filterObjectOnSchema } from "./json-schema-filter";
 export { replaceTemplateString } from "./replaceTemplateString";
@@ -154,6 +156,19 @@ export function extractPromptPlaceholderToken(tok: string) {
       return {
         token: ">DialogueHistory",
         key: matchKey[2],
+      };
+    }
+  }
+  else if (token.substring(2, 20) === ">SingleChatMessage") {
+    const matchRole = tok.match(/role=(['"`])((?:(?!\1).)*)\1/);
+    const matchContent = tok.match(/content=(['"`])((?:(?!\1).)*)\1/);
+    const matchName = tok.match(/name=(['"`])((?:(?!\1).)*)\1/);
+    if (matchRole) {
+      return {
+        token: ">SingleChatMessage",
+        name: get(matchName, '[2]'),
+        content:unEscape(get(matchContent, '[2]', "") ),
+        role: get(matchRole, '[2]', "")
       };
     }
   }

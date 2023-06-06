@@ -39,6 +39,12 @@ export type IPromptChatMessages = (
   | IChatMessagesPlaceholder
 )[];
 
+export type IChatMessage = (
+  | IChatUserMessage
+  | IChatAssistantMessage
+  | IChatSystemMessage
+)
+
 export type IChatMessages = (
   | IChatUserMessage
   | IChatAssistantMessage

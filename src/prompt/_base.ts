@@ -62,7 +62,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @param content The message content
    * @return returns BasePrompt so it can be chained.
    */
-  addSystemMessage(content: string): BasePrompt<I> {
+  addSystemMessage(content: string) {
     this.messages.push({
       role: "system",
       content,
@@ -77,7 +77,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    */
   registerPartial(
     partialOrPartials: PromptPartial | PromptPartial[]
-  ): BasePrompt<I> {
+  ) {
     const partials = Array.isArray(partialOrPartials)
       ? partialOrPartials
       : [partialOrPartials];
@@ -92,7 +92,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    */
   registerHelpers(
     helperOrHelpers: PromptHelper | PromptHelper[]
-  ): BasePrompt<I> {
+  ) {
     const helpers = Array.isArray(helperOrHelpers)
       ? helperOrHelpers
       : [helperOrHelpers];

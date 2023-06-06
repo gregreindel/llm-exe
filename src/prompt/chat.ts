@@ -1,4 +1,5 @@
 import {
+  escape,
   extractPromptPlaceholderToken,
   get,
   pick,
@@ -12,6 +13,7 @@ import {
   ChatPromptType,
   ChatPromptOptions,
   IPromptChatMessages,
+  IChatMessage,
 } from "@/types";
 
 export interface ChatPrompt<I extends Record<string, any>>
@@ -57,28 +59,28 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param content The message content.
    * @param role The role of the chat user. Must be one of: assistant, system, user.
    * @param name (optional) The name of the user. Only accepted if role is `user`.
-   * @return instance of BasePrompt.
+   * @return instance of ChatPrompt.
    */
   addToPrompt(
     content: string,
     role: Extract<IChatMessageRole, "assistant">,
     name?: undefined
-  ): BasePrompt<I>;
+  ): ChatPrompt<I>;
   addToPrompt(
     content: string,
     role: Extract<IChatMessageRole, "system">,
     name?: undefined
-  ): BasePrompt<I>;
+  ): ChatPrompt<I>;
   addToPrompt(
     content: string,
     role: Extract<IChatMessageRole, "user">,
     name?: string
-  ): BasePrompt<I>;
+  ): ChatPrompt<I>;
   addToPrompt(
     content: string,
     role: IChatMessageRole,
     name?: string
-  ): BasePrompt<I> {
+  ): ChatPrompt<I> {
     if (content) {
       switch (role) {
         case "system":
@@ -99,7 +101,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * addUserMessage Helper to add a user message to the prompt.
    * @param content The message content.
    * @param name (optional) The name of the user.
-   * @return instance of BasePrompt.
+   * @return instance of ChatPrompt.
    */
   addUserMessage(content: string, name?: string): ChatPrompt<I> {
     const message: IChatUserMessage = {
@@ -167,6 +169,31 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   }
 
   /**
+   * addTokenPlaceholder description
+   * @param content The message content
+   * @return returns ChatPrompt so it can be chained.
+   */
+  addMessagePlaceholder(
+    content: string,
+    role: IChatMessageRole = "user",
+    name?: string
+  ) {
+    if (content) {
+      const start = `{{> SingleChatMessage `;
+      const params = [`role='${role}'`, `content='${escape(content)}'`];
+      const end = `}}`;
+      if(name){
+        params.push(`name='${name}'`)
+      }
+      this.messages.push({
+        role: "placeholder",
+        content: `${start}${params.join(" ")}${end}`,
+      });
+    }
+    return this;
+  }
+
+  /**
    * format formats the stored prompt based on input values.
    * Uses template engine.
    * Output is intended for LLM.
@@ -196,7 +223,9 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
               for (const message of history) {
                 switch (message.role) {
                   case "user":
-                    messagesOut.push(pick(message, ["role", "content", "name"]));
+                    messagesOut.push(
+                      pick(message, ["role", "content", "name"])
+                    );
                     break;
                   case "assistant":
                     messagesOut.push({
@@ -212,6 +241,25 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                     break;
                 }
               }
+            }
+            break;
+          }
+          case ">SingleChatMessage": {
+            const { name, content, role } = data;
+            if(role && content){
+              const message = {
+                role, 
+                name,
+                content: replaceTemplateString(content, replacements, {
+                  partials: this.partials,
+                  helpers: this.helpers,
+                })
+              } 
+
+              if(!name || role !== "user"){
+                delete message.name;
+              }
+              messagesOut.push(message as IChatMessage);
             }
             break;
           }

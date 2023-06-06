@@ -1,20 +1,27 @@
 import { get } from "@/utils";
+import { schemaExampleWith } from "../../json-schema-filter";
 
-export function __getDialogueHistory(
-  this: any,
-  key: string = "defaultDialogue"
-) {
-  return get(this, key, []);
+export function getKeyOr(this: any, key: string, arg2: any) {
+  const res = get(this, key);
+  return typeof res !== "undefined" && res !== "" ? res : arg2;
 }
 
-export function getOr(
-  this: any,
-  arg1: string,
-  arg2: string,
-) {
-  return typeof arg1 !== "undefined" ? arg1 : arg2;
+export function getOr(this: any, arg1: string, arg2: string) {
+  return typeof arg1 !== "undefined" && arg1 !== "" ? arg1 : arg2;
 }
 
+export function indentJson(this: any, arg1: Record<string, any>) {
+  return typeof arg1 === "object" ? JSON.stringify(arg1, null, 2) : arg1;
+}
+
+export function jsonSchemaExample(this: any, key: string, prop: string) {
+  const schema = get(this, key);
+  if (schema && schema.type) {
+    const result = schemaExampleWith(schema, prop);
+    return typeof result === "object" ? JSON.stringify(result, null, 2) : "";
+  }
+  return "";
+}
 
 export function pluralize(
   this: any,

@@ -1,3 +1,4 @@
+export { FromSchema, JSONSchema } from 'json-schema-to-ts';
 export * from "./utils";
 export * from "./chat";
 export * from "./openai";
