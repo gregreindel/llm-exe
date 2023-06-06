@@ -25,7 +25,7 @@ describe('useHandlebars', () => {
         expect(hbs.helpers).toHaveProperty("neq");
         expect(hbs.helpers).toHaveProperty("ifCond");
         expect(hbs.helpers).toHaveProperty("pluralize");
-        expect(hbs.helpers).toHaveProperty("__getDialogueHistory");
+        expect(hbs.helpers).toHaveProperty("getKeyOr");
       });
       test('useHandlebars with custom helper via config', () => {
         const hbs = useHandlebars({

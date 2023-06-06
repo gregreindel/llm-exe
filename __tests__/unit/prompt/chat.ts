@@ -167,6 +167,54 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
   
+  it("can add user messages from addMessagePlaceholder defaults to user", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("Some Plain Text");
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "user" },
+    ]);
+  });
+  it("can add user messages from addMessagePlaceholder", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("Some Plain Text", "user");
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "user" },
+    ]);
+  });
+  it("can add user messages  with name from addMessagePlaceholder", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("Some Plain Text", "user", "Greg");
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "user", name: "Greg" },
+    ]);
+  });
 
+  it("can add user messages from addMessagePlaceholder and they get replaced", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("{{userInput}}", "user");
+    expect(prompt.format({userInput: "Some Plain Text"})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "user" },
+    ]);
+  });
 
+  it("can add assistant messages from addMessagePlaceholder", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("Some Plain Text", "assistant");
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "assistant" },
+    ]);
+  });
+  it("can add system messages from addMessagePlaceholder", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("Some Plain Text", "system");
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "system" },
+    ]);
+  });
 });

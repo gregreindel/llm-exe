@@ -5,7 +5,9 @@ export default defineUserConfig({
   lang: "en-US",
   title: "llm-exe",
   description: "",
+  head: [['link', { rel: 'icon', href: '/images/favicon.ico' }]],
   theme: defaultTheme({
+  logo: '/images/logo.png',
     navbar: [
       {
         text: "Home",
@@ -28,7 +30,7 @@ export default defineUserConfig({
         children: [
           {
             text: "Intro",
-            link: "/intro",
+            link: "/intro/index.html",
             children: [],
           },
           {
@@ -40,12 +42,12 @@ export default defineUserConfig({
       },
       {
         text: "LLM",
-        link: "/llm/",
+        link: "/llm/index.html",
         collapsible: true,
         children: [
           {
             text: "OpenAi",
-            link: "/llm/openai",
+            link: "/llm/openai.html",
             children: [],
           },
           
@@ -55,64 +57,64 @@ export default defineUserConfig({
 
       {
         text: "Prompt",
-        link: "/prompt",
+        link: "/prompt/index.html",
         collapsible: true,
         children: [
           {
             text: "Text Prompt",
-            link: "/prompt/text",
+            link: "/prompt/text.html",
             children: [],
           },
           {
             text: "Chat Prompt",
-            link: "/prompt/chat",
+            link: "/prompt/chat.html",
             children: [],
           },
           {
             text: "Advanced Templates",
-            link: "/prompt/advanced",
+            link: "/prompt/advanced.html",
             children: [],
           },
         ],
       },
       {
         text: "Parser",
-        link: "/parser",
+        link: "/parser/index.html",
         collapsible: true,
 
         children: [
           {
             text: "Included Parsers",
-            link: "/parser/included-parsers",
+            link: "/parser/included-parsers.html",
             children: [],
           },
           {
             text: "Custom Parsers",
-            link: "/parser/custom",
+            link: "/parser/custom.html",
             children: [],
           },
         ],
       },
       {
         text: "LLM Executor",
-        link: "/executor/",
+        link: "/executor/index.html",
         collapsible: true,
         children: [
           {
             text: "Hooks",
-            link: "/executor/hooks",
+            link: "/executor/hooks.html",
             children: [],
           },
         ],
       },
       {
         text: "State",
-        link: "/state/",
+        link: "/state/index.html",
         collapsible: true,
         children: [
           {
             text: "Dialogue",
-            link: "/state/dialogue",
+            link: "/state/dialogue.html",
             children: [],
           },
         ],
@@ -127,19 +129,21 @@ export default defineUserConfig({
             link: "",
             children: [{
               text: "Executor Function Syntax",
-              link: "/examples/FunctionSyntax",
+              link: "/examples/FunctionSyntax.html",
               children: [],
             }, 
             {
               text: "Simple Combining",
-              link: "/examples/combining",
+              link: "/examples/combining.html",
               children: [],
             },
             {
               text: "ReAct: Search + Calculator",
-              link: "/examples/react",
+              link: "/examples/react.html",
               children: [],
-            },],
+            },{
+
+            }],
           },
           // {
           //   text: "LLM Functions",
@@ -156,11 +160,15 @@ export default defineUserConfig({
             link: "",
             children: [          {
               text: "Validator",
-              link: "/examples/bots/validator",
+              link: "/examples/bots/validator.html",
               children: [],
             },{
               text: "Intent",
-              link: "/examples/bots/intent",
+              link: "/examples/bots/intent.html",
+              children: [],
+            },{
+              text: "Extractor",
+              link: "/examples/bots/extract.html",
               children: [],
             }],
           },
@@ -170,6 +178,9 @@ export default defineUserConfig({
             children: [{
               text: "Working With JSON",
               link: "/examples/concepts/working-with-json.html"
+            },{
+              text: "Replicating Lex",
+              link: "/examples/concepts/replicating-lex.html"
             }],
           },
           // {
@@ -187,7 +198,7 @@ export default defineUserConfig({
           // SidebarItem
           {
             text: "Comparing to Langchain",
-            link: "/misc/comparing-langchain.md",
+            link: "/misc/comparing-langchain.html",
             children: [],
           },
         ],
