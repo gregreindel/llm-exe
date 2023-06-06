@@ -5,9 +5,28 @@ export default defineUserConfig({
   lang: "en-US",
   title: "llm-exe",
   description: "",
-  head: [['link', { rel: 'icon', href: '/images/favicon.ico' }]],
+  head: [
+    [
+      "link",
+      { rel: "icon", href: "/images/favicon.ico" },
+      { rel: "canonical", href: "https://llm-exe.com" },
+    ],[
+      "meta",
+      { property: "og:image", content: "/images/llm-exe-featured.jpg" },
+      { property: "og:locale", content: "en_US" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: "Typescript LLM Utilities" },
+      { property: "og:url", content: "https://llm-exe.com" },
+      { property: "og:site_name", content: "llm-exe" },
+      {
+        property: "og:description",
+        content:
+          "A package that provides utilities, wrappers, and base abstractions to help make writing applications with llm-powered functions easier.",
+      }
+    ],
+  ],
   theme: defaultTheme({
-  logo: '/images/logo.png',
+    logo: "/images/logo.png",
     navbar: [
       {
         text: "Home",
@@ -50,8 +69,6 @@ export default defineUserConfig({
             link: "/llm/openai.html",
             children: [],
           },
-          
-
         ],
       },
 
@@ -127,23 +144,24 @@ export default defineUserConfig({
           {
             text: "Concepts",
             link: "",
-            children: [{
-              text: "Executor Function Syntax",
-              link: "/examples/FunctionSyntax.html",
-              children: [],
-            }, 
-            {
-              text: "Simple Combining",
-              link: "/examples/combining.html",
-              children: [],
-            },
-            {
-              text: "ReAct: Search + Calculator",
-              link: "/examples/react.html",
-              children: [],
-            },{
-
-            }],
+            children: [
+              {
+                text: "Executor Function Syntax",
+                link: "/examples/FunctionSyntax.html",
+                children: [],
+              },
+              {
+                text: "Simple Combining",
+                link: "/examples/combining.html",
+                children: [],
+              },
+              {
+                text: "ReAct: Search + Calculator",
+                link: "/examples/react.html",
+                children: [],
+              },
+              {},
+            ],
           },
           // {
           //   text: "LLM Functions",
@@ -158,30 +176,37 @@ export default defineUserConfig({
           {
             text: "LLM Functions",
             link: "",
-            children: [          {
-              text: "Validator",
-              link: "/examples/bots/validator.html",
-              children: [],
-            },{
-              text: "Intent",
-              link: "/examples/bots/intent.html",
-              children: [],
-            },{
-              text: "Extractor",
-              link: "/examples/bots/extract.html",
-              children: [],
-            }],
+            children: [
+              {
+                text: "Validator",
+                link: "/examples/bots/validator.html",
+                children: [],
+              },
+              {
+                text: "Intent",
+                link: "/examples/bots/intent.html",
+                children: [],
+              },
+              {
+                text: "Extractor",
+                link: "/examples/bots/extract.html",
+                children: [],
+              },
+            ],
           },
           {
             text: "Misc",
             link: "",
-            children: [{
-              text: "Working With JSON",
-              link: "/examples/concepts/working-with-json.html"
-            },{
-              text: "Replicating Lex",
-              link: "/examples/concepts/replicating-lex.html"
-            }],
+            children: [
+              {
+                text: "Working With JSON",
+                link: "/examples/concepts/working-with-json.html",
+              },
+              {
+                text: "Replicating Lex",
+                link: "/examples/concepts/replicating-lex.html",
+              },
+            ],
           },
           // {
           //   text: "ReAct: Search + Calculator",

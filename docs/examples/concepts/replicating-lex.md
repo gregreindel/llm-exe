@@ -6,6 +6,7 @@ We will aim to replace the following key components with individual LLM calls:
 - Identify Intent
 - Extract Slots
 - Confirm Intent
+- Response Generator
 
 The challenge will come down to how you choose to:
 
@@ -23,19 +24,25 @@ We can also use some tricks to help get the best match:
 
 These are all prompt tricks. They are tips, not rules. Experiment yourself with what works.
 
-Note: See [intent](/examples/bots/intent.html) for detailed example of this executor.
+Note: See [intent](/examples/bots/intent.html) for detailed example of the intent executor.
 
 
 ## Extract Slots
 We'd use the result of the intent LLM to know which slots are available/required for the next step. Then, we'll ask the LLM if the specific information is included in the conversation.
 
+Note: See [extract](/examples/bots/extract.html) for detailed example of the confirm executor.
 
-## Confirm Intent
+
+## Confirm
 To confirm the intent, you guessed it, we'll be asking an LLM if the user has confirmed! There are various ways to go about this, as it comes down to engineering a prompt that satisfies the requirement. For this example, I will use the validator LLM executor from this example.
 
 The validator LLM executor takes a conversation, and a series of true/false statements, and asks the LLM to work through the statements and identify if they are true or false. Our LLM Executor has a custom output parser which will summarize this output into something easily usable.
 
 
+Note: See [intent](/examples/bots/intent.html) for detailed example of the confirm executor.
+
+## Response Generator
+You can use a single LLM executor with some prompt templates to generate responses when you need to elicit intent, confirm, or carry on conversation.
 
 
 ## Putting it together
@@ -46,6 +53,10 @@ With these pieces, we can put together a proof of concept:
 import { identifyIntent } from "../other-example"
 import { extractInformation } from "../another-example";
 import { checkPolicy } from "policy-example"
+import {  createDialogue } from "llm-exe";
+
+// if you use history. See state/Dialogue
+const chatHistory = createDialogue("chat");
 
 // An example. 
 const intentMap = {
@@ -68,11 +79,14 @@ const intentMap = {
 
 
 // get the intent
-const { intent } = await identifyIntent({ input });
+const { intent } = await identifyIntent({
+    input,
+    chatHistory: chatHistory.getHistory()
+});
+
 
 let fulfilled = false;
 let confirmed = false;
-
 
 if(intent === "unknown"){
     // return llm executor that deals with normal conversation, or unknown intents
@@ -85,7 +99,10 @@ if(intent === "unknown"){
 const { slots } = intentMap[intent];
 
 // We provide the extractor the input, history, and slot schema
-const extraction = await extractInformation({ input }, slots);
+const extraction = await extractInformation({
+    input,
+    chatHistory: chatHistory.getHistory()
+}, slots);
 
 // now you should check slot values, validate slots, etc
 
@@ -93,12 +110,12 @@ const extraction = await extractInformation({ input }, slots);
 
 // all slots valid? Great! 
 
-// this is another example of where yit may help to manage state
+// this is another example of where it may help to manage state
 
 // lets che
-const didConfirm = await checkPolicy().execute({
+const didConfirm = await checkPolicy({
     mostRecentMessage: input,
-    chatHistory,
+    chatHistory: chatHistory.getHistory()
     statements: [
         "did the user explicitly confirm they wanted to rent a xxx on xxx?",
         "Did the assistant ask the user to confirm?"
@@ -112,3 +129,6 @@ const didConfirm = await checkPolicy().execute({
 
 
 ```
+
+Tips:
+- Will update with more.
