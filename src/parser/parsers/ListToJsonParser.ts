@@ -2,6 +2,7 @@ import { camelCase } from '@/utils';
 import { BaseParserOptionsWithSchema } from "@/types";
 import { BaseParser } from "../_base";
 import { FromSchema, JSONSchema } from "json-schema-to-ts";
+import { enforceParserSchema, validateParserSchema } from '../_utils';
 
 export class ListToJsonParser<
   S extends JSONSchema | undefined = undefined,
@@ -20,7 +21,14 @@ export class ListToJsonParser<
       }
     });
     if (this.schema) {
-      return this.enforceSchema(output);
+      const parsed = enforceParserSchema(this.schema, output);
+      if(this?.options?.validateSchema){
+        const valid = validateParserSchema(this.schema, parsed);
+        if(valid && valid.length){
+          throw new Error(valid[0].message)
+        }
+      }
+      return parsed
     }
     return output;
   }

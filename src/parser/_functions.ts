@@ -252,7 +252,7 @@ export function createParser<
 
 export function createCustomParser<O>(
   name: string,
-  parserFn: (text: string, inputValues: ExecutorContext<any, O>) => O
+  parserFn: (text: string, inputValues: ExecutorContext<any, any>) => O
 ): CustomParser<ReturnType<typeof parserFn>> {
   return new CustomParser<ReturnType<typeof parserFn>>(name, parserFn);
 }

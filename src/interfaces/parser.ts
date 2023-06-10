@@ -16,6 +16,7 @@ export type CreateParserType =
 
 export interface BaseParserOptions {
   schema?: JSONSchema7;
+  validateSchema?: boolean;
 }
 
 export interface BaseParserOptionsWithSchema<

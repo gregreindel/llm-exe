@@ -1,4 +1,4 @@
-import { get } from './';
+import { get, toNumber } from './';
 
 function isObject(obj: any) {
   return obj === Object(obj);
@@ -53,7 +53,13 @@ export function filterObjectOnSchema(schema: any, doc: any, detach?: any, proper
           }
         } else {
           // keep the child if it's defined properly or null
-          result[key] = filteredChild;
+          if(sp.type === "integer"){
+            result[key] = toNumber(filteredChild);
+          }else if(sp.type === "boolean"){
+            result[key] = !!filteredChild
+          }else{
+            result[key] = filteredChild;
+          }
         }
       }
 

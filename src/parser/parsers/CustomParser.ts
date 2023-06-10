@@ -12,7 +12,7 @@ export class CustomParser<O = any> extends BaseParser<O> {
    * Custom parsing function.
    * @type {any}
    */
-  public parserFn: (text: string, inputValues: ExecutorContext<any, O>) => O;
+  public parserFn: (text: string, inputValues: ExecutorContext<any, any>) => O;
   /**
    * Creates a new CustomParser instance.
    * @param {string} name The name of the parser.
@@ -20,7 +20,7 @@ export class CustomParser<O = any> extends BaseParser<O> {
    */
   constructor(
     name: string,
-    parserFn: (text: string, inputValues: ExecutorContext<any, O>) => O
+    parserFn: (text: string, inputValues: ExecutorContext<any, any>) => O
   ) {
     super(name);
     this.parserFn = parserFn;

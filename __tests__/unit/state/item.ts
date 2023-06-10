@@ -20,7 +20,7 @@ describe("llm-exe:state/BaseStateItem", () => {
       expect(item).toHaveProperty("resetValue");
       expect(item).toHaveProperty("serializeValue");
       expect(item).toHaveProperty("serialize");
-      expect(item).toHaveProperty("deserialize");
+      // expect(item).toHaveProperty("deserialize");
     });
 
     it("item.getKey", () => {

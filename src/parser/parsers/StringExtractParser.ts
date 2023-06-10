@@ -16,8 +16,8 @@ export class StringExtractParser extends BaseParser<string> {
     if (options?.enum) {
       this.enum.push(...options.enum);
     }
-    if(options?.ignoreCase){
-      this.ignoreCase = true
+    if (options?.ignoreCase) {
+      this.ignoreCase = true;
     }
   }
   parse(text: string) {
@@ -26,7 +26,9 @@ export class StringExtractParser extends BaseParser<string> {
       `Invalid input. Expected string. Received ${typeof text}.`
     );
     for (const option of this.enum) {
-     const regex = this.ignoreCase ? new RegExp(option.toLowerCase(), 'i') : new RegExp(option)
+      const regex = this.ignoreCase
+        ? new RegExp(option.toLowerCase(), "i")
+        : new RegExp(option);
       if (regex.test(text)) {
         return option;
       }

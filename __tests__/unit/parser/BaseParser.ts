@@ -1,4 +1,5 @@
 import { BaseParser } from "@/parser";
+import { enforceParserSchema } from "@/parser/_utils";
 import { BaseParserOptions } from "@/types";
 import { defineSchema, maybeParseJSON } from "@/utils";
 
@@ -13,7 +14,10 @@ describe("llm-exe:parser/BaseParser", () => {
   
     parse(text: string, _attributes?: T) {
       const parsed = maybeParseJSON(text);
-      return this.enforceSchema(parsed);
+      if(this.schema){
+        return enforceParserSchema(this.schema, parsed);
+      }
+      return parsed;
     }
   }
   it('creates class with expected properties', () => {
@@ -43,21 +47,6 @@ describe("llm-exe:parser/BaseParser", () => {
     expect(parser.parse(JSON.stringify(input))).toEqual(input)
   });
 
-
-  it('schema throws error if invalid', () => {
-    const schema = defineSchema({
-      type: "object",
-      properties: {
-        name: { type: "string", default: "" },
-        age: { type: "integer", default: 0 },
-      },
-      required: ["age", "name"],
-      additionalProperties: false,
-    });
-    const parser = new MockParser({ schema })
-    const input = { age: ["90"], name: 3 }
-    expect(() => parser.parse(JSON.stringify(input))).toThrowError("schema error")
-  });
 
   it('schema handles simple array', () => {
     const schema = defineSchema({

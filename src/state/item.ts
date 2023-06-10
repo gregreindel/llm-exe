@@ -40,7 +40,7 @@ export abstract class BaseStateItem<T> implements Serializable {
       value: this.serializeValue(),
     };
   }
-  deserialize() {}
+  // deserialize() {}
 }
 
 export class DefaultStateItem extends BaseStateItem<any> {

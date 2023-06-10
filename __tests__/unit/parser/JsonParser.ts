@@ -34,6 +34,35 @@ describe("llm-exe:parser/JsonParser", () => {
   });
 
 
+  it('parses simple string correctly', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "unknown" },
+        confused: { type: "boolean", default: false },
+      },
+      required: ["confused", "name"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema })
+    const input = JSON.stringify({ name: "Greg", confused: true})
+    expect(parser.parse(input)).toEqual(JSON.parse(input))
+  });
+
+  it('parses schema with error when set', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "unknown" },
+        occupation: { type: "string", default: 0 },
+      },
+      required: ["occupation", "name"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema, validateSchema: true })
+    const input = JSON.stringify({ name: "Greg", occupation: 0})
+    expect(() => parser.parse(input)).toThrowError("is not of a type(s) string")
+  });
 
 });
 

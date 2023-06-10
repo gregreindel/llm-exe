@@ -32,5 +32,19 @@ describe("llm-exe:parser/ListToJsonParser", () => {
     const input = `Name: Greg\nOccupation: developer`
     expect(parser.parse(input)).toEqual({ name: "Greg", occupation: "developer"})
   });
+  it('parses schema with error when set', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "unknown" },
+        occupation: { type: "string", default: 0 },
+      },
+      required: ["occupation", "name"],
+      additionalProperties: false,
+    });
+    const parser = new ListToJsonParser({ schema, validateSchema: true })
+    const input = `Name: Greg\n`
+    expect(() => parser.parse(input)).toThrowError("is not of a type(s) string")
+  });
 });
 

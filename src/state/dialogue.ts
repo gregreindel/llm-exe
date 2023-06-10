@@ -82,5 +82,5 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
       value: [...this.value],
     };
   }
-  deserialize() {}
+  // deserialize() {}
 }

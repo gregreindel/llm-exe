@@ -52,7 +52,7 @@ export abstract class BaseExecutor<
    * @property hooks - hooks to be ran during execution
    */
   public hooks: any;
-  public allowedHooks: any[] = [hookOnComplete, hookOnError, hookOnSuccess];
+  readonly allowedHooks: any[] = [hookOnComplete, hookOnError, hookOnSuccess];
 
   constructor(
     name: string,
@@ -113,7 +113,7 @@ export abstract class BaseExecutor<
     });
 
     try {
-      const input = this.getHandlerInput(_input, _metadata.asPlainObject());
+      const input = this.getHandlerInput(_input, _metadata.asPlainObject()); 
 
       _metadata.setItem({ handlerInput: input });
 
