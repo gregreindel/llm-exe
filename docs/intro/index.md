@@ -66,7 +66,7 @@ export async function YesOrNoBot(
 This example uses llm-exe to accomplish the same task.
 ```typescript
 export async function YesOrNoBot<I extends string>(
-  body: I
+  input: I
 ): Promise<{ response: string }> {
   const llm = new OpenAI({
     modelName: "gpt-3.5-turbo",
@@ -78,7 +78,7 @@ export async function YesOrNoBot<I extends string>(
   or ask questions. Answer with only yes or no.`;
 
   const prompt = createChatPrompt<I>(PROMPT)
-    .addUserMessage(body)
+    .addUserMessage(input)
     .addSystemMessage(`yes or no:`);
 
   const parser = createParser("stringExtract", { enum: ["yes", "no"]});

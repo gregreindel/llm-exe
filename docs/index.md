@@ -58,7 +58,7 @@ Your response must be formatted like:
 
 Review the user message and reply with a list of subtasks:`;
 
-const llm = createLlmOpenAi({});
+const llm = createLlmOpenAi({/* options */});
 const prompt = createChatPrompt(instruction).addUserMessage()
 const parser = createParser("listToArray");
 
@@ -117,7 +117,7 @@ interface ChatInput {
 
 const instruction = `You are a customer support agent. Reply below.`;
 
-const llm = createLlmOpenAi({});
+const llm = createLlmOpenAi({/* options */});
 const prompt = createChatPrompt<ChatInput>(instruction);
 const parser = createParser("json");
 

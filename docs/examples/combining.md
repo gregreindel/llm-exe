@@ -12,11 +12,11 @@ This is really just a simple loop that combines 2 functions, but using LLM execu
 @[code{17-37} ts:no-line-numbers](../../examples/ListInList.ts)
 
 #### Step 2 - Create LLM Executor to write single test case
-@[code{38-66} ts:no-line-numbers](../../examples/ListInList.ts)
+@[code{38-71} ts:no-line-numbers](../../examples/ListInList.ts)
 
 #### Step 3 - Combine into single method
 Combine the prompt, LLM, and parser into a single function.
-@[code{67-92} ts:no-line-numbers](../../examples/ListInList.ts)
+@[code{72-98} ts:no-line-numbers](../../examples/ListInList.ts)
 
 
 #### Step 4 - Use it!

@@ -41,7 +41,7 @@ email addresses: <true or false if this type of PII is included>
 social security number: <true or false if this type of PII is included>
 credit card number: <true or false if this type of PII is included>`;
 
-  const llm = createLlmOpenAi({});
+  const llm = createLlmOpenAi({/* options */});
   const prompt = createChatPrompt(instruction);
   const parser = createParser("listToJson");
 

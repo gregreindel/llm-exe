@@ -54,12 +54,18 @@ For example:
 \`\`\``;
 
 export function llmExecutorThatWritesTests(llm: BaseLlm) {
+
+  const prompt = createChatPrompt<{
+    testRequirement: string;
+    functionToTest: string;
+  }>(PROMPT2, { allowUnsafeUserTemplate: true })
+  .addUserMessage(INSTRUCTION2);
+
+  const parser = createParser("markdownCodeBlock");
+
   return createLlmExecutor({
-    prompt: createChatPrompt<{
-      testRequirement: string;
-      functionToTest: string;
-    }>(PROMPT2, { allowUnsafeUserTemplate: true }).addUserMessage(INSTRUCTION2),
-    parser: createParser("markdownCodeBlock"),
+    prompt,
+    parser,
     llm,
   });
 }

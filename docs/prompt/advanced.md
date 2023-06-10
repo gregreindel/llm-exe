@@ -140,6 +140,104 @@ Prompts are powered by handlebars, and you are able to register your own custom 
 - ifCond
 
 
+## Prompt Template Default Partials
+Some core partials are included by default:
+
+### MarkdownCode
+<CodeGroup>
+  <CodeGroupItem title="Raw Template" active>
+
+```:no-line-numbers
+{{> MarkdownCode code='const name="Greg";' language='typescript' }}
+```
+  </CodeGroupItem>
+  <CodeGroupItem title="Parsed">
+
+```:no-line-numbers
+'''typescript
+const name="Greg";
+'''
+```
+  </CodeGroupItem>
+</CodeGroup>
+
+### DialogueHistory
+
+<CodeGroup>
+  <CodeGroupItem title="Raw Template" active>
+
+```:no-line-numbers
+// Basic example
+{{> DialogueHistory key='keyOfTheChatHistory' }}
+
+//  With title
+{{> DialogueHistory title='The conversation is below:' key='keyOfTheChatHistory' }}
+
+// Setting user name
+{{> DialogueHistory key='keyOfTheChatHistory' user='Greg' }}
+
+// Setting user and assistant - be creative!
+{{> DialogueHistory key='keyOfTheChatHistory' assistant='Thought' user='Observation' }}
+
+
+// Assuming you passed the following:
+{
+  keyOfTheChatHistory: [{
+    role: "user",
+    content: "Hello?",
+  },{
+    role: "user",
+    content: "Hi! How can I help you?",
+  },{
+    role: "user",
+    content: "I was wondering if you were open",
+  },{
+    role: "user",
+    content: "We sure are!",
+  }]
+}
+```
+  </CodeGroupItem>
+  <CodeGroupItem title="Parsed">
+
+```:no-line-numbers
+// Basic example
+User: Hello?
+Assistant: Hi! How can I help you?
+User: I was wondering if you were open
+Assistant: We sure are!
+
+//  With title
+The conversation is below:
+User: Hello?
+Assistant: Hi! How can I help you?
+User: I was wondering if you were open
+Assistant: We sure are!
+
+// Setting user name
+Greg: Hello?
+Assistant: Hi! How can I help you?
+Greg: I was wondering if you were open
+Assistant: We sure are!
+
+// Setting user and assistant - be creative!
+Thought: Hello?
+Observation: Hi! How can I help you?
+Thought: I was wondering if you were open
+Observation: We sure are!
+
+```
+  </CodeGroupItem>
+</CodeGroup>
+
+<!-- ### JsonSchema
+```:no-line-numbers
+```
+### JsonSchemaExampleJson
+```:no-line-numbers
+``` -->
+
+
 ## Template Custom Partials & Helpers
 You can load custom Handlebars partials and helpers a few different ways:
 
