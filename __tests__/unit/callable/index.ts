@@ -107,7 +107,7 @@ describe("llm-exe:callable/CallableExecutor", () => {
       });
 
       expect(callableFn1.name).toEqual("get_appointments");
-      const res =  callableFn1.visibilityHandler({}, {}, {})
+      const res =  callableFn1.visibilityHandler({}, {})
       expect(res).toEqual(true);
     })
 
@@ -124,7 +124,7 @@ describe("llm-exe:callable/CallableExecutor", () => {
       });
 
       expect(callableFn1.name).toEqual("get_appointments");
-      const res =  callableFn1.visibilityHandler({}, {}, {})
+      const res =  callableFn1.visibilityHandler({}, {})
       expect(res).toEqual(false);
     })
 

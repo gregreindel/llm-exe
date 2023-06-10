@@ -52,7 +52,7 @@ export function defineSchema<T>(obj: Narrow<T>) {
 
 export function enforceResultAttributes<O>(input: any): {
   result: O;
-  attributes: {};
+  attributes: Record<string, any>;
 } {
   if (!input) {
     return { result: input, attributes: {} };

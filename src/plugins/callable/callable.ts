@@ -20,9 +20,10 @@ export interface CallableExecutorInput<
   key?: string;
   description: string;
   input: string;
-  visibilityHandler?(input: any, attributes: any, state: any): boolean;
+  attributes?: Record<string, any>;
+  visibilityHandler?(input: I, context: any, attributes?: Record<string, any>): boolean;
   handler?: FunctionOrExecutor<I, O>;
-  validateInput?(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  validateInput?(input: I, ...args: any[]): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
   // ((input: I) => Promise<any> | any) | CoreExecutor<I, O>;
 }
 
@@ -40,10 +41,13 @@ export interface CallableExecutor<I, O> {
   name: string;
   key: string;
   description: string;
+  attributes: Record<string, any>;
   input: string;
-  visibilityHandler(input: any, attributes: any, state: any): boolean;
   _handler: BaseExecutor<I, O>;
-  _validateInput?(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  visibilityHandler(input: any, attributes?: Record<string, any>): boolean;
+  _visibilityHandler?(input: any, context: any, attributes?: Record<string, any>): boolean;
+  validateInput(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  _validateInput?(input: I, context: any): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
 }
 
 /**
@@ -55,23 +59,23 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   public key: string;
   public description: string;
   public input: string;
+  public attributes: Record<string, any>;
   public _handler: BaseExecutor<I, O>;
-  public _validateInput?(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  public _validateInput?(input: I, context: any): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  public _visibilityHandler?(input: any, context: any, attributes?: Record<string, any>): boolean;
 
   constructor(options: CallableExecutorInput<I, O>) {
     const defaults = {
-      key: options.name,
-      visibilityHandler: (_input: any, _attributes: any, _state: any) => true,
+      key: options.name
     };
 
     this.name = options.name;
     this.key = options?.key || defaults.key;
     this.description = options.description;
     this.input = options.input;
-    this.visibilityHandler =
-      options?.visibilityHandler || defaults.visibilityHandler;
-
-      this._validateInput = options.validateInput;
+    this.attributes = options?.attributes || {};
+    this._validateInput = options.validateInput;
+    this._visibilityHandler = options?.visibilityHandler;
       
     if (options.handler instanceof BaseExecutor) {
       this._handler = options.handler;
@@ -86,11 +90,21 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
     return enforceResultAttributes(response);
   }
   async validateInput(input: I): Promise<{ result: boolean; attributes: any }> {
-    if(typeof this._validateInput === "function"){
-      const response = await this._validateInput(ensureInputIsObject(input));
-      return enforceResultAttributes(response);
+    try {
+      if(typeof this._validateInput === "function"){
+        const response = await this._validateInput(ensureInputIsObject(input), this._handler.getMetadata());
+        return enforceResultAttributes(response);
+      }
+      return { result: true, attributes: {}}
+    } catch (error: any) {
+      return { result: false, attributes: { error: error.message }}
     }
-    return { result: true, attributes: {}}
+  }
+  visibilityHandler(input: any, attributes: any): boolean {
+    if(typeof this._visibilityHandler === "function"){
+      return this._visibilityHandler(input, this._handler.getMetadata(), attributes);
+    }
+    return true
   }
 }
 
@@ -111,14 +125,14 @@ export abstract class UseExecutorsBase<
   getFunctions() {
     return [...this.handlers];
   }
-  getVisibleFunctions(_input: any, _attributes?: any) {
+  getVisibleFunctions(_input: any, _attributes: any = {}) {
     const handlers = this.getFunctions();
 
     return handlers.filter(
       (a) =>
         typeof a.visibilityHandler === "undefined" ||
         (typeof a.visibilityHandler === "function" &&
-          a.visibilityHandler(_input, _attributes, {}))
+          a.visibilityHandler(_input, _attributes))
     );
   }
   async callFunction(

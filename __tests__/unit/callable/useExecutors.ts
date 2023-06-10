@@ -72,7 +72,7 @@ describe("llm-exe:callable/useExecutors", () => {
 
   it("CallableExecutor getFunction will be false if undefined", () => {
     const executors = useExecutors([callableFn]);
-    const visible = executors.getVisibleFunctions({}, {})
+    const visible = executors.getVisibleFunctions({})
     expect(visible).toHaveLength(1);
   });
   
@@ -150,5 +150,24 @@ describe("llm-exe:callable/useExecutors", () => {
     ]);
     const result = await executors.validateFunctionInput("get_appointments", "Hello")
     expect(result).toEqual({ result: false, attributes: { error: "validateInput threw an error!" } });
+  });
+
+  it("CallableExecutor validateFunctionInput returns error message if throws", async () => {
+    const executors = useExecutors([
+      new CallableExecutor({
+        key: "get_appointments",
+        name: "get_appointments",
+        description: "Used to get appointments.",
+        input: `Must be JSON: ${JSON.stringify({ accountId: "12345" })}`,
+        handler: async (_input: any) => {
+          return "Hello world";
+        },
+        validateInput: async (_input: any) => {
+          throw new Error("validateInput threw an error!")
+        },
+      })
+    ]);
+    const result = await executors.validateFunctionInput("invalid_name", "Hello")
+    expect(result).toEqual({ result: false, attributes: { error: "[invalid handler] The handler (invalid_name) does not exist." } });
   });
 });

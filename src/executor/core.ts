@@ -21,7 +21,7 @@ export class CoreExecutor<I extends PlainObject, O> extends BaseExecutor<I, O> {
       : inferFunctionName(fn.handler, "anonymous-core-executor");
 
     super(name, "function-executor", options);
-    this._handler = fn.handler;
+    this._handler = fn.handler.bind(null);
   }
 
   async handler(_input: I): Promise<O> {
