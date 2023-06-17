@@ -4,6 +4,7 @@ import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
 import { assert, removeEmptyFromObject } from "@/utils";
 import { OutputOpenAICompletion } from "./output/openai";
+import { OpenAiPricing } from "@/utils/const";
 
 /**
  * Create a new instance of the OpenAI API wrapper.
@@ -110,23 +111,13 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @returns An object for input/output tokens and cost.
    */
   calculatePrice(input_tokens: number, output_tokens: number = 0) {
-    const cost = {
-      "gpt-3.5-turbo": [1000, 0.002, 0.002],
-      "gpt-4": [1000, 0.03, 0.06],
-      davinci: [1000, 0.02, 0.02],
-      "text-curie-001": [1000, 0.002, 0.002],
-      "text-babbage-001": [1000, 0.0005, 0.0005],
-      "text-ada-001": [1000, 0.0004, 0.0004],
-      "text-embedding-ada-002": [1000, 0.0004, 0.0004],
-    };
-
     const out = {
       input_cost: 0,
       output_cost: 0,
       total_cost: 0,
     };
 
-    const price = cost[this.model];
+    const price = OpenAiPricing[this.model];
     if(price){
       const [amount, inputAmount, outputAmount] = price;
       if (inputAmount && input_tokens) {

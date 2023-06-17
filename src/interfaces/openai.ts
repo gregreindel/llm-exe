@@ -8,12 +8,14 @@ export interface BaseLlmOptions {
   promptType?: PromptType;
 }
 
-export type OpenAIChatModelName = "gpt-3.5-turbo" | "gpt-4";
+export type OpenAIChatModelName = "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4";
+
 export type OpenAIConversationModelName =
   | "davinci"
   | "text-curie-001"
   | "text-babbage-001"
   | "text-ada-001";
+
 export type OpenAIEmbeddingModelName = "text-embedding-ada-002";
 
 export type OpenAIModelName =

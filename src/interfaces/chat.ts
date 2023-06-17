@@ -1,4 +1,4 @@
-export type IChatMessageRole = "system" | "assistant" | "user";
+export type IChatMessageRole = "system" | "assistant" | "user" | "function";
 
 export interface IChatMessageBase {
   role: IChatMessageRole;
