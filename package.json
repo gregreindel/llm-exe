@@ -1,7 +1,7 @@
 {
   "name": "llm-exe",
-  "version": "0.1.0",
-  "description": "Simplify building LLM-powered apps with easy-to-use base components, supporting text and chat-based prompts, handlebars template engine, and flexible function calling capabilities.",
+  "version": "1.0.0",
+  "description": "Simplify building LLM-powered apps with easy-to-use base components, supporting text and chat-based prompts with handlebars template engine, output parsers, and flexible function calling capabilities.",
   "keywords": [
     "ai",
     "llm",
@@ -9,7 +9,8 @@
     "gpt-3.5-turbo",
     "gpt-4",
     "chain",
-    "prompt"
+    "prompt",
+    "agent"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
