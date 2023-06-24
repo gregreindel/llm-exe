@@ -39,7 +39,7 @@ export abstract class BaseLlm<C = any> {
    */
   protected jitter: "none" | "full";
 
-  protected traceId: null | string = null;
+  protected traceId: null | string ;
   /**
    * An object to store metrics related to the LLM calls.
    */
@@ -56,6 +56,7 @@ export abstract class BaseLlm<C = any> {
    * @param {BaseLlmOptions} options - The options object for LLM configuration.
    */
   constructor(options: BaseLlmOptions) {
+    this.traceId = options?.traceId || null;
     this.client = null as C;
     this.promptType = options?.promptType || "text";
     this.timeout = options.timeout || 30000;

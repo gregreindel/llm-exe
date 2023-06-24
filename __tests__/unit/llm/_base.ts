@@ -52,6 +52,11 @@ describe("llm-exe:executor/BaseLlm", () => {
     expect(executor.getTraceId()).toEqual("1234");
   });
   
+  it("MockLlm can use withTraceId", () => {
+    const executor = new MockLlm({traceId: "1234"});
+    expect(executor.getTraceId()).toEqual("1234");
+  });
+
   it("MockLlm has default properties", () => {
     const executor = new MockLlm();
     expect(executor.getMetadata()).toEqual({

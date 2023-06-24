@@ -1,4 +1,5 @@
 import { LlmExecutor } from "@/executor";
+import { OpenAI } from "@/llm";
 import { OpenAIMock } from "@/llm/openai.mock";
 import { createChatPrompt } from "@/prompt";
 
@@ -132,5 +133,16 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(response).toEqual(response)
   })
   
-
+  it("MockLlm can use withTraceId", () => {
+    const llm = new OpenAI({traceId: "llm-traceId", openAIApiKey: "", modelName: "text-ada-001"});
+    const executor = new LlmExecutor({ llm, prompt });
+    // executor.withTraceId("1234")
+    expect(executor.getTraceId()).toEqual("llm-traceId");
+  });
+  it("MockLlm can use withTraceId", () => {
+    const llm = new OpenAI({traceId: "llm-traceId", openAIApiKey: "", modelName: "text-ada-001"});
+    const executor = new LlmExecutor({ llm, prompt });
+    executor.withTraceId("1234")
+    expect(executor.getTraceId()).toEqual("1234");
+  });
 });

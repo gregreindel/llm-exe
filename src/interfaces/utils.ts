@@ -24,3 +24,7 @@ export interface Serializable {
   serialize?(): Record<string, any>;
   deserialize?(): void;
 }
+
+export interface EmptyObject {
+  [key: string]: never;
+}

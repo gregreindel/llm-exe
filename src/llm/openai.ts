@@ -212,7 +212,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     });
 
     if(_args && _args?.function_call ){
-      options["function_call"] = _args?.function_call || "none"
+      options["function_call"] = _args?.function_call;
     }
 
     if(_args &&  _args?.functions?.length){

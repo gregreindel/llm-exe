@@ -1,7 +1,8 @@
-import { CallableExecutorCore } from ".";
+import { CallableExecutorCore } from "./index";
 import { PromptType } from "./prompt";
 
 export interface BaseLlmOptions {
+  traceId?: null | string;
   timeout?: number;
   maxDelay?: number;
   numOfAttempts?: number;
@@ -58,7 +59,9 @@ export interface EmbedOpenAIOptions extends OpenAIOptions {
 
 export type OpenAiFunctionCall = "auto" | "none" | { name: string; };
 
-export interface OpenAiLlmExecutorOptions<T extends OpenAiFunctionCall = OpenAiFunctionCall> {
+export interface LlmExecutorExecuteOptions {}
+
+export interface OpenAiLlmExecutorOptions<T extends OpenAiFunctionCall = OpenAiFunctionCall> extends LlmExecutorExecuteOptions {
   functions: CallableExecutorCore[];
   function_call: T;
 }

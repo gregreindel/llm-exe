@@ -1,7 +1,7 @@
 {
   "name": "llm-exe",
-  "version": "0.0.8",
-  "description": "A package that provides simplified base components to make building and maintaining LLM-powered applications easier.",
+  "version": "0.1.0",
+  "description": "Simplify building LLM-powered apps with easy-to-use base components, supporting text and chat-based prompts, handlebars template engine, and flexible function calling capabilities.",
   "keywords": [
     "ai",
     "llm",
@@ -77,5 +77,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/gregreindel/llm-exe"
-  }
+  },
+  "homepage": "https:/llm-exe.com"
 }

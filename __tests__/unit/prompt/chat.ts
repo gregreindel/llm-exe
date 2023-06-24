@@ -210,6 +210,26 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
+  it("can add messages from addChatHistoryPlaceholder with user", () => {
+    const prompt = new ChatPrompt("Hello");
+
+    prompt.addChatHistoryPlaceholder("myPlaceholder", { user: "NotGreg"});
+
+    expect(
+      prompt.format({
+        myPlaceholder: [
+          { content: "Message user", role: "user", name: "Greg" },
+          { content: "Message assistant", role: "assistant" },
+        ],
+      })
+    ).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Message user", role: "user", name: "NotGreg" },
+      { content: "Message assistant", role: "assistant" },
+    ]);
+  });
+
+
   it("can add messages from addChatHistoryPlaceholder with options", () => {
     const prompt = new ChatPrompt("Hello");
 

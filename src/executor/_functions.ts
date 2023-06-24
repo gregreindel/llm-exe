@@ -10,7 +10,6 @@ import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { CoreExecutor } from "./core";
 import { LlmExecutor } from "./llm";
-export { LlmExecutorOpenAiChat } from "./llm-openai-functions";
 
 
 /**

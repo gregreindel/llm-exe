@@ -5,6 +5,7 @@ import {
   ExecutorWithLlmOptions,
   ExecutorExecutionMetadata,
   LlmExecutorHooks,
+  LlmExecutorExecuteOptions,
 } from "@/types";
 import { BaseLlm } from "@/llm";
 import { BaseParser, StringParser } from "@/parser";
@@ -52,12 +53,15 @@ export class LlmExecutor<
     }
   }
 
-  async execute(_input: PromptInput<Prompt>): Promise<ParserOutput<Parser>> {
-    return super.execute(_input)
+  async execute(
+    _input: PromptInput<Prompt>,
+    _options?: LlmExecutorExecuteOptions
+  ): Promise<ParserOutput<Parser>> {
+    return super.execute(_input, _options);
   }
 
-  async handler(_input: PromptInput<Prompt>) {
-    const call = await this.llm.call(_input);
+  async handler(_input: PromptInput<Prompt>, ..._args: any[]) {
+    const call = await this.llm.call(_input, ..._args);
     const result = call.getResultContent();
     return result;
   }
@@ -90,10 +94,10 @@ export class LlmExecutor<
       llm: this.llm.getMetadata(),
     };
   }
-  getTraceId(){
-    if(this.traceId){
+  getTraceId() {
+    if (this.traceId) {
       return this.traceId;
     }
-    return this.llm.getTraceId()
+    return this.llm.getTraceId();
   }
 }

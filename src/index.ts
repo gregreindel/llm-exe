@@ -1,3 +1,4 @@
+// import { LlmExecutorExecuteOptions } from './interfaces/openai';
 import { useExecutors, createCallableExecutor } from "@/plugins/callable";
 import { createCoreExecutor, createLlmExecutor } from "@/executor/_functions";
 import { BaseExecutor } from "@/executor/_base";
@@ -28,6 +29,8 @@ import {
   createState,
   createStateItem,
 } from "./state";
+
+import { LlmExecutorOpenAiFunctions } from "@/executor/llm-openai-function";
 
 export const llmExe = {
   /**
@@ -61,7 +64,7 @@ export const llmExe = {
   BaseExecutor,
   createCoreExecutor,
   createLlmExecutor,
-
+  LlmExecutorOpenAiFunctions,
   /**
    * Callable
    */

@@ -188,4 +188,11 @@ describe("llm-exe:executor/BaseExecutor", () => {
     await executor.execute({});
    expect(executor.hooks.onComplete).toHaveLength(1);
   });
+
+  it("MockLlm can use withTraceId", () => {
+    const executor = new MockExecutor();
+    executor.withTraceId("1234")
+    expect(executor.getTraceId()).toEqual("1234");
+  });
+
 });
