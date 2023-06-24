@@ -1,29 +1,31 @@
 import { maybeParseJSON } from "@/utils";
-import { BaseParser } from "../_base";
-import { FromSchema, JSONSchema } from "json-schema-to-ts";
-import { BaseParserOptionsWithSchema } from "@/types";
+import { BaseParserWithJson } from "../_base";
+import { JSONSchema } from "json-schema-to-ts";
+import { BaseParserOptionsWithSchema, ParserOutput } from "@/types";
 import { enforceParserSchema, validateParserSchema } from "../_utils";
 
 export class JsonParser<
-  S extends JSONSchema | undefined = undefined,
-  T = S extends JSONSchema ? FromSchema<S> : Record<string, any>
-> extends BaseParser<T> {
-  constructor(options?: BaseParserOptionsWithSchema<S>) {
+  S extends JSONSchema | undefined = undefined
+> extends BaseParserWithJson<S> {
+  constructor(options: BaseParserOptionsWithSchema<S> = {}) {
     super("json", options);
   }
 
-  parse(text: string): T {
-    const parsed = maybeParseJSON<T>(text);
+  parse(
+    text: string,
+    _attributes?: Record<string, any>
+  ): ParserOutput<BaseParserWithJson<S>> {
+    const parsed = maybeParseJSON(text);
     if (this.schema) {
       const enforce = enforceParserSchema(this.schema, parsed);
-      if(this?.options?.validateSchema){
+      if (this.validateSchema) {
         const valid = validateParserSchema(this.schema, enforce as any);
-        if(valid && valid.length){
-          throw new Error(valid[0].message)
+        if (valid && valid.length) {
+          throw new Error(valid[0].message);
         }
       }
-      return enforce
+      return enforce;
     }
-    return parsed
+    return parsed;
   }
 }

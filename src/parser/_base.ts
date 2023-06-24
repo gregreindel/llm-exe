@@ -1,36 +1,55 @@
-import { BaseParserOptions } from "@/types";
-import { JSONSchema7 } from "json-schema-to-ts";
+import { BaseParserOptions, BaseParserOptionsWithSchema } from "@/types";
+import { FromSchema,  JSONSchema } from "json-schema-to-ts";
 
 /**
  * BaseParser is an abstract class for parsing text and enforcing JSON schema on the parsed data.
  */
 export abstract class BaseParser<T = any> {
   public name: string;
-  public schema: JSONSchema7 | undefined;
-  public options: BaseParserOptions = {};
+  // public schema: JSONSchema7 | undefined;
+  public options: BaseParserOptions;
   /**
    * Create a new BaseParser.
-   * @param {string} name - The name of the parser.
+   * @param name - The name of the parser.
    * @param  options - options
    */
-  constructor(name: string, options?: BaseParserOptions) {
+  constructor(name: string, options: BaseParserOptions = {}) {
     this.name = name;
     if (options) {
-      const { schema, ...restOfOptions } = options;
-      this.options = restOfOptions;
-
-      if (schema) {
-        this.schema = schema;
-      }
+      this.options = options;
     }
   }
 
   /**
    * Parse the given text and return the parsed data.
    * @abstract
-   * @param {string} text - The text to parse.
-   * @param {Record<string, any>} [attributes] - Optional attributes to use during parsing.
-   * @returns {T} The parsed data.
+   * @param text - The text to parse.
+   * @param [attributes] - Optional attributes to use during parsing.
+   * @returns The parsed data.
    */
   abstract parse(text: string, attributes?: Record<string, any>): T;
+}
+
+
+export abstract class BaseParserWithJson<
+S extends JSONSchema | undefined = undefined,
+T = S extends JSONSchema ? FromSchema<S> : Record<string, any>
+> extends BaseParser<T> {
+  public schema: S;
+  public validateSchema: boolean;
+  /**
+   * Create a new BaseParser.
+   * @param name - The name of the parser.
+   * @param  options - options
+   */
+  constructor(name: string, options: BaseParserOptionsWithSchema<S>) {
+    super(name);
+
+    const { schema, validateSchema } = options;
+    this.validateSchema = !!validateSchema;
+
+    if (schema) {
+      this.schema = schema;
+    }
+  }
 }

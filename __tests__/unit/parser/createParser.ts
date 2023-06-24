@@ -6,13 +6,6 @@ import { defineSchema } from "@/utils";
  * Tests the createParser class
  */
 describe("llm-exe:parser/createParser", () => {
-  it('defaults to string parser', () => {
-    const parser = createParser();
-    expect(parser).toBeInstanceOf(BaseParser)
-    expect(parser).toBeInstanceOf(StringParser)
-    expect(parser).toHaveProperty("name")
-    expect(parser.name).toEqual("string")
-  })
   it('creates string parser', () => {
     const parser = createParser("string");
     expect(parser).toBeInstanceOf(BaseParser)

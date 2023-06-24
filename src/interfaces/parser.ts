@@ -14,13 +14,11 @@ export type CreateParserType =
   | "markdownCodeBlock";
 
 
-export interface BaseParserOptions {
-  schema?: JSONSchema7;
-  validateSchema?: boolean;
-}
+export interface BaseParserOptions {}
 
 export interface BaseParserOptionsWithSchema<
   S extends JSONSchema7 | undefined = undefined
 > extends BaseParserOptions {
   schema?: S;
+  validateSchema?: boolean;
 }

@@ -1,4 +1,5 @@
-import { BaseParser } from "./_base";
+import { OpenAiFunctionParser } from '@/parser/parsers/OpenAiFunctionParser';
+import { BaseParser, BaseParserWithJson } from "./_base";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
 import { NumberParser } from "./parsers/NumberParser";
@@ -14,6 +15,7 @@ import { createCustomParser, createParser } from "./_functions";
 
 export {
   BaseParser,
+  BaseParserWithJson,
   BooleanParser,
   StringParser,
   NumberParser,
@@ -22,6 +24,7 @@ export {
   ListToKeyValueParser,
   ListToArrayParser,
   ReplaceStringTemplateParser,
+  OpenAiFunctionParser,
   MarkdownCodeBlockParser,
   MarkdownCodeBlocksParser,
   CustomParser,
