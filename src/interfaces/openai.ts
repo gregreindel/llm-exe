@@ -1,3 +1,4 @@
+import { CallableExecutorCore } from ".";
 import { PromptType } from "./prompt";
 
 export interface BaseLlmOptions {
@@ -8,7 +9,14 @@ export interface BaseLlmOptions {
   promptType?: PromptType;
 }
 
-export type OpenAIChatModelName = "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4";
+export type OpenAIChatModelName =
+  | "gpt-3.5-turbo"
+  | "gpt-3.5-turbo-0613"
+  | "gpt-3.5-turbo-16k"
+  | "gpt-4-0613"
+  | "gpt-4"
+  | "gpt-4-0613"
+  | "gpt-4-32k-0613";
 
 export type OpenAIConversationModelName =
   | "davinci"
@@ -37,6 +45,8 @@ export interface OpenAIOptions extends BaseLlmOptions {
   frequencyPenalty?: number | null;
   logitBias?: object | null;
   user?: string;
+  function_call?: OpenAiFunctionCall;
+  functions?: CallableExecutorCore[];
 }
 
 export interface EmbedOpenAIOptions extends OpenAIOptions {
@@ -44,4 +54,11 @@ export interface EmbedOpenAIOptions extends OpenAIOptions {
   modelName: OpenAIModelName;
   batchSize?: number;
   stripNewLines?: boolean;
+}
+
+export type OpenAiFunctionCall = "auto" | "none" | { name: string; };
+
+export interface OpenAiLlmExecutorOptions<T extends OpenAiFunctionCall = OpenAiFunctionCall> {
+  functions: CallableExecutorCore[];
+  function_call: T;
 }

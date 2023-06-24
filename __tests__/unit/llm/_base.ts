@@ -45,6 +45,13 @@ describe("llm-exe:executor/BaseLlm", () => {
     const executor = new MockLlm();
     expect(executor.getPromptType()).toEqual("text");
   });
+
+  it("MockLlm can use withTraceId", () => {
+    const executor = new MockLlm();
+    executor.withTraceId("1234")
+    expect(executor.getTraceId()).toEqual("1234");
+  });
+  
   it("MockLlm has default properties", () => {
     const executor = new MockLlm();
     expect(executor.getMetadata()).toEqual({
@@ -53,6 +60,7 @@ describe("llm-exe:executor/BaseLlm", () => {
         jitter: "none",
         maxDelay: 5000,
         numOfAttempts: 5,
+        traceId: null,
         metrics: executor.getMetrics(),
       });
   });
@@ -64,6 +72,7 @@ describe("llm-exe:executor/BaseLlm", () => {
         jitter: "full",
         maxDelay: 10000,
         numOfAttempts: 10,
+        traceId: null,
         metrics: executor.getMetrics(),
       });
   });

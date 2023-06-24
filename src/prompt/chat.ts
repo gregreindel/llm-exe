@@ -1,7 +1,9 @@
 import {
+  assert,
   escape,
   extractPromptPlaceholderToken,
   get,
+  maybeStringifyJSON,
   pick,
   replaceTemplateString,
 } from "@/utils";
@@ -78,6 +80,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   ): ChatPrompt<I>;
   addToPrompt(
     content: string,
+    role: Extract<IChatMessageRole, "function">,
+    name: string
+  ): ChatPrompt<I>;
+  addToPrompt(
+    content: string,
+    role: Extract<IChatMessageRole, "function_call">,
+    name: string
+  ): ChatPrompt<I>;
+  addToPrompt(
+    content: string,
     role: IChatMessageRole,
     name?: string
   ): ChatPrompt<I> {
@@ -91,6 +103,14 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           break;
         case "assistant":
           this.addAssistantMessage(content);
+          break;
+        case "function":
+          assert(name, "Function message requires name");
+          this.addFunctionMessage(content, name);
+          break;
+        case "function_call":
+          assert(name, "Function message requires name");
+          this.addFunctionCallMessage({ name: name, arguments: content });
           break;
       }
     }
@@ -129,6 +149,39 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   }
 
   /**
+   * addFunctionMessage Helper to add an assistant message to the prompt.
+   * @param content The message content.
+   * @return ChatPrompt so it can be chained.
+   */
+  addFunctionMessage(content: string, name: string): ChatPrompt<I> {
+    this.messages.push({
+      role: "function",
+      name,
+      content,
+    });
+    return this;
+  }
+  /**
+   * addFunctionCallMessage Helper to add an assistant message to the prompt.
+   * @param content The message content.
+   * @return ChatPrompt so it can be chained.
+   */
+
+  addFunctionCallMessage(function_call?: { name: string; arguments: string }) {
+    if (function_call) {
+      this.messages.push({
+        role: "assistant",
+        function_call: {
+          name: function_call.name,
+          arguments: maybeStringifyJSON(function_call.arguments),
+        },
+        content: null,
+      });
+    }
+
+    return this;
+  }
+  /**
    * addFromHistory Adds multiple messages at one time.
    * @param history History of chat messages.
    * @return ChatPrompt so it can be chained.
@@ -141,10 +194,17 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
             this.addUserMessage(message.content, message?.name);
             break;
           case "assistant":
-            this.addAssistantMessage(message.content);
+            if (message.function_call) {
+              this.addFunctionCallMessage(message.function_call);
+            } else if (message?.content) {
+              this.addAssistantMessage(message?.content);
+            }
             break;
           case "system":
             this.addSystemMessage(message.content);
+            break;
+          case "function":
+            this.addFunctionMessage(message.content, message.name);
             break;
         }
       }
@@ -157,10 +217,20 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param content The message content
    * @return returns ChatPrompt so it can be chained.
    */
-  addChatHistoryPlaceholder(key: keyof I): ChatPrompt<I> {
+  addChatHistoryPlaceholder(
+    key: keyof I,
+    options?: { assistant?: string; user?: string }
+  ): ChatPrompt<I> {
     const start = `{{> DialogueHistory `;
     const params = [`key='${String(key)}'`];
     const end = `}}`;
+
+    if (options?.assistant) {
+      params.push(`assistant='${options.assistant}'`);
+    }
+    if (options?.user) {
+      params.push(`user='${options.user}'`);
+    }
     this.messages.push({
       role: "placeholder",
       content: `${start}${params.join(" ")}${end}`,
@@ -182,8 +252,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
       const start = `{{> SingleChatMessage `;
       const params = [`role='${role}'`, `content='${escape(content)}'`];
       const end = `}}`;
-      if(name){
-        params.push(`name='${name}'`)
+      if (name) {
+        params.push(`name='${name}'`);
       }
       this.messages.push({
         role: "placeholder",
@@ -217,19 +287,39 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
         switch (token) {
           case ">DialogueHistory": {
             /* istanbul ignore next */
-            const { key = "" } = data;
+            const { key = "", user } = data;
             const history: IChatMessages = get(replacements, key, []);
             if (history && Array.isArray(history)) {
               for (const message of history) {
                 switch (message.role) {
-                  case "user":
-                    messagesOut.push(
-                      pick(message, ["role", "content", "name"])
-                    );
+                  case "user": {
+                    const m = pick(message, ["role", "content", "name"]);
+                    if (user) {
+                      m["name"] = user;
+                    }
+                    messagesOut.push(m);
                     break;
-                  case "assistant":
+                  }
+
+                  case "assistant":{ 
+                    if(message.function_call){
+                      messagesOut.push({
+                        role: "assistant",
+                        content: null,
+                        function_call: message.function_call
+                      });
+                    }else if(message?.content){
+                      messagesOut.push({
+                        role: "assistant",
+                        content: message.content,
+                      });
+                    }
+                    break;
+                  }
+                  case "function":
                     messagesOut.push({
-                      role: "assistant",
+                      role: "function",
+                      name: message.name,
                       content: message.content,
                     });
                     break;
@@ -246,17 +336,17 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           }
           case ">SingleChatMessage": {
             const { name, content, role } = data;
-            if(role && content){
+            if (role && content) {
               const message = {
-                role, 
+                role,
                 name,
                 content: replaceTemplateString(content, replacements, {
                   partials: this.partials,
                   helpers: this.helpers,
-                })
-              } 
+                }),
+              };
 
-              if(!name || role !== "user"){
+              if (!name || role !== "user") {
                 delete message.name;
               }
               messagesOut.push(message as IChatMessage);
@@ -264,14 +354,25 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
             break;
           }
         }
+      } else if (message.role === "function") {
+        messagesOut.push(
+          Object.assign({}, message, {
+            content: replaceTemplateString(message.content, replacements, {
+              partials: this.partials,
+              helpers: this.helpers,
+            }),
+          })
+        );
       } else {
         if (safeToParseTemplate.includes(message.role)) {
           messagesOut.push(
             Object.assign({}, message, {
-              content: replaceTemplateString(message.content, replacements, {
-                partials: this.partials,
-                helpers: this.helpers,
-              }),
+              content: message.content
+                ? replaceTemplateString(message.content, replacements, {
+                    partials: this.partials,
+                    helpers: this.helpers,
+                  })
+                : null,
             })
           );
         } else {

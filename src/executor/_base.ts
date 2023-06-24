@@ -44,10 +44,11 @@ export abstract class BaseExecutor<
   public name;
 
   /**
-   * @property executions - Prompt type (chat)
+   * @property executions -
    */
   public executions;
 
+  public traceId: string | null = null;
   /**
    * @property hooks - hooks to be ran during execution
    */
@@ -57,7 +58,7 @@ export abstract class BaseExecutor<
   constructor(
     name: string,
     type: string,
-    options?: CoreExecutorExecuteOptions<H>
+    options?: CoreExecutorExecuteOptions<H>,
   ) {
     this.id = uuid();
     this.type = type;
@@ -75,7 +76,7 @@ export abstract class BaseExecutor<
     }
   }
 
-  abstract handler(input: I): Promise<any>;
+  abstract handler(input: I, _options?: any): Promise<any>;
 
   /**
    *
@@ -85,7 +86,8 @@ export abstract class BaseExecutor<
    */
   getHandlerInput(
     _input: I,
-    _metadata: ExecutorExecutionMetadata<I, any>
+    _metadata: ExecutorExecutionMetadata<I, any>,
+    _options?: any
   ): any {
     return ensureInputIsObject(_input);
   }
@@ -96,7 +98,11 @@ export abstract class BaseExecutor<
    * @param _input
    * @returns output O
    */
-  getHandlerOutput(out: any, _metadata: ExecutorExecutionMetadata<any, O>): O {
+  getHandlerOutput(
+    out: any,
+    _metadata: ExecutorExecutionMetadata<any, O>,
+    _options?: any
+  ): O {
     return out as O;
   }
   /**
@@ -105,7 +111,7 @@ export abstract class BaseExecutor<
    * @param _input
    * @returns handler output
    */
-  async execute(_input: I): Promise<O> {
+  async execute(_input: I, _options?: any ): Promise<O> {
     this.executions++;
     const _metadata = createMetadataState({
       start: new Date().getTime(),
@@ -113,15 +119,23 @@ export abstract class BaseExecutor<
     });
 
     try {
-      const input = this.getHandlerInput(_input, _metadata.asPlainObject()); 
+      const input = this.getHandlerInput(
+        _input,
+        _metadata.asPlainObject(),
+        _options
+      );
 
       _metadata.setItem({ handlerInput: input });
 
-      let result = await this.handler(input);
+      let result = await this.handler(input, _options);
 
       _metadata.setItem({ handlerOutput: result });
 
-      const output = this.getHandlerOutput(result, _metadata.asPlainObject());
+      const output = this.getHandlerOutput(
+        result,
+        _metadata.asPlainObject(),
+        _options
+      );
       _metadata.setItem({ output });
 
       this.runHook("onSuccess", _metadata.asPlainObject());
@@ -142,6 +156,7 @@ export abstract class BaseExecutor<
 
   getMetadata(metadata?: Record<string, any>): ExecutorMetadata {
     return Object.assign({}, this.metadata(), {
+      traceId: this.getTraceId(),
       id: this.id,
       type: this.type,
       name: this.name,
@@ -215,5 +230,12 @@ export abstract class BaseExecutor<
     };
     this.hooks[eventName].push(onceWrapper);
     return this;
+  }
+  withTraceId(traceId : string){
+    this.traceId = traceId
+    return this;
+  }
+  getTraceId(){
+    return this.traceId
   }
 }

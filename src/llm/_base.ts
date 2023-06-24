@@ -39,6 +39,7 @@ export abstract class BaseLlm<C = any> {
    */
   protected jitter: "none" | "full";
 
+  protected traceId: null | string = null;
   /**
    * An object to store metrics related to the LLM calls.
    */
@@ -79,6 +80,7 @@ export abstract class BaseLlm<C = any> {
    */
   getMetadata() {
     return {
+      traceId: this.getTraceId(),
       promptType: this.promptType,
       timeout: this.timeout,
       jitter: this.jitter,
@@ -96,9 +98,9 @@ export abstract class BaseLlm<C = any> {
    */
   async call(
     _input: any,
-    attributes?: Record<string, any>
+    ...args: any[]
   ): Promise<BaseLlmOutput> {
-    const called = await this._callWithRetry(_input, attributes);
+    const called = await this._callWithRetry(_input, ...args);
     return called;
   }
 
@@ -108,12 +110,12 @@ export abstract class BaseLlm<C = any> {
    * @return The result of the LLM call.
    * @throws An error if the maximum number of retries is reached.
    */
-  async _callWithRetry(_input: any, attributes?: Record<string, any>) {
+  async _callWithRetry(_input: any, ...args: any[]) {
     try {
       this.metrics.total_calls++;
       const result = await backOff<any>(
         () =>
-          asyncCallWithTimeout(this._call(_input, attributes), this.timeout),
+          asyncCallWithTimeout(this._call(_input, ...args), this.timeout),
         {
           startingDelay: 0,
           maxDelay: this.maxDelay,
@@ -141,8 +143,15 @@ export abstract class BaseLlm<C = any> {
    */
   async _call(
     _input: any,
-    _attributes?: Record<string, any>
+    ..._args: any[]
   ): Promise<BaseLlmOutput> {
     return new OutputDefault(undefined);
+  }
+  withTraceId(traceId : string){
+    this.traceId = traceId
+    return this;
+  }
+  getTraceId(){
+    return this.traceId
   }
 }

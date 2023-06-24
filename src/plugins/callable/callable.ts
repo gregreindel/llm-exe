@@ -1,7 +1,8 @@
 import { createCoreExecutor } from "@/executor/_functions";
-import { FunctionOrExecutor, PlainObject } from "@/types";
+import { CallableExecutorCore, FunctionOrExecutor, PlainObject } from "@/types";
 import { ensureInputIsObject, assert, enforceResultAttributes } from "@/utils";
 import { BaseExecutor } from "@/executor";
+
 /**
  * Represents the input for a CallableExecutor.
  * @interface CallableExecutorInput
@@ -15,10 +16,11 @@ import { BaseExecutor } from "@/executor";
 export interface CallableExecutorInput<
   I extends PlainObject | { input: string },
   O
-> {
+> extends CallableExecutorCore {
   name: string;
-  key?: string;
   description: string;
+  key?: string;
+  parameters?: Record<string, any>;
   input: string;
   attributes?: Record<string, any>;
   visibilityHandler?(input: I, context: any, attributes?: Record<string, any>): boolean;
@@ -37,11 +39,10 @@ export interface CallableExecutorInput<
  * @property visibilityHandler - The visibility handler for the callable core function.
  * @property - The handler for the callable core function.
  */
-export interface CallableExecutor<I, O> {
-  name: string;
+export interface CallableExecutor<I, O> extends CallableExecutorCore {
   key: string;
-  description: string;
   attributes: Record<string, any>;
+  parameters: Record<string, any>;
   input: string;
   _handler: BaseExecutor<I, O>;
   visibilityHandler(input: any, attributes?: Record<string, any>): boolean;
@@ -60,6 +61,7 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   public description: string;
   public input: string;
   public attributes: Record<string, any>;
+  public parameters: Record<string, any>;
   public _handler: BaseExecutor<I, O>;
   public _validateInput?(input: I, context: any): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
   public _visibilityHandler?(input: any, context: any, attributes?: Record<string, any>): boolean;
@@ -73,6 +75,7 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
     this.key = options?.key || defaults.key;
     this.description = options.description;
     this.input = options.input;
+    this.parameters = options.parameters || {};
     this.attributes = options?.attributes || {};
     this._validateInput = options.validateInput;
     this._visibilityHandler = options?.visibilityHandler;

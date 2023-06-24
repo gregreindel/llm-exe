@@ -1,8 +1,13 @@
 import { Configuration, OpenAIApi } from "openai";
-import { IChatMessages, OpenAIModelName, OpenAIOptions } from "@/types";
+import {
+  IChatMessages,
+  OpenAIModelName,
+  OpenAIOptions,
+  OpenAiLlmExecutorOptions,
+} from "@/types";
 import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
-import { assert, removeEmptyFromObject } from "@/utils";
+import { assert, pick, removeEmptyFromObject } from "@/utils";
 import { OutputOpenAICompletion } from "./output/openai";
 import { OpenAiPricing } from "@/utils/const";
 
@@ -49,7 +54,8 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       frequencyPenalty = null,
       logitBias = null,
       user = "",
-      ...restOfOptions } = options;
+      ...restOfOptions
+    } = options;
 
     super(restOfOptions);
 
@@ -63,9 +69,12 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     this.presencePenalty = presencePenalty;
     this.frequencyPenalty = frequencyPenalty;
     this.logitBias = logitBias;
-    this.user = user
+    this.user = user;
 
-    if (["gpt-3.5-turbo", "gpt-4"].includes(this.model)) {
+    
+
+    if (this.model.substring(0, 13) === "gpt-3.5-turbo" || 
+    this.model.substring(0, 5) === "gpt-4") {
       this.promptType = "chat";
     } else {
       this.promptType = "text";
@@ -118,7 +127,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     };
 
     const price = OpenAiPricing[this.model];
-    if(price){
+    if (price) {
       const [amount, inputAmount, outputAmount] = price;
       if (inputAmount && input_tokens) {
         out["input_cost"] = (input_tokens / amount) * inputAmount;
@@ -126,7 +135,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       if (outputAmount && output_tokens) {
         out["output_cost"] = (output_tokens / amount) * outputAmount;
       }
-  
+
       out["total_cost"] = out["input_cost"] + out["output_cost"];
     }
 
@@ -169,12 +178,13 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @param input - The input for the chat/completion API.
    * @returns The chat/completion response from the API.
    */
-  async _call(input: string | IChatMessages) {
-    if (["gpt-3.5-turbo", "gpt-4"].includes(this.model)) {
+  async _call(input: string | IChatMessages, arg2?: OpenAiLlmExecutorOptions) {
+    if (this.model.substring(0, 13) === "gpt-3.5-turbo" || 
+    this.model.substring(0, 5) === "gpt-4") {
       assert(Array.isArray(input), "Invalid prompt.");
-      return await this.chat(input);
+      return await this.chat(input, arg2);
     } else {
-      assert(typeof input === "string")
+      assert(typeof input === "string");
       return await this.completion(input);
     }
   }
@@ -184,9 +194,9 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @param messages - A list of message objects for the API call.
    * @returns The chat response from the API.
    */
-  async chat(messages: IChatMessages) {
+  async chat(messages: IChatMessages, _args?: OpenAiLlmExecutorOptions) {
     assert(Array.isArray(messages), "Invalid prompt.");
-    const options = removeEmptyFromObject({
+    const options: Partial<OpenAIOptions> = removeEmptyFromObject({
       messages,
       model: this.model,
       temperature: this.temperature,
@@ -201,7 +211,14 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       user: this.user,
     });
 
-    const response = await this.client.createChatCompletion(options);
+    if(_args && _args?.function_call ){
+      options["function_call"] = _args?.function_call || "none"
+    }
+
+    if(_args &&  _args?.functions?.length){
+      options["functions"] = _args.functions.map(f => pick(f, ["name", "description", "parameters"]))
+    }
+    const response = await this.client.createChatCompletion(options as any);
     const { data } = response;
     this.metrics.history.push(data);
     return new OutputOpenAIChat(data);

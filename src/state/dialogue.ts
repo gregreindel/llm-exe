@@ -1,5 +1,6 @@
 import { IChatMessages, IChatUserMessage } from "@/types";
 import { BaseStateItem } from "./item";
+import { maybeStringifyJSON } from "@/utils";
 
 export class Dialogue extends BaseStateItem<IChatMessages> {
   public name: string;
@@ -43,6 +44,27 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
+  setFunctionMessage(content: string, name: string) {
+    if (content) {
+      this.value.push({
+        role: "function",
+        name,
+        content,
+      });
+    }
+    return this;
+  }
+  setFunctionCallMessage(input: {function_call: { name: string; arguments: string }}) {
+    this.value.push({
+      role: "assistant",
+      function_call: {
+        name: input?.function_call.name,
+        arguments: maybeStringifyJSON(input?.function_call.arguments),
+      },
+      content: null,
+    });
+    return this;
+  }
   setMessageTurn(
     userMessage: string,
     assistantMessage: string,
@@ -61,10 +83,17 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
           this.setUserMessage(message?.content, message?.name);
           break;
         case "assistant":
-          this.setAssistantMessage(message?.content);
+          if(message.function_call){
+            this.setFunctionCallMessage({ function_call: message.function_call });
+          }else if(message?.content){
+            this.setAssistantMessage(message?.content);
+          }
           break;
         case "system":
           this.setSystemMessage(message?.content);
+          break;
+        case "function":
+          this.setFunctionMessage(message?.content, message.name);
           break;
       }
     }
@@ -72,7 +101,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
   }
 
   getHistory() {
-    return this.getValue();
+    return this.getValue()
   }
 
   serialize() {

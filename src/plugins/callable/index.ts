@@ -18,6 +18,15 @@ export function createCallableExecutor<
   return new CallableExecutor(options);
 }
 
+export class UseExecutors<
+I extends PlainObject | { input: string },
+O extends any
+> extends UseExecutorsBase<I, O> {
+  constructor(handlers: CallableExecutor<I, O>[]) {
+    super(handlers);
+  }
+}
+
 export function useExecutors<
   I extends PlainObject | { input: string },
   O extends any
@@ -26,12 +35,7 @@ export function useExecutors<
     ...(CallableExecutor<any, any> | CallableExecutorInput<any, any>)[]
   ]
 ) {
-  class UseExecutors extends UseExecutorsBase<I, O> {
-    constructor(handlers: CallableExecutor<I, O>[]) {
-      super(handlers);
-    }
-  }
-  return new UseExecutors(
+  return new UseExecutors<I,O>(
     executors.map((e) => {
       if (e instanceof CallableExecutor) return e;
       return createCallableExecutor(e);

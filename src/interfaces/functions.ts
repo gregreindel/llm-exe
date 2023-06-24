@@ -90,3 +90,9 @@ export type CoreExecutorHookInput<H = BaseExecutorHooks> = {
 export interface CoreExecutorExecuteOptions<T = BaseExecutorHooks> {
   hooks?: CoreExecutorHookInput<T>;
 }
+
+export interface CallableExecutorCore {
+  name: string;
+  description: string;
+  parameters?: Record<string, any>;
+}

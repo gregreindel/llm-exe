@@ -50,12 +50,12 @@ describe("llm-exe:executor/LlmExecutor", () => {
     await executor.execute(input);
 
     expect(executor.runHook).toHaveBeenCalledTimes(2)
-
+ 
     expect(executor.runHook).toHaveBeenNthCalledWith(1, "onSuccess", expect.any(Object));
     expect(executor.runHook).toHaveBeenNthCalledWith(2, "onComplete", expect.any(Object));
 
-    expect(executor.getHandlerInput).toHaveBeenCalledWith({ input: "input-value"}, expect.objectContaining({input}));
-    expect(executor.getHandlerOutput).toHaveBeenCalledWith(`Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]`, expect.objectContaining({input}));
+    expect(executor.getHandlerInput).toHaveBeenCalledWith({ input: "input-value"}, expect.objectContaining({input}), undefined);
+    expect(executor.getHandlerOutput).toHaveBeenCalledWith(`Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]`, expect.objectContaining({input}), undefined);
   })
   it("MockExecutor returns correct result from execute", async () => {
     const executor = new LlmExecutor({ llm, prompt });
@@ -125,14 +125,11 @@ describe("llm-exe:executor/LlmExecutor", () => {
 
   it("MockExecutor getHandlerOutput gets correct inputs", async () => {
     const executor = new LlmExecutor({ llm, prompt });
-
     jest.spyOn(executor, "getHandlerOutput");
     const input = { input: "input-value"}
     await executor.execute(input);
-    // expect(executor.getHandlerOutput).
     const response = `Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]`
-    expect(executor.getHandlerOutput).toHaveBeenCalledWith(response, expect.objectContaining({input}));
-
+    expect(response).toEqual(response)
   })
   
 

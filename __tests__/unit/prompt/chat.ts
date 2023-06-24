@@ -1,4 +1,5 @@
 import { BasePrompt, ChatPrompt } from "@/prompt";
+import { assert } from "@/utils";
 
 /**
  * Tests the ChatPrompt class
@@ -59,14 +60,16 @@ describe("llm-exe:prompt/ChatPrompt", () => {
 
   it("does not allow template rendering in user messages", () => {
     const prompt = new ChatPrompt();
-    prompt.addUserMessage(`Hello {{replaceWithWorld}}`)
+    prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
     const format = prompt.format({ replaceWithWorld: "World" });
-    expect(format).toEqual([{ content: "Hello {{replaceWithWorld}}", role: "user" }]);
+    expect(format).toEqual([
+      { content: "Hello {{replaceWithWorld}}", role: "user" },
+    ]);
   });
 
   it("does allow template rendering in user messages with allowUnsafeUserTemplate", () => {
-    const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true});
-    prompt.addUserMessage(`Hello {{replaceWithWorld}}`)
+    const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
+    prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
     const format = prompt.format({ replaceWithWorld: "World" });
     expect(format).toEqual([{ content: "Hello World", role: "user" }]);
   });
@@ -89,7 +92,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "World", role: "user", name: "Greg" },
     ]);
   });
-  it("parses object to string", () => {
+  it("addAssistantMessage to add assistant message", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addAssistantMessage("World");
     const format = prompt.format({});
@@ -98,12 +101,12 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "World", role: "assistant" },
     ]);
   });
-  it("parses object to string", () => {
+  it("validate defaults to true", () => {
     const prompt = new ChatPrompt("Hello");
     expect(prompt.validate()).toEqual(true);
   });
-  
-  it("parses object to string", () => {
+
+  it("addToPrompt to add assistant message", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addToPrompt("World", "assistant");
     const format = prompt.format({});
@@ -112,7 +115,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "World", role: "assistant" },
     ]);
   });
-  it("parses object to string", () => {
+  it("addToPrompt to add user message", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addToPrompt("World", "user");
     const format = prompt.format({});
@@ -121,13 +124,43 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "World", role: "user" },
     ]);
   });
-  it("parses object to string", () => {
+  it("addToPrompt to add user message with name", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addToPrompt("World", "user", "Greg");
     const format = prompt.format({});
     expect(format).toEqual([
       { content: "Hello", role: "system" },
       { content: "World", role: "user", name: "Greg" },
+    ]);
+  });
+
+  it("addToPrompt to add function message with name", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addToPrompt("Output", "function", "test_fn");
+    const format = prompt.format({});
+    expect(format).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Output", role: "function", name: "test_fn" },
+    ]);
+  });
+
+  it("addToPrompt to add function_call message with name", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addToPrompt("{}", "function_call", "test_fn");
+
+    assert(prompt.messages[1].role === "assistant");
+
+    const format = prompt.format({});
+    expect(format).toEqual([
+      { content: "Hello", role: "system" },
+      {
+        content: null,
+        role: "assistant",
+        function_call: {
+          name: "test_fn",
+          arguments: "{}",
+        },
+      },
     ]);
   });
 
@@ -138,6 +171,8 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
+      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+      { content: "Function Output", name: "test_fn", role: "function" },
     ]);
 
     expect(prompt.format({})).toEqual([
@@ -145,6 +180,8 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
+      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+      { content: "Function Output", name: "test_fn", role: "function" },
     ]);
   });
 
@@ -153,20 +190,44 @@ describe("llm-exe:prompt/ChatPrompt", () => {
 
     prompt.addChatHistoryPlaceholder("myPlaceholder");
 
-    expect(prompt.format({
-      myPlaceholder: [
-        { content: "Message user", role: "user" },
-        { content: "Message assistant", role: "assistant" },
-        { content: "Message system", role: "system" },
-      ]
-    })).toEqual([
+    expect(
+      prompt.format({
+        myPlaceholder: [
+          { content: "Message user", role: "user" },
+          { content: "Message assistant", role: "assistant" },
+          { content: "Message system", role: "system" },
+          { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+          { content: "Function Output", name: "test_fn", role: "function" },
+        ],
+      })
+    ).toEqual([
       { content: "Hello", role: "system" },
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
+      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+      { content: "Function Output", name: "test_fn", role: "function" },
     ]);
   });
-  
+
+  it("can add messages from addChatHistoryPlaceholder with options", () => {
+    const prompt = new ChatPrompt("Hello");
+
+    prompt.addChatHistoryPlaceholder("myPlaceholder", {
+      assistant: "Support",
+      user: "Customer",
+    });
+
+    expect(prompt.messages).toEqual([
+      { role: "system", content: "Hello" },
+      {
+        role: "placeholder",
+        content:
+          "{{> DialogueHistory key='myPlaceholder' assistant='Support' user='Customer'}}",
+      },
+    ]);
+  });
+
   it("can add user messages from addMessagePlaceholder defaults to user", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("Some Plain Text");
@@ -195,7 +256,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
   it("can add user messages from addMessagePlaceholder and they get replaced", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("{{userInput}}", "user");
-    expect(prompt.format({userInput: "Some Plain Text"})).toEqual([
+    expect(prompt.format({ userInput: "Some Plain Text" })).toEqual([
       { content: "Hello", role: "system" },
       { content: "Some Plain Text", role: "user" },
     ]);
@@ -215,6 +276,15 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     expect(prompt.format({})).toEqual([
       { content: "Hello", role: "system" },
       { content: "Some Plain Text", role: "system" },
+    ]);
+  });
+
+  it("can add custom user name to messages from addMessagePlaceholder", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addMessagePlaceholder("Some Plain Text", "user", "Greg");
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "Some Plain Text", role: "user", name: "Greg" },
     ]);
   });
 });

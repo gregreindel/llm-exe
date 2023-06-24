@@ -39,12 +39,12 @@ describe("llm-exe:llm/OpenAI", () => {
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
-      input_cost: 0.002,
+      input_cost: 0.0015,
       output_cost: 0.001,
-      total_cost: 0.003,
+      total_cost: 0.0025,
     });
   });
-  it("calculates correct price for gpt-3.5-turbo", () => {
+  it("calculates correct price for gpt-4", () => {
     const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-4" });
     const prompt = 1000;
     const reply = 500;
@@ -98,9 +98,9 @@ describe("llm-exe:llm/OpenAI", () => {
     const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
     const prompt = 1000;
     expect(llm.calculatePrice(prompt)).toEqual({
-      input_cost: 0.002,
+      input_cost: 0.0015,
       output_cost: 0,
-      total_cost: 0.002,
+      total_cost: 0.0015,
     });
   });
   it("defaults to chat for gpt-3.5-turbo", () => {
@@ -165,12 +165,24 @@ describe("llm-exe:llm/OpenAI", () => {
         ["Total Completion Tokens"]: 3,
         ["Total Completion Cost"]: 0.000006,
         ["Total Prompt Tokens"]: 417,
-        ["Total Prompt Cost"]: 0.000834,
+        ["Total Prompt Cost"]: 0.0006255,
         ["Total Tokens"]: 420,
-        ["Total Cost"]: 0.00084,
+        ["Total Cost"]: 0.0006315,
       },
     ]);
   });
+
+  it("chat model accepts functions", async () => {
+    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    await llm.chat([
+      { role: "user", content: "__mock__:openAiBasicTest:Hello!" },
+    ], {
+      function_call: "auto",
+      functions: [{name: "test", description: "none", parameters: {}}]
+    });
+
+  });
+
 
   it("_call calls correct model for chat", async () => {
     const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
@@ -180,8 +192,9 @@ describe("llm-exe:llm/OpenAI", () => {
     ]);
     expect(llm.chat).toHaveBeenCalledWith([
       { role: "user", content: "__mock__:openAiBasicTest:Hello!" },
-    ]);
+    ], undefined);
   });
+
   it("_call calls correct model for completion", async () => {
     const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
     jest.spyOn(llm, "completion");

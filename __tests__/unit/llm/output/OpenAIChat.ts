@@ -87,4 +87,36 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
     const output = new OutputOpenAIChat(mock);
     expect(output.getResultContent(8)).toEqual(undefined);
   });
+
+  it("getResultContent gets function_call if content is null", () => {
+    const output = new OutputOpenAIChat({
+      id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
+      object: "chat.completion",
+      created: 1685025755,
+      model: "gpt-3.5-turbo-0301",
+      usage: {
+        prompt_tokens: 427,
+        completion_tokens: 1,
+        total_tokens: 428,
+      },
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: null,
+            function_call: {
+              name: "test_fn",
+              arguments: "{}"
+            }
+          },
+          finish_reason: "stop",
+          index: 0,
+        },
+      ],
+    });
+    expect(output.getResultContent()).toEqual( JSON.stringify({function_call: {name: "test_fn", arguments: "{}" }}));
+  });
+
 });
+
+// getResultContent

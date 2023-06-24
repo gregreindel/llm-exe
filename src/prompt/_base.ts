@@ -111,10 +111,10 @@ export abstract class BasePrompt<I extends Record<string, any>> {
     /* istanbul ignore next */
     return this.messages
       .map((message) => {
-        return replaceTemplateString(message.content, replacements, {
+        return message.content ? replaceTemplateString(message.content, replacements, {
           partials: this.partials,
           helpers: this.helpers,
-        });
+        }) : "";
       })
       .join(separator);
   }

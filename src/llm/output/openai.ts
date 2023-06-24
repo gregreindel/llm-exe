@@ -1,4 +1,10 @@
+import { OutputOpenAIChatChoice } from "@/types";
 import { BaseLlmOutput } from "./base";
+
+
+export interface OutputOpenAIChat {
+ results: OutputOpenAIChatChoice[]
+}
 
 export class OutputOpenAIChat extends BaseLlmOutput {
   constructor(result: any) {
@@ -18,13 +24,19 @@ export class OutputOpenAIChat extends BaseLlmOutput {
       const result = this.results[resultIndex];
       return result;
     }
+    return;
   }
   getResultContent(resultIndex = 0) {
     const result = this.getResult(resultIndex);
-    return result?.message?.content;
+    if(result?.message?.content){
+      return result?.message?.content;
+    }
+    if(result?.message?.content === null || result?.message?.function_call){
+      return JSON.stringify({function_call: result?.message?.function_call})
+    }
+    return;
   }
 }
-
 
 export class OutputOpenAICompletion extends BaseLlmOutput {
   constructor(result: any) {
