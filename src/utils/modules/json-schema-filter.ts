@@ -53,7 +53,7 @@ export function filterObjectOnSchema(schema: any, doc: any, detach?: any, proper
           }
         } else {
           // keep the child if it's defined properly or null
-          if(sp.type === "integer"){
+          if(sp.type === "integer" || sp.type === "number"){
             result[key] = toNumber(filteredChild);
           }else if(sp.type === "boolean"){
             result[key] = !!filteredChild

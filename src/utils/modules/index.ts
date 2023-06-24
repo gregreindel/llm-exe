@@ -152,10 +152,14 @@ export function extractPromptPlaceholderToken(tok: string) {
   const token = tok.replace(/ /g, "");
   if (token.substring(2, 18) === ">DialogueHistory") {
     const matchKey = tok.match(/key=(['"`])((?:(?!\1).)*)\1/);
+    const matchAssistant = tok.match(/assistant=(['"`])((?:(?!\1).)*)\1/);
+    const matchUser = tok.match(/user=(['"`])((?:(?!\1).)*)\1/);
     if (matchKey) {
       return {
         token: ">DialogueHistory",
         key: matchKey[2],
+        assistant: get(matchAssistant, '[2]', ""),
+        user:get(matchUser, '[2]', "")  ,
       };
     }
   }
