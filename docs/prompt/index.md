@@ -1,6 +1,6 @@
 # Prompt
 
-The prompt is the instruction for the LLM, usually sent in plain-text. When working with certain models, the prompt is formatted like chat messages, allowing you to control a system message, user message, and assistant message.
+The prompt is the instruction for the LLM, usually sent in plain-text or an array of chat-style messages. When working with certain models, the prompt is formatted like chat messages, allowing you to control a system message, user message, and assistant message.
 
 llm-exe provides a prompt interface to simplify working with prompts. Ultimately a prompt is a string, but building elaborate prompts can quickly get complicated. The prompt utility provides a foundation for building complex prompts.
 

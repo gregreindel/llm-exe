@@ -24,15 +24,15 @@ For Example:
 - <explain a test case we need to write>
 - <explain a test case we need to write>`;
 
-export function llmExecutorThatMakesAListOfTestCases(llm: BaseLlm) {
+export function llmExecutorThatMakesAListOfTestCases<T extends {
+  functionToTest: string;
+  numberOfTestCases: number;
+}>(llm: BaseLlm, input: T) {
   return createLlmExecutor({
-    prompt: createChatPrompt<{
-      functionToTest: string;
-      numberOfTestCases: number;
-    }>(PROMPT).addUserMessage(INSTRUCTION),
+    prompt: createChatPrompt<T>(PROMPT).addUserMessage(INSTRUCTION),
     parser: createParser("listToArray"),
     llm,
-  });
+  }).execute(input)
 }
 
 const PROMPT2 = `You are a senior typescript developer. You need to write 
@@ -53,12 +53,12 @@ For example:
 });
 \`\`\``;
 
-export function llmExecutorThatWritesTests(llm: BaseLlm) {
+export function llmExecutorThatWritesTests<T extends {
+  testRequirement: string;
+  functionToTest: string;
+}>(llm: BaseLlm, input: T) {
 
-  const prompt = createChatPrompt<{
-    testRequirement: string;
-    functionToTest: string;
-  }>(PROMPT2, { allowUnsafeUserTemplate: true })
+  const prompt = createChatPrompt<T>(PROMPT2, { allowUnsafeUserTemplate: true })
   .addUserMessage(INSTRUCTION2);
 
   const parser = createParser("markdownCodeBlock");
@@ -67,25 +67,20 @@ export function llmExecutorThatWritesTests(llm: BaseLlm) {
     prompt,
     parser,
     llm,
-  });
+  }).execute(input)
 }
 
-export async function run() {
-  const functionToTest = `function add(a: number, b: number){
-        return a + b;
-    }`;
-
+export async function generateTestSuite(functionToTest: string) {
   const tests = [];
 
-  const testRequirements = await llmExecutorThatMakesAListOfTestCases(
-    llm
-  ).execute({
+  const requirements = await llmExecutorThatMakesAListOfTestCases(
+    llm, {
     numberOfTestCases: 5,
     functionToTest,
   });
 
-  for (const testRequirement of testRequirements) {
-    const test = await llmExecutorThatWritesTests(llm).execute({
+  for (const testRequirement of requirements) {
+    const test = await llmExecutorThatWritesTests(llm, {
       functionToTest,
       testRequirement,
     });
@@ -93,10 +88,14 @@ export async function run() {
       tests.push(test.code);
     }
   }
-  return tests;
+  return { requirements, tests};
 }
 
 (async () => {
-  const answer = await run();
-  console.log(answer);
+  const functionToTest = `function add(a: number, b: number){
+    return a + b;
+}`;
+
+  const results = await generateTestSuite(functionToTest);
+  console.log(results);
 })();

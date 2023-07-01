@@ -60,6 +60,24 @@ export default defineUserConfig({
         ],
       },
       {
+        text: "LLM Executor",
+        link: "/executor/index.html",
+        collapsible: true,
+        children: [
+          {
+            text: "OpenAI Functions",
+            link: "/executor/openai-functions.html",
+            children: [],
+            
+          },
+          {
+            text: "Hooks",
+            link: "/executor/hooks.html",
+            children: [],
+          },
+        ],
+      },
+      {
         text: "LLM",
         link: "/llm/index.html",
         collapsible: true,
@@ -108,18 +126,6 @@ export default defineUserConfig({
           {
             text: "Custom Parsers",
             link: "/parser/custom.html",
-            children: [],
-          },
-        ],
-      },
-      {
-        text: "LLM Executor",
-        link: "/executor/index.html",
-        collapsible: true,
-        children: [
-          {
-            text: "Hooks",
-            link: "/executor/hooks.html",
             children: [],
           },
         ],
