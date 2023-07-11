@@ -4,8 +4,8 @@
 
 ```typescript:no-line-numbers
 const llm = createLlmOpenAi({ // OpenAIOptions
-  openAIApiKey: "your-open-ai-key"
   modelName: "gpt-3.5-turbo",
+  openAIApiKey: "your-open-ai-key", // optional.
   maxTokens: 500, // optional.
   temperature: 0, // optional.
 });

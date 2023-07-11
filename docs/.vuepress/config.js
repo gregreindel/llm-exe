@@ -1,6 +1,7 @@
 import { defineUserConfig, defaultTheme } from "vuepress";
 import { googleAnalyticsPlugin } from "@vuepress/plugin-google-analytics";
-
+import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
+import * as path from "path"
 export default defineUserConfig({
   lang: "en-US",
   title: "llm-exe",
@@ -47,6 +48,11 @@ export default defineUserConfig({
         link: "",
         collapsible: true,
         children: [
+          {
+            text: "Installation",
+            link: "/intro/install.html",
+            children: [],
+          },
           {
             text: "Intro",
             link: "/intro/index.html",
@@ -237,6 +243,12 @@ export default defineUserConfig({
     ],
   }),
   plugins: [
+    registerComponentsPlugin({
+      components: {
+        PromptOutput: path.resolve(__dirname, './components/PromptOutput.vue'),
+        DialogueOutput: path.resolve(__dirname, './components/DialogueOutput.vue'),
+      },
+    }),
     googleAnalyticsPlugin({
       id: process.env.NODE_ENV !== "development" ? "G-5YTJ8HRXNF" : "",
     }),

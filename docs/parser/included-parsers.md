@@ -223,7 +223,7 @@ Converts a list of key: value pairs (separated by \n) to an object.
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript:no-line-numbers
-const parser = createParser("listToArray")
+const parser = createParser("listToJson")
 ```
 
 <CodeGroup>

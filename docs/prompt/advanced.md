@@ -2,135 +2,29 @@
 Handlebars is used as a template engine when generating the prompt, so you can take advantage of advanced template features in the prompt. See full capabilities [here](https://handlebarsjs.com/guide/).
 
 Below is a simple example showing syntax for replacing simple variables in the template.
-```typescript:no-line-numbers
-const prompt = createPrompt("chat", "Your name is {{agentName}}")
-const formatted = prompt.format({agentName: "Greg"})
 
-/**
- * 
- * console.log(formatted) 
- * 
- * [{
- *   role: 'system',
- *   content: 'Your name is Greg' 
- * }]
- * 
- */
- 
-```
+<PromptOutput example="prompt.advanced.withReplacements">
+
+@[code{6-7} ts:no-line-numbers](../../examples/prompt/advanced.ts)
+</PromptOutput>
+
 
 Here is a slightly more advanced example showing a template that uses the `if` and `each` helpers supplies by Handlebars.
-```typescript:no-line-numbers
-const prompt = createPrompt("chat", "Your name is {{agentName}}")
+<PromptOutput example="prompt.advanced.withReplacementsTwo">
 
-const template = `{{#if fruits.length}}
-Ask about one of these fruits: 
-{{#each fruits as | fruit |}}
-- {{fruit}}
-{{/each}}
-{{/if}}`;
+@[code{21-35} ts:no-line-numbers](../../examples/prompt/advanced.ts)
+</PromptOutput>
 
-prompt.addSystemMessage(template)
 
-console.log(prompt.format({ agentName: "Greg", fruits: ["apple", "banana"] })) 
-/**
- * 
- * Outputs: 
- * 
- * [{ 
- *   role: 'system', 
- *    content: 'Your name is Greg' 
- * },
- * { 
- *   role: 'system',
- *   content: 'Ask about one of these fruits: \n- apple\n- banana\n'
- * }]
- * 
- * /
-```
+
 
 Below is a robust example showing multiple variables, and defining types.
 
-```typescript:no-line-numbers
+<PromptOutput example="prompt.advanced.withReplacementsAndTypes">
 
-interface PromptTemplate {
-  actions: {
-    name: string;
-    description: string;
-  }[];
-  previousSteps: {
-    thought: string;
-    action: string;
-    result: string;
-  }[];
-}
+@[code{48-99} ts:no-line-numbers](../../examples/prompt/advanced.ts)
+</PromptOutput>
 
-const template = `You are an agent that can only perform the following actions:
-
-# Actions
-{{#each actions as | action |}}
-{{ action.name }} ({{ action.description }})
-{{/each}}
-
-# Previous Steps Taken
-{{#each previousSteps as | previousStep |}}
-Thought: {{previousStep.thought}}
-Action: {{previousStep.action}}
-{{/each}}`;
-
-const instruction = `What step should we take? Must be one of: {{#each actions as | action |}}, {{ action.name }}{{/each}}.`;
-
-// some data from state or your application
-const history = [
-  { role: "user", content: "Hey!" },
-  { role: "assistant", content: "Hi, how are you?" },
-  { role: "user", content: "Good. What day is it?" }
-];
-const actions = [
-  { name: "say_hi", description: "Provide an initial greeting." },
-  { name: "say_bye", description: "Say goodbye at the end of a conversation." },
-  { name: "ask_question", description: "Ask the user a question." },
-  { name: "provide_answer", description: "Provide an answer to a question" }
-];
-const previousSteps = [
-  { thought: "I should say hi", action: "say_hi", result: "Hi, how are you?" }
-];
-
-const prompt = createChatPrompt<PromptTemplate>(template)
-  .addFromHistory(history)
-  .addSystemMessage(instruction);
-
-// prompt.format is well-typed based on the generic you passed into createChatPrompt
-const formatted = prompt.format({ actions, previousSteps });
-
-/**
- * console.log(formatted)
-[
-  {
-    role: `system`,
-    content: `You are an agent that can only perform the following actions:
-      
-      # Actions
-      say_hi (Provide an initial greeting.)
-      say_bye (Say goodbye at the end of a conversation.)
-      ask_question (Ask the user a question.)
-      provide_answer (Provide an answer to the user&#x27;s question)
-      
-      # Previous Steps Taken
-      Thought: I should say hi
-      Action: say_hi`
-  },
-  { role: `user`, content: `Hey!` },
-  { role: `assistant`, content: `Hi, how are you?` },
-  { role: `user`, content: `Good. What day is it?` },
-  {
-    role: `system`,
-    content: `What step should we take? Must be one of: say_hi, say_bye, ask_question, provide_answer.`,
-  },
-];
-*/
-/*
-```
 
 ## Prompt Template Default Helpers
 Prompts are powered by handlebars, and you are able to register your own custom helpers, adding super powers to your prompt templates. Some core helpers are included by default.

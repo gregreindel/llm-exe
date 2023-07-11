@@ -13,10 +13,6 @@ An LLM executor's input and output types are determined by the prompt and parser
 
 **hooks** (optional) allows you to hook into various stages of the execution. Most useful for logging, but may be used for additional plugins.
 
-There are other components that an llmExecutor can be passed to. See callable executors.
-
-Llm function extends `CoreExecutor`.
-
 ## Basic Example
 ```typescript
 import {
@@ -46,7 +42,7 @@ import {
 } from "llm-exe";
 
 const llm = createLlmOpenAi({/* options */});
-const instruction = `You are a customer support agent. Reply below.`;
+const instruction = `You are a customer support agent. Reply to the user as JSON.`;
 const prompt = createChatPrompt(instruction);
 const parser = createParser("json");
 
@@ -61,6 +57,9 @@ const executor = createLlmExecutor({
   prompt,
   parser
 }, hooks)
+
+executor.on("onComplete", () => {})
+executor.once("onComplete", () => {})
 
 const response = await executor.execute({input: "Hello!"})
 ```

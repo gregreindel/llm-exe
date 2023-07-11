@@ -3,151 +3,51 @@ The default prompt is a text prompt, and is meant for models such as xx and xx.
 
 You create a prompt using `createPrompt()`.
 
-```typescript:no-line-numbers
-// create a simple text prompt
-const prompt = createPrompt("text")
+<PromptOutput example="prompt.text.exampleCreateTextPrompt">
 
-/**
- * 
- * console.log(prompt)
- * 
- * TextPrompt {
- *   type: 'text',
- *   messages: [],
- *   partials: [],
- *   helpers: []
- * }
- * 
- */
-```
+@[code{4-6} ts:no-line-numbers](../../examples/prompt/text.ts)
+</PromptOutput>
+
 
 When creating a prompt, you can optionally set an initial message.
-```typescript:no-line-numbers
-// create a simple text prompt with an initial message
-const initial = "You are a customer service agent for SomeCompany.";
-const prompt = createPrompt("text", initial)
 
-/**
- * 
- * console.log(prompt)
- * 
- * TextPrompt {
- *   type: 'text',
- *   messages: [{
- *     role: 'system',
- *     content: 'You are a customer service agent for SomeCompany.'
- *   }],
- *   partials: [],
- *   helpers: []
- * }
- * 
- */
+<PromptOutput example="prompt.text.exampleCreateTextPromptWithInitial">
 
-```
+@[code{18-19} ts:no-line-numbers](../../examples/prompt/text.ts)
+</PromptOutput>
+
 
 You can also add additional content to the prompt by calling `addToPrompt()` on the prompt.
-```typescript:no-line-numbers
-// create a simple text prompt with an initial system message
-const initial = "You are a customer service agent for SomeCompany.";
-const prompt = createPrompt("text", initial)
 
-// add an additional system message to the prompt
-prompt.addToPrompt("You should never admit that you are AI.");
+<PromptOutput example="prompt.text.exampleCreateTextPromptAddToPrompt">
 
-/**
- * 
- * console.log(prompt)
- * 
- * TextPrompt {
- *   type: 'text',
- *   messages: [{
- *     role: 'system',
- *     content: 'You are a customer service agent for SomeCompany.'
- *   },{
- *     role: 'system',
- *     content: 'You should never admit that you are AI.'
- *   }],
- *   partials: [],
- *   helpers: []
- * }
- * 
- */
-```
+@[code{31-36} ts:no-line-numbers](../../examples/prompt/text.ts)
+</PromptOutput>
+
 
 To use the prompt as input to an LLM, you can call the `format()` method on the prompt. The format method accepts an object, which is used to supply the prompt template with replacement values.
 
-```typescript:no-line-numbers
+<PromptOutput example="prompt.text.exampleCreateTextPromptFormat">
 
-// create a simple text prompt with an initial system message
-const initial = "You are a customer service agent for SomeCompany.";
-const prompt = createPrompt("text", initial)
+@[code{48-56} ts:no-line-numbers](../../examples/prompt/text.ts)
+</PromptOutput>
 
-// add an additional system message to the prompt
-prompt.addToPrompt("You should never admit that you are AI.");
 
-// format the prompt with values
-const formatted = prompt.format({});
-
-/**
- * 
- * console.log(formatted)
- * 
- * You are a customer service agent for SomeCompany.
- * 
- * You should never admit that you are AI.
- * 
- */
-
-```
 Prompt methods are chainable
-```typescript:no-line-numbers
-const initial = "You are a customer service agent for SomeCompany.";
-const prompt = createPrompt("text", initial)
+<PromptOutput example="prompt.text.exampleCreateTextPromptChainable">
 
-// you can also chain all prompt methods (except format)
-prompt
-  .addToPrompt("You should never admit that you are AI.")
-  .addToPrompt("Begin!")
+@[code{67-74} ts:no-line-numbers](../../examples/prompt/text.ts)
+</PromptOutput>
 
-/**
- * 
- * console.log(prompt.format({}))
- * 
- * You are a customer service agent for SomeCompany.
- * 
- * You should never admit that you are AI.
- * 
- * Begin!
- * 
- */
-
-
-```
 
 By default, formatted text prompt messages are separated using 2 line breaks (\\n\\n). You can override this by defining a custom separator.
-```typescript:no-line-numbers
-const initial = "You are a customer service agent for SomeCompany.";
-const prompt = createPrompt("text", initial)
-  .addToPrompt("You should never admit that you are AI.")
-  .addToPrompt("Begin!")
 
-// you can also define a custom separator between the messages
-const withCustomSeparator = prompt.format({}, "\n---\n")
+<PromptOutput example="prompt.text.exampleCreateTextPromptCustomDelimiter">
 
-/**
- * 
- * console.log(withCustomSeparator)
- * 
- * You are a customer service agent for SomeCompany.
- * ---
- * You should never admit that you are AI.
- * ---
- * Begin!
- * 
- */
+@[code{86-92} ts:no-line-numbers](../../examples/prompt/text.ts)
+</PromptOutput>
 
-```
-See [prompt templates](prompt/advanced.html) for more advanced prompt usage.
+See [prompt templates](/prompt/advanced.html) for more advanced prompt usage.
 
 #### Text Prompt Methods
 

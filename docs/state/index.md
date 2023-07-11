@@ -29,16 +29,16 @@ const state = createState()
 const chatHistory = state.createDialogue("chatHistory");
 
 // we can use this directly
-chatHistory.setUserMessage("Hey anyone there?");
+// chatHistory.setUserMessage("Hey anyone there?");
 
 
 // or get again from state object
-state.getDialogue("chatHistory").setAssistantMessage("Yep! Whats up?");
+// state.getDialogue("chatHistory").setAssistantMessage("Yep! Whats up?");
 ```
 
 
 Saving state
 ```typescript:no-line-numbers
-// this ends to be implemented by you if you want to save somewhere
+// this needs to be implemented by you if you want to save somewhere
 await state.saveState()
 ```

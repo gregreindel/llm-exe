@@ -18,35 +18,17 @@ See:
 
 ## Basic Replacements
 The object that you pass to `prompt.format` (or `.execute` when a prompt is part of an LLM executor) gets passed to the template engine, making all those variables available to you in your prompt template.
-```typescript
-const prompt = createPrompt("text", "You are a customer service agent for SomeCompany. Your name is {{agentName}}.")
 
-const formatted = prompt.format({ agentName: "Greg" })
-/**
- * 
- * console.log(formatted)
- * 
- * You are a customer service agent for SomeCompany. Your name is Greg.
- * 
- */
-```
+<PromptOutput example="prompt.basic.example1">
+
+@[code{5-11} ts:no-line-numbers](../../examples/prompt/basic.ts)
+</PromptOutput>
 
 For advanced uses and working with custom helpers/partials, [see here](/prompt/advanced.html).
 
 ## Using Types with Prompts
 
-```typescript
-// You can provide 
-interface SomePromptInput {
-    agentName: string;
-}
+<PromptOutput example="prompt.basic.example2">
 
-const prompt = createChatPrompt<SomePromptInput>("Your name is {{agentName}}");
-
-// Bad. Incorrect input, Typescript error.
-// Argument of type '{ name: string; }' is not assignable to parameter of type 'SomePromptInput'.
-prompt.format({name: "Greg" })
-
-// Good: No problem, correct inputs
-prompt.format({agentName: "Greg"})
-```
+@[code{27-40} ts:no-line-numbers](../../examples/prompt/basic.ts)
+</PromptOutput>

@@ -1,50 +1,13 @@
 # Dialogue
 Internally, `state` uses the `Dialogue` class to manage dialogues, and you can use it independently too if you'd like.
 
-```typescript:no-line-numbers
-const chatHistory = createDialogue("chat");
+<DialogueOutput example="state.dialogue.basic.exampleOne">
 
-chatHistory.setUserMessage("Hey anyone there?");
+@[code{5-9}](../../examples/state/dialogue/basic.ts)
+</DialogueOutput>
 
-chatHistory.setAssistantMessage("Yep! Whats up?");
 
-const history = chatHistory.getHistory()
+<DialogueOutput example="state.dialogue.functions.dialogueWithFunctionCall">
 
-/**
- * 
- * console.log(history)
- * 
- * [{ 
- *   role: 'user',
- *   content: 'Hey anyone there?'
- * },{ 
- *   role: 'assistant', 
- *   content: 'Yep! Whats up?' 
- * }]
- * 
- */
-```
-
-```typescript:no-line-numbers
-const chatHistory = createDialogue("chat");
-
-// setMessageTurn accepts (<user message>, <assistant message>)
-chatHistory.setMessageTurn("Hey anyone there?", "Yep! Whats up?");
-
-const history = chatHistory.getHistory()
-
-/**
- * 
- * console.log(history)
- * 
- * [{ 
- *   role: 'user',
- *   content: 'Hey anyone there?'
- * },{ 
- *   role: 'assistant', 
- *   content: 'Yep! Whats up?' 
- * }]
- * 
- */
-
-```
+@[code{5-17}](../../examples/state/dialogue/functions.ts)
+</DialogueOutput>
