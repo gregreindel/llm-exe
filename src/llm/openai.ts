@@ -7,7 +7,7 @@ import {
 } from "@/types";
 import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
-import { assert, pick, removeEmptyFromObject } from "@/utils";
+import { assert, getEnvironmentVariable, pick, removeEmptyFromObject } from "@/utils";
 import { OutputOpenAICompletion } from "./output/openai";
 import { OpenAiPricing } from "@/utils/const";
 
@@ -42,7 +42,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    */
   constructor(options: OpenAIOptions) {
     const {
-      openAIApiKey,
+      openAIApiKey = getEnvironmentVariable("OPEN_AI_API_KEY"),
       modelName,
       temperature,
       maxTokens,
@@ -163,11 +163,11 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       {
         ["Total Calls"]: this.metrics.total_call_success,
         ["Total Completion Tokens"]: total_completionTokens,
-        ["Total Completion Cost"]: cost.output_cost,
+        ["Total Completion Cost"]: parseFloat(cost.output_cost.toFixed(3)),
         ["Total Prompt Tokens"]: total_promptTokens,
-        ["Total Prompt Cost"]: cost.input_cost,
+        ["Total Prompt Cost"]: parseFloat(cost.input_cost.toFixed(3)),
         ["Total Tokens"]: total_totalTokens,
-        ["Total Cost"]: cost.total_cost,
+        ["Total Cost"]: parseFloat(cost.total_cost.toFixed(3)),
       },
     ]);
   }
@@ -272,4 +272,17 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       })
     );
   }
+
+  // shouldRetry(_error: any, _stepNumber: number) {
+  //   if(["context_length_exceeded"].includes(_error?.response?.data?.error?.code)){
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+  // handleError(_error: any) {
+  //   const errorMessage = _error?.response?.data?.error?.message;
+  //   const errorCode = _error?.response?.data?.error?.code;
+  //   throw new Error(`[${errorCode}] ${errorMessage}`)
+  // }
 }

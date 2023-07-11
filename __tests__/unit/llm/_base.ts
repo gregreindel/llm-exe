@@ -39,6 +39,8 @@ describe("llm-exe:executor/BaseLlm", () => {
     expect(executor).toHaveProperty("call");
     expect(executor).toHaveProperty("_callWithRetry");
     expect(executor).toHaveProperty("_call");
+    expect(executor).toHaveProperty("shouldRetry");
+    expect(executor).toHaveProperty("handleError");
   });
 
   it("MockLlm has basic properties", () => {
@@ -55,6 +57,16 @@ describe("llm-exe:executor/BaseLlm", () => {
   it("MockLlm can use withTraceId", () => {
     const executor = new MockLlm({traceId: "1234"});
     expect(executor.getTraceId()).toEqual("1234");
+  });
+
+  it("MockLlm shouldRetry defaults true", () => {
+    const executor = new MockLlm();
+    expect(executor.shouldRetry(new Error(), 2)).toEqual(true);
+  });
+
+  it("MockLlm handleError throws", () => {
+    const executor = new MockLlm();
+    expect(() => executor.handleError(new Error("error-message"))).toThrowError("error-message");
   });
 
   it("MockLlm has default properties", () => {

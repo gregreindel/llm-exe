@@ -65,6 +65,14 @@ export abstract class BaseLlm<C = any> {
     this.numOfAttempts = options.numOfAttempts || 5;
   }
 
+  shouldRetry(_error: any, _stepNumber: number) {
+    return true;
+  }
+
+  handleError(_error: any) {
+    throw _error
+  }
+
   getPromptType() {
     return this.promptType;
   }
@@ -101,8 +109,7 @@ export abstract class BaseLlm<C = any> {
     _input: any,
     ...args: any[]
   ): Promise<BaseLlmOutput> {
-    const called = await this._callWithRetry(_input, ...args);
-    return called;
+    return this._callWithRetry(_input, ...args);
   }
 
   /**
@@ -122,10 +129,10 @@ export abstract class BaseLlm<C = any> {
           maxDelay: this.maxDelay,
           numOfAttempts: this.numOfAttempts,
           jitter: this.jitter,
-          retry: () => {
+          retry: (_error: any, _stepNumber: number) => {
             this.metrics.total_call_retry++;
             console.log(`Handler timeout after ${this.timeout}. Retrying...`);
-            return true;
+            return true
           },
         }
       );
@@ -133,12 +140,12 @@ export abstract class BaseLlm<C = any> {
       return result;
     } catch (error) {
       this.metrics.total_call_error++;
-      throw error;
+      this.handleError(error)
     }
   }
 
   /**
-   * _call is an abstract method that must be implemented by subclasses to make the actual LLM call.
+   * _call is an method that must be implemented by subclasses to make the actual LLM call.
    * @param {any} _input - The input to the LLM.
    * @return The output from the LLM.
    */

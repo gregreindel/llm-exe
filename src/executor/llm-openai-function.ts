@@ -36,34 +36,14 @@ export class LlmExecutorOpenAiFunctions<
       options
     );
   }
-
-  async execute<T extends Extract<OpenAiFunctionCall, "none">>(
-    _input: PromptInput<Prompt>,
-    _options: OpenAiLlmExecutorOptions<T>
-  ): Promise<ParserOutput<Parser>>;
-
-  async execute<T extends Exclude<OpenAiFunctionCall, "none">>(
-    _input: PromptInput<Prompt>,
-    _options: OpenAiLlmExecutorOptions<T>
-  ): Promise<ParserOutput<OpenAiFunctionParser<Parser>>>;
-
+async execute<T extends OpenAiFunctionCall>(
+  _input: PromptInput<Prompt>,
+  _options: OpenAiLlmExecutorOptions<T>
+): Promise<ParserOutput<Parser>>
   async execute<T extends OpenAiFunctionCall>(
     _input: PromptInput<Prompt>,
     _options: OpenAiLlmExecutorOptions<T>
-  ): Promise<ParserOutput<OpenAiFunctionParser<Parser>> | ParserOutput<Parser>>;
-
-  async execute<T extends OpenAiFunctionCall = any>(
-    _input: PromptInput<Prompt>,
-    _options: OpenAiLlmExecutorOptions<T>
-  ): Promise<
-    ParserOutput<OpenAiFunctionParser<Parser>> | ParserOutput<Parser>
-  > {
-    if (_options.function_call === "none") {
-      return super.execute(_input, _options) as ParserOutput<Parser>;
-    } else {
-      return super.execute(_input, _options) as ParserOutput<
-        OpenAiFunctionParser<Parser>
-      >;
-    }
+  ) {
+    return super.execute(_input, _options) 
   }
 }

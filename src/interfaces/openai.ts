@@ -33,7 +33,7 @@ export type OpenAIModelName =
   | OpenAIEmbeddingModelName;
 
 export interface OpenAIOptions extends BaseLlmOptions {
-  openAIApiKey: string;
+  openAIApiKey?: string;
   modelName: OpenAIModelName;
   maxTokens?: number;
   temperature?: number;
@@ -61,7 +61,7 @@ export type OpenAiFunctionCall = "auto" | "none" | { name: string; };
 
 export interface LlmExecutorExecuteOptions {}
 
-export interface OpenAiLlmExecutorOptions<T extends OpenAiFunctionCall = OpenAiFunctionCall> extends LlmExecutorExecuteOptions {
+export interface OpenAiLlmExecutorOptions<T extends OpenAiFunctionCall = "auto"> extends LlmExecutorExecuteOptions {
   functions: CallableExecutorCore[];
   function_call: T;
 }

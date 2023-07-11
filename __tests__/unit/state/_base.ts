@@ -1,4 +1,11 @@
-import { BaseState, DefaultState, DefaultStateItem, Dialogue, createState, createStateItem } from "@/state";
+import {
+  BaseState,
+  DefaultState,
+  DefaultStateItem,
+  Dialogue,
+  createState,
+  createStateItem,
+} from "@/state";
 
 /**
  * Tests the TextPrompt class
@@ -28,7 +35,7 @@ describe("llm-exe:state/BaseState", () => {
     expect(state).toHaveProperty("attributes");
     expect(state).toHaveProperty("context");
   });
-  
+
   it("creates class with expected properties", () => {
     const state = new MockState();
     expect(state).toHaveProperty("createDialogue");
@@ -122,7 +129,7 @@ describe("llm-exe:state/BaseState", () => {
   });
   it("state.getDialogue with default name", () => {
     const state = new MockState();
-     state.createDialogue();
+    state.createDialogue();
     const dialogue = state.getDialogue();
     expect(dialogue).toBeInstanceOf(Dialogue);
   });
@@ -210,51 +217,63 @@ describe("llm-exe:state/BaseState", () => {
 
   it("state.createContextItem error if invalid", () => {
     const state = new MockState();
-    expect(() => state.createContextItem({} as any)).toThrowError("Invalid context item. Must be instance of BaseStateItem")
+    expect(() => state.createContextItem({} as any)).toThrowError(
+      "Invalid context item. Must be instance of BaseStateItem"
+    );
   });
 
   it("state.createContextItem creates if valid", () => {
     const state = new MockState();
-    const context = state.createContextItem(createStateItem("user", { name: "Greg" }))
-    expect(context).toBeInstanceOf(DefaultStateItem)
-    expect(state.context).toHaveProperty("user")
-    expect(state.context["user"].getValue()).toEqual({ name: "Greg" })
+    const context = state.createContextItem(
+      createStateItem("user", { name: "Greg" })
+    );
+    expect(context).toBeInstanceOf(DefaultStateItem);
+    expect(state.context).toHaveProperty("user");
+    expect(state.context["user"].getValue()).toEqual({ name: "Greg" });
   });
 
   it("state.createContextItem error if exists", () => {
     const state = new MockState();
-    state.createContextItem(createStateItem("user", { name: "Greg" }))
-    expect(() => state.createContextItem(createStateItem("user", { name: "Greg" }))).toThrowError("key (user) already exists")
+    state.createContextItem(createStateItem("user", { name: "Greg" }));
+    expect(() =>
+      state.createContextItem(createStateItem("user", { name: "Greg" }))
+    ).toThrowError("key (user) already exists");
   });
 
   it("state.getContext gets context item", () => {
     const state = new MockState();
-    const value = { name: "Greg" }
-    state.createContextItem(createStateItem("user", value))
-    const context = state.getContext<typeof value>("user")
-    expect(context).toBeInstanceOf(DefaultStateItem)
-    expect(context.getValue()).toEqual({ name: "Greg" })
+    const value = { name: "Greg" };
+    state.createContextItem(createStateItem("user", value));
+    const context = state.getContext<typeof value>("user");
+    expect(context).toBeInstanceOf(DefaultStateItem);
+    expect(context.getValue()).toEqual({ name: "Greg" });
   });
 
   it("state.getContext gets context item", () => {
     const state = new MockState();
-    const value = { name: "Greg" }
-    state.createContextItem(createStateItem("user", value))
-    const contextValue = state.getContextValue<typeof value>("user")
-    expect(contextValue).toEqual({ name: "Greg" })
+    const value = { name: "Greg" };
+    state.createContextItem(createStateItem("user", value));
+    const contextValue = state.getContextValue<typeof value>("user");
+    expect(contextValue).toEqual({ name: "Greg" });
   });
-
-  
 
   it("DefaultState.saveState logs warning", async () => {
     const logSpy = jest.spyOn(console, "log");
     const state = new DefaultState();
-    await state.saveState()
-    expect(logSpy).toHaveBeenCalledWith("Save not implemented in default state.");
-  })
+    await state.saveState();
+    expect(logSpy).toHaveBeenCalledWith(
+      "Save not implemented in default state."
+    );
+  });
   it("state.getContext gets context item", async () => {
     const state = new MockState();
-    await state.saveState()
-  })
+    await state.saveState();
+  });
+
+  it("createStateFrom recreated state", async () => {
+    const state = new MockState();
+    await state.saveState();
+  });
+
   
 });
