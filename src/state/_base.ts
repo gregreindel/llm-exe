@@ -63,7 +63,7 @@ export abstract class BaseState {
 
   serialize() {
     const dialogues: any = {};
-    const context: any = { ...this.context };
+    const context: any = {};
     const attributes: any = { ...this.attributes };
 
     const dialogueKeys = Object.keys(
@@ -71,6 +71,13 @@ export abstract class BaseState {
     ) as (keyof typeof this.dialogues)[];
     for (const dialogueKey of dialogueKeys) {
       dialogues[dialogueKey] = this.dialogues[dialogueKey].serialize();
+    }
+
+    const contextKeys = Object.keys(
+      this.context
+    ) as (keyof typeof this.context)[];
+    for (const contextKey of contextKeys) {
+      context[contextKey] = this.context[contextKey].serialize();
     }
 
     return {

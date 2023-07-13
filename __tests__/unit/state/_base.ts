@@ -161,9 +161,17 @@ describe("llm-exe:state/BaseState", () => {
     dialogue2.setUserMessage("This is the user message");
     dialogue2.setAssistantMessage("Hello, this is the assistant");
 
+    state.createContextItem(createStateItem("mock-item", {test: "val"}))
+
     expect(state.serialize()).toEqual({
       attributes: {},
-      context: {},
+      context: {
+        "mock-item": {
+          class: "BaseStateItem",
+          name: "mock-item",
+          value: {"mock-item": { test: "val" }},
+        }
+      },
       dialogues: {
         chat: {
           class: "Dialogue",
