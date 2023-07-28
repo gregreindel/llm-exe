@@ -12,7 +12,13 @@ import escape from "lodash.escape";
 import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
 export { get, set, pick, camelCase, unEscape, escape };
-
+export {
+  hbs,
+  importPartials,
+  importHelpers,
+  registerPartials,
+  registerHelpers,
+} from "./handlebars/hbs";
 export { filterObjectOnSchema } from "./json-schema-filter";
 export { replaceTemplateString } from "./replaceTemplateString";
 export { asyncCallWithTimeout } from "./asyncCallWithTimeout";
@@ -158,31 +164,30 @@ export function extractPromptPlaceholderToken(tok: string) {
       return {
         token: ">DialogueHistory",
         key: matchKey[2],
-        assistant: get(matchAssistant, '[2]', ""),
-        user:get(matchUser, '[2]', "")  ,
+        assistant: get(matchAssistant, "[2]", ""),
+        user: get(matchUser, "[2]", ""),
       };
     }
-  }
-  else if (token.substring(2, 20) === ">SingleChatMessage") {
+  } else if (token.substring(2, 20) === ">SingleChatMessage") {
     const matchRole = tok.match(/role=(['"`])((?:(?!\1).)*)\1/);
     const matchContent = tok.match(/content=(['"`])((?:(?!\1).)*)\1/);
     const matchName = tok.match(/name=(['"`])((?:(?!\1).)*)\1/);
     if (matchRole) {
       return {
         token: ">SingleChatMessage",
-        name: get(matchName, '[2]'),
-        content:unEscape(get(matchContent, '[2]', "") ),
-        role: get(matchRole, '[2]', "")
+        name: get(matchName, "[2]"),
+        content: unEscape(get(matchContent, "[2]", "")),
+        role: get(matchRole, "[2]", ""),
       };
     }
   }
   return { token: "" };
 }
 
-export function getEnvironmentVariable(name: string){
-  if(typeof process === "object" && process?.env){
-    return process.env[name]
-  }else{
-    return undefined
+export function getEnvironmentVariable(name: string) {
+  if (typeof process === "object" && process?.env) {
+    return process.env[name];
+  } else {
+    return undefined;
   }
 }

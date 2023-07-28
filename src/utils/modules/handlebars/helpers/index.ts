@@ -10,15 +10,35 @@ export function getOr(this: any, arg1: string, arg2: string) {
   return typeof arg1 !== "undefined" && arg1 !== "" ? arg1 : arg2;
 }
 
-export function indentJson(this: any, arg1: Record<string, any>) {
-  return typeof arg1 === "object" ? JSON.stringify(arg1, null, 2) : arg1;
+export function indentJson(
+  this: any,
+  arg1: Record<string, any>,
+  collapse = 'false'
+) {
+  if (typeof arg1 !== "object") {
+    return arg1;
+  }
+
+  if (collapse == 'true') {
+    return JSON.stringify(arg1);
+  }
+
+  return JSON.stringify(arg1, null, 2);
 }
 
-export function jsonSchemaExample(this: any, key: string, prop: string) {
+export function jsonSchemaExample(this: any, key: string, prop: string, collapse: string) {
   const schema = get(this, key);
   if (schema && schema.type) {
     const result = schemaExampleWith(schema, prop);
-    return typeof result === "object" ? JSON.stringify(result, null, 2) : "";
+    if (typeof result !== "object") {
+      return "";
+    }
+
+    if (collapse == 'true') {
+      return JSON.stringify(result);
+    }
+    
+    return JSON.stringify(result, null, 2);
   }
   return "";
 }

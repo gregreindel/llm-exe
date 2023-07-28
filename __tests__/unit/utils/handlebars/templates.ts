@@ -88,6 +88,12 @@ describe("handlebars templates", () => {
   });
 
   test("JsonSchema template is empty string if no matching key", () => {
+    const value = replaceTemplateString(`{{>JsonSchema key='schema' collapse='true'}}`, {});
+    const expected = ``;
+    expect(value).toEqual(expected);
+  });
+
+  test("JsonSchema template is empty string if no matching key", () => {
     const schema = {
       type: "object",
       properties: {
@@ -250,4 +256,26 @@ describe("handlebars templates", () => {
     expect(value4).toEqual(expected);
   });
 
+  test("JsonSchema template works if matching key and collapse", () => {
+    const schema = {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          statement: { type: "string", default: "unknown" },
+          answer: { type: "string", default: "unknown" },
+          explanation: { type: "string", default: "unknown" },
+          confidence: { type: "integer", default: 0 },
+        },
+        required: ["statement", "answer", "confidence", "explanation"],
+        additionalProperties: false,
+      },
+    };
+    const value4 = replaceTemplateString(`{{>JsonSchema key='schema' collapse='true'}}`, {
+      schema,
+    });
+
+    const expected = `{"type":"array","items":{"type":"object","properties":{"statement":{"type":"string","default":"unknown"},"answer":{"type":"string","default":"unknown"},"explanation":{"type":"string","default":"unknown"},"confidence":{"type":"integer","default":0}},"required":["statement","answer","confidence","explanation"],"additionalProperties":false}}`;
+    expect(value4).toEqual(expected);
+  });
 });

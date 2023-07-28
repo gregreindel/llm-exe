@@ -1,7 +1,8 @@
-import { create } from "handlebars";
+import { hbs, importPartials, registerPartials, importHelpers,
+  registerHelpers } from "./hbs";
 import * as helpers from "./helpers";
 import * as contextPartials from "./templates";
-import { PromptTemplateOptions } from "@/types";
+import { PromptTemplateOptions,  } from "@/types";
 import { getEnvironmentVariable } from "@/utils";
 
 export function useHandlebars(
@@ -10,40 +11,19 @@ export function useHandlebars(
     partials: [],
   }
 ) {
-  var hbs = create();
   const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
   for (const helperKey of helperKeys) {
     hbs.registerHelper(helperKey, helpers[helperKey]);
   }
 
   if (configuration?.helpers && Array.isArray(configuration.helpers)) {
-    for (const externalHelper of configuration.helpers) {
-      if (
-        externalHelper.name &&
-        typeof externalHelper.name === "string" &&
-        typeof externalHelper.handler === "function"
-      ) {
-        hbs.registerHelper(externalHelper.name, externalHelper.handler);
-      }
-    }
+    registerHelpers(configuration.helpers)
   }
 
   const helperPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH');
   if (helperPath) {
     const externalHelpers = require(helperPath);
-    if (externalHelpers) {
-      const externalHelperKeys = Object.keys(
-        externalHelpers
-      ) as (keyof typeof externalHelpers)[];
-      for (const externalHelperKey of externalHelperKeys) {
-        if (typeof externalHelperKey === "string") {
-          hbs.registerHelper(
-            externalHelperKey,
-            externalHelpers[externalHelperKey]
-          );
-        }
-      }
-    }
+    registerHelpers(importHelpers(externalHelpers))
   }
 
   const contextPartialKeys = Object.keys(
@@ -57,33 +37,13 @@ export function useHandlebars(
   }
 
   if (configuration?.partials && Array.isArray(configuration.partials)) {
-    for (const externalPartial of configuration.partials) {
-      if (
-        externalPartial.name &&
-        typeof externalPartial.name === "string" &&
-        typeof externalPartial.template === "string"
-      ) {
-        hbs.registerPartial(externalPartial.name, externalPartial.template);
-      }
-    }
+    registerPartials(configuration.partials)
   }
 
   const partialsPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH');
   if (typeof process === "object" && partialsPath) {
     const externalPartials = require(partialsPath);
-    if (externalPartials) {
-      const externalPartialKeys = Object.keys(
-        externalPartials
-      ) as (keyof typeof externalPartials)[];
-      for (const externalPartialKey of externalPartialKeys) {
-        if (typeof externalPartialKey === "string") {
-          hbs.registerPartial(
-            externalPartialKey,
-            externalPartials[externalPartialKey]
-          );
-        }
-      }
-    }
+    registerPartials(importPartials(externalPartials));
   }
 
   /* istanbul ignore next */
