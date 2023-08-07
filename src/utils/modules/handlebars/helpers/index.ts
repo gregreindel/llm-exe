@@ -1,5 +1,12 @@
-import { get } from "@/utils";
+import { get, replaceTemplateString } from "@/utils";
 import { schemaExampleWith } from "../../json-schema-filter";
+
+export function hbsInTemplate(this: any, arg1: string) {
+  const data = this;
+  const replace = replaceTemplateString(arg1, data);
+  return replace;
+}
+
 
 export function getKeyOr(this: any, key: string, arg2: any) {
   const res = get(this, key);

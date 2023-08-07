@@ -1,7 +1,7 @@
 import { PromptPartial, PromptHelper } from "@/types";
-import * as Handlebars from "handlebars";
+import Handlebars from "handlebars";
 
-export const hbs = Handlebars.create();
+export const hbs = Handlebars; 
 
 export function importPartials(_partials: { [key in string]: string }) {
   let partials: PromptPartial[] = [];

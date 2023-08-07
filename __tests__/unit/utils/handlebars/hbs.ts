@@ -1,10 +1,11 @@
 
 
-import { hbs,
+import { 
     importPartials,
     importHelpers,
     registerPartials,
     registerHelpers,
+    hbs
  } from "@/utils";
 
 

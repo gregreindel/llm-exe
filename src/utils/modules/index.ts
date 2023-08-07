@@ -12,6 +12,7 @@ import escape from "lodash.escape";
 import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
 export { get, set, pick, camelCase, unEscape, escape };
+export { calculateOpenAiPrice } from "./openai"
 export {
   hbs,
   importPartials,

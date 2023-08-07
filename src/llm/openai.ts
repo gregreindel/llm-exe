@@ -7,9 +7,8 @@ import {
 } from "@/types";
 import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
-import { assert, getEnvironmentVariable, pick, removeEmptyFromObject } from "@/utils";
+import { assert, calculateOpenAiPrice, getEnvironmentVariable, pick, removeEmptyFromObject } from "@/utils";
 import { OutputOpenAICompletion } from "./output/openai";
-import { OpenAiPricing } from "@/utils/const";
 
 /**
  * Create a new instance of the OpenAI API wrapper.
@@ -120,26 +119,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * @returns An object for input/output tokens and cost.
    */
   calculatePrice(input_tokens: number, output_tokens: number = 0) {
-    const out = {
-      input_cost: 0,
-      output_cost: 0,
-      total_cost: 0,
-    };
-
-    const price = OpenAiPricing[this.model];
-    if (price) {
-      const [amount, inputAmount, outputAmount] = price;
-      if (inputAmount && input_tokens) {
-        out["input_cost"] = (input_tokens / amount) * inputAmount;
-      }
-      if (outputAmount && output_tokens) {
-        out["output_cost"] = (output_tokens / amount) * outputAmount;
-      }
-
-      out["total_cost"] = out["input_cost"] + out["output_cost"];
-    }
-
-    return out;
+    return calculateOpenAiPrice(this.model, input_tokens, output_tokens)
   }
 
   /**

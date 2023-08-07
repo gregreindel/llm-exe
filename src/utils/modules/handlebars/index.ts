@@ -47,7 +47,7 @@ export function useHandlebars(
   }
 
   /* istanbul ignore next */
-  hbs.registerHelper("with", function (context, options) {
+  hbs.registerHelper("with", function (context: any, options: any) {
     return options.fn(context);
   });
 
