@@ -9,7 +9,11 @@ export interface PromptTemplateOptions {
   helpers?: PromptHelper[];
 }
 
-export interface PromptOptions extends PromptTemplateOptions {}
+export interface PromptOptions extends PromptTemplateOptions {
+  preFilters?: ((prompt: string) => string)[];
+  postFilters?: ((prompt: string) => string)[];
+}
+
 export interface ChatPromptOptions extends PromptOptions {
   allowUnsafeUserTemplate?: boolean;
 }

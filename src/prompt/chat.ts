@@ -50,7 +50,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     initialSystemPromptMessage?: string,
     options?: ChatPromptOptions
   ) {
-    super(initialSystemPromptMessage);
+    super(initialSystemPromptMessage, options);
     if (options?.allowUnsafeUserTemplate) {
       this.parseUserTemplates = true;
     }
@@ -301,14 +301,14 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                     break;
                   }
 
-                  case "assistant":{ 
-                    if(message.function_call){
+                  case "assistant": {
+                    if (message.function_call) {
                       messagesOut.push({
                         role: "assistant",
                         content: null,
-                        function_call: message.function_call
+                        function_call: message.function_call,
                       });
-                    }else if(message?.content){
+                    } else if (message?.content) {
                       messagesOut.push({
                         role: "assistant",
                         content: message.content,
@@ -368,15 +368,34 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           messagesOut.push(
             Object.assign({}, message, {
               content: message.content
-                ? replaceTemplateString(message.content, replacements, {
-                    partials: this.partials,
-                    helpers: this.helpers,
-                  })
+                ? this.runPromptFilter(
+                    replaceTemplateString(
+                      this.runPromptFilter(message.content, this.filters.pre, values),
+                      replacements,
+                      {
+                        partials: this.partials,
+                        helpers: this.helpers,
+                      }
+                    ),
+                    this.filters.post,
+                    values
+                  )
                 : null,
             })
           );
         } else {
-          messagesOut.push(message);
+          /* istanbul ignore next */
+          messagesOut.push(
+            Object.assign({}, message, {
+              content: message.content
+                ? this.runPromptFilter(
+                    this.runPromptFilter(message.content, this.filters.pre, values),
+                    this.filters.post,
+                    values
+                  )
+                : null,
+            })
+          );
         }
       }
     }

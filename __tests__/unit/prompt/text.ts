@@ -136,4 +136,52 @@ describe("llm-exe:prompt/TextPrompt", () => {
     const textPrompt = new TextPrompt();
     expect(textPrompt.validate()).toBe(true);
   });
+
+  it("can add pre filters that run _before_ replacements", () => {
+    function filterPrompt(input: string){
+      if(input === "Hello"){
+        expect(input).toEqual("Hello {{agentName}}");
+      }
+      return input
+    }
+    const options = {  preFilters: [filterPrompt] }
+    const prompt = new TextPrompt("Hello {{agentName}}", options);
+    const format = prompt.format({ agentName: "Greg" });
+    expect(format).toEqual("Hello Greg")
+  });
+
+  it("can add pre filters that run _after_ replacements", () => {
+    function filterPrompt(input: string){
+      if(input === "Hello"){
+        expect(input).toEqual("Hello Greg");
+      }
+      return input
+    }
+    const options = {  postFilters: [filterPrompt] }
+    const prompt = new TextPrompt("Hello {{agentName}}", options);
+    const format = prompt.format({ agentName: "Greg" });
+    expect(format).toEqual("Hello Greg")
+  });
+  it("can add pre filters that modify prompt before replacements", () => {
+    function filterPrompt(input: string){
+      if(input === "Hello"){
+        return "Hello World"
+      }
+      return input
+    }
+    const options = {  preFilters: [filterPrompt] }
+    const prompt = new TextPrompt("Hello", options);
+    const format = prompt.format({});
+    expect(format).toEqual("Hello World")
+  });
+  it("can add post filters that modify prompt after replacements", () => {
+    function filterPrompt(input: string){
+      // replaces 3 line breaks with 2
+      return input.replace(`\n\n\n`, `\n\n`)
+    }
+    const options = {  postFilters: [filterPrompt] }
+    const prompt = new TextPrompt("Hello{{threeLineBreaks}}World", options);
+    const format = prompt.format({threeLineBreaks: `\n\n\n`});
+    expect(format).toEqual("Hello\n\nWorld")
+  });
 });

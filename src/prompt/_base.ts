@@ -20,6 +20,14 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   public partials: PromptPartial[] = [];
   public helpers: PromptHelper[] = [];
 
+  public filters: {
+    pre: ((prompt: string) => string)[];
+    post: ((prompt: string) => string)[];
+  } = {
+      pre: [],
+      post: [],
+    };
+
   /**
    * constructor description
    * @param initialPromptMessage An initial message to add to the prompt.
@@ -35,6 +43,12 @@ export abstract class BasePrompt<I extends Record<string, any>> {
       }
       if (options.helpers) {
         this.registerHelpers(options.helpers);
+      }
+      if (options.preFilters && Array.isArray(options.preFilters)) {
+        this.filters.pre.push(...options.preFilters)
+      }
+      if (options.postFilters && Array.isArray(options.postFilters)) {
+        this.filters.post.push(...options.postFilters)
       }
     }
   }
@@ -75,9 +89,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @param partialOrPartials Additional partials that can be made available to the template parser.
    * @return BasePrompt so it can be chained.
    */
-  registerPartial(
-    partialOrPartials: PromptPartial | PromptPartial[]
-  ) {
+  registerPartial(partialOrPartials: PromptPartial | PromptPartial[]) {
     const partials = Array.isArray(partialOrPartials)
       ? partialOrPartials
       : [partialOrPartials];
@@ -90,9 +102,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @param helperOrHelpers Additional helper functions that can be made available to the template parser.
    * @return BasePrompt so it can be chained.
    */
-  registerHelpers(
-    helperOrHelpers: PromptHelper | PromptHelper[]
-  ) {
+  registerHelpers(helperOrHelpers: PromptHelper | PromptHelper[]) {
     const helpers = Array.isArray(helperOrHelpers)
       ? helperOrHelpers
       : [helperOrHelpers];
@@ -109,19 +119,40 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   format(values: I, separator: string = "\n\n"): string | IChatMessages {
     const replacements = this.getReplacements(values);
     /* istanbul ignore next */
-    return this.messages
+    const messages = this.messages
       .map((message) => {
-        return message.content ? replaceTemplateString(message.content, replacements, {
-          partials: this.partials,
-          helpers: this.helpers,
-        }) : "";
+        return message.content
+          ? replaceTemplateString(
+            this.runPromptFilter(message.content, this.filters.pre, values),
+            replacements,
+            {
+              partials: this.partials,
+              helpers: this.helpers,
+            }
+          )
+          : "";
       })
       .join(separator);
+
+    return this.runPromptFilter(messages, this.filters.post, values);
+  }
+
+  runPromptFilter(
+    prompt: string,
+    filters: ((prompt: string, values: I) => string)[],
+    values: I
+  ): string {
+    let promptValue = prompt;
+    for (const filter of filters) {
+      promptValue = filter(promptValue, values);
+    }
+    return promptValue;
   }
 
   getReplacements(values: I) {
     const { input = "", ...restOfValues } = values;
-    const replacements = Object.assign({},
+    const replacements = Object.assign(
+      {},
       { ...restOfValues },
       {
         input: input,

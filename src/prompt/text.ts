@@ -1,3 +1,4 @@
+import { PromptOptions } from "@/types";
 import { BasePrompt } from "./_base";
 
 /**
@@ -6,7 +7,7 @@ import { BasePrompt } from "./_base";
  * @extends BasePrompt
  */
 export class TextPrompt<I extends Record<string, any>> extends BasePrompt<I> {
-  constructor(base?: string) {
-    super(base);
+  constructor(base?: string, options?: PromptOptions) {
+    super(base, options);
   }
 }
