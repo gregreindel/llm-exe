@@ -55,9 +55,9 @@ export abstract class BaseLlm<C = any> {
    * The BaseLlm constructor takes an options object and sets up the instance.
    * @param {BaseLlmOptions} options - The options object for LLM configuration.
    */
-  constructor(options: BaseLlmOptions) {
+  constructor(options: BaseLlmOptions, client: C) {
     this.traceId = options?.traceId || null;
-    this.client = null as C;
+    this.client = client;
     this.promptType = options?.promptType || "text";
     this.timeout = options.timeout || 30000;
     this.jitter = options.jitter || "none";

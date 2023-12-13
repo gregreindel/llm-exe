@@ -79,7 +79,7 @@ export const prompt = createChatPrompt(instruction)
 export async function YesOrNoBot<I extends string>(
   input: I
 ): Promise<{ response: string }> {
-  const llm = new OpenAI({
+  const llm = new LlmOpenAI({
     modelName: "gpt-3.5-turbo",
   });
 

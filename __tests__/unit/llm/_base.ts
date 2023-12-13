@@ -8,12 +8,12 @@ import { OutputDefault } from '@/llm/output';
 describe("llm-exe:executor/BaseLlm", () => { 
   class MockLlm extends BaseLlm<null> {
     constructor(options: BaseLlmOptions = {}) {
-      super(options);
+      super(options, null);
     }
   }
   class MockLlmThrowsError extends BaseLlm<null> {
     constructor(options: BaseLlmOptions = {}) {
-      super(options);
+      super(options, null);
     }
     async _call(){
       throw new Error("This does not work") 

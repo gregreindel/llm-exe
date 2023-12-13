@@ -3,7 +3,7 @@ import { useExecutors, createCallableExecutor } from "@/plugins/callable";
 import { createCoreExecutor, createLlmExecutor } from "@/executor/_functions";
 import { BaseExecutor } from "@/executor/_base";
 import * as utils from "./utils";
-import { BaseLlm, OpenAI, createLlmOpenAi } from "./llm";
+import { BaseLlm, LlmOpenAI, createLlmOpenAi } from "./llm";
 import { EmbeddingOpenAI } from "./embedding/openai";
 import { PineconeVectorStore } from "./vector";
 
@@ -41,7 +41,8 @@ export const llmExe = {
    * Llm
    */
   BaseLlm,
-  OpenAI,
+  OpenAI:LlmOpenAI,
+  LlmOpenAI,
   createLlmOpenAi,
   /**
    * Prompt

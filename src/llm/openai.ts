@@ -1,4 +1,4 @@
-import { Configuration, OpenAIApi } from "openai";
+import type { OpenAI } from "openai";
 import {
   IChatMessages,
   OpenAIModelName,
@@ -15,14 +15,14 @@ import { OutputOpenAICompletion } from "./output/openai";
  * @param options - Configuration options for the OpenAI API wrapper.
  * @returns - A new instance of the OpenAI API wrapper class.
  */
-export function createLlmOpenAi(options: OpenAIOptions) {
-  return new OpenAI(options);
+export function createLlmOpenAi(options: OpenAIOptions, client: OpenAI) {
+  return new LlmOpenAI(options, client);
 }
 
 /**
  * A class that extends BaseLlm and provides functionality for the OpenAI API.
  */
-export class OpenAI extends BaseLlm<OpenAIApi> {
+export class LlmOpenAI extends BaseLlm<OpenAI> {
   private model: OpenAIModelName;
   private temperature: number;
   private maxTokens: number;
@@ -39,7 +39,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
    * Constructor for the OpenAI class.
    * @param {OpenAIOptions} options - Configuration options for the OpenAI API wrapper.
    */
-  constructor(options: OpenAIOptions) {
+  constructor(options: OpenAIOptions, client: OpenAI) {
     const {
       openAIApiKey = getEnvironmentVariable("OPEN_AI_API_KEY"),
       modelName,
@@ -56,7 +56,7 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       ...restOfOptions
     } = options;
 
-    super(restOfOptions);
+    super(restOfOptions, client);
 
     this.model = modelName || "gpt-3.5-turbo";
     this.temperature = temperature || 0;
@@ -70,20 +70,12 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     this.logitBias = logitBias;
     this.user = user;
 
-    
-
     if (this.model.substring(0, 13) === "gpt-3.5-turbo" || 
     this.model.substring(0, 5) === "gpt-4") {
       this.promptType = "chat";
     } else {
       this.promptType = "text";
     }
-
-    this.client = new OpenAIApi(
-      new Configuration({
-        apiKey: openAIApiKey,
-      })
-    );
   }
 
   /**
@@ -198,10 +190,9 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
     if(_args &&  _args?.functions?.length){
       options["functions"] = _args.functions.map(f => pick(f, ["name", "description", "parameters"]))
     }
-    const response = await this.client.createChatCompletion(options as any);
-    const { data } = response;
-    this.metrics.history.push(data);
-    return new OutputOpenAIChat(data);
+    const response = await this.client.chat.completions.create(options as any);
+    this.metrics.history.push(response);
+    return new OutputOpenAIChat(response);
   }
 
   /**
@@ -226,11 +217,10 @@ export class OpenAI extends BaseLlm<OpenAIApi> {
       user: this.user,
     });
 
-    const response = await this.client.createCompletion(options);
+    const response = await this.client.completions.create(options);
 
-    const { data } = response;
-    this.metrics.history.push(data);
-    return new OutputOpenAICompletion(data);
+    this.metrics.history.push(response);
+    return new OutputOpenAICompletion(response);
   }
 
   getMetadata() {

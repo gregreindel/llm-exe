@@ -1,4 +1,4 @@
-import { Configuration, OpenAIApi } from "openai";
+import { OpenAI } from "openai";
 import { asyncCallWithTimeout, chunkArray, getEnvironmentVariable } from "@/utils";
 import { BaseEmbedding } from "./base";
 import { backOff } from "exponential-backoff";
@@ -17,11 +17,7 @@ export class EmbeddingOpenAI extends BaseEmbedding {
     this.stripNewLines = !!options.stripNewLines;
 
     const apiKey = options.openAIApiKey || getEnvironmentVariable("OPENAI_API_KEY");
-    this.client = new OpenAIApi(
-      new Configuration({
-        apiKey,
-      })
-    );
+    this.client = new OpenAI({apiKey});
   }
 
   async embedDocuments(texts: string[]) {
@@ -62,7 +58,7 @@ export class EmbeddingOpenAI extends BaseEmbedding {
         numOfAttempts: this.numOfAttempts,
         jitter: this.jitter,
         retry: () => {
-          console.log(`OpenAI timeout after ${this.timeout}. Retrying...`);
+          console.log(`LlmOpenAI timeout after ${this.timeout}. Retrying...`);
           return true;
         },
       }

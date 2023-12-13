@@ -17,7 +17,9 @@ export type OpenAIChatModelName =
   | "gpt-4-0613"
   | "gpt-4"
   | "gpt-4-0613"
-  | "gpt-4-32k-0613";
+  | "gpt-4-32k-0613"
+  | `gpt-4-${string}`
+  | `gpt-3.5-turbo-${string}`;
 
 export type OpenAIConversationModelName =
   | "davinci"

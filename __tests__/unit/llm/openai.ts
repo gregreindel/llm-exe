@@ -1,10 +1,11 @@
-import { BaseLlm, OpenAI, createLlmOpenAi } from "@/llm";
+import { BaseLlm, LlmOpenAI, createLlmOpenAi } from "@/llm";
 import { OutputOpenAIChat } from "@/llm/output";
 import { OutputOpenAICompletion } from "@/llm/output/openai";
+import { OpenAI } from "openai" 
+const openAiClient = new OpenAI({})
 jest.createMockFromModule("../../__mocks__/openai.js");
 
-
-describe("llm-exe:llm/OpenAI", () => {
+describe("llm-exe:llm/LlmOpenAI", () => {
 
 const OLD_ENV = process.env;
 
@@ -20,33 +21,33 @@ afterAll(() => {
   
 it("defaults env variable OPEN_AI_API_KEY", () => {
   process.env.OPEN_AI_API_KEY = "test-12345"
-  const llm = new OpenAI({modelName: "gpt-3.5-turbo"});
+  const llm = new LlmOpenAI({modelName: "gpt-3.5-turbo"}, openAiClient);
   console.log((llm as any).client)
   expect(process.env.OPEN_AI_API_KEY).toEqual("test-12345");
 });
 
 });
 
-describe("llm-exe:llm/OpenAI", () => {
+describe("llm-exe:llm/LlmOpenAI", () => {
 
 
   it("defaults to gpt-3.5-turbo", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "" as any });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "" as any }, openAiClient);
     expect((llm as any).model).toEqual("gpt-3.5-turbo");
   });
 
   it("defaults to string parser", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     expect(llm).toBeInstanceOf(BaseLlm);
   });
 
   it("defaults to string parser", () => {
-    const llm = new OpenAI({
+    const llm = new LlmOpenAI({
       openAIApiKey: "",
       modelName: "gpt-3.5-turbo",
       user: "test-123",
       n: 4,
-    });
+    }, openAiClient);
     expect(llm).toBeInstanceOf(BaseLlm);
     expect((llm as any).n).toEqual(4);
     expect((llm as any).user).toEqual("test-123");
@@ -56,22 +57,22 @@ describe("llm-exe:llm/OpenAI", () => {
     const llm = createLlmOpenAi({
       openAIApiKey: "",
       modelName: "gpt-3.5-turbo",
-    });
-    expect(llm).toBeInstanceOf(OpenAI);
+    }, openAiClient);
+    expect(llm).toBeInstanceOf(LlmOpenAI);
   });
 
   it("calculates correct price for gpt-3.5-turbo", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
-      input_cost: 0.0015,
+      input_cost: 0.001,
       output_cost: 0.001,
-      total_cost: 0.0025,
+      total_cost: 0.002,
     });
   });
   it("calculates correct price for gpt-4", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-4" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-4" }, openAiClient );
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
@@ -81,7 +82,7 @@ describe("llm-exe:llm/OpenAI", () => {
     });
   });
   it("calculates correct price for davinci", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "davinci" }, openAiClient);
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
@@ -91,7 +92,7 @@ describe("llm-exe:llm/OpenAI", () => {
     });
   });
   it("calculates correct price for text-curie-001", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "text-curie-001" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "text-curie-001" }, openAiClient);
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
@@ -101,7 +102,7 @@ describe("llm-exe:llm/OpenAI", () => {
     });
   });
   it("calculates correct price for text-babbage-001", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "text-babbage-001" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "text-babbage-001" }, openAiClient);
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
@@ -111,56 +112,56 @@ describe("llm-exe:llm/OpenAI", () => {
     });
   });
   it("calculates correct price for text-ada-001", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "text-ada-001" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "text-ada-001" }, openAiClient);
     const prompt = 1000;
     const reply = 500;
     expect(llm.calculatePrice(prompt, reply)).toEqual({
-      input_cost: 0.0004,
-      output_cost: 0.0002,
-      total_cost: 0.0006000000000000001,
+      input_cost: 0.0001,
+      output_cost: 0.00005,
+      total_cost: 0.00015000000000000001,
     });
   });
   it("calculates correct price for gpt-3.5-turbo, defaults to prompt metrics", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     const prompt = 1000;
     expect(llm.calculatePrice(prompt)).toEqual({
-      input_cost: 0.0015,
+      input_cost: 0.001,
       output_cost: 0,
-      total_cost: 0.0015,
+      total_cost: 0.001,
     });
   });
   it("defaults to chat for gpt-3.5-turbo", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     const metadata = llm.getMetadata();
     expect(metadata.promptType).toEqual("chat");
   });
   it("defaults to chat for gpt-4", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-4" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-4" }, openAiClient);
     const metadata = llm.getMetadata();
     expect(metadata.promptType).toEqual("chat");
   });
   it("defaults to text for davinci", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "davinci" }, openAiClient);
     const metadata = llm.getMetadata();
     expect(metadata.promptType).toEqual("text");
   });
   it("defaults to ", () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     const metadata = llm.getMetadata();
     expect(metadata.model).toEqual("gpt-3.5-turbo");
   });
   it("defaults to ", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     const response = await llm.chat([{ role: "user", content: "Hello??" }]);
     expect(response).toBeInstanceOf(OutputOpenAIChat);
   });
   it("defaults to ", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "davinci" }, openAiClient);
     const response = await llm.completion("Hello??");
     expect(response).toBeInstanceOf(OutputOpenAICompletion);
   });
   it("getMetrics", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     expect(llm.getMetrics()).toEqual({
       total_completionTokens: 0,
       total_promptTokens: 0,
@@ -179,7 +180,7 @@ describe("llm-exe:llm/OpenAI", () => {
   it("logMetrics", async () => {
     const logSpy = jest.spyOn(console, "table");
 
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     await llm.chat([
       { role: "user", content: "__mock__:openAiBasicTest:Hello!" },
     ]);
@@ -199,7 +200,7 @@ describe("llm-exe:llm/OpenAI", () => {
   });
 
   it("chat model accepts functions", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     await llm.chat([
       { role: "user", content: "__mock__:openAiBasicTest:Hello!" },
     ], {
@@ -211,7 +212,7 @@ describe("llm-exe:llm/OpenAI", () => {
 
 
   it("_call calls correct model for chat", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
     jest.spyOn(llm, "chat");
     await llm._call([
       { role: "user", content: "__mock__:openAiBasicTest:Hello!" },
@@ -222,7 +223,7 @@ describe("llm-exe:llm/OpenAI", () => {
   });
 
   it("_call calls correct model for completion", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "davinci" }, openAiClient);
     jest.spyOn(llm, "completion");
     await llm._call("__mock__:openAiBasicTest:Hello!");
     expect(llm.completion).toHaveBeenCalledWith(
@@ -231,17 +232,17 @@ describe("llm-exe:llm/OpenAI", () => {
   });
 
   it("completion throws error if input missing", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "davinci" }, openAiClient);
     expect(llm.completion("")).rejects.toThrowError("Missing prompt.");
   });
   it("completion throws error if input invalid", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "davinci" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "davinci" }, openAiClient);
     expect(llm.completion(0 as unknown as string)).rejects.toThrowError(
       "Missing prompt."
     );
   });
   it("completion throws error if input invalid", async () => {
-    const llm = new OpenAI({ openAIApiKey: "", modelName: "gpt-4" });
+    const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-4" }, openAiClient);
     expect(llm.chat(0 as unknown as any[])).rejects.toThrowError(
       "Invalid prompt."
     );
