@@ -3,7 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "declaration": false,
-    "module": "es2020",
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "es2021",
     "esModuleInterop": true,

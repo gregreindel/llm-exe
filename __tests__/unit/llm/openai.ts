@@ -30,7 +30,6 @@ it("defaults env variable OPEN_AI_API_KEY", () => {
 
 describe("llm-exe:llm/LlmOpenAI", () => {
 
-
   it("defaults to gpt-3.5-turbo", () => {
     const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "" as any }, openAiClient);
     expect((llm as any).model).toEqual("gpt-3.5-turbo");
@@ -207,9 +206,7 @@ describe("llm-exe:llm/LlmOpenAI", () => {
       function_call: "auto",
       functions: [{name: "test", description: "none", parameters: {}}]
     });
-
   });
-
 
   it("_call calls correct model for chat", async () => {
     const llm = new LlmOpenAI({ openAIApiKey: "", modelName: "gpt-3.5-turbo" }, openAiClient);
@@ -247,4 +244,5 @@ describe("llm-exe:llm/LlmOpenAI", () => {
       "Invalid prompt."
     );
   });
+
 });

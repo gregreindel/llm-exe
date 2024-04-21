@@ -1,23 +1,21 @@
-import { OpenAI } from "openai";
-import { asyncCallWithTimeout, chunkArray, getEnvironmentVariable } from "@/utils";
+import { asyncCallWithTimeout, chunkArray } from "@/utils";
 import { BaseEmbedding } from "./base";
 import { backOff } from "exponential-backoff";
 import { EmbedOpenAIOptions } from "@/types";
+import OpenAI from "openai";
 
 export class EmbeddingOpenAI extends BaseEmbedding {
   private model: string;
 
   public batchSize: number;
   public stripNewLines: boolean;
-  constructor(options: EmbedOpenAIOptions) {
-    super(options);
+  constructor(client: OpenAI, options: EmbedOpenAIOptions) {
+    super(client, options);
 
     this.model = options.modelName || "text-embedding-ada-002";
     this.batchSize = options.temperature || 0;
     this.stripNewLines = !!options.stripNewLines;
-
-    const apiKey = options.openAIApiKey || getEnvironmentVariable("OPENAI_API_KEY");
-    this.client = new OpenAI({apiKey});
+    this.client = client;
   }
 
   async embedDocuments(texts: string[]) {
@@ -36,7 +34,7 @@ export class EmbeddingOpenAI extends BaseEmbedding {
     return embeddings;
   }
   async embedQuery(text: string) {
-    const { data } = await this.embeddingWithRetry(
+    const data = await this.embeddingWithRetry(
       this.stripNewLines ? text.replace(/\n/g, " ") : text
     );
     return data[0].embedding;
@@ -45,7 +43,7 @@ export class EmbeddingOpenAI extends BaseEmbedding {
     const response = await backOff<any>(
       () =>
         asyncCallWithTimeout(
-          this.client.createEmbedding({
+          (this.client as OpenAI).embeddings.create({
             model: this.model,
             input: input,
             user: "",

@@ -14,7 +14,7 @@ describe('handlebars hbs helpers', () => {
       expect(hbs).toHaveProperty("helpers");
       expect(hbs).toHaveProperty("partials");
       expect(hbs).toHaveProperty("VERSION");
-      expect(hbs.VERSION).toEqual("4.7.7");
+      expect(hbs.VERSION).toEqual("4.7.6");
     });
 
     test('importPartials', () => {

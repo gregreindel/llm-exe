@@ -1,4 +1,4 @@
-import { hbs, importPartials, registerPartials, importHelpers,
+import { importPartials, registerPartials, importHelpers,
   registerHelpers } from "./hbs";
 import * as helpers from "./helpers";
 import * as contextPartials from "./templates";
@@ -9,11 +9,12 @@ export function useHandlebars(
   configuration: PromptTemplateOptions = {
     helpers: [],
     partials: [],
-  }
+  },
+  hbsInstance: typeof Handlebars
 ) {
   const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
   for (const helperKey of helperKeys) {
-    hbs.registerHelper(helperKey, helpers[helperKey]);
+    hbsInstance.registerHelper(helperKey, helpers[helperKey]);
   }
 
   if (configuration?.helpers && Array.isArray(configuration.helpers)) {
@@ -30,7 +31,7 @@ export function useHandlebars(
     contextPartials.partials
   ) as (keyof typeof contextPartials.partials)[];
   for (const contextPartialKey of contextPartialKeys) {
-    hbs.registerPartial(
+    hbsInstance.registerPartial(
       contextPartialKey,
       contextPartials.partials[contextPartialKey]
     );
@@ -47,17 +48,17 @@ export function useHandlebars(
   }
 
   /* istanbul ignore next */
-  hbs.registerHelper("with", function (context: any, options: any) {
+  hbsInstance.registerHelper("with", function (context: any, options: any) {
     return options.fn(context);
   });
 
   /* istanbul ignore next */
-  hbs.registerHelper("cut", function (str: string, arg2: string | RegExp) {
+  hbsInstance.registerHelper("cut", function (str: string, arg2: string | RegExp) {
     return str.toString().replace(new RegExp(arg2, "g"), "");
   });
 
   /* istanbul ignore next */
-  hbs.registerHelper(
+  hbsInstance.registerHelper(
     "substring",
     function (str: string, start: number, end: number) {
       if (str.length > end) {
@@ -68,5 +69,5 @@ export function useHandlebars(
     }
   );
 
-  return hbs;
+  return hbsInstance;
 }

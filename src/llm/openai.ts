@@ -7,7 +7,13 @@ import {
 } from "@/types";
 import { BaseLlm } from "./_base";
 import { OutputOpenAIChat } from "@/llm/output";
-import { assert, calculateOpenAiPrice, getEnvironmentVariable, pick, removeEmptyFromObject } from "@/utils";
+import {
+  assert,
+  calculateOpenAiPrice,
+  getEnvironmentVariable,
+  pick,
+  removeEmptyFromObject,
+} from "@/utils";
 import { OutputOpenAICompletion } from "./output/openai";
 
 /**
@@ -34,6 +40,7 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
   private frequencyPenalty: number | null;
   private logitBias: object | null;
   private user: string;
+  private useJson: boolean;
 
   /**
    * Constructor for the OpenAI class.
@@ -53,6 +60,7 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
       frequencyPenalty = null,
       logitBias = null,
       user = "",
+      useJson,
       ...restOfOptions
     } = options;
 
@@ -69,9 +77,12 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
     this.frequencyPenalty = frequencyPenalty;
     this.logitBias = logitBias;
     this.user = user;
+    this.useJson = !!useJson;
 
-    if (this.model.substring(0, 13) === "gpt-3.5-turbo" || 
-    this.model.substring(0, 5) === "gpt-4") {
+    if (
+      this.model.substring(0, 13) === "gpt-3.5-turbo" ||
+      this.model.substring(0, 5) === "gpt-4"
+    ) {
       this.promptType = "chat";
     } else {
       this.promptType = "text";
@@ -111,7 +122,7 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
    * @returns An object for input/output tokens and cost.
    */
   calculatePrice(input_tokens: number, output_tokens: number = 0) {
-    return calculateOpenAiPrice(this.model, input_tokens, output_tokens)
+    return calculateOpenAiPrice(this.model, input_tokens, output_tokens);
   }
 
   /**
@@ -151,8 +162,10 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
    * @returns The chat/completion response from the API.
    */
   async _call(input: string | IChatMessages, arg2?: OpenAiLlmExecutorOptions) {
-    if (this.model.substring(0, 13) === "gpt-3.5-turbo" || 
-    this.model.substring(0, 5) === "gpt-4") {
+    if (
+      this.model.substring(0, 13) === "gpt-3.5-turbo" ||
+      this.model.substring(0, 5) === "gpt-4"
+    ) {
       assert(Array.isArray(input), "Invalid prompt.");
       return await this.chat(input, arg2);
     } else {
@@ -168,7 +181,9 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
    */
   async chat(messages: IChatMessages, _args?: OpenAiLlmExecutorOptions) {
     assert(Array.isArray(messages), "Invalid prompt.");
-    const options: Partial<OpenAIOptions> = removeEmptyFromObject({
+    const options: Partial<
+      OpenAIOptions & { response_format: { type: "json_object" } }
+    > = removeEmptyFromObject({
       messages,
       model: this.model,
       temperature: this.temperature,
@@ -183,13 +198,20 @@ export class LlmOpenAI extends BaseLlm<OpenAI> {
       user: this.user,
     });
 
-    if(_args && _args?.function_call ){
+    if (_args && _args?.function_call) {
       options["function_call"] = _args?.function_call;
     }
 
-    if(_args &&  _args?.functions?.length){
-      options["functions"] = _args.functions.map(f => pick(f, ["name", "description", "parameters"]))
+    if (_args && _args?.functions?.length) {
+      options["functions"] = _args.functions.map((f) =>
+        pick(f, ["name", "description", "parameters"])
+      );
     }
+
+    if (this.useJson) {
+      options.response_format = { type: "json_object" };
+    }
+
     const response = await this.client.chat.completions.create(options as any);
     this.metrics.history.push(response);
     return new OutputOpenAIChat(response);

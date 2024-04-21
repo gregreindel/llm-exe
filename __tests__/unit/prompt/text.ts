@@ -184,4 +184,14 @@ describe("llm-exe:prompt/TextPrompt", () => {
     const format = prompt.format({threeLineBreaks: `\n\n\n`});
     expect(format).toEqual("Hello\n\nWorld")
   });
+  
+  it("can add custom replace template string", () => {
+    function customReplaceTemplateString(_input: string, _replacements: Record<string, any>){
+      return utils.replaceTemplateString(_input, _replacements)
+    }
+    const options = { replaceTemplateString: customReplaceTemplateString }
+    const prompt = new TextPrompt("Hello {{who}}", options);
+    const format = prompt.format({who: `World`});
+    expect(format).toEqual("Hello World")
+  });
 });

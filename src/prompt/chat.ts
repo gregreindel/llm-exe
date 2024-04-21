@@ -5,7 +5,6 @@ import {
   get,
   maybeStringifyJSON,
   pick,
-  replaceTemplateString,
 } from "@/utils";
 import { BasePrompt } from "./_base";
 import {
@@ -16,6 +15,7 @@ import {
   ChatPromptOptions,
   IPromptChatMessages,
   IChatMessage,
+  IChatMessageContentDetailed,
 } from "@/types";
 
 export interface ChatPrompt<I extends Record<string, any>>
@@ -123,7 +123,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param name (optional) The name of the user.
    * @return instance of ChatPrompt.
    */
-  addUserMessage(content: string, name?: string): ChatPrompt<I> {
+  addUserMessage(content: string | IChatMessageContentDetailed[], name?: string): ChatPrompt<I> {
     const message: IChatUserMessage = {
       role: "user",
       content,
@@ -340,7 +340,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
               const message = {
                 role,
                 name,
-                content: replaceTemplateString(content, replacements, {
+                content: this.replaceTemplateString(content, replacements, {
                   partials: this.partials,
                   helpers: this.helpers,
                 }),
@@ -357,7 +357,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
       } else if (message.role === "function") {
         messagesOut.push(
           Object.assign({}, message, {
-            content: replaceTemplateString(message.content, replacements, {
+            content: this.replaceTemplateString(message.content, replacements, {
               partials: this.partials,
               helpers: this.helpers,
             }),
@@ -367,9 +367,23 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
         if (safeToParseTemplate.includes(message.role)) {
           messagesOut.push(
             Object.assign({}, message, {
-              content: message.content
+              content: Array.isArray(message.content) ? message.content.map(m => m.text ? {
+                type: "text",
+                text: this.runPromptFilter(
+                  this.replaceTemplateString(
+                    this.runPromptFilter(m.text, this.filters.pre, values),
+                    replacements,
+                    {
+                      partials: this.partials,
+                      helpers: this.helpers,
+                    }
+                  ),
+                  this.filters.post,
+                  values
+                ),
+              } : m) : message.content
                 ? this.runPromptFilter(
-                    replaceTemplateString(
+                    this.replaceTemplateString(
                       this.runPromptFilter(message.content, this.filters.pre, values),
                       replacements,
                       {
@@ -387,7 +401,14 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           /* istanbul ignore next */
           messagesOut.push(
             Object.assign({}, message, {
-              content: message.content
+              content: Array.isArray(message.content) ? message.content.map(m => m.text ? {
+                type: "text",
+                text: this.runPromptFilter(
+                  this.runPromptFilter(m.text, this.filters.pre, values),
+                  this.filters.post,
+                  values
+                ),
+              } : m) : message.content && !Array.isArray(message.content)
                 ? this.runPromptFilter(
                     this.runPromptFilter(message.content, this.filters.pre, values),
                     this.filters.post,

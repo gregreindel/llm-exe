@@ -1,7 +1,9 @@
 import { PromptPartial, PromptHelper } from "@/types";
 import Handlebars from "handlebars";
+import * as asyncHelpers from "handlebars-async-helpers";
 
-export const hbs = Handlebars; 
+export const hbs = Handlebars;
+export const hbsAsync = asyncHelpers.default(Handlebars); 
 
 export function importPartials(_partials: { [key in string]: string }) {
   let partials: PromptPartial[] = [];
@@ -48,6 +50,7 @@ export function registerPartials(partials: any[]) {
         typeof partial.template === "string"
       ) {
         hbs.registerPartial(partial.name, partial.template);
+        hbsAsync.registerPartial(partial.name, partial.template);
       }
     }
   }
@@ -62,6 +65,7 @@ export function registerHelpers(helpers: any[]) {
         typeof helper.handler === "function"
       ) {
         hbs.registerHelper(helper.name, helper.handler);
+        hbsAsync.registerHelper(helper.name, helper.handler);
       }
     }
   }

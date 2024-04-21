@@ -50,6 +50,7 @@ export interface OpenAIOptions extends BaseLlmOptions {
   user?: string;
   function_call?: OpenAiFunctionCall;
   functions?: CallableExecutorCore[];
+  useJson?: boolean;
 }
 
 export interface EmbedOpenAIOptions extends OpenAIOptions {

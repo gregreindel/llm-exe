@@ -1,14 +1,27 @@
-export type IChatMessageRole = "system" | "assistant" | "user" | "function" | "function_call"
+export type IChatMessageRole =
+  | "system"
+  | "assistant"
+  | "user"
+  | "function"
+  | "function_call";
 export type FinishReasons = "function_call" | "stop";
+
+export interface IChatMessageContentDetailed {
+  type: string;
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+}
 
 export interface IChatMessageBase {
   role: IChatMessageRole;
-  content: string | null;
+  content: string | null | IChatMessageContentDetailed[];
 }
 
 export interface IChatUserMessage extends IChatMessageBase {
   role: Extract<IChatMessageRole, "user">;
-  content: string;
+  content: string | IChatMessageContentDetailed[];
   name?: string;
 }
 
@@ -27,7 +40,7 @@ export interface IChatAssistantMessage extends IChatMessageBase {
 export interface IChatAssistantFunctionCallMessage extends IChatMessageBase {
   role: Extract<IChatMessageRole, "assistant">;
   content: null;
-  function_call?: { name: string; arguments: string; };
+  function_call?: { name: string; arguments: string };
 }
 
 export interface IChatSystemMessage extends IChatMessageBase {
@@ -74,7 +87,8 @@ interface OutputOpenAIChatChoiceBase {
   finish_reason: FinishReasons;
 }
 
-export interface OutputOpenAIChatChoiceFunction extends OutputOpenAIChatChoiceBase {
+export interface OutputOpenAIChatChoiceFunction
+  extends OutputOpenAIChatChoiceBase {
   message: {
     role: Extract<IChatMessageRole, "assistant">;
     content: null;
@@ -86,7 +100,8 @@ export interface OutputOpenAIChatChoiceFunction extends OutputOpenAIChatChoiceBa
   finish_reason: Extract<FinishReasons, "function_call">;
 }
 
-export interface OutputOpenAIChatChoiceMessage extends OutputOpenAIChatChoiceBase {
+export interface OutputOpenAIChatChoiceMessage
+  extends OutputOpenAIChatChoiceBase {
   message: {
     role: Extract<IChatMessageRole, "assistant">;
     content: string;
@@ -95,4 +110,6 @@ export interface OutputOpenAIChatChoiceMessage extends OutputOpenAIChatChoiceBas
   finish_reason: Exclude<FinishReasons, "function_call">;
 }
 
-export type OutputOpenAIChatChoice = OutputOpenAIChatChoiceFunction  | OutputOpenAIChatChoiceMessage
+export type OutputOpenAIChatChoice =
+  | OutputOpenAIChatChoiceFunction
+  | OutputOpenAIChatChoiceMessage;

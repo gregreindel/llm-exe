@@ -20,6 +20,8 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   public partials: PromptPartial[] = [];
   public helpers: PromptHelper[] = [];
 
+  public replaceTemplateString = replaceTemplateString;
+
   public filters: {
     pre: ((prompt: string) => string)[];
     post: ((prompt: string) => string)[];
@@ -49,6 +51,9 @@ export abstract class BasePrompt<I extends Record<string, any>> {
       }
       if (options.postFilters && Array.isArray(options.postFilters)) {
         this.filters.post.push(...options.postFilters)
+      }
+      if(options.replaceTemplateString){
+        this.replaceTemplateString = options.replaceTemplateString;
       }
     }
   }
@@ -121,8 +126,8 @@ export abstract class BasePrompt<I extends Record<string, any>> {
     /* istanbul ignore next */
     const messages = this.messages
       .map((message) => {
-        return message.content
-          ? replaceTemplateString(
+        return message.content && !Array.isArray(message.content)
+          ? this.replaceTemplateString(
             this.runPromptFilter(message.content, this.filters.pre, values),
             replacements,
             {

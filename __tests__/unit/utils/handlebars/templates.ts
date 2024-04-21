@@ -52,7 +52,8 @@ describe("handlebars templates", () => {
     const value4 = replaceTemplateString(`{{>JsonSchema key='schema'}}`, {
       schema,
     });
-    const expected = `{
+    const expected = `\`\`\`json
+{
   "type": "object",
   "properties": {
     "city": {
@@ -77,7 +78,8 @@ describe("handlebars templates", () => {
     "endDate"
   ],
   "additionalProperties": false
-}`;
+}
+\`\`\``;
     expect(value4).toEqual(expected);
   });
 

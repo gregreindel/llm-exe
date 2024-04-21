@@ -1,25 +1,26 @@
 
 
+import { hbs as hbsInstance } from "@/utils";
 import { useHandlebars } from "@/utils/modules/handlebars";
 import * as path from "path"
 
 describe('useHandlebars', () => {
     test('useHandlebars', () => {
-      const hbs = useHandlebars()
+      const hbs = useHandlebars(undefined, hbsInstance)
       expect(hbs).toHaveProperty("helpers");
       expect(hbs).toHaveProperty("partials");
       expect(hbs).toHaveProperty("VERSION");
-      expect(hbs.VERSION).toEqual("4.7.7");
+      expect(hbs.VERSION).toEqual("4.7.6");
     });
     test('useHandlebars has default templates', () => {
-        const hbs = useHandlebars()
+        const hbs = useHandlebars(undefined, hbsInstance)
         expect(hbs).toHaveProperty("partials");
         expect(hbs.partials).toHaveProperty("MarkdownCode");
         expect(hbs.partials).toHaveProperty("ChatConversationHistory");
         expect(hbs.partials).toHaveProperty("DialogueHistory");
       });
       test('useHandlebars has default helpers', () => {
-        const hbs = useHandlebars()
+        const hbs = useHandlebars(undefined, hbsInstance)
         expect(hbs).toHaveProperty("helpers");
         expect(hbs.helpers).toHaveProperty("eq");
         expect(hbs.helpers).toHaveProperty("neq");
@@ -33,7 +34,7 @@ describe('useHandlebars', () => {
                 handler: () => "",
                 name: "testHandler"
             }]
-        })
+        }, hbsInstance)
         expect(hbs).toHaveProperty("helpers");
         expect(hbs.helpers).toHaveProperty("testHandler");
       });
@@ -43,7 +44,7 @@ describe('useHandlebars', () => {
                 handler: () => "",
                 name: 33 as any
             }]
-        })
+        }, hbsInstance)
         expect(hbs).toHaveProperty("helpers");
         expect(typeof hbs.helpers["33"]).toEqual("undefined");
       });
@@ -53,7 +54,7 @@ describe('useHandlebars', () => {
                 handler: 12 as any,
                 name: "invalidHandler"
             }]
-        })
+        }, hbsInstance)
         expect(hbs).toHaveProperty("helpers");
         expect(typeof hbs.helpers["invalidHandler"]).toEqual("undefined");
       });
@@ -65,7 +66,7 @@ describe('useHandlebars', () => {
                 template: ``,
                 name: "testPartial"
             }]
-        })
+        }, hbsInstance)
         expect(hbs).toHaveProperty("partials");
         expect(hbs.partials).toHaveProperty("testPartial");
       });
@@ -75,7 +76,7 @@ describe('useHandlebars', () => {
                 template: ``,
                 name: 33 as any
             }]
-        })
+        }, hbsInstance)
         expect(hbs).toHaveProperty("partials");
         expect(typeof hbs.partials["33"]).toEqual("undefined");
       });
@@ -95,13 +96,13 @@ describe('useHandlebars', () => {
 
     test('useHandlebars registers custom partial from CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH', () => {
         process.env.CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH = path.join(__dirname, "../../../__data__/handlebars-partials.js")
-        const hbs = useHandlebars()
+        const hbs = useHandlebars(undefined, hbsInstance)
         expect(hbs).toHaveProperty("partials");
         expect(hbs.partials["customImportedPartial"]).toEqual(`this is from external file`);
       });
       test('useHandlebars registers custom helpers from CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH', () => {
         process.env.CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH = path.join(__dirname, "../../../__data__/handlebars-helpers.js")
-        const hbs = useHandlebars()
+        const hbs = useHandlebars(undefined, hbsInstance)
         expect(hbs).toHaveProperty("helpers");
         expect(typeof hbs.helpers["customImportedHelper"]).toEqual(`function`);
       });

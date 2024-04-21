@@ -21,7 +21,7 @@ export {
   registerHelpers,
 } from "./handlebars/hbs";
 export { filterObjectOnSchema } from "./json-schema-filter";
-export { replaceTemplateString } from "./replaceTemplateString";
+export { replaceTemplateString, replaceTemplateStringAsync } from "./replaceTemplateString";
 export { asyncCallWithTimeout } from "./asyncCallWithTimeout";
 export {
   maybeStringifyJSON,

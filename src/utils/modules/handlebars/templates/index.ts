@@ -33,11 +33,11 @@ const ThoughtsAndObservations = `{{~#each thoughts as | step |}}
 {{~/each}}`;
 
 const JsonSchema = `{{#if (getKeyOr key false)}}
-{{{indentJson (getKeyOr key) collapse}}}
+\`\`\`json\n{{{indentJson (getKeyOr key) collapse}}}\n\`\`\`
 {{~/if}}`;
 
 const JsonSchemaExampleJson = `{{#if (getOr key false)}}
-{{{jsonSchemaExample key (getOr property '') collapse}}}
+\`\`\`json\n{{{jsonSchemaExample key (getOr property '') collapse}}}\n\`\`\`
 {{~/if}}`
 
 export const partials = {

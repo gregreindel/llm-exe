@@ -1,4 +1,4 @@
-import { get, replaceTemplateString } from "@/utils";
+import { get, maybeParseJSON, maybeStringifyJSON, replaceTemplateString } from "@/utils";
 import { schemaExampleWith } from "../../json-schema-filter";
 
 export function hbsInTemplate(this: any, arg1: string) {
@@ -23,14 +23,15 @@ export function indentJson(
   collapse = 'false'
 ) {
   if (typeof arg1 !== "object") {
-    return arg1;
+    return replaceTemplateString(arg1 || "", this);
   }
+  const replaced = maybeParseJSON(replaceTemplateString(maybeStringifyJSON(arg1), this))
 
   if (collapse == 'true') {
-    return JSON.stringify(arg1);
+    return JSON.stringify(replaced);
   }
 
-  return JSON.stringify(arg1, null, 2);
+  return JSON.stringify(replaced, null, 2);
 }
 
 export function jsonSchemaExample(this: any, key: string, prop: string, collapse: string) {
@@ -40,12 +41,13 @@ export function jsonSchemaExample(this: any, key: string, prop: string, collapse
     if (typeof result !== "object") {
       return "";
     }
+    const replaced = maybeParseJSON(replaceTemplateString(maybeStringifyJSON(result), this))
 
     if (collapse == 'true') {
-      return JSON.stringify(result);
+      return JSON.stringify(replaced);
     }
     
-    return JSON.stringify(result, null, 2);
+    return JSON.stringify(replaced, null, 2);
   }
   return "";
 }

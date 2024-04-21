@@ -3,14 +3,12 @@ module.exports = {
   testEnvironment: "node",
   // transform: {},
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
   transform: {
-    '^.+\\.[tj]sx?$': [
-      'ts-jest',
-    ],
+    "^.+\\.[tj]sx?$": ["ts-jest"],
   },
-  "transformIgnorePatterns": ["/node_modules/", '/__tests__/__mocks__/openai.ts'],
+  transformIgnorePatterns: ["/node_modules/", "/__tests__/__mocks__/openai.ts"],
   testPathIgnorePatterns: [
     "/node_modules/",
     "/__mocks__/",
@@ -34,7 +32,7 @@ module.exports = {
     "<rootDir>/src/**/*.ts",
     "!<rootDir>/types/*.ts",
     "!<rootDir>/types/*.d.ts",
-    "!<rootDir>/src/types/*.ts",
+    "!<rootDir>/src/types/**/*.ts",
     "!<rootDir>/src/index.ts",
     "!<rootDir>/src/vector/*.ts",
     "!<rootDir>/src/embedding/*.ts",

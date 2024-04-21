@@ -5,7 +5,8 @@ export class BaseEmbedding {
   protected maxDelay: number;
   protected numOfAttempts: number;
   protected jitter: "none" | "full";
-  constructor(options: any) {
+  constructor(client: any, options: any) {
+    this.client = client;
     this.timeout = options.timeout || 10000;
 
     this.jitter = options.jitter || "none";
