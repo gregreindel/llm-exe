@@ -1,9 +1,8 @@
 {
-  "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
     "strict": true,
-    "declaration": false,
-    "module": "nodenext",
+    "declaration": true,
+    "module": "commonjs",
     "moduleResolution": "nodenext",
     "target": "es2021",
     "esModuleInterop": true,
@@ -13,9 +12,11 @@
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "outDir": "build",
+    "outDir": "./dist",
+    "sourceRoot": "./src",
+    "rootDirs": ["./src"],
     "baseUrl": "./",
-    "typeRoots": ["types", "node_modules/@types"],
+    "typeRoots": ["src/types", "node_modules/@types"],
     "allowJs": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -30,12 +31,15 @@
   },
   "exclude": [
     "node_modules",
-    "coverage",
+    "dist",
     "build",
+    "coverage",
     "logs",
     "events",
     "nodejs",
+    "layer",
     "docs",
-    "dist"
-  ]
+    "examples"
+  ],
+  "include": ["src/**/*"]
 }

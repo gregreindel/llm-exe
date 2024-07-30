@@ -74,6 +74,5 @@ export async function createLlmV3_call(
     headers: headers,
   });
 
-  console.log("Response", request);
   return getOutputParser(config.provider, request);
 }

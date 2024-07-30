@@ -35,9 +35,6 @@ export class OutputMetaLlama3Chat extends BaseLlmOutput {
     if (result?.text) {
       return result?.text;
     }
-    // if(result?.content === null || result?.function_call){
-    //   return JSON.stringify({function_call: result?.function_call})
-    // }
     return;
   }
 }
