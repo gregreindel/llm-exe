@@ -23,7 +23,7 @@
   "scripts": {
     "tsc": "tsc --project ./tsconfig.json && tsc-alias -p ./tsconfig.json -w",
     "tsc-ci": "tsc --project ./tsconfig.json && tsc-alias -p ./tsconfig.json",
-    "tsc-build": "tsc --project ./tsconfig-build.json  && tsc-alias -p tsconfig-build.json -w",
+    "tsc-build": "(concurrently \"tsc --p ./tsconfig-build.json -w\" \"tsc-alias -p tsconfig-build.json -w\")",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit",
     "docs:dev": "vuepress dev docs --clean-temp --clean-cache",
     "docs:build": "vuepress build docs --clean-temp --clean-cache",
@@ -34,6 +34,11 @@
   "author": "Greg Reindel",
   "license": "MIT",
   "dependencies": {
+    "@aws-crypto/sha256-js": "^5.2.0",
+    "@aws-sdk/credential-providers": "^3.620.0",
+    "@smithy/signature-v4": "^4.1.0",
+    "aws-crt": "^1.21.3",
+    "concurrently": "^8.2.2",
     "exponential-backoff": "3.1.1",
     "handlebars": "4.7.6",
     "handlebars-async-helpers": "^1.0.6",
@@ -45,6 +50,7 @@
     "lodash.pick": "4.4.0",
     "lodash.set": "4.3.2",
     "lodash.unescape": "4.0.1",
+    "node-fetch-commonjs": "^3.3.2",
     "object-assign-deep": "0.4.0",
     "uuid": "^9.0.0"
   },

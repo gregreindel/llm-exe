@@ -90,7 +90,10 @@ describe("handlebars templates", () => {
   });
 
   test("JsonSchema template is empty string if no matching key", () => {
-    const value = replaceTemplateString(`{{>JsonSchema key='schema' collapse='true'}}`, {});
+    const value = replaceTemplateString(
+      `{{>JsonSchema key='schema' collapse='true'}}`,
+      {}
+    );
     const expected = ``;
     expect(value).toEqual(expected);
   });
@@ -125,11 +128,18 @@ describe("handlebars templates", () => {
       }
     );
 
-    const expected = JSON.stringify({
-      "city": "",
-      "startDate": "",
-      "endDate": ""
-    }, null, 2)
+    const expected = `\`\`\`json
+${JSON.stringify(
+  {
+    city: "",
+    startDate: "",
+    endDate: "",
+  },
+  null,
+  2
+)}
+\`\`\``;
+
     expect(value44).toEqual(expected.trim());
   });
 
@@ -162,27 +172,47 @@ describe("handlebars templates", () => {
         schema,
       }
     );
-    const expected = `{
-  "city": "what city does the user want to book a hotel in",
-  "startDate": "the date the user would like to start their stay",
-  "endDate": "the date the user would like to end their stay"
-}`;
 
+    const expected = `\`\`\`json
+${JSON.stringify(
+  {
+    city: "what city does the user want to book a hotel in",
+    startDate: "the date the user would like to start their stay",
+    endDate: "the date the user would like to end their stay",
+  },
+  null,
+  2
+)}
+\`\`\``;
     expect(value4).toEqual(expected);
   });
 
-
   test("JsonSchemaExampleJson template is empty string if no matching key", () => {
-
     const schema = {
       type: "array",
       items: {
         type: "object",
         properties: {
-          statement: { type: "string", default: "unknown", description: "statement description" },
-          answer: { type: "string", default: "unknown", description: "answer description" },
-          explanation: { type: "string", default: "unknown", description: "explanation description" },
-          confidence: { type: "integer", default: 0, description: "confidence description" },
+          statement: {
+            type: "string",
+            default: "unknown",
+            description: "statement description",
+          },
+          answer: {
+            type: "string",
+            default: "unknown",
+            description: "answer description",
+          },
+          explanation: {
+            type: "string",
+            default: "unknown",
+            description: "explanation description",
+          },
+          confidence: {
+            type: "integer",
+            default: 0,
+            description: "confidence description",
+          },
         },
         required: ["statement", "answer", "confidence", "explanation"],
         additionalProperties: false,
@@ -195,13 +225,20 @@ describe("handlebars templates", () => {
         schema,
       }
     );
-    const expected = JSON.stringify([{
-      "statement": "statement description",
-      "answer": "answer description",
-      "explanation": "explanation description",
-      "confidence": "confidence description"
-    }], null, 2);
-
+    const expected = `\`\`\`json
+${JSON.stringify(
+  [
+    {
+      statement: "statement description",
+      answer: "answer description",
+      explanation: "explanation description",
+      confidence: "confidence description",
+    },
+  ],
+  null,
+  2
+)}
+\`\`\``;
     expect(value4).toEqual(expected);
   });
 
@@ -224,37 +261,39 @@ describe("handlebars templates", () => {
       schema,
     });
 
-    const expected = `{
-  "type": "array",
-  "items": {
-    "type": "object",
-    "properties": {
-      "statement": {
-        "type": "string",
-        "default": "unknown"
+    const expected = `\`\`\`json
+${JSON.stringify(
+  {
+    type: "array",
+    items: {
+      type: "object",
+      properties: {
+        statement: {
+          type: "string",
+          default: "unknown",
+        },
+        answer: {
+          type: "string",
+          default: "unknown",
+        },
+        explanation: {
+          type: "string",
+          default: "unknown",
+        },
+        confidence: {
+          type: "integer",
+          default: 0,
+        },
       },
-      "answer": {
-        "type": "string",
-        "default": "unknown"
-      },
-      "explanation": {
-        "type": "string",
-        "default": "unknown"
-      },
-      "confidence": {
-        "type": "integer",
-        "default": 0
-      }
+      required: ["statement", "answer", "confidence", "explanation"],
+      additionalProperties: false,
     },
-    "required": [
-      "statement",
-      "answer",
-      "confidence",
-      "explanation"
-    ],
-    "additionalProperties": false
-  }
-}`;
+  },
+  null,
+  2
+)}
+\`\`\``;
+
     expect(value4).toEqual(expected);
   });
 
@@ -273,11 +312,16 @@ describe("handlebars templates", () => {
         additionalProperties: false,
       },
     };
-    const value4 = replaceTemplateString(`{{>JsonSchema key='schema' collapse='true'}}`, {
-      schema,
-    });
+    const value4 = replaceTemplateString(
+      `{{>JsonSchema key='schema' collapse='true'}}`,
+      {
+        schema,
+      }
+    );
 
-    const expected = `{"type":"array","items":{"type":"object","properties":{"statement":{"type":"string","default":"unknown"},"answer":{"type":"string","default":"unknown"},"explanation":{"type":"string","default":"unknown"},"confidence":{"type":"integer","default":0}},"required":["statement","answer","confidence","explanation"],"additionalProperties":false}}`;
+    const expected = `\`\`\`json
+{"type":"array","items":{"type":"object","properties":{"statement":{"type":"string","default":"unknown"},"answer":{"type":"string","default":"unknown"},"explanation":{"type":"string","default":"unknown"},"confidence":{"type":"integer","default":0}},"required":["statement","answer","confidence","explanation"],"additionalProperties":false}}
+\`\`\``;
     expect(value4).toEqual(expected);
   });
 });

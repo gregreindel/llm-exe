@@ -3,7 +3,7 @@ import { BaseLlmOutput, OutputOpenAIChat } from "@/llm/output";
 /**
  * Tests the TextPrompt class
  */
-describe("llm-exe:output/OutputOpenAIChat", () => {
+describe("llm-exe:output/OutputOpenAIChat", () => { 
   const mock = {
     id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
     object: "chat.completion",

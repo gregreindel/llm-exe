@@ -12,8 +12,9 @@
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "outDir": "dist",
-    "sourceRoot": "src/",
+    "outDir": "./dist",
+    "sourceRoot": "./src",
+    "rootDirs": ["./src"],
     "baseUrl": "./",
     "typeRoots": ["src/types", "node_modules/@types"],
     "allowJs": true,
@@ -36,10 +37,9 @@
     "logs",
     "events",
     "nodejs",
-    "__tests__",
     "layer",
     "docs",
     "examples"
   ],
-  "include": ["src/*"]
+  "include": ["src/**/*"]
 }
