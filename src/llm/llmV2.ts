@@ -7,42 +7,36 @@ import {
   GenericLLm,
   IChatMessages,
   LlmProvidor,
+  BaseLlm,
   OpenAiLlmExecutorOptions,
   OpenAiRequest,
 } from "@/types";
 import { createLlmV3_call } from "@/llm/llmV2.call";
 
-interface LlmV3 {
-  call: (...args: any[]) => Promise<any>,
-  getTraceId: () => string | null,
-  withTraceId: (traceId: string) => void,
-  getMetadata: () => Record<string, any>,
-}
-
 export function createLlmV3(
   providor: Extract<LlmProvidor, "amazon.meta.v3" | "amazon.anthropic.v3">,
   options: AmazonBedrockRequest
-): LlmV3;
+): BaseLlm;
 
 export function createLlmV3(
   providor: Extract<LlmProvidor, "anthropic">,
   options: AnthropicRequest
-): LlmV3;
+): BaseLlm;
 
 export function createLlmV3(
-  providor: Extract<LlmProvidor, "openai">,
+  providor: Extract<LlmProvidor, "openai" | "openai.mock">,
   options: OpenAiRequest
-): LlmV3;
+): BaseLlm;
 
 export function createLlmV3(
   providor: LlmProvidor,
   options: GenericLLm
-): LlmV3
+): BaseLlm
 
 export function createLlmV3(
   providor: LlmProvidor,
   options: GenericLLm
-): LlmV3 {
+): BaseLlm {
   const config = getLlmConfig(providor);
 
   const state = stateFromOptions(options, config);

@@ -72,6 +72,7 @@ export interface Config {
 export type LlmProvidorParent = "amazon";
 export type LlmProvidor =
   | "openai"
+  | "openai.mock"
   | "amazon.meta.v3"
   // | "amazon.anthropic.v2"
   | "amazon.anthropic.v3"

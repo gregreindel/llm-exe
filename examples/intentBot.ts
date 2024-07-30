@@ -1,5 +1,5 @@
 import { llmExe } from "@/index";
-import { BaseLlm } from "@/llm";
+import { BaseLlm } from "@/types";
 import { createCustomParser } from "@/parser";
 import { ExecutorContext, IChatMessages } from "@/types";
 import { maybeParseJSON, toNumber } from "@/utils";

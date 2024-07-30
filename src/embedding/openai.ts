@@ -56,7 +56,7 @@ export class EmbeddingOpenAI extends BaseEmbedding {
         numOfAttempts: this.numOfAttempts,
         jitter: this.jitter,
         retry: () => {
-          console.log(`LlmOpenAI timeout after ${this.timeout}. Retrying...`);
+          console.log(`llm timeout after ${this.timeout}. Retrying...`);
           return true;
         },
       }

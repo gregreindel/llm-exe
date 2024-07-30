@@ -19,7 +19,7 @@ export async function createLlmV3_call(
   _options?: OpenAiLlmExecutorOptions
 ) {
   const config = getLlmConfig(state.providor);
-
+ 
   const input = mapBody(
     config.mapBody,
     Object.assign(
@@ -53,7 +53,22 @@ export async function createLlmV3_call(
     body: body,
   });
 
-  const request = await apiRequest(url, {
+  const request = config.provider === "openai.mock" ? {
+    id: "0123-45-6789",
+    model: "model",
+    created: new Date().getTime(),
+    usage: { completion_tokens: 0, prompt_tokens: 0, total_tokens: 0 },
+    choices: [
+      {
+        message: {
+          role: "assistant",
+          content: `Hello world from LLM! The input was ${JSON.stringify(
+            messages
+          )}`,
+        },
+      },
+    ],
+  } : await apiRequest(url, {
     method: config.method,
     body: body,
     headers: headers,

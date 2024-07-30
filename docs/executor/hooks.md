@@ -18,7 +18,7 @@ You can attach hooks:
 ```typescript{2,5}:no-line-numbers
 // You can pass in hooks object
 const hooks = { onComplete: logFunction, onError: logFunctionError };
-const llm = new OpenAIMock();
+const llm = createLlmV3("openai.mock", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = new LlmExecutor({ llm, prompt }, { hooks });
 ```
@@ -35,7 +35,7 @@ function logFunctionError() {
 }
 
 // You can also use on to listen
-const llm = new OpenAIMock();
+const llm = createLlmV3("openai.mock", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = new LlmExecutor({ llm, prompt });
 executor.on("onComplete", logFunction);
@@ -47,7 +47,7 @@ You can also use `.once` to add a hook that get executed exactly once
 
 ```typescript{5}:no-line-numbers
 // You can also use once to listen once
-const llm = new OpenAIMock();
+const llm = createLlmV3("openai.mock", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = new LlmExecutor({ llm, prompt });
 executor.once("onComplete", logFunction);

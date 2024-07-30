@@ -171,3 +171,9 @@ export interface AmazonTitalResponse {
 }
 
 
+export interface BaseLlm<T extends any = any> {
+  call: (...args: any[]) => Promise<T>,
+  getTraceId: () => string | null,
+  withTraceId: (traceId: string) => void,
+  getMetadata: () => Record<string, any>,
+}

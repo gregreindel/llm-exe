@@ -1,4 +1,5 @@
 import {
+  BaseLlm,
   PromptInput,
   ParserOutput,
   CoreExecutorExecuteOptions,
@@ -7,7 +8,6 @@ import {
   OpenAiLlmExecutorOptions,
   OpenAiFunctionCall,
 } from "@/types";
-import { LlmOpenAI } from "@/llm";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser";
@@ -18,7 +18,7 @@ import { LlmExecutor } from "./llm";
  * Core Executor With LLM
  */
 export class LlmExecutorOpenAiFunctions<
-  Llm extends LlmOpenAI,
+  Llm extends BaseLlm,
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
   State extends BaseState

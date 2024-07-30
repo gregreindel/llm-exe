@@ -1,10 +1,10 @@
 import { createLlmExecutor } from "@/executor";
-import { BaseLlm } from "@/llm";
-import { OpenAIMock } from "@/llm/openai.mock";
+import { BaseLlm } from "@/types";
 import { createParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
+import { createLlmV3 } from "@/llm";
 
-const llm = new OpenAIMock({});
+const llm = createLlmV3("openai.mock", {});
 
 const PROMPT = `You are a senior typescript developer. I need you make 
 a concise list of test cases that need to be written for the function below. 

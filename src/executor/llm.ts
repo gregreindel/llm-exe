@@ -1,4 +1,5 @@
 import {
+  BaseLlm,
   PromptInput,
   ParserOutput,
   CoreExecutorExecuteOptions,
@@ -7,7 +8,6 @@ import {
   LlmExecutorHooks,
   LlmExecutorExecuteOptions,
 } from "@/types";
-import { BaseLlm } from "@/llm";
 import { BaseParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";

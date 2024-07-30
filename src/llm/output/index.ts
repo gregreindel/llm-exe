@@ -35,6 +35,7 @@ export class OutputDefault extends BaseLlmOutput {
 export function getOutputParser(provider: string, response: any) {
   switch (provider) {
     case "openai":
+      case "openai.mock":
       return new OutputOpenAIChat(response);
     case "anthropic":
     case "amazon.anthropic.v3":

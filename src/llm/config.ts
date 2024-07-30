@@ -32,6 +32,34 @@ export const configs: {
 
       },
     },
+    "openai.mock": {
+      provider: "openai.mock",
+      endpoint: `http://localhost`,
+      options: {
+        prompt: {},
+        topP: {},
+        useJson: {},
+        openAiApiKey: {},
+      },
+      method: "POST",
+      headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
+      mapBody: {
+        prompt: {
+          key: "messages",
+        },
+        model: {
+          key: "model",
+        },
+        topP: {
+          key: "top_p",
+        },
+        useJson: {
+          key: "response_format.type",
+          sanitize: (v) => v ? "json_object" : "text"
+        }
+
+      },
+    },
     anthropic: {
       provider: "anthropic",
       endpoint: `https://api.anthropic.com/v1/messages`,

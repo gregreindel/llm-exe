@@ -3,7 +3,7 @@ import { BaseLlmOutput, OutputOpenAIChat } from "@/llm/output";
 /**
  * Tests the TextPrompt class
  */
-describe("llm-exe:output/OutputOpenAIChat", () => { 
+describe("llm-exe:output/OutputOpenAIChat", () => {
   const mock = {
     id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
     object: "chat.completion",
@@ -37,11 +37,11 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
   });
   it("creates class with expected properties", () => {
     const output = new OutputOpenAIChat(mock);
-    expect((output as any).id).toEqual(mock.id)
-    expect((output as any).name).toEqual(mock.model)
-    expect((output as any).created).toEqual(mock.created)
-    expect((output as any).results).toEqual(mock.choices)
-    expect((output as any).usage).toEqual(mock.usage)
+    expect((output as any).id).toEqual(mock.id);
+    expect((output as any).name).toEqual(mock.model);
+    expect((output as any).created).toEqual(mock.created);
+    expect((output as any).results).toEqual(mock.choices);
+    expect((output as any).usage).toEqual(mock.usage);
   });
   it("creates class with expected methods", () => {
     const output = new OutputOpenAIChat(mock);
@@ -58,29 +58,33 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
   });
   it("getResults gets results", () => {
     const output = new OutputOpenAIChat(mock);
-    expect(output.getResults()).toEqual([      {
+    expect(output.getResults()).toEqual([
+      {
         message: {
           role: "assistant",
           content: "This is the assistant message content.",
         },
         finish_reason: "stop",
         index: 0,
-      }]);
+      },
+    ]);
   });
   it("getResult gets result", () => {
     const output = new OutputOpenAIChat(mock);
-    expect(output.getResult()).toEqual(      {
-        message: {
-          role: "assistant",
-          content: "This is the assistant message content.",
-        },
-        finish_reason: "stop",
-        index: 0,
-      });
+    expect(output.getResult()).toEqual({
+      message: {
+        role: "assistant",
+        content: "This is the assistant message content.",
+      },
+      finish_reason: "stop",
+      index: 0,
+    });
   });
   it("getResultContent gets result", () => {
     const output = new OutputOpenAIChat(mock);
-    expect(output.getResultContent()).toEqual( "This is the assistant message content.");
+    expect(output.getResultContent()).toEqual(
+      "This is the assistant message content."
+    );
   });
 
   it("getResultContent gets undefined if not exists", () => {
@@ -88,7 +92,7 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
     expect(output.getResultContent(8)).toEqual(undefined);
   });
 
-  it("getResultContent gets function_call if content is null", () => {
+  it("getResultContent gets tool_calls if content is null", () => {
     const output = new OutputOpenAIChat({
       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
       object: "chat.completion",
@@ -104,19 +108,37 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
           message: {
             role: "assistant",
             content: null,
-            function_call: {
-              name: "test_fn",
-              arguments: "{}"
-            }
+            tool_calls: [
+              {
+                id: "",
+                type: "function",
+                function: {
+                  name: "test_fn",
+                  arguments: "{}",
+                },
+              },
+            ],
           },
           finish_reason: "stop",
           index: 0,
         },
       ],
     });
-    expect(output.getResultContent()).toEqual( JSON.stringify({function_call: {name: "test_fn", arguments: "{}" }}));
+    expect(output.getResultContent()).toEqual(
+      JSON.stringify({
+        tool_calls: [
+          {
+            id: "",
+            type: "function",
+            function: {
+              name: "test_fn",
+              arguments: "{}",
+            },
+          },
+        ],
+      })
+    );
   });
-
 });
 
 // getResultContent
