@@ -140,6 +140,16 @@ describe("configs", () => {
     };
     expect(configs["amazon.meta.v3"]).toEqual(amazonMetaConfig);
   });
+
+  it("should have valid amazon.meta.v3 sanitize prompt", () => {
+    const config = configs["amazon.meta.v3"]
+    const sanitize = config.mapBody["prompt"].sanitize!
+    expect(typeof sanitize).toEqual("function");
+
+    const sanitized = sanitize([{role: "assistant", content: "Hello World"}])
+    expect(sanitized.trim()).toEqual(`Assistant: Hello World`);
+  });
+
 });
 
 describe("getLlmConfig", () => {

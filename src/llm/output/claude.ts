@@ -18,7 +18,7 @@ export class OutputAnthropicClaude3Chat extends BaseLlmOutput {
     this.results = result.content;
   }
 
-  getResult(resultIndex = 0) {
+  getResult(resultIndex: number) {
     if (resultIndex > -1 && resultIndex <= this.results.length) {
       const result = this.results[resultIndex];
       return result;

@@ -23,7 +23,7 @@ export class OutputMetaLlama3Chat extends BaseLlmOutput {
     this.results = [{text: result.generation}];
   }
 
-  getResult(resultIndex = 0) {
+  getResult(resultIndex: number) {
     if (resultIndex > -1 && resultIndex <= this.results.length) {
       const result = this.results[resultIndex];
       return result;

@@ -174,7 +174,6 @@ export abstract class BaseExecutor<
         try {
           hookFn(_metadata, this.getMetadata());
         } catch (error) {
-          console.log(error)
           /** TODO: We should call an error handler */
         }
       }

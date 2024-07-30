@@ -21,8 +21,7 @@ afterAll(() => {
   
 it("defaults env variable OPEN_AI_API_KEY", () => {
   process.env.OPEN_AI_API_KEY = "test-12345"
-  const llm = new LlmOpenAI({modelName: "gpt-3.5-turbo"}, openAiClient);
-  console.log((llm as any).client)
+  new LlmOpenAI({modelName: "gpt-3.5-turbo"}, openAiClient);
   expect(process.env.OPEN_AI_API_KEY).toEqual("test-12345");
 });
 
