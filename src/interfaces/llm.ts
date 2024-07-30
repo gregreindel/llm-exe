@@ -1,39 +1,19 @@
 import { IChatMessageRole } from "./chat";
-
-/**
- * OpenAi
- */
-export interface OpenAiRequest {
-  messages: any[];
-  model: string;
-  frequency_penalty: number | null;
-  logit_bias: Record<string, any> | null;
-  logprobs: number | null;
-  top_logprobs: number | null;
-  max_tokens: number | null;
-  n: number | null;
-  presence_penalty: number | null;
-  response_format: Record<string, any>;
-  seed: number | null;
-  service_tier: string | null;
-  stop: string | string[] | null;
-  stream: boolean | null;
-  stream_options: Record<string, any>;
-  temperature: number;
-  top_p: number;
-  tools: any[];
-  tool_choice: any[];
-  parallel_tool_calls: boolean;
-}
+import { PromptType } from "./prompt";
 
 interface OutputOpenAIChatChoiceBase {
   message: {
     role: Extract<IChatMessageRole, "assistant">;
     content: string | null;
-    tool_calls: null | {
-      name: string;
-      arguments: string;
-    };
+    tool_calls:
+      | null
+      | {
+          type: "function";
+          function: {
+            name: string;
+            arguments: string;
+          };
+        }[];
   };
   finish_reason: "tool_calls" | "stop";
 }
@@ -44,9 +24,12 @@ export interface OutputOpenAIChatChoiceFunction
     role: Extract<IChatMessageRole, "assistant">;
     content: null;
     tool_calls: {
-      name: string;
-      arguments: string;
-    };
+      type: "function";
+      function: {
+        name: string;
+        arguments: string;
+      };
+    }[];
   };
   finish_reason: Extract<"tool_calls" | "stop", "tool_calls">;
 }
@@ -75,17 +58,7 @@ export interface OpenAiResponse {
     completion_tokens: number;
     total_tokens: number;
   };
-  choices: [
-    {
-      message: {
-        role: "assistant";
-        content: string;
-      };
-      logprobs: number | null;
-      finish_reason: "stop";
-      index: number;
-    }
-  ];
+  choices: OutputOpenAIChatChoice[];
 }
 
 /**
@@ -112,14 +85,23 @@ export interface Claude2Response {
 
 export interface Claude3Response {
   id: string;
-  type: "message";
-  role: "assistant";
-  content: {
-    type: "text";
-    text: string;
-  }[];
+  type: string;
+  role: "assistant" | string;
+  content: (
+    | {
+        id: string;
+        type: "text";
+        text: string;
+      }
+    | {
+        type: "tool_use";
+        id: string;
+        name: string;
+        input: Record<string, any>;
+      }
+  )[];
   model: string;
-  stop_reason: "end_turn";
+  stop_reason: "end_turn" | "tool_use";
   stop_sequence: null;
   usage: {
     input_tokens: number;
@@ -171,9 +153,96 @@ export interface AmazonTitalResponse {
 }
 
 
-export interface BaseLlm<T extends any = any> {
-  call: (...args: any[]) => Promise<T>,
-  getTraceId: () => string | null,
-  withTraceId: (traceId: string) => void,
-  getMetadata: () => Record<string, any>,
+export interface OutputResultsBase {
+  type: "text" | "function_use";
+  text?: string;
+}
+
+export interface OutputResultsText extends OutputResultsBase {
+  type: "text";
+  text: string;
+}
+
+export interface OutputResultsFunction extends OutputResultsBase {
+  type: "function_use";
+  name: string;
+  input: Record<string, any>;
+}
+
+export type OutputResultContent = OutputResultsText | OutputResultsFunction
+
+export interface OutputResult {
+  id: string;
+  name?: string;
+  created: number;
+  stopReason: string;
+  content: OutputResultContent[];
+  options?: OutputResultContent[][];
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+    total_tokens: number;
+  }
+}
+
+export interface BaseLlmOptions {
+  traceId?: null | string;
+  timeout?: number;
+  maxDelay?: number;
+  numOfAttempts?: number;
+  jitter?: "none" | "full";
+  promptType?: PromptType;
+}
+
+
+export interface GenericLLm extends BaseLlmOptions {
+  model?: string;
+  prompt?: string | { role: string; content: string }[];
+  temperature?: number;
+  topP?: number;
+  stream?: boolean;
+  streamOptions?: Record<string, any>;
+  maxTokens?: number;
+  stopSequences?: string[];
+} 
+
+export interface OpenAiRequest extends GenericLLm {
+  model: string;
+  frequencyPenalty?: number;
+  logitBias?: Record<string, any> | null;
+  responseFormat?: Record<string, any>;
+  openAiApiKey?: string;
+  useJson?: boolean;
+}
+
+
+export interface AmazonBedrockRequest extends GenericLLm {
+  model: string;
+  awsRegion?: string;
+  awsSecretKey?: string;
+  awsAccessKey?: string;
+}
+
+
+export interface AnthropicRequest extends GenericLLm {
+  model: string;
+  anthropicApiKey?: string;
+}
+
+export type All = {
+  "openai": {
+    request: OpenAiResponse,
+    response: OpenAiResponse,
+  }
+}
+
+export interface BaseLlm<_T extends any = any> {
+  call: (...args: any[]) => Promise<{
+    getResultContent: () => OutputResultContent[],
+    getResultText: () => string,
+    getResult: () => OutputResult,
+  }>; 
+  getTraceId: () => string | null;
+  withTraceId: (traceId: string) => void;
+  getMetadata: () => Record<string, any>;
 }

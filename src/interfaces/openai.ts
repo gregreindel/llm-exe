@@ -1,14 +1,5 @@
 import { CallableExecutorCore } from "./index";
-import { PromptType } from "./prompt";
 
-export interface BaseLlmOptions {
-  traceId?: null | string;
-  timeout?: number;
-  maxDelay?: number;
-  numOfAttempts?: number;
-  jitter?: "none" | "full";
-  promptType?: PromptType;
-}
 
 export type OpenAIChatModelName =
   | "gpt-3.5-turbo"
@@ -34,9 +25,8 @@ export type OpenAIModelName =
   | OpenAIConversationModelName
   | OpenAIEmbeddingModelName;
 
-export interface OpenAIOptions extends BaseLlmOptions {
-  openAIApiKey?: string;
-  modelName: OpenAIModelName;
+export interface EmbedOpenAIOptions {
+
   maxTokens?: number;
   temperature?: number;
   topP?: number | null;
@@ -51,9 +41,7 @@ export interface OpenAIOptions extends BaseLlmOptions {
   function_call?: OpenAiFunctionCall;
   functions?: CallableExecutorCore[];
   useJson?: boolean;
-}
 
-export interface EmbedOpenAIOptions extends OpenAIOptions {
   openAIApiKey: string;
   modelName: OpenAIModelName;
   batchSize?: number;

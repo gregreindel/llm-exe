@@ -62,7 +62,7 @@ export class LlmExecutor<
 
   async handler(_input: PromptInput<Prompt>, ..._args: any[]) {
     const call = await this.llm.call(_input, ..._args);
-    const result = call.getResultContent();
+    const result = call.getResultText()
     return result;
   }
 

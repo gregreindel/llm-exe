@@ -3,7 +3,7 @@
 ## Basic Usage
 
 ```typescript:no-line-numbers
-const llm = useLlm("openai", { // OpenAIOptions
+const llm = useLlm("openai", { // 
   model: "gpt-3.5-turbo",
   openAiApiKey: "your-open-ai-key", // optional.
   maxTokens: 500, // optional.

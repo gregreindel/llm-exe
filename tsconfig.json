@@ -3,7 +3,6 @@
     "strict": true,
     "declaration": true,
     "module": "commonjs",
-    "moduleResolution": "nodenext",
     "target": "es2021",
     "esModuleInterop": true,
     "noFallthroughCasesInSwitch": true,

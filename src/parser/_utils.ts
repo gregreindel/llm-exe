@@ -1,4 +1,4 @@
-import { JSONSchema, JSONSchema7, FromSchema } from "json-schema-to-ts";
+import { JSONSchema, FromSchema } from "json-schema-to-ts";
 import { filterObjectOnSchema } from "@/utils";
 import { validate as validateSchema } from "jsonschema";
 
@@ -13,7 +13,7 @@ export function enforceParserSchema<
 }
 
 export function validateParserSchema<
-  S extends JSONSchema7,
+  S extends JSONSchema,
   T extends Record<string, any>
 >(schema: S, parsed: T) {
   if (!schema || !parsed || typeof parsed !== "object") {

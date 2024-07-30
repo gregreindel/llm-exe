@@ -1,39 +1,49 @@
-import { Claude3Response } from "@/types";
-import { BaseLlmOutput } from "./base";
+import { BaseLlmOutput2 } from "./base";
 
-export interface OutputAnthropicClaude3Chat {
- results: Claude3Response[]
+import {
+  Claude3Response,
+  OutputResultContent,
+  OutputResultsFunction,
+  OutputResultsText,
+} from "@/types";
+
+function formatResult(response: Claude3Response): OutputResultContent[] {
+  const content = response?.content || [];
+  const out = [];
+  for (let i = 0; i < content.length; i++) {
+    const result = content[i];
+    if (result.type === "text") {
+      out.push({
+        type: "text",
+        text: result.text,
+      } as OutputResultsText);
+    } else if (result.type === "tool_use") {
+      out.push({
+        type: "function_use",
+        name: result.name,
+        input: result.input,
+      } as OutputResultsFunction);
+    }
+  }
+  return out;
 }
 
-export class OutputAnthropicClaude3Chat extends BaseLlmOutput {
-  constructor(result: any) {
-    super(result);
-  }
+export function OutputAnthropicClaude3Chat(result: Claude3Response) {
+  const id = result.id;
+  const name = result.model;
+  const stopReason = result.stop_reason;
+  const content = formatResult(result);
+  const usage = {
+    input_tokens: result.usage.input_tokens,
+    output_tokens: result.usage.output_tokens,
+    total_tokens: result.usage.input_tokens + result.usage.input_tokens,
+  };
 
-  setResult(result: any, _attributes = {}) {
-    this.id = result.id;
-    this.name = result.model;
-    this.created = result.created;
-    this.usage = result.usage;
-    this.results = result.content;
-  }
-
-  getResult(resultIndex: number) {
-    if (resultIndex > -1 && resultIndex <= this.results.length) {
-      const result = this.results[resultIndex];
-      return result;
-    }
-    return;
-  }
-  getResultContent(resultIndex = 0) {
-    const result = this.getResult(resultIndex) as Claude3Response["content"][number] | undefined
-    if(result?.text){
-      return result?.text;
-    }
-    // if(result?.content === null || result?.function_call){
-    //   return JSON.stringify({function_call: result?.function_call})
-    // }
-    return;
-  }
+  return BaseLlmOutput2({
+    id,
+    name,
+    usage,
+    stopReason,
+    content,
+  });
 }
-
