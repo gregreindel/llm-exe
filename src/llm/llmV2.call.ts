@@ -4,6 +4,7 @@ import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStri
 import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
+import { pick } from "lodash";
 
 import {
   GenericLLm,
@@ -19,17 +20,30 @@ export async function createLlmV3_call(
 ) {
   const config = getLlmConfig(state.providor);
 
-  const body = JSON.stringify(
-    mapBody(
-      config.mapBody,
-      Object.assign(
-        {
-          prompt: messages,
-        },
-        state
-      )
+  const input = mapBody(
+    config.mapBody,
+    Object.assign(
+      {
+        prompt: messages,
+      },
+      state
     )
-  );
+  )
+
+  if (_options && _options?.function_call) {
+    input["tool_choice"] = _options?.function_call
+  }
+
+  if (_options && _options?.functions?.length) {
+    input["tools"] = _options.functions.map((f) =>
+      ({
+        type: "function",
+        function: pick(f, ["name", "description", "parameters"])
+      })
+    )
+  }
+
+  const body = JSON.stringify(input)
 
   const url = replaceTemplateStringSimple(config.endpoint, state);
 
@@ -48,4 +62,3 @@ export async function createLlmV3_call(
   console.log("Response", request);
   return getOutputParser(config.provider, request);
 }
-

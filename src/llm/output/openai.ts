@@ -31,8 +31,8 @@ export class OutputOpenAIChat extends BaseLlmOutput {
     if(result?.message?.content){
       return result?.message?.content;
     }
-    if(result?.message?.content === null || result?.message?.function_call){
-      return JSON.stringify({function_call: result?.message?.function_call})
+    if(result?.message?.content === null || result?.message?.tool_calls){
+      return JSON.stringify({tool_calls: result?.message?.tool_calls})
     }
     return;
   }

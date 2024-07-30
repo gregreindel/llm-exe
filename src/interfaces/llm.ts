@@ -30,12 +30,12 @@ interface OutputOpenAIChatChoiceBase {
   message: {
     role: Extract<IChatMessageRole, "assistant">;
     content: string | null;
-    function_call: null | {
+    tool_calls: null | {
       name: string;
       arguments: string;
     };
   };
-  finish_reason: "function_call" | "stop";
+  finish_reason: "tool_calls" | "stop";
 }
 
 export interface OutputOpenAIChatChoiceFunction
@@ -43,12 +43,12 @@ export interface OutputOpenAIChatChoiceFunction
   message: {
     role: Extract<IChatMessageRole, "assistant">;
     content: null;
-    function_call: {
+    tool_calls: {
       name: string;
       arguments: string;
     };
   };
-  finish_reason: Extract<"function_call" | "stop", "function_call">;
+  finish_reason: Extract<"tool_calls" | "stop", "tool_calls">;
 }
 
 export interface OutputOpenAIChatChoiceMessage
@@ -56,9 +56,9 @@ export interface OutputOpenAIChatChoiceMessage
   message: {
     role: Extract<IChatMessageRole, "assistant">;
     content: string;
-    function_call: null;
+    tool_calls: null;
   };
-  finish_reason: Exclude<"function_call" | "stop", "function_call">;
+  finish_reason: Exclude<"tool_calls" | "stop", "tool_calls">;
 }
 
 export type OutputOpenAIChatChoice =

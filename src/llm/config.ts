@@ -10,6 +10,7 @@ export const configs: {
       options: {
         prompt: {},
         topP: {},
+        useJson: {},
         openAiApiKey: {},
       },
       method: "POST",
@@ -24,6 +25,11 @@ export const configs: {
         topP: {
           key: "top_p",
         },
+        useJson: {
+          key: "response_format.type",
+          sanitize: (v) => v ? "json_object" : "text"
+        }
+
       },
     },
     anthropic: {

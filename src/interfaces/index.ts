@@ -1,4 +1,5 @@
 import { IChatMessages } from "./chat";
+import { BaseLlmOptions } from "./openai";
 
 export { FromSchema, JSONSchema } from "json-schema-to-ts";
 export * from "./utils";
@@ -9,31 +10,43 @@ export * from "./prompt";
 export * from "./parser";
 export * from "./llm";
 
-export interface GenericLLm {
-  model?: string;
-  prompt: string | { role: string; content: string }[];
-  temperature: number;
-  topP: number;
-  stream: boolean;
-  streamOptions: Record<string, any>;
-  maxTokens: number;
-  stopSequences: string[];
 
-  // somewhere else?
-  // apiKey?: string;
-  awsRegion?: string;
-  awsSecretKey?: string;
-  awsAccessKey?: string;
-  openAiApiKey?: string;
-  anthropicApiKey?: string;
-}
+export interface GenericLLm extends BaseLlmOptions {
+  model?: string;
+  prompt?: string | { role: string; content: string }[];
+  temperature?: number;
+  topP?: number;
+  stream?: boolean;
+  streamOptions?: Record<string, any>;
+  maxTokens?: number;
+  stopSequences?: string[];
+} 
 
 export interface OpenAiRequest extends GenericLLm {
   model: string;
-  frequencyPenalty: number;
-  logitBias: Record<string, any> | null;
-  responseFormat: Record<string, any>;
+  frequencyPenalty?: number;
+  logitBias?: Record<string, any> | null;
+  responseFormat?: Record<string, any>;
+  openAiApiKey?: string;
+  useJson?: boolean;
 }
+
+
+export interface AmazonBedrockRequest extends GenericLLm {
+  model: string;
+  awsRegion?: string;
+  awsSecretKey?: string;
+  awsAccessKey?: string;
+}
+
+
+export interface AnthropicRequest extends GenericLLm {
+  model: string;
+  anthropicApiKey?: string;
+}
+
+
+
 export interface Config {
   provider: string;
   method: string;

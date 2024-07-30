@@ -22,6 +22,7 @@ describe("createLlmV3", () => {
   const mockProvidor = "openai";
   const mockOptions = {
     option1: "value1",
+    traceId: "custom-traceId"
   } as Partial<GenericLLm>;
   const mockConfig = {
     options: {
@@ -49,7 +50,7 @@ describe("createLlmV3", () => {
   it("getTraceId should return fixed traceId", () => {
     const { getTraceId } = createLlmV3(mockProvidor, mockOptions);
 
-    expect(getTraceId()).toBe("this.traceId");
+    expect(getTraceId()).toBe(mockOptions.traceId);
   });
 
   it("getMetadata should return state excluding API keys", () => {

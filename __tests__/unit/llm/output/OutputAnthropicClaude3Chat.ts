@@ -51,30 +51,6 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     expect(output).toHaveProperty("getResultContent");
     expect(typeof output.getResultContent).toEqual("function");
   });
-//   it("getResults gets results", () => {
-//     const output = new OutputAnthropicClaude3Chat(mock);
-//     expect(output.getResults()).toEqual([
-//       {
-//         message: {
-//           role: "assistant",
-//           content: "This is the assistant message content.",
-//         },
-//         finish_reason: "stop",
-//         index: 0,
-//       },
-//     ]);
-//   });
-//   it("getResult gets result", () => {
-//     const output = new OutputAnthropicClaude3Chat(mock);
-//     expect(output.getResult()).toEqual({
-//       message: {
-//         role: "assistant",
-//         content: "This is the assistant message content.",
-//       },
-//       finish_reason: "stop",
-//       index: 0,
-//     });
-//   });
   it("getResultContent gets result", () => {
     const output = new OutputAnthropicClaude3Chat(mock);
     expect(output.getResultContent()).toEqual(
@@ -87,36 +63,5 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     expect(output.getResultContent(8)).toEqual(undefined);
   });
 
-//   it("getResultContent gets function_call if content is null", () => {
-//     const output = new OutputAnthropicClaude3Chat({
-//       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
-//       object: "chat.completion",
-//       created: 1685025755,
-//       model: "gpt-3.5-turbo-0301",
-//       usage: {
-//         prompt_tokens: 427,
-//         completion_tokens: 1,
-//         total_tokens: 428,
-//       },
-//       choices: [
-//         {
-//           message: {
-//             role: "assistant",
-//             content: null,
-//             function_call: {
-//               name: "test_fn",
-//               arguments: "{}",
-//             },
-//           },
-//           finish_reason: "stop",
-//           index: 0,
-//         },
-//       ],
-//     });
-//     expect(output.getResultContent()).toEqual(
-//       JSON.stringify({ function_call: { name: "test_fn", arguments: "{}" } })
-//     );
-//   });
-});
 
-// getResultContent
+});

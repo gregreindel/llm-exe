@@ -2,7 +2,6 @@ import { configs, getLlmConfig } from "@/llm/config";
 import { Config, LlmProvidor } from "@/types";
 
 describe("configs", () => {
-
   const OLD_ENV = process.env;
 
   beforeAll(async () => {
@@ -10,7 +9,7 @@ describe("configs", () => {
   });
 
   afterAll(async () => {
-    process.env = OLD_ENV
+    process.env = OLD_ENV;
   });
 
   it("should have valid openai config", () => {
@@ -21,6 +20,7 @@ describe("configs", () => {
         prompt: {},
         topP: {},
         openAiApiKey: {},
+        useJson: {},
       },
       method: "POST",
       headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
@@ -33,6 +33,10 @@ describe("configs", () => {
         },
         topP: {
           key: "top_p",
+        },
+        useJson: {
+          key: "response_format.type",
+          sanitize: expect.any(Function),
         },
       },
     };
@@ -48,7 +52,7 @@ describe("configs", () => {
       options: {
         prompt: {},
         maxTokens: {
-          required: [true, "maxTokens required"]
+          required: [true, "maxTokens required"],
         },
         anthropicApiKey: {},
       },
@@ -142,85 +146,111 @@ describe("configs", () => {
   });
 
   it("should have valid amazon.meta.v3 sanitize prompt", () => {
-    const config = configs["amazon.meta.v3"]
-    const sanitize = config.mapBody["prompt"].sanitize!
+    const config = configs["amazon.meta.v3"];
+    const sanitize = config.mapBody["prompt"].sanitize!;
     expect(typeof sanitize).toEqual("function");
 
-    const sanitized = sanitize([{role: "assistant", content: "Hello World"}])
+    const sanitized = sanitize([{ role: "assistant", content: "Hello World" }]);
     expect(sanitized.trim()).toEqual(`Assistant: Hello World`);
   });
-
 });
 
 describe("getLlmConfig", () => {
-    it("should return the correct config for a valid providor", () => {
-      const providor: LlmProvidor = "openai";
-      const config: Config = getLlmConfig(providor);
-      expect(config).toEqual(configs.openai);
-    });
-  
-    it("should throw an error for an invalid providor", () => {
-      const providor: any = "invalid_providor";
-      expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
-    });
-  
-    it("should throw an error when providor is undefined", () => {
-      const providor: any = undefined;
-      expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
-    });
-  
-    it("should throw an error when providor is empty string", () => {
-      const providor: any = "";
-      expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
-    });
-  
-    it("should throw an error when providor is null", () => {
-      const providor: any = null;
-      expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
-    });
-  
-    it("should return the correct config for 'amazon.meta.v3'", () => {
-      const providor: LlmProvidor = "amazon.meta.v3";
-      const config: Config = getLlmConfig(providor);
-      expect(config).toEqual(configs["amazon.meta.v3"]);
-    });
-  
-    it("should return the correct config for 'amazon.anthropic.v3'", () => {
-      const providor: LlmProvidor = "amazon.anthropic.v3";
-      const config: Config = getLlmConfig(providor);
-      expect(config).toEqual(configs["amazon.anthropic.v3"]);
-    });
-  
-    it("should have all required fields for 'openai' config", () => {
-      const config: Config = getLlmConfig("openai");
-      const keys = ["provider", "endpoint", "options", "method", "headers", "mapBody"];
-      keys.forEach(key => {
-        expect(config).toHaveProperty(key);
-      });
-    });
-  
-    it("should have all required fields for 'anthropic' config", () => {
-      const config: Config = getLlmConfig("anthropic");
-      const keys = ["provider", "endpoint", "options", "method", "headers", "mapBody"];
-      keys.forEach(key => {
-        expect(config).toHaveProperty(key);
-      });
-    });
-  
-    it("should have all required fields for 'amazon.anthropic.v3' config", () => {
-      const config: Config = getLlmConfig("amazon.anthropic.v3");
-      const keys = ["provider", "endpoint", "options", "method", "headers", "mapBody"];
-      keys.forEach(key => {
-        expect(config).toHaveProperty(key);
-      });
-    });
-  
-    it("should have all required fields for 'amazon.meta.v3' config", () => {
-      const config: Config = getLlmConfig("amazon.meta.v3");
-      const keys = ["provider", "endpoint", "options", "method", "headers", "mapBody"];
-      keys.forEach(key => {
-        expect(config).toHaveProperty(key);
-      });
-    });
-  
+  it("should return the correct config for a valid providor", () => {
+    const providor: LlmProvidor = "openai";
+    const config: Config = getLlmConfig(providor);
+    expect(config).toEqual(configs.openai);
   });
+
+  it("should throw an error for an invalid providor", () => {
+    const providor: any = "invalid_providor";
+    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  });
+
+  it("should throw an error when providor is undefined", () => {
+    const providor: any = undefined;
+    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  });
+
+  it("should throw an error when providor is empty string", () => {
+    const providor: any = "";
+    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  });
+
+  it("should throw an error when providor is null", () => {
+    const providor: any = null;
+    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  });
+
+  it("should return the correct config for 'amazon.meta.v3'", () => {
+    const providor: LlmProvidor = "amazon.meta.v3";
+    const config: Config = getLlmConfig(providor);
+    expect(config).toEqual(configs["amazon.meta.v3"]);
+  });
+
+  it("should return the correct config for 'amazon.anthropic.v3'", () => {
+    const providor: LlmProvidor = "amazon.anthropic.v3";
+    const config: Config = getLlmConfig(providor);
+    expect(config).toEqual(configs["amazon.anthropic.v3"]);
+  });
+
+  it("should have all required fields for 'openai' config", () => {
+    const config: Config = getLlmConfig("openai");
+    const keys = [
+      "provider",
+      "endpoint",
+      "options",
+      "method",
+      "headers",
+      "mapBody",
+    ];
+    keys.forEach((key) => {
+      expect(config).toHaveProperty(key);
+    });
+  });
+
+  it("should have all required fields for 'anthropic' config", () => {
+    const config: Config = getLlmConfig("anthropic");
+    const keys = [
+      "provider",
+      "endpoint",
+      "options",
+      "method",
+      "headers",
+      "mapBody",
+    ];
+    keys.forEach((key) => {
+      expect(config).toHaveProperty(key);
+    });
+  });
+
+  it("should have all required fields for 'amazon.anthropic.v3' config", () => {
+    const config: Config = getLlmConfig("amazon.anthropic.v3");
+    const keys = [
+      "provider",
+      "endpoint",
+      "options",
+      "method",
+      "headers",
+      "mapBody",
+    ];
+    keys.forEach((key) => {
+      expect(config).toHaveProperty(key);
+    });
+  });
+
+  it("should have all required fields for 'amazon.meta.v3' config", () => {
+    const config: Config = getLlmConfig("amazon.meta.v3");
+    const keys = [
+      "provider",
+      "endpoint",
+      "options",
+      "method",
+      "headers",
+      "mapBody",
+    ];
+    keys.forEach((key) => {
+      expect(config).toHaveProperty(key);
+    });
+  });
+});
