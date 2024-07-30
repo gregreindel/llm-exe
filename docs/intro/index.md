@@ -79,8 +79,8 @@ export const prompt = createChatPrompt(instruction)
 export async function YesOrNoBot<I extends string>(
   input: I
 ): Promise<{ response: string }> {
-  const llm = createLlmOpenAi({
-    modelName: "gpt-3.5-turbo",
+  const llm = useLlm("openai", {
+    model: "gpt-3.5-turbo",
   });
 
   const parser = createParser("stringExtract", { enum: ["yes", "no"]});

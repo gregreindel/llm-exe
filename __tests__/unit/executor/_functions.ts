@@ -1,5 +1,5 @@
 import { CoreExecutor, createCoreExecutor, createLlmExecutor, LlmExecutor } from "@/executor";
-import { createLlmV3 } from "@/llm";
+import { useLlm } from "@/llm";
 
 import { createChatPrompt } from "@/prompt";
 
@@ -13,7 +13,7 @@ describe("llm-exe:executor/_functions", () => {
     expect(executor).toBeInstanceOf(CoreExecutor);
   });
   it("createLlmExecutor", () => {
-  const llm = createLlmV3("openai.mock", {});
+  const llm = useLlm("openai.mock", {});
 
     const executor = createLlmExecutor({
          llm: llm,

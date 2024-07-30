@@ -1,12 +1,12 @@
 import { LlmExecutorOpenAiFunctions } from "@/executor";
-import { createLlmV3 } from "@/llm";
+import { useLlm } from "@/llm";
 import { createChatPrompt } from "@/prompt";
 
 /**
  * Tests LlmExecutor
  */
 describe("llm-exe:executor/LlmExecutor", () => {
-  const llm = createLlmV3("openai.mock", {});
+  const llm = useLlm("openai.mock", {});
 
     const prompt = createChatPrompt("This is a prompt.");
   it("has basic properties", () => {

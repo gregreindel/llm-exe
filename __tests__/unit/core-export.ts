@@ -9,7 +9,7 @@ describe("llmExe", () => {
     /**
      * Llm
      */
-    expect(llmExe).toHaveProperty("createLlmOpenAi");
+    expect(llmExe).toHaveProperty("useLlm");
     /**
      * Prompt
      */

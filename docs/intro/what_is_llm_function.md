@@ -26,7 +26,7 @@ As you can see ,
 
 Here is how you could implement example above with an LLM executor:
 ```typescript:no-line-numbers
-import { createLlmOpenAi, createChatPrompt, createParser } from "llm-exe";
+import { useLlm, createChatPrompt, createParser } from "llm-exe";
 
 export function piiDetector(input: string){
   const instruction = `You need to check the text below for any of the PII listed below.
@@ -41,7 +41,7 @@ email addresses: <true or false if this type of PII is included>
 social security number: <true or false if this type of PII is included>
 credit card number: <true or false if this type of PII is included>`;
 
-  const llm = createLlmOpenAi({/* options */});
+  const llm = useLlm("openai", {/* options */});
   const prompt = createChatPrompt(instruction);
   const parser = createParser("listToJson");
 

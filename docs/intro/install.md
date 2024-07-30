@@ -17,7 +17,7 @@ import { /* specific modules */ } from from "llm-exe"
 Below is simple example:
 ```javascript
 import {
-  createLlmOpenAi,
+  useLlm,
   createChatPrompt,
   createParser
 } from "llm-exe";
@@ -32,7 +32,7 @@ Your response must be formatted like:
 
 Review the user message and reply with a list of subtasks:`;
 
-const llm = createLlmOpenAi({/* options */});
+const llm = useLlm("openai",{/* options */});
 const prompt = createChatPrompt(instruction).addUserMessage()
 const parser = createParser("listToArray");
 
@@ -79,7 +79,7 @@ Below is the above example with types added:
 
 ```typescript
 import {
-  createLlmOpenAi,
+  useLlm,
   createChatPrompt,
   createParser
 } from "llm-exe";
@@ -91,7 +91,7 @@ interface ChatInput {
 
 const instruction = `You are a customer support agent. Reply below.`;
 
-const llm = createLlmOpenAi({/* options */});
+const llm = useLlm("openai", {/* options */});
 const prompt = createChatPrompt<ChatInput>(instruction);
 const parser = createParser("json");
 

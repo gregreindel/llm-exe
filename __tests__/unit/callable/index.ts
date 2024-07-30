@@ -1,5 +1,5 @@
 import { CoreExecutor, LlmExecutor } from "@/executor";
-import { createLlmV3 } from "@/llm";
+import { useLlm } from "@/llm";
 import { createCallableExecutor } from "@/plugins/callable";
 import { CallableExecutor,  } from "@/plugins/callable/callable";
 import { createChatPrompt } from "@/prompt";
@@ -129,7 +129,7 @@ describe("llm-exe:callable/CallableExecutor", () => {
     })
 
     it("CallableExecutor from llm", async () => {
-      const llm = createLlmV3("openai.mock", {});
+      const llm = useLlm("openai.mock", {});
 
       const prompt = createChatPrompt("This is a prompt.");
       const executor = new LlmExecutor({ llm, prompt });

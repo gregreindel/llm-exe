@@ -3,7 +3,7 @@ import {
   IChatMessages,
 } from "@/types";
 import { getLlmConfig } from "@/llm/config";
-import { createLlmV3 } from "@/llm/llmV2";
+import { useLlm } from "@/llm/llmV2";
 import { createLlmV3_call } from "@/llm/llmV2.call";
 
 
@@ -16,7 +16,7 @@ jest.mock("@/llm/llmV2.call", () => ({
 }));
 
 
-describe("createLlmV3", () => {
+describe("useLlm", () => {
   const getLlmConfigMock = getLlmConfig as jest.Mock;
   
   const mockProvidor = "openai";
@@ -37,7 +37,7 @@ describe("createLlmV3", () => {
   });
 
   it("should create an instance with call, getTraceId, and getMetadata methods", () => {
-    const { call, getTraceId, getMetadata } = createLlmV3(
+    const { call, getTraceId, getMetadata } = useLlm(
       mockProvidor,
       mockOptions
     );
@@ -48,13 +48,13 @@ describe("createLlmV3", () => {
   });
 
   it("getTraceId should return fixed traceId", () => {
-    const { getTraceId } = createLlmV3(mockProvidor, mockOptions);
+    const { getTraceId } = useLlm(mockProvidor, mockOptions);
 
     expect(getTraceId()).toBe(mockOptions.traceId);
   });
 
   it("getMetadata should return state excluding API keys", () => {
-    const { getMetadata } = createLlmV3(mockProvidor, mockOptions);
+    const { getMetadata } = useLlm(mockProvidor, mockOptions);
     const metadata = getMetadata();
     expect(metadata).not.toHaveProperty("awsSecretKey");
     expect(metadata).not.toHaveProperty("awsAccessKey");
@@ -69,7 +69,7 @@ describe("createLlmV3", () => {
         content: "Hello",
       },
     ] as IChatMessages;
-    const { call } = createLlmV3(mockProvidor, mockOptions);
+    const { call } = useLlm(mockProvidor, mockOptions);
 
     await call(mockMessages);
 

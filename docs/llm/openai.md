@@ -3,9 +3,9 @@
 ## Basic Usage
 
 ```typescript:no-line-numbers
-const llm = createLlmOpenAi({ // OpenAIOptions
-  modelName: "gpt-3.5-turbo",
-  openAIApiKey: "your-open-ai-key", // optional.
+const llm = useLlm("openai", { // OpenAIOptions
+  model: "gpt-3.5-turbo",
+  openAiApiKey: "your-open-ai-key", // optional.
   maxTokens: 500, // optional.
   temperature: 0, // optional.
 });

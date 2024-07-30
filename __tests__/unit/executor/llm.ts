@@ -1,14 +1,12 @@
 import { LlmExecutor } from "@/executor";
-import { createLlmOpenAi, createLlmV3 } from "@/llm";
+import { useLlm } from "@/llm";
 import { createChatPrompt } from "@/prompt";
-import { OpenAI } from "openai" 
-const openAiClient = new OpenAI({})
 
 /**
  * Tests LlmExecutor
  */
 describe("llm-exe:executor/LlmExecutor", () => {
-    const llm = createLlmV3("openai.mock", {});
+    const llm = useLlm("openai.mock", {});
     const prompt = createChatPrompt("This is a prompt.");
   it("has basic properties", () => {
     const executor = new LlmExecutor({ llm, prompt });
@@ -135,13 +133,13 @@ describe("llm-exe:executor/LlmExecutor", () => {
   })
   
   it("MockLlm can use withTraceId", () => {
-    const llm = createLlmOpenAi({traceId: "llm-traceId", openAiApiKey: "", model: "text-ada-001"}, openAiClient);
+    const llm = useLlm("openai.mock", {traceId: "llm-traceId", openAiApiKey: "", model: "text-ada-001"});
     const executor = new LlmExecutor({ llm, prompt });
     // executor.withTraceId("1234")
     expect(executor.getTraceId()).toEqual("llm-traceId");
   });
   it("MockLlm can use withTraceId", () => {
-    const llm = createLlmOpenAi({traceId: "llm-traceId", openAiApiKey: "", model: "text-ada-001"}, openAiClient);
+    const llm =  useLlm("openai.mock",  {traceId: "llm-traceId", openAiApiKey: "", model: "text-ada-001"});
     const executor = new LlmExecutor({ llm, prompt });
     executor.withTraceId("1234")
     expect(executor.getTraceId()).toEqual("1234");

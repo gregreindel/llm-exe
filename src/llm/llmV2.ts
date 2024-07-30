@@ -13,27 +13,27 @@ import {
 } from "@/types";
 import { createLlmV3_call } from "@/llm/llmV2.call";
 
-export function createLlmV3(
+export function useLlm(
   providor: Extract<LlmProvidor, "amazon.meta.v3" | "amazon.anthropic.v3">,
   options: AmazonBedrockRequest
 ): BaseLlm;
 
-export function createLlmV3(
+export function useLlm(
   providor: Extract<LlmProvidor, "anthropic">,
   options: AnthropicRequest
 ): BaseLlm;
 
-export function createLlmV3(
+export function useLlm(
   providor: Extract<LlmProvidor, "openai" | "openai.mock">,
   options: OpenAiRequest
 ): BaseLlm;
 
-export function createLlmV3(
+export function useLlm(
   providor: LlmProvidor,
   options: GenericLLm
 ): BaseLlm
 
-export function createLlmV3(
+export function useLlm(
   providor: LlmProvidor,
   options: GenericLLm
 ): BaseLlm {

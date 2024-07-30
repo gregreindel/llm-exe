@@ -1,5 +1,4 @@
 // import { uuid } from "@/utils";
-// import { CreateChatCompletionRequest } from "openai";
 
 const chatResponses = {
   openAiBasicTest: "Hello!",

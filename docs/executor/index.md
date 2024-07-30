@@ -16,12 +16,12 @@ An LLM executor's input and output types are determined by the prompt and parser
 ## Basic Example
 ```typescript
 import {
-  createLlmOpenAi,
+  useLlm,
   createChatPrompt,
   createParser
 } from "llm-exe";
 
-const llm = createLlmOpenAi({/* options */});
+const llm = useLlm("openai", {/* options */});
 const instruction = `You are a customer support agent. Reply below.`;
 const prompt = createChatPrompt(instruction);
 
@@ -36,12 +36,12 @@ const response = await executor.execute({input: "Hello!"})
 ## Basic Example with All Options
 ```typescript
 import {
-  createLlmOpenAi,
+  useLlm,
   createChatPrompt,
   createParser
 } from "llm-exe";
 
-const llm = createLlmOpenAi({/* options */});
+const llm = useLlm("openai", {/* options */});
 const instruction = `You are a customer support agent. Reply to the user as JSON.`;
 const prompt = createChatPrompt(instruction);
 const parser = createParser("json");

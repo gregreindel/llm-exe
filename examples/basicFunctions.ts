@@ -1,5 +1,5 @@
 import { createLlmExecutor } from "@/executor";
-import { createLlmV3 } from "@/llm";
+import { useLlm } from "@/llm";
 import { createParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
 import { BaseLlm } from "@/types";
@@ -26,7 +26,7 @@ interface ExampleInput {
 }
 
 export function llmExecutorExample<I extends ExampleInput>() {
-  const llm = createLlmV3("openai.mock", {});
+  const llm = useLlm("openai.mock", {});
   const prompt = createChatPrompt<I>(PROMPT);
   const parser = createParser("listToArray");
   return createLlmExecutor({
@@ -39,7 +39,7 @@ export function llmExecutorExample<I extends ExampleInput>() {
 export async function llmExecutorExampleExecute<I extends ExampleInput>(
   input: I
 ) {
-  const llm = createLlmV3("openai.mock", {});
+  const llm = useLlm("openai.mock", {});
   const prompt = createChatPrompt<I>(PROMPT);
   const parser = createParser("listToArray");
   return createLlmExecutor({
@@ -81,7 +81,7 @@ interface ExampleInput {
 }
 
 export function llmExecutorExample2<I extends ExampleInput>() {
-  const llm = createLlmV3("openai.mock", {});
+  const llm = useLlm("openai.mock", {});
   const prompt = createChatPrompt<I>(PROMPT2);
   const parser = createParser("stringExtract", {
     enum: ["forward", "back", "left", "right"],
