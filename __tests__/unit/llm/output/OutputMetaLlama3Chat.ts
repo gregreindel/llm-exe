@@ -1,4 +1,4 @@
-import { BaseLlmOutput, OutputMetaLlama3Chat } from "@/llm/output";
+import { OutputMetaLlama3Chat } from "@/llm/output/llama";
 
 /**
  * Tests the TextPrompt class
@@ -11,42 +11,38 @@ describe("llm-exe:output/OutputMetaLlama3Chat", () => {
     generation: "This is the assistant message content.",
   };
   it("creates class with expected properties", () => {
-    const output = new OutputMetaLlama3Chat(mock);
-    expect(output).toBeInstanceOf(BaseLlmOutput);
-    expect(output).toBeInstanceOf(OutputMetaLlama3Chat);
+    const output = OutputMetaLlama3Chat(mock).getResult()
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
-    expect(output).toHaveProperty("results");
+    expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
   });
   it("creates class with expected properties", () => {
-    const output = new OutputMetaLlama3Chat(mock);
-    expect((output as any).results).toEqual([{text: mock.generation}]);
+    const output = OutputMetaLlama3Chat(mock).getResult()
+    expect((output as any).content).toEqual([{ type: "text", text: mock.generation}]);
   });
   it("creates class with expected methods", () => {
-    const output = new OutputMetaLlama3Chat(mock);
-    expect(output).toBeInstanceOf(BaseLlmOutput);
-    expect(output).toBeInstanceOf(OutputMetaLlama3Chat);
-    expect(output).toHaveProperty("getResults");
-    expect(typeof output.getResults).toEqual("function");
-    expect(output).toHaveProperty("setResult");
-    expect(typeof output.setResult).toEqual("function");
+    const output = OutputMetaLlama3Chat(mock);
+    expect(output).toHaveProperty("getResult");
+    expect(typeof output.getResult).toEqual("function");
+    expect(output).toHaveProperty("getResultText");
+    expect(typeof output.getResultText).toEqual("function");
     expect(output).toHaveProperty("getResult");
     expect(typeof output.getResult).toEqual("function");
     expect(output).toHaveProperty("getResultContent");
     expect(typeof output.getResultContent).toEqual("function");
   });
-  it("getResultContent gets result", () => {
-    const output = new OutputMetaLlama3Chat(mock);
-    expect(output.getResultContent()).toEqual(
+  it("getResultText gets result", () => {
+    const output = OutputMetaLlama3Chat(mock);
+    expect(output.getResultText()).toEqual(
       "This is the assistant message content."
     );
   });
 
-  it("getResultContent gets undefined if not exists", () => {
-    const output = new OutputMetaLlama3Chat(mock);
-    expect(output.getResultContent(8)).toEqual(undefined);
+  it("getResultContent gets [] if not exists", () => {
+    const output = OutputMetaLlama3Chat(mock);
+    expect(output.getResultContent(8)).toEqual([]);
   });
 
 });

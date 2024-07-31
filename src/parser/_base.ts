@@ -6,7 +6,6 @@ import { FromSchema,  JSONSchema } from "json-schema-to-ts";
  */
 export abstract class BaseParser<T = any> {
   public name: string;
-  // public schema: JSONSchema7 | undefined;
   public options: BaseParserOptions;
   /**
    * Create a new BaseParser.

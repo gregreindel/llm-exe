@@ -1,11 +1,12 @@
 import { getEnvironmentVariable, replaceTemplateString } from "@/utils";
-import { IChatMessages, Config, LlmProvidor } from "@/types";
+import { IChatMessages, Config, LlmProvidorKey } from "@/types";
 
 export const configs: {
-  [key in LlmProvidor]: Config;
+  [key in LlmProvidorKey]: Config;
 } = {
-  openai: {
-    provider: "openai",
+  "openai.chat.v1": {
+    key: "openai.chat.v1",
+    provider: "openai.chat",
     endpoint: `https://api.openai.com/v1/chat/completions`,
     options: {
       prompt: {},
@@ -31,8 +32,36 @@ export const configs: {
       },
     },
   },
-  "openai.mock": {
-    provider: "openai.mock",
+  "openai.embedding.v1": {
+    key: "openai.embedding.v1",
+    provider: "openai.embedding",
+    endpoint: `https://api.openai.com/v1/embeddings`,
+    method: "POST",
+    headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
+    options: {
+      prompt: {},
+      dimensions: {},
+      encodingFormat: {},
+      openAiApiKey: {},
+    },
+    mapBody: {
+      prompt: {
+        key: "input",
+      },
+      model: {
+        key: "model",
+      },
+      dimensions: {
+        key: "dimensions",
+      },
+      encodingFormat: {
+        key: "encoding_format",
+      },
+    },
+  },
+  "openai.chat-mock.v1": {
+    key: "openai.chat-mock.v1",
+    provider: "openai.chat-mock",
     endpoint: `http://localhost`,
     options: {
       prompt: {},
@@ -58,8 +87,9 @@ export const configs: {
       },
     },
   },
-  anthropic: {
-    provider: "anthropic",
+  "anthropic.chat.v1": {
+    key: "anthropic.chat.v1",
+    provider: "anthropic.chat",
     endpoint: `https://api.anthropic.com/v1/messages`,
     headers: `{"x-api-key":"{{anthropicApiKey}}", "Content-Type": "application/json", "anthropic-version": "2023-06-01" }`,
     method: "POST",
@@ -82,8 +112,9 @@ export const configs: {
       },
     },
   },
-  "amazon.anthropic.v3": {
-    provider: "amazon.anthropic.v3",
+  "amazon:anthropic.chat.v1": {
+    key: "amazon:anthropic.chat.v1",
+    provider: "amazon:anthropic.chat",
     method: "POST",
     headers: `{"Content-Type": "application/json" }`,
     endpoint: `https://bedrock-runtime.{{awsRegion}}.amazonaws.com/model/{{model}}/invoke`,
@@ -115,8 +146,9 @@ export const configs: {
       },
     },
   },
-  "amazon.meta.v3": {
-    provider: "amazon.meta.v3",
+  "amazon:meta.chat.v1": {
+    key: "amazon:meta.chat.v1",
+    provider: "amazon:meta.chat",
     method: "POST",
     headers: `{"Content-Type": "application/json" }`,
     options: {
@@ -153,7 +185,7 @@ export const configs: {
   },
 };
 
-export function getLlmConfig(providor: LlmProvidor) {
+export function getLlmConfig(providor: LlmProvidorKey) {
   const pick = configs[providor];
   if (pick) {
     return pick;

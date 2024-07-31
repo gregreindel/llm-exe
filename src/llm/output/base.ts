@@ -10,11 +10,11 @@ export function BaseLlmOutput2(
   const __result = Object.freeze({
     id: result.id || uuid(),
     name: result.name,
-    created: result?.created || new Date().getTime(),
     usage: result.usage,
-    options: [...(result?.options || [])],
-    content: result.content,
     stopReason: result.stopReason,
+    options: [...(result?.options || [])],
+    content: [...(result?.content || [])],
+    created: result?.created || new Date().getTime(),
   });
 
   function getResult(): OutputResult {
@@ -30,10 +30,13 @@ export function BaseLlmOutput2(
   }
 
   function getResultText(): string {
-    const [item] = __result.content;
-    if (item?.text) {
-      return item?.text;
+    if (
+      __result.content.length === 1 &&
+      __result.content.every((a) => a.type === "text")
+    ) {
+      return __result.content[0]?.text || ""
     }
+  
     return "";
   }
 
@@ -46,54 +49,44 @@ export function BaseLlmOutput2(
     return [...__result.content];
   }
 
+  function getResultAsMessage(){
+    if (
+      __result.content.length === 1 &&
+      __result.content.every((a) => a.type === "text")
+    ) {
+      return {
+        role: "assistant",
+        content: __result.content[0]?.text || ""
+      }
+    }
+    if (
+      __result.content.length === 1 &&
+      __result.content.every((a) => a.type === "function_use")
+    ) {
+      return {
+        role: "assistant",
+        content: null,
+        function_call: JSON.stringify(__result.content.find(a=>a.type === "function_use"))
+      }
+    }
+    if (
+      __result.content.length === 2 &&
+      __result.content.find((a) => a.type === "text") && 
+      __result.content.find((a) => a.type === "function_use")
+    ) {
+      return {
+        role: "assistant",
+        content: __result.content.find((a) => a.type === "text")?.text,
+        function_call: JSON.stringify(__result.content.find(a=>a.type === "function_use"))
+      }
+    }
+    throw new Error("Invalid response")
+  }
+
   return {
+    getResultAsMessage,
     getResultContent,
     getResultText,
     getResult,
   };
 }
-
-// export abstract class BaseLlmOutput {
-//   protected id: string;
-//   protected name: string;
-//   protected created: number;
-//   protected stopReason: string;
-
-//   protected content: OutputResultContent[] = [];
-//   protected options: OutputResultContent[][] = [];
-
-//   protected usage = {
-//     input_tokens: 0,
-//     output_tokens: 0,
-//     total_tokens: 0,
-//   };
-
-//   constructor(result: any) {
-//     this.id = uuid();
-//     this.setResult(result);
-//   }
-
-//   toOutput(): OutputResult {
-//     // OutputResult
-//     return {
-//       id: this.id,
-//       name: this.name,
-//       created: this.created,
-//       usage: this.usage,
-//       content: this.content,
-//       stopReason: this.stopReason,
-//     };
-//   }
-
-//   getContent(index?: number) {
-//     if (index && index > 0) {
-//       return [this.options[index]];
-//     }
-//     return [...this.content];
-//   }
-
-//   abstract setResult(result: any): void;
-
-//   abstract getResultText(resultIndex?: number): any;
-//   abstract getResultAsMessage(resultIndex?: number): any;
-// }

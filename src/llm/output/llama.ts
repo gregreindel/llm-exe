@@ -11,9 +11,9 @@ export function OutputMetaLlama3Chat(result: MetaLlama2Response) {
   ];
 
   const usage = {
-    output_tokens: result.generation_token_count,
-    input_tokens: result.prompt_token_count,
-    total_tokens: result.generation_token_count + result.prompt_token_count,
+    output_tokens: result?.generation_token_count,
+    input_tokens: result?.prompt_token_count,
+    total_tokens: result?.generation_token_count + result?.prompt_token_count,
   };
 
   return BaseLlmOutput2({

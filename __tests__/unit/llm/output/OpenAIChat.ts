@@ -1,4 +1,5 @@
-import { BaseLlmOutput, OutputOpenAIChat } from "@/llm/output";
+import { OpenAiResponse } from "@/interfaces";
+import { OutputOpenAIChat } from "@/llm/output/openai";
 
 /**
  * Tests the TextPrompt class
@@ -26,74 +27,91 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
     ],
   };
   it("creates class with expected properties", () => {
-    const output = new OutputOpenAIChat(mock);
-    expect(output).toBeInstanceOf(BaseLlmOutput);
-    expect(output).toBeInstanceOf(OutputOpenAIChat);
+    const output = OutputOpenAIChat(mock as any).getResult();
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
-    expect(output).toHaveProperty("results");
+    expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
   });
   it("creates class with expected properties", () => {
-    const output = new OutputOpenAIChat(mock);
+    const output = OutputOpenAIChat(mock as any).getResult();
     expect((output as any).id).toEqual(mock.id);
     expect((output as any).name).toEqual(mock.model);
     expect((output as any).created).toEqual(mock.created);
-    expect((output as any).results).toEqual(mock.choices);
-    expect((output as any).usage).toEqual(mock.usage);
+    // expect((output as any).results).toEqual(mock.choices);
+    expect((output as any).usage).toEqual({
+      input_tokens: mock.usage.prompt_tokens,
+      output_tokens: mock.usage.completion_tokens,
+      total_tokens: mock.usage.total_tokens,
+    });
   });
   it("creates class with expected methods", () => {
-    const output = new OutputOpenAIChat(mock);
-    expect(output).toBeInstanceOf(BaseLlmOutput);
-    expect(output).toBeInstanceOf(OutputOpenAIChat);
-    expect(output).toHaveProperty("getResults");
-    expect(typeof output.getResults).toEqual("function");
-    expect(output).toHaveProperty("setResult");
-    expect(typeof output.setResult).toEqual("function");
+    const output = OutputOpenAIChat(mock as any);
+    expect(output).toHaveProperty("getResult");
+    expect(typeof output.getResult).toEqual("function");
+    expect(output).toHaveProperty("getResultText");
+    expect(typeof output.getResultText).toEqual("function");
     expect(output).toHaveProperty("getResult");
     expect(typeof output.getResult).toEqual("function");
     expect(output).toHaveProperty("getResultContent");
     expect(typeof output.getResultContent).toEqual("function");
   });
   it("getResults gets results", () => {
-    const output = new OutputOpenAIChat(mock);
-    expect(output.getResults()).toEqual([
-      {
-        message: {
-          role: "assistant",
-          content: "This is the assistant message content.",
-        },
-        finish_reason: "stop",
-        index: 0,
-      },
-    ]);
+    const output = OutputOpenAIChat(mock as any);
+    expect(output.getResult()).toEqual({
+      content: [
+        { text: "This is the assistant message content.", type: "text" },
+      ],
+      created: 1685025755,
+      id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
+      name: "gpt-3.5-turbo-0301",
+      options: [],
+      stopReason: "stop",
+      usage: { input_tokens: 427, output_tokens: 1, total_tokens: 428 },
+    });
   });
   it("getResult gets result", () => {
-    const output = new OutputOpenAIChat(mock);
+    const output = OutputOpenAIChat(mock as any);
     expect(output.getResult()).toEqual({
-      message: {
-        role: "assistant",
-        content: "This is the assistant message content.",
+      content: [
+        {
+          text: "This is the assistant message content.",
+          type: "text",
+        },
+      ],
+      created: mock.created,
+      id: mock.id,
+      name: "gpt-3.5-turbo-0301",
+      options: [],
+      stopReason: "stop",
+      usage: {
+        input_tokens: mock.usage.prompt_tokens,
+        output_tokens: mock.usage.completion_tokens,
+        total_tokens: mock.usage.total_tokens,
       },
-      finish_reason: "stop",
-      index: 0,
+      // message: {
+      //   role: "assistant",
+      //   content: "This is the assistant message content.",
+      // },
+      // finish_reason: "stop",
+      // index: 0,
     });
   });
   it("getResultContent gets result", () => {
-    const output = new OutputOpenAIChat(mock);
-    expect(output.getResultContent()).toEqual(
+    const output = OutputOpenAIChat(mock as any);
+    expect(output.getResultText()).toEqual(
       "This is the assistant message content."
     );
   });
 
-  it("getResultContent gets undefined if not exists", () => {
-    const output = new OutputOpenAIChat(mock);
-    expect(output.getResultContent(8)).toEqual(undefined);
+  it("getResultContent gets [] if not exists", () => {
+    const output = OutputOpenAIChat(mock as any);
+    expect(output.getResultContent(8)).toEqual([]);
   });
 
   it("getResultContent gets tool_calls if content is null", () => {
-    const output = new OutputOpenAIChat({
+    const output = OutputOpenAIChat({
       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
       object: "chat.completion",
       created: 1685025755,
@@ -110,7 +128,7 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
             content: null,
             tool_calls: [
               {
-                id: "",
+                // id: "",
                 type: "function",
                 function: {
                   name: "test_fn",
@@ -123,20 +141,21 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
           index: 0,
         },
       ],
-    });
+    } as unknown as OpenAiResponse);
     expect(output.getResultContent()).toEqual(
-      JSON.stringify({
-        tool_calls: [
-          {
-            id: "",
-            type: "function",
-            function: {
-              name: "test_fn",
-              arguments: "{}",
-            },
-          },
-        ],
-      })
+      [{"input": {}, "name": "test_fn", "type": "function_use"}]
+      // JSON.stringify({
+      //   tool_calls: [
+      //     {
+      //       id: "",
+      //       type: "function",
+      //       function: {
+      //         name: "test_fn",
+      //         arguments: "{}",
+      //       },
+      //     },
+      //   ],
+      // })
     );
   });
 });

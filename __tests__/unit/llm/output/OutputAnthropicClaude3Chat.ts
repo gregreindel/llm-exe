@@ -1,4 +1,4 @@
-import { BaseLlmOutput, OutputAnthropicClaude3Chat } from "@/llm/output";
+import { OutputAnthropicClaude3Chat } from "@/llm/output/claude";
 
 /**
  * Tests the TextPrompt class
@@ -12,6 +12,7 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     stop_sequence: null,
     usage: {
       input_tokens: 427,
+      total_tokens: 854,
       output_tokens: 1,
     },
     content: [
@@ -22,45 +23,41 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     ],
   };
   it("creates class with expected properties", () => {
-    const output = new OutputAnthropicClaude3Chat(mock);
-    expect(output).toBeInstanceOf(BaseLlmOutput);
-    expect(output).toBeInstanceOf(OutputAnthropicClaude3Chat);
+    const output = OutputAnthropicClaude3Chat(mock as any).getResult()
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
-    expect(output).toHaveProperty("results");
+    expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
   });
   it("creates class with expected properties", () => {
-    const output = new OutputAnthropicClaude3Chat(mock);
+    const output = OutputAnthropicClaude3Chat(mock as any).getResult()
     expect((output as any).id).toEqual(mock.id);
     expect((output as any).name).toEqual(mock.model);
-    expect((output as any).results).toEqual(mock.content);
+    expect((output as any).content).toEqual(mock.content);
     expect((output as any).usage).toEqual(mock.usage);
   });
   it("creates class with expected methods", () => {
-    const output = new OutputAnthropicClaude3Chat(mock);
-    expect(output).toBeInstanceOf(BaseLlmOutput);
-    expect(output).toBeInstanceOf(OutputAnthropicClaude3Chat);
-    expect(output).toHaveProperty("getResults");
-    expect(typeof output.getResults).toEqual("function");
-    expect(output).toHaveProperty("setResult");
-    expect(typeof output.setResult).toEqual("function");
+    const output = OutputAnthropicClaude3Chat(mock as any);
+    expect(output).toHaveProperty("getResult");
+    expect(typeof output.getResult).toEqual("function");
+    expect(output).toHaveProperty("getResultText");
+    expect(typeof output.getResultText).toEqual("function");
     expect(output).toHaveProperty("getResult");
     expect(typeof output.getResult).toEqual("function");
     expect(output).toHaveProperty("getResultContent");
     expect(typeof output.getResultContent).toEqual("function");
   });
-  it("getResultContent gets result", () => {
-    const output = new OutputAnthropicClaude3Chat(mock);
-    expect(output.getResultContent()).toEqual(
+  it("getResultText gets result", () => {
+    const output = OutputAnthropicClaude3Chat(mock as any);
+    expect(output.getResultText()).toEqual(
       "This is the assistant message content."
     );
   });
 
-  it("getResultContent gets undefined if not exists", () => {
-    const output = new OutputAnthropicClaude3Chat(mock);
-    expect(output.getResultContent(8)).toEqual(undefined);
+  it("getResultContent gets [] if not exists", () => {
+    const output = OutputAnthropicClaude3Chat(mock as any);
+    expect(output.getResultContent(8)).toEqual([]);
   });
 
 

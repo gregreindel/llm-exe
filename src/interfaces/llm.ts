@@ -86,7 +86,7 @@ export interface Claude2Response {
 export interface Claude3Response {
   id: string;
   type: string;
-  role: "assistant" | string;
+  role: "assistant";
   content: (
     | {
         id: string;
@@ -230,18 +230,20 @@ export interface AnthropicRequest extends GenericLLm {
 }
 
 export type All = {
-  "openai": {
-    request: OpenAiResponse,
-    response: OpenAiResponse,
+  "openai.chat": {
+    input: OpenAiRequest,
+    output: OpenAiRequest,
   }
 }
 
+export interface BaseLlCall {
+  getResultContent: () => OutputResultContent[],
+  getResultText: () => string,
+  getResult: () => OutputResult,
+}
+
 export interface BaseLlm<_T extends any = any> {
-  call: (...args: any[]) => Promise<{
-    getResultContent: () => OutputResultContent[],
-    getResultText: () => string,
-    getResult: () => OutputResult,
-  }>; 
+  call: (...args: any[]) => Promise<BaseLlCall>; 
   getTraceId: () => string | null;
   withTraceId: (traceId: string) => void;
   getMetadata: () => Record<string, any>;

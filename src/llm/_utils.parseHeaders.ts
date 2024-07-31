@@ -12,7 +12,7 @@ export async function parseHeaders(
   const parse = replace ? JSON.parse(replace) : {};
   const headers = Object.assign({}, payload.headers, parse);
 
-  if (config.provider.startsWith("amazon")) {
+  if (config.provider.startsWith("amazon:")) {
     const url = payload.url;
     return getAwsAuthorizationHeaders(
       {

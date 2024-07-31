@@ -1,11 +1,12 @@
 import { get, pick, set } from "@/utils";
-import { Config, GenericLLm, LlmProvidor } from "@/types";
+import { Config, GenericLLm, LlmProvidor, LlmProvidorKey } from "@/types";
 
 export function stateFromOptions(options: Partial<GenericLLm>, config: Config) {
   const state = Object.assign(pick(options, Object.keys(config.options)), {
     providor: config.provider,
+    key: config.key,
     model: options.model,
-  }) as unknown as GenericLLm & { providor: LlmProvidor };
+  }) as unknown as GenericLLm & { providor: LlmProvidor; key: LlmProvidorKey };
 
   const keys = Object.keys(config.options) as (keyof typeof config.options)[];
 

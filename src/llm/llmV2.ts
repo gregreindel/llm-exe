@@ -1,41 +1,18 @@
 import { getLlmConfig } from "@/llm/config";
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
-
-import {
-  AmazonBedrockRequest,
-  AnthropicRequest,
-  GenericLLm,
-  IChatMessages,
-  LlmProvidor,
-  BaseLlm,
-  OpenAiLlmExecutorOptions,
-  OpenAiRequest,
-} from "@/types";
 import { createLlmV3_call } from "@/llm/llmV2.call";
 
-export function useLlm(
-  providor: Extract<LlmProvidor, "amazon.meta.v3" | "amazon.anthropic.v3">,
-  options: AmazonBedrockRequest
-): BaseLlm;
+import {
+  IChatMessages,
+  BaseLlm,
+  OpenAiLlmExecutorOptions,
+  All,
+  LlmProvidorKey,
+} from "@/types";
 
-export function useLlm(
-  providor: Extract<LlmProvidor, "anthropic">,
-  options: AnthropicRequest
-): BaseLlm;
-
-export function useLlm(
-  providor: Extract<LlmProvidor, "openai" | "openai.mock">,
-  options: OpenAiRequest
-): BaseLlm;
-
-export function useLlm(
-  providor: LlmProvidor,
-  options: GenericLLm
-): BaseLlm
-
-export function useLlm(
-  providor: LlmProvidor,
-  options: GenericLLm
+export function useLlm<T extends LlmProvidorKey>(
+  providor: T,
+  options: All["openai.chat"]["input"]
 ): BaseLlm {
   const config = getLlmConfig(providor);
 

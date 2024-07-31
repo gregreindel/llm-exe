@@ -1,5 +1,5 @@
 import { configs, getLlmConfig } from "@/llm/config";
-import { Config, LlmProvidor } from "@/types";
+import { Config, LlmProvidorKey } from "@/types";
 
 describe("configs", () => {
   const OLD_ENV = process.env;
@@ -14,7 +14,8 @@ describe("configs", () => {
 
   it("should have valid openai config", () => {
     const openaiConfig: Config = {
-      provider: "openai",
+      key: "openai.chat.v1",
+      provider: "openai.chat",
       endpoint: `https://api.openai.com/v1/chat/completions`,
       options: {
         prompt: {},
@@ -40,12 +41,13 @@ describe("configs", () => {
         },
       },
     };
-    expect(configs.openai).toEqual(openaiConfig);
+    expect(configs["openai.chat.v1"]).toEqual(openaiConfig);
   });
 
   it("should have valid anthropic config", () => {
     const anthropicConfig: Config = {
-      provider: "anthropic",
+      key: "anthropic.chat.v1",
+      provider: "anthropic.chat",
       endpoint: `https://api.anthropic.com/v1/messages`,
       headers: `{"x-api-key":"{{anthropicApiKey}}", "Content-Type": "application/json", "anthropic-version": "2023-06-01" }`,
       method: "POST",
@@ -68,12 +70,13 @@ describe("configs", () => {
         },
       },
     };
-    expect(configs.anthropic).toEqual(anthropicConfig);
+    expect(configs["anthropic.chat.v1"]).toEqual(anthropicConfig);
   });
 
-  it("should have valid amazon.anthropic.v3 config", () => {
+  it("should have valid amazon:anthropic.chat.v1 config", () => {
     const amazonAnthropicConfig: Config = {
-      provider: "amazon.anthropic.v3",
+      key: "amazon:anthropic.chat.v1",
+      provider: "amazon:anthropic.chat",
       method: "POST",
       headers: `{"Content-Type": "application/json" }`,
       endpoint: `https://bedrock-runtime.{{awsRegion}}.amazonaws.com/model/{{model}}/invoke`,
@@ -105,12 +108,13 @@ describe("configs", () => {
         },
       },
     };
-    expect(configs["amazon.anthropic.v3"]).toEqual(amazonAnthropicConfig);
+    expect(configs["amazon:anthropic.chat.v1"]).toEqual(amazonAnthropicConfig);
   });
 
-  it("should have valid amazon.meta.v3 config", () => {
+  it("should have valid amazon:meta.chat.v1 config", () => {
     const amazonMetaConfig: Config = {
-      provider: "amazon.meta.v3",
+      key: "amazon:meta.chat.v1",
+      provider: "amazon:meta.chat",
       method: "POST",
       headers: `{"Content-Type": "application/json" }`,
       options: {
@@ -142,11 +146,11 @@ describe("configs", () => {
         },
       },
     };
-    expect(configs["amazon.meta.v3"]).toEqual(amazonMetaConfig);
+    expect(configs["amazon:meta.chat.v1"]).toEqual(amazonMetaConfig);
   });
 
-  it("should have valid amazon.meta.v3 sanitize prompt", () => {
-    const config = configs["amazon.meta.v3"];
+  it("should have valid amazon:meta.chat.v1 sanitize prompt", () => {
+    const config = configs["amazon:meta.chat.v1"];
     const sanitize = config.mapBody["prompt"].sanitize!;
     expect(typeof sanitize).toEqual("function");
 
@@ -157,9 +161,9 @@ describe("configs", () => {
 
 describe("getLlmConfig", () => {
   it("should return the correct config for a valid providor", () => {
-    const providor: LlmProvidor = "openai";
-    const config: Config = getLlmConfig(providor);
-    expect(config).toEqual(configs.openai);
+    const key: LlmProvidorKey = "openai.chat.v1";
+    const config: Config = getLlmConfig(key);
+    expect(config).toEqual(configs[key]);
   });
 
   it("should throw an error for an invalid providor", () => {
@@ -182,20 +186,20 @@ describe("getLlmConfig", () => {
     expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
   });
 
-  it("should return the correct config for 'amazon.meta.v3'", () => {
-    const providor: LlmProvidor = "amazon.meta.v3";
-    const config: Config = getLlmConfig(providor);
-    expect(config).toEqual(configs["amazon.meta.v3"]);
+  it("should return the correct config for 'amazon:meta.chat.v1'", () => {
+    const key: LlmProvidorKey = "amazon:meta.chat.v1";
+    const config: Config = getLlmConfig(key);
+    expect(config).toEqual(configs[key]);
   });
 
-  it("should return the correct config for 'amazon.anthropic.v3'", () => {
-    const providor: LlmProvidor = "amazon.anthropic.v3";
-    const config: Config = getLlmConfig(providor);
-    expect(config).toEqual(configs["amazon.anthropic.v3"]);
+  it("should return the correct config for 'amazon:anthropic.chat.v1'", () => {
+    const key: LlmProvidorKey = "amazon:anthropic.chat.v1";
+    const config: Config = getLlmConfig(key);
+    expect(config).toEqual(configs[key]);
   });
 
   it("should have all required fields for 'openai' config", () => {
-    const config: Config = getLlmConfig("openai");
+    const config: Config = getLlmConfig("openai.chat.v1");
     const keys = [
       "provider",
       "endpoint",
@@ -210,7 +214,7 @@ describe("getLlmConfig", () => {
   });
 
   it("should have all required fields for 'anthropic' config", () => {
-    const config: Config = getLlmConfig("anthropic");
+    const config: Config = getLlmConfig("anthropic.chat.v1");
     const keys = [
       "provider",
       "endpoint",
@@ -224,8 +228,8 @@ describe("getLlmConfig", () => {
     });
   });
 
-  it("should have all required fields for 'amazon.anthropic.v3' config", () => {
-    const config: Config = getLlmConfig("amazon.anthropic.v3");
+  it("should have all required fields for 'amazon:anthropic.chat.v1' config", () => {
+    const config: Config = getLlmConfig("amazon:anthropic.chat.v1");
     const keys = [
       "provider",
       "endpoint",
@@ -239,8 +243,8 @@ describe("getLlmConfig", () => {
     });
   });
 
-  it("should have all required fields for 'amazon.meta.v3' config", () => {
-    const config: Config = getLlmConfig("amazon.meta.v3");
+  it("should have all required fields for 'amazon:meta.chat.v1' config", () => {
+    const config: Config = getLlmConfig("amazon:meta.chat.v1");
     const keys = [
       "provider",
       "endpoint",

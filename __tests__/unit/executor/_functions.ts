@@ -13,7 +13,7 @@ describe("llm-exe:executor/_functions", () => {
     expect(executor).toBeInstanceOf(CoreExecutor);
   });
   it("createLlmExecutor", () => {
-  const llm = useLlm("openai.mock", {});
+  const llm = useLlm("openai.chat-mock.v1", { model: "something"});
 
     const executor = createLlmExecutor({
          llm: llm,

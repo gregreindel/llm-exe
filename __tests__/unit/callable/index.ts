@@ -129,7 +129,7 @@ describe("llm-exe:callable/CallableExecutor", () => {
     })
 
     it("CallableExecutor from llm", async () => {
-      const llm = useLlm("openai.mock", {});
+      const llm = useLlm("openai.chat-mock.v1", {model: "something"});
 
       const prompt = createChatPrompt("This is a prompt.");
       const executor = new LlmExecutor({ llm, prompt });

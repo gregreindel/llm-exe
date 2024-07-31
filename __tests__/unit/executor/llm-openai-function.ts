@@ -6,7 +6,7 @@ import { createChatPrompt } from "@/prompt";
  * Tests LlmExecutor
  */
 describe("llm-exe:executor/LlmExecutor", () => {
-  const llm = useLlm("openai.mock", {});
+  const llm = useLlm("openai.chat-mock.v1", { model: "something"});
 
     const prompt = createChatPrompt("This is a prompt.");
   it("has basic properties", () => {

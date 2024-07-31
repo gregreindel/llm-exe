@@ -1,11 +1,7 @@
-import {
-  GenericLLm,
-  IChatMessages,
-} from "@/types";
+import { IChatMessages } from "@/types";
 import { getLlmConfig } from "@/llm/config";
 import { useLlm } from "@/llm/llmV2";
 import { createLlmV3_call } from "@/llm/llmV2.call";
-
 
 jest.mock("@/llm/config", () => ({
   getLlmConfig: jest.fn(),
@@ -15,20 +11,20 @@ jest.mock("@/llm/llmV2.call", () => ({
   createLlmV3_call: jest.fn(),
 }));
 
-
 describe("useLlm", () => {
   const getLlmConfigMock = getLlmConfig as jest.Mock;
-  
-  const mockProvidor = "openai";
+
+  const mockProvidor = "openai.chat-mock.v1";
+
   const mockOptions = {
     option1: "value1",
-    traceId: "custom-traceId"
-  } as Partial<GenericLLm>;
+    model: "something",
+    traceId: "custom-traceId",
+  };
   const mockConfig = {
     options: {
-      option1: {}
-    }
-
+      option1: {},
+    },
   };
 
   beforeEach(() => {
@@ -37,10 +33,7 @@ describe("useLlm", () => {
   });
 
   it("should create an instance with call, getTraceId, and getMetadata methods", () => {
-    const { call, getTraceId, getMetadata } = useLlm(
-      mockProvidor,
-      mockOptions
-    );
+    const { call, getTraceId, getMetadata } = useLlm(mockProvidor, mockOptions);
 
     expect(typeof call).toBe("function");
     expect(typeof getTraceId).toBe("function");

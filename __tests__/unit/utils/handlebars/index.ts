@@ -10,7 +10,7 @@ describe('useHandlebars', () => {
       expect(hbs).toHaveProperty("helpers");
       expect(hbs).toHaveProperty("partials");
       expect(hbs).toHaveProperty("VERSION");
-      expect(hbs.VERSION).toEqual("4.7.6");
+      expect(hbs.VERSION).toEqual("4.7.8");
     });
     test('useHandlebars has default templates', () => {
         const hbs = useHandlebars(undefined, hbsInstance)

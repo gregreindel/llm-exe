@@ -5,13 +5,13 @@ import {
   GenericLLm,
   IChatMessages,
   LlmProvidor,
+  LlmProvidorKey,
   OpenAiLlmExecutorOptions,
 } from "@/types";
 import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
 import { createLlmV3_call } from "@/llm/llmV2.call";
-
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -26,14 +26,18 @@ jest.mock("@/llm/_utils.mapBody", () => ({
 }));
 
 jest.mock("@/llm/_utils.parseHeaders", () => ({
-    parseHeaders: jest.fn(),
+  parseHeaders: jest.fn(),
 }));
 
 jest.mock("@/llm/output", () => ({
-    getOutputParser: jest.fn(),
+  getOutputParser: jest.fn(),
 }));
 
-jest.mock("@/llm/config");
+jest.mock("@/llm/config", () => ({
+  getLlmConfig: jest.fn(),
+}));
+
+// jest.mock("@/llm/config");
 
 describe("createLlmV3_call", () => {
   const getLlmConfigMock = getLlmConfig as jest.Mock;
@@ -45,8 +49,10 @@ describe("createLlmV3_call", () => {
   const getOutputParserMock = getOutputParser as jest.Mock;
 
   const mockState = {
-    providor: "testProvider",
+    key: "openai.chat-mock.v1",
+    providor: "openai.chat-mock",
   } as unknown as GenericLLm & {
+    key: LlmProvidorKey;
     providor: LlmProvidor;
   };
   const mockMessages = [
@@ -60,11 +66,13 @@ describe("createLlmV3_call", () => {
     endpoint: "http://api.test/endpoint",
     mapBody: jest.fn(),
     method: "POST",
-    provider: "testProvider",
+    provider: "openai.chat",
+    key: "openai.chat.v1",
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetAllMocks();
     getLlmConfigMock.mockReturnValue(mockConfig);
     replaceTemplateStringSimpleMock.mockReturnValue("http://api.test/endpoint");
     mapBodyMock.mockReturnValue({
@@ -73,16 +81,17 @@ describe("createLlmV3_call", () => {
     parseHeadersMock.mockResolvedValue({
       "Content-Type": "application/json",
     });
-    apiRequestMock.mockResolvedValue({
+    apiRequestMock.mockResolvedValueOnce({
       data: "response",
     });
-    getOutputParserMock.mockReturnValue("parsedOutput");
   });
 
   it("should call all necessary functions and return parsed output", async () => {
+    getOutputParserMock.mockReturnValueOnce("parsedOutput");
+
     const result = await createLlmV3_call(mockState, mockMessages, mockOptions);
 
-    expect(getLlmConfig).toHaveBeenCalledWith(mockState.providor);
+    expect(getLlmConfig).toHaveBeenCalledWith(mockState.key);
     expect(mapBody).toHaveBeenCalledWith(mockConfig.mapBody, {
       ...mockState,
       prompt: mockMessages,
@@ -101,7 +110,7 @@ describe("createLlmV3_call", () => {
         }),
       })
     );
-    expect(apiRequest).toHaveBeenCalledWith(
+    expect(apiRequestMock).toHaveBeenCalledWith(
       "http://api.test/endpoint",
       expect.objectContaining({
         method: mockConfig.method,
@@ -113,7 +122,7 @@ describe("createLlmV3_call", () => {
         },
       })
     );
-    expect(getOutputParser).toHaveBeenCalledWith(mockConfig.provider, {
+    expect(getOutputParser).toHaveBeenCalledWith(mockConfig.key, {
       data: "response",
     });
 
@@ -121,9 +130,9 @@ describe("createLlmV3_call", () => {
   });
 
   it("should handle an error in apiRequest", async () => {
-    (apiRequest as jest.Mock).mockRejectedValue(
-      new Error("API Request Failed")
-    );
+    parseHeadersMock.mockImplementationOnce(() => {
+      throw new Error("API Request Failed");
+    });
 
     await expect(
       createLlmV3_call(mockState, mockMessages, mockOptions)

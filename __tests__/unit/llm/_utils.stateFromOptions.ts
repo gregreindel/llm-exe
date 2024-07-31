@@ -15,7 +15,8 @@ describe("stateFromOptions", () => {
 
   const options: Partial<GenericLLm> = { model: "gpt-3", };
   const config: Config = {
-    provider: "openai" as LlmProvidor,
+    key: "openai.chat.v1" ,
+    provider: "openai.chat" ,
     options: {
       temperature: { default: 0.7, required: [true] },
       maxTokens: { required: [true, "Error: [maxTokens] is required"] },
@@ -45,7 +46,8 @@ describe("stateFromOptions", () => {
 
     expect(state).toEqual({
       model: "gpt-3",
-      providor: "openai",
+      key: "openai.chat.v1",
+      providor: "openai.chat",
       temperature: 0.7,
       maxTokens: 100
     });
@@ -89,7 +91,8 @@ describe("stateFromOptions", () => {
 
   it("should not set value if default is not provided and property is not required", () => {
     const optionalConfig: Config = {
-      provider: "openai" as LlmProvidor,
+      key: "openai.chat.v1" ,
+      provider: "openai.chat",
       options: {
         optionalField: { required: [false] },
       },
@@ -106,7 +109,8 @@ describe("stateFromOptions", () => {
 
     expect(state).toEqual({
       model: "gpt-3",
-      providor: "openai",
+      key: "openai.chat.v1",
+      providor: "openai.chat",
     });
     expect(mockSet).not.toHaveBeenCalled();
   });

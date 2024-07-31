@@ -9,12 +9,12 @@ import { formatContent, formatOptions } from "./_util";
 function formatResult(
   result: OutputOpenAIChatChoice
 ): OutputResultContent | undefined {
-  if (typeof result.message.content === "string") {
+  if (typeof result?.message?.content === "string") {
     return {
       type: "text",
       text: result.message.content,
     };
-  } else if ("tool_calls" in result.message) {
+  } else if (result?.message && "tool_calls" in result.message) {
     const tool_calls = result.message.tool_calls || [];
     for (const call of tool_calls) {
       return {
@@ -36,15 +36,15 @@ export function OutputOpenAIChat(result: OpenAiResponse) {
   const name = result.model;
   const created = result.created;
 
-  const [_content, ..._options] = result.choices;
-  const stopReason = _content.finish_reason;
+  const [_content, ..._options] = result?.choices || [];
+  const stopReason = _content?.finish_reason;
   const content = formatContent(_content, formatResult);
   const options = formatOptions(_options, formatResult);
 
   const usage = {
-    output_tokens: result.usage.completion_tokens,
-    input_tokens: result.usage.prompt_tokens,
-    total_tokens: result.usage.total_tokens,
+    output_tokens: result?.usage?.completion_tokens,
+    input_tokens: result?.usage?.prompt_tokens,
+    total_tokens: result?.usage?.total_tokens,
   };
 
   return BaseLlmOutput2({

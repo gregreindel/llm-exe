@@ -10,15 +10,16 @@ import {
   GenericLLm,
   IChatMessages,
   LlmProvidor,
+  LlmProvidorKey,
   OpenAiLlmExecutorOptions,
 } from "@/types";
 
 export async function createLlmV3_call(
-  state: GenericLLm & { providor: LlmProvidor },
+  state: GenericLLm & { providor: LlmProvidor; key: LlmProvidorKey },
   messages: IChatMessages,
   _options?: OpenAiLlmExecutorOptions
 ) {
-  const config = getLlmConfig(state.providor);
+  const config = getLlmConfig(state.key);
 
   const input = mapBody(
     config.mapBody,
@@ -33,7 +34,7 @@ export async function createLlmV3_call(
 
   // move me!
   if (_options && _options?.function_call) {
-    if (state.providor === "anthropic") {
+    if (state.providor === "anthropic.chat") {
       if (
         _options?.function_call === "auto" ||
         _options?.function_call === "required" ||
@@ -43,18 +44,18 @@ export async function createLlmV3_call(
       } else {
         input["tool_choice"] = _options?.function_call;
       }
-    } else if (state.providor === "openai") {
+    } else if (state.providor === "openai.chat") {
       input["tool_choice"] = _options?.function_call;
     }
   }
   if (_options && _options?.functions?.length) {
-    if (state.providor === "anthropic") {
+    if (state.providor === "anthropic.chat") {
       input["tools"] = _options.functions.map((f) => ({
         name: f.name,
         description: f.description,
         input_schema: f.parameters,
       }));
-    } else if (state.providor === "openai") {
+    } else if (state.providor === "openai.chat") {
       input["tools"] = _options.functions.map((f) => ({
         type: "function",
         function: pick(f, ["name", "description", "parameters"]),
@@ -74,7 +75,7 @@ export async function createLlmV3_call(
   });
 
   const request =
-    config.provider === "openai.mock"
+    config.provider === "openai.chat-mock"
       ? {
           id: "0123-45-6789",
           model: "model",
@@ -97,5 +98,5 @@ export async function createLlmV3_call(
           headers: headers,
         });
 
-  return getOutputParser(config.provider, request);
+  return getOutputParser(config.key, request);
 }

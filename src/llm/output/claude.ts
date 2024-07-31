@@ -34,9 +34,9 @@ export function OutputAnthropicClaude3Chat(result: Claude3Response) {
   const stopReason = result.stop_reason;
   const content = formatResult(result);
   const usage = {
-    input_tokens: result.usage.input_tokens,
-    output_tokens: result.usage.output_tokens,
-    total_tokens: result.usage.input_tokens + result.usage.input_tokens,
+    input_tokens: result?.usage?.input_tokens,
+    output_tokens: result?.usage?.output_tokens,
+    total_tokens: result?.usage?.input_tokens + result?.usage?.input_tokens,
   };
 
   return BaseLlmOutput2({

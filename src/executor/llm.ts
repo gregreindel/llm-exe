@@ -7,6 +7,7 @@ import {
   ExecutorExecutionMetadata,
   LlmExecutorHooks,
   LlmExecutorExecuteOptions,
+  BaseLlCall,
 } from "@/types";
 import { BaseParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
@@ -62,8 +63,7 @@ export class LlmExecutor<
 
   async handler(_input: PromptInput<Prompt>, ..._args: any[]) {
     const call = await this.llm.call(_input, ..._args);
-    const result = call.getResultText()
-    return result;
+    return call;
   }
 
   getHandlerInput(_input: PromptInput<Prompt>): any {
@@ -80,13 +80,16 @@ export class LlmExecutor<
   }
 
   getHandlerOutput(
-    out: any,
+    out: BaseLlCall,
     _metadata: ExecutorExecutionMetadata<
       PromptInput<Prompt>,
       ParserOutput<Parser>
     >
   ): ParserOutput<Parser> {
-    return this.parser.parse(out, _metadata);
+    // depending on out parser type, and result obj (out)
+    // we should use different methods here
+    const outToStr = out.getResultText()
+    return this.parser.parse(outToStr, _metadata);
   }
 
   metadata() {

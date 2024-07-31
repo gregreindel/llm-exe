@@ -20,7 +20,8 @@ describe("parseHeaders", () => {
       options: {}, 
       mapBody: {},
       method: 'POST',
-      provider: '',
+      provider: "openai.chat-mock",
+      key: "openai.chat-mock.v1",
     };
     replacements = {
       token: "test-token",
@@ -43,7 +44,7 @@ describe("parseHeaders", () => {
   });
 
   it("Should merge headers and return them when provider is not amazon", async () => {
-    config.provider = "notAmazon";
+    config.provider = "openai.chat";
 
     const headers = await parseHeaders(config, replacements, payload);
 
@@ -54,7 +55,7 @@ describe("parseHeaders", () => {
   });
 
   it("Should call getAwsAuthorizationHeaders when provider starts with amazon", async () => {
-    config.provider = "amazon";
+    config.provider = "amazon:anthropic.chat";
     const expectedHeaders = {
       'User-Agent': 'test-agent',
       'Authorization': 'AWS4-HMAC-SHA256'
@@ -82,7 +83,7 @@ describe("parseHeaders", () => {
   });
 
   it("Should use default AWS region when replacements do not contain a region", async () => {
-    config.provider = "amazon";
+    config.provider = "amazon:anthropic.chat";
     delete replacements.awsRegion;
 
     const expectedHeaders = {
