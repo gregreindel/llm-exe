@@ -40,8 +40,7 @@ describe("llmExe", () => {
     /**
      * Embedding
      */
-    expect(llmExe).toHaveProperty("EmbeddingOpenAI");
-    expect(llmExe).toHaveProperty("PineconeVectorStore");
+    expect(llmExe).toHaveProperty("createEmbedding");
     /**
      * State
      */

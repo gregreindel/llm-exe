@@ -1,1 +1,1 @@
-export { EmbeddingOpenAI } from "./openai";
+export { createEmbedding } from "./embedding";

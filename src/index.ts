@@ -1,11 +1,9 @@
-// import { LlmExecutorExecuteOptions } from './interfaces/openai';
 import { useExecutors, createCallableExecutor } from "@/plugins/callable";
 import { createCoreExecutor, createLlmExecutor } from "@/executor/_functions";
 import { BaseExecutor } from "@/executor/_base";
 import * as utils from "./utils";
 import { useLlm } from "./llm";
-import { EmbeddingOpenAI } from "./embedding/openai";
-import { PineconeVectorStore } from "./vector";
+import { createEmbedding } from "./embedding/embedding";
 
 import {
   BasePrompt,
@@ -71,8 +69,7 @@ export const llmExe = {
   /**
    * Embedding
    */
-  EmbeddingOpenAI,
-  PineconeVectorStore,
+  createEmbedding,
   /**
    * State
    */
