@@ -1,10 +1,10 @@
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 import { getEnvironmentVariable } from "@/utils";
-import { Config } from "@/types";
+import { Config, EmbeddingProvidorKey, LlmProvidorKey } from "@/types";
 import { getAwsAuthorizationHeaders } from "@/utils/modules/getAwsAuthorizationHeaders";
 
 export async function parseHeaders(
-  config: Config,
+  config: Config<EmbeddingProvidorKey | LlmProvidorKey>,
   replacements: Record<string, any>,
   payload: { url: string; headers: Record<string, any>; body: string }
 ): Promise<Record<string, any>> {
@@ -12,7 +12,7 @@ export async function parseHeaders(
   const parse = replace ? JSON.parse(replace) : {};
   const headers = Object.assign({}, payload.headers, parse);
 
-  if (config.provider.startsWith("amazon:")) {
+  if (config.provider.startsWith("amazon:")||config.provider.startsWith("amazon.")) {
     const url = payload.url;
     return getAwsAuthorizationHeaders(
       {

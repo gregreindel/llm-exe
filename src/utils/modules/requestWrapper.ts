@@ -1,21 +1,12 @@
-import { getLlmConfig } from "@/llm/config";
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
-import { createLlmV3_call } from "@/llm/llmV2.call";
 
-import {
-  IChatMessages,
-  BaseLlm,
-  OpenAiLlmExecutorOptions,
-  All,
-  LlmProvidorKey,
-} from "@/types";
+import { OpenAiLlmExecutorOptions, Config } from "@/types";
 
-export function useLlm<T extends LlmProvidorKey>(
-  providor: T,
-  options: All["openai.chat"]["input"]
-): BaseLlm {
-  const config = getLlmConfig(providor);
-
+export function apiRequestWrapper<T extends Record<string, any>, I>(
+  config: Config<any>,
+  options: Record<string, any>,
+  handler: (_s: any, _i: I, o?: any) => Promise<T>
+) {
   const state = stateFromOptions(options, config);
 
   const metrics: any = {
@@ -49,10 +40,10 @@ export function useLlm<T extends LlmProvidorKey>(
   let traceId: null | string = options?.traceId || null;
 
   async function call(
-    messages: IChatMessages,
+    messages: I,
     options?: OpenAiLlmExecutorOptions
   ) {
-    return createLlmV3_call(state, messages, options);
+    return handler(state, messages, options);
   }
 
   function getMetadata() {

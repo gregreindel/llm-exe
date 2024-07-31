@@ -62,7 +62,7 @@ export interface OpenAiResponse {
 }
 
 /**
- * Claudef
+ * Claude
  */
 export interface Claude2Request {
   prompt: string;
@@ -152,7 +152,6 @@ export interface AmazonTitalResponse {
   ];
 }
 
-
 export interface OutputResultsBase {
   type: "text" | "function_use";
   text?: string;
@@ -169,7 +168,7 @@ export interface OutputResultsFunction extends OutputResultsBase {
   input: Record<string, any>;
 }
 
-export type OutputResultContent = OutputResultsText | OutputResultsFunction
+export type OutputResultContent = OutputResultsText | OutputResultsFunction;
 
 export interface OutputResult {
   id: string;
@@ -182,7 +181,19 @@ export interface OutputResult {
     input_tokens: number;
     output_tokens: number;
     total_tokens: number;
-  }
+  };
+}
+
+export interface EmbeddingOutputResult {
+  id: string;
+  model?: string;
+  created: number;
+  embedding: number[][];
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+    total_tokens: number;
+  };
 }
 
 export interface BaseLlmOptions {
@@ -194,9 +205,61 @@ export interface BaseLlmOptions {
   promptType?: PromptType;
 }
 
+export interface GenericEmbeddingOptions extends BaseLlmOptions {
+  model?: string;
+  input: string;
+  dimensions?: number;
+}
+
+export interface OpenAiEmbeddingOptions extends GenericEmbeddingOptions {
+  model: string;
+  openAiApiKey?: string;
+}
+
+export interface AmazonEmbeddingOptions extends GenericEmbeddingOptions {
+  model: string;
+  awsRegion?: string;
+  awsSecretKey?: string;
+  awsAccessKey?: string;
+}
+
+// theirs
+export interface OpenAiEmbeddingApiRequestInput {
+  input: string;
+  model: string;
+  encoding_format?: string;
+  dimensions?: number;
+  user?: string;
+}
+
+// theirs
+export interface OpenAiEmbeddingApiResponseOutput {
+  object: string;
+  data: [
+    {
+      object: string;
+      embedding: number[];
+      index: number;
+    }
+  ];
+  model: string;
+  usage: {
+    prompt_tokens: number;
+    total_tokens: number;
+  };
+}
+
+
+
+export interface AmazonTitanEmbeddingApiResponseOutput {
+  embedding: number[];
+  inputTextTokenCount: number;
+
+}
 
 export interface GenericLLm extends BaseLlmOptions {
   model?: string;
+  system?: string;
   prompt?: string | { role: string; content: string }[];
   temperature?: number;
   topP?: number;
@@ -204,7 +267,7 @@ export interface GenericLLm extends BaseLlmOptions {
   streamOptions?: Record<string, any>;
   maxTokens?: number;
   stopSequences?: string[];
-} 
+}
 
 export interface OpenAiRequest extends GenericLLm {
   model: string;
@@ -215,7 +278,6 @@ export interface OpenAiRequest extends GenericLLm {
   useJson?: boolean;
 }
 
-
 export interface AmazonBedrockRequest extends GenericLLm {
   model: string;
   awsRegion?: string;
@@ -223,28 +285,67 @@ export interface AmazonBedrockRequest extends GenericLLm {
   awsAccessKey?: string;
 }
 
-
 export interface AnthropicRequest extends GenericLLm {
   model: string;
   anthropicApiKey?: string;
 }
 
-export type All = {
-  "openai.chat": {
-    input: OpenAiRequest,
-    output: OpenAiRequest,
+export type AllEmbedding = {
+  "openai.embedding.v1": {
+    input: OpenAiEmbeddingOptions;
+    // output: OpenAiRequest;
+  };
+  "amazon.embedding.v1": {
+    input: AmazonEmbeddingOptions;
   }
-}
+};
+
+export type AllLlm = {
+  "openai.chat.v1": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
+
+  "openai.chat-mock.v1": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
+  "anthropic.chat.v1": {
+    input: AnthropicRequest;
+    // output: Claude3Response;
+  };
+  "amazon:anthropic.chat.v1": {
+    input: AnthropicRequest & AmazonBedrockRequest;
+    // output: OpenAiRequest;
+  };
+  "amazon:meta.chat.v1": {
+    input: AmazonBedrockRequest;
+    // output: OpenAiRequest;
+  };
+};
+
+export type LlmProvidorKey = keyof AllLlm;
+export type EmbeddingProvidorKey = keyof AllEmbedding;
 
 export interface BaseLlCall {
-  getResultContent: () => OutputResultContent[],
-  getResultText: () => string,
-  getResult: () => OutputResult,
+  getResultContent: () => OutputResultContent[];
+  getResultText: () => string;
+  getResult: () => OutputResult;
 }
 
-export interface BaseLlm<_T extends any = any> {
-  call: (...args: any[]) => Promise<BaseLlCall>; 
+export interface BaseEmbeddingCall {
+  getEmbedding: () => number[];
+  getResult: () => EmbeddingOutputResult;
+}
+
+export interface BaseRequest<_T extends Record<string, any>> {
+  call: (...args: any[]) => Promise<_T>;
   getTraceId: () => string | null;
   withTraceId: (traceId: string) => void;
   getMetadata: () => Record<string, any>;
 }
+
+export interface BaseLlm<_T extends BaseLlCall = BaseLlCall>
+  extends BaseRequest<_T> {}
+export interface BaseEmbedding<_T extends BaseEmbeddingCall = BaseEmbeddingCall>
+  extends BaseRequest<_T> {}

@@ -1,4 +1,5 @@
 import { IChatMessages } from "./chat";
+import { LlmProvidorKey } from "./llm";
 export { FromSchema, JSONSchema } from "json-schema-to-ts";
 export * from "./utils";
 export * from "./chat";
@@ -8,8 +9,8 @@ export * from "./prompt";
 export * from "./parser";
 export * from "./llm";
 
-export interface Config {
-  key: LlmProvidorKey;
+export interface Config<Pk = LlmProvidorKey> {
+  key: Pk;
   provider: LlmProvidor;
   method: string;
   endpoint: string;
@@ -23,7 +24,7 @@ export interface Config {
     [key in string]: {
       key: string;
       default?: number | string;
-      sanitize?: (i: any) => any;
+      sanitize?: (i: any, arg: Record<string, any>, arg2: Record<string, any>) => any;
     };
   };
   headers: string;
@@ -52,9 +53,18 @@ export type LlmProvidor =
   | "openai.chat-mock"
   | "anthropic.chat"
   | "amazon:anthropic.chat"
-  | "amazon:meta.chat";
+  | "amazon:meta.chat"
+  | "amazon.embedding"
 
-export type LlmProvidorKey = `${LlmProvidor}.${string}`
+// export type LlmProvidorKey = `${LlmProvidor}.v1`
+// export type LlmProvidorKey =
+//   | "openai.chat.v1"
+//   | "openai.embedding.v1"
+//   | "openai.chat-mock.v1"
+//   | "anthropic.chat.v1"
+//   | "amazon:anthropic.chat.v1"
+//   | "amazon:meta.chat.v1";
+
 
 // export type LlmProvidor =
 //   | "openai"

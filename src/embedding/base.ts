@@ -14,3 +14,4 @@ export class BaseEmbedding {
     this.numOfAttempts = options.numOfAttempts || 3;
   }
 }
+ 

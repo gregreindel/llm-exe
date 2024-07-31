@@ -11,7 +11,7 @@ import {
 import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
-import { createLlmV3_call } from "@/llm/llmV2.call";
+import { useLlm_call } from "@/llm/llm.call";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -39,7 +39,7 @@ jest.mock("@/llm/config", () => ({
 
 // jest.mock("@/llm/config");
 
-describe("createLlmV3_call", () => {
+describe("useLlm_call", () => {
   const getLlmConfigMock = getLlmConfig as jest.Mock;
   const replaceTemplateStringSimpleMock =
     replaceTemplateStringSimple as jest.Mock;
@@ -89,7 +89,7 @@ describe("createLlmV3_call", () => {
   it("should call all necessary functions and return parsed output", async () => {
     getOutputParserMock.mockReturnValueOnce("parsedOutput");
 
-    const result = await createLlmV3_call(mockState, mockMessages, mockOptions);
+    const result = await useLlm_call(mockState, mockMessages, mockOptions);
 
     expect(getLlmConfig).toHaveBeenCalledWith(mockState.key);
     expect(mapBody).toHaveBeenCalledWith(mockConfig.mapBody, {
@@ -135,7 +135,7 @@ describe("createLlmV3_call", () => {
     });
 
     await expect(
-      createLlmV3_call(mockState, mockMessages, mockOptions)
+      useLlm_call(mockState, mockMessages, mockOptions)
     ).rejects.toThrow("API Request Failed");
   });
 });

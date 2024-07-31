@@ -1,14 +1,14 @@
 import { IChatMessages } from "@/types";
 import { getLlmConfig } from "@/llm/config";
-import { useLlm } from "@/llm/llmV2";
-import { createLlmV3_call } from "@/llm/llmV2.call";
+import { useLlm } from "@/llm/llm";
+import { useLlm_call } from "@/llm/llm.call";
 
 jest.mock("@/llm/config", () => ({
   getLlmConfig: jest.fn(),
 }));
 
-jest.mock("@/llm/llmV2.call", () => ({
-  createLlmV3_call: jest.fn(),
+jest.mock("@/llm/llm.call", () => ({
+  useLlm_call: jest.fn(),
 }));
 
 describe("useLlm", () => {
@@ -55,7 +55,7 @@ describe("useLlm", () => {
     expect(metadata).not.toHaveProperty("anthropicApiKey");
   });
 
-  it("call method should invoke createLlmV3_call with correct arguments", async () => {
+  it("call method should invoke useLlm_call with correct arguments", async () => {
     const mockMessages = [
       {
         role: "user",
@@ -66,7 +66,7 @@ describe("useLlm", () => {
 
     await call(mockMessages);
 
-    expect(createLlmV3_call).toHaveBeenCalledWith(
+    expect(useLlm_call).toHaveBeenCalledWith(
       expect.anything(),
       mockMessages,
       undefined

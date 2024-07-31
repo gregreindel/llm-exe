@@ -4,7 +4,7 @@ import { createParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
 import { useLlm } from "@/llm";
 
-const llm = useLlm("openai.mock", {});
+const llm = useLlm("openai.chat-mock.v1", { model: "something" });
 
 const PROMPT = `You are a senior typescript developer. I need you make 
 a concise list of test cases that need to be written for the function below. 

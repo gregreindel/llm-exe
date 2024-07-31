@@ -14,22 +14,18 @@ import {
   OpenAiLlmExecutorOptions,
 } from "@/types";
 
-export async function createLlmV3_call(
+export async function useLlm_call(
   state: GenericLLm & { providor: LlmProvidor; key: LlmProvidorKey },
-  messages: IChatMessages,
+  messages: string | IChatMessages,
   _options?: OpenAiLlmExecutorOptions
 ) {
   const config = getLlmConfig(state.key);
 
   const input = mapBody(
     config.mapBody,
-    Object.assign(
-      {},
-      state,
-      {
-        prompt: messages,
-      },
-    )
+    Object.assign({}, state, {
+      prompt: messages,
+    })
   );
 
   // move me!
@@ -74,7 +70,7 @@ export async function createLlmV3_call(
     body: body,
   });
 
-  const request =
+  const response =
     config.provider === "openai.chat-mock"
       ? {
           id: "0123-45-6789",
@@ -98,5 +94,5 @@ export async function createLlmV3_call(
           headers: headers,
         });
 
-  return getOutputParser(config.key, request);
+  return getOutputParser(state, response);
 }

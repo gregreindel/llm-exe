@@ -1,9 +1,11 @@
 import { BaseLlmOutput2 } from "./base";
 import { MetaLlama2Response, OutputResultsText } from "@/types";
 
-export function OutputMetaLlama3Chat(result: MetaLlama2Response) {
-  const name = "result.model";
-
+export function OutputMetaLlama3Chat(
+  result: MetaLlama2Response,
+  _config: { model?: string }
+) {
+  const name = _config.model || "meta";
   const stopReason = result.stop_reason;
 
   const content: OutputResultsText[] = [
