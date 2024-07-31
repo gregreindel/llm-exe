@@ -1,6 +1,7 @@
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 
 import { OpenAiLlmExecutorOptions, Config } from "@/types";
+import { deepFreeze } from "./deepFreeze";
 
 export function apiRequestWrapper<T extends Record<string, any>, I>(
   config: Config<any>,
@@ -39,11 +40,12 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
 
   let traceId: null | string = options?.traceId || null;
 
-  async function call(
-    messages: I,
-    options?: OpenAiLlmExecutorOptions
-  ) {
-    return handler(state, messages, options);
+  async function call(messages: I, options?: OpenAiLlmExecutorOptions) {
+    return handler(
+      deepFreeze(state),
+      deepFreeze(messages),
+      deepFreeze(options)
+    );
   }
 
   function getMetadata() {
