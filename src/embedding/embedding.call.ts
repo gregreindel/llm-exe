@@ -45,5 +45,5 @@ export async function createEmbedding_call(
     headers: headers,
   });
 
-  return getEmbeddingOutputParser(config.key, request);
+  return getEmbeddingOutputParser(state, request);
 }

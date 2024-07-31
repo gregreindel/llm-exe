@@ -2,9 +2,12 @@ import { OpenAiEmbeddingApiResponseOutput } from "@/types";
 import { BaseEmbeddingOutput } from "./BaseEmbeddingOutput";
 import { deepClone } from "@/utils/modules/deepClone";
 
-export function OpenAiEmbedding(result: OpenAiEmbeddingApiResponseOutput) {
-  const __result = deepClone(result)
-  const model = __result.model;
+export function OpenAiEmbedding(
+  result: OpenAiEmbeddingApiResponseOutput,
+  config: { model?: string }
+) {
+  const __result = deepClone(result);
+  const model = __result.model || config.model || "openai.unknown";
   const created = new Date().getTime();
 
   const results = result?.data || [];
