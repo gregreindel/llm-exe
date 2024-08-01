@@ -1,7 +1,19 @@
-import { OutputResultContent } from "@/interfaces";
+import { GenericFunctionCall, OutputResultContent } from "@/interfaces";
+
+export function normalizeFunctionCall(
+  input: GenericFunctionCall,
+  providor: "openai" | "anthropic"
+) {
+  if (input === "any") {
+    if (providor === "openai") {
+      return "required";
+    }
+  }
+
+  return input;
+}
 
 export function normalizeFinishReason(input: string) {
-
   const map = {
     stop: ["stop", "end_turn"],
     tool: ["tool_use", "tool_use"],
@@ -18,24 +30,22 @@ export function normalizeFinishReason(input: string) {
   return "unknown";
 }
 
-export function formatOptions(response: any[], handler: (i: any) => any ) {
-    const out: OutputResultContent[][] = [];
-    for (const item of response) {
-      const result = handler(item);
-      if (result) {
-        out.push([result]);
-      }
-    }
-    return out;
-  }
-  
-  export function formatContent(response: any[number], handler: (i: any) => any) {
-    const out: OutputResultContent[] = [];
-    const result = handler(response);
+export function formatOptions(response: any[], handler: (i: any) => any) {
+  const out: OutputResultContent[][] = [];
+  for (const item of response) {
+    const result = handler(item);
     if (result) {
-      out.push(result);
+      out.push([result]);
     }
-    return out;
   }
+  return out;
+}
 
-  
+export function formatContent(response: any[number], handler: (i: any) => any) {
+  const out: OutputResultContent[] = [];
+  const result = handler(response);
+  if (result) {
+    out.push(result);
+  }
+  return out;
+}

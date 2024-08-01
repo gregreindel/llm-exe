@@ -13,11 +13,12 @@ import {
   LlmProvidorKey,
   OpenAiLlmExecutorOptions,
 } from "@/types";
+import { normalizeFunctionCall } from "./output/_util";
 
 export async function useLlm_call(
   state: GenericLLm & { providor: LlmProvidor; key: LlmProvidorKey },
   messages: string | IChatMessages,
-  _options?: OpenAiLlmExecutorOptions
+  _options?: OpenAiLlmExecutorOptions<"none">
 ) {
   const config = getLlmConfig(state.key);
 
@@ -29,19 +30,21 @@ export async function useLlm_call(
   );
 
   // move me!
+  // this sucks!
   if (_options && _options?.function_call) {
     if (state.providor === "anthropic.chat") {
-      if (
+      if(_options?.function_call === "none"){
+         _options.functions = [];
+      } else if (
         _options?.function_call === "auto" ||
-        _options?.function_call === "required" ||
-        _options?.function_call === "none"
+        _options?.function_call === "any" 
       ) {
         input["tool_choice"] = { type: _options?.function_call };
       } else {
-        input["tool_choice"] = _options?.function_call;
+        input["tool_choice"] = _options?.function_call
       }
     } else if (state.providor === "openai.chat") {
-      input["tool_choice"] = _options?.function_call;
+      input["tool_choice"] = normalizeFunctionCall(_options?.function_call, "openai");
     }
   }
   if (_options && _options?.functions?.length) {

@@ -1,6 +1,6 @@
 import { assert } from "@/utils";
 import { BaseParser } from "../_base";
-import { BaseParserOptions } from "@/types";
+import { BaseParserOptions, OutputResultContent } from "@/types";
 
 export interface StringParserOptions extends BaseParserOptions {}
 
@@ -8,7 +8,7 @@ export class StringParser extends BaseParser<string> {
   constructor(options?: StringParserOptions) {
     super("string", options);
   }
-  parse(text: string) {
+  parse(text: string | OutputResultContent[], _options?: Record<string, any>) {
     assert(
       typeof text === "string",
       `Invalid input. Expected string. Received ${typeof text}.`

@@ -6,7 +6,7 @@ import {
   ExecutorWithLlmOptions,
   LlmExecutorHooks,
   OpenAiLlmExecutorOptions,
-  OpenAiFunctionCall,
+  GenericFunctionCall,
 } from "@/types";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
@@ -36,11 +36,11 @@ export class LlmExecutorOpenAiFunctions<
       options
     );
   }
-async execute<T extends OpenAiFunctionCall>(
+async execute<T extends GenericFunctionCall>(
   _input: PromptInput<Prompt>,
   _options: OpenAiLlmExecutorOptions<T>
 ): Promise<ParserOutput<Parser>>
-  async execute<T extends OpenAiFunctionCall>(
+  async execute<T extends GenericFunctionCall>(
     _input: PromptInput<Prompt>,
     _options: OpenAiLlmExecutorOptions<T>
   ) {

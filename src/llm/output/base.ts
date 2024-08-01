@@ -3,6 +3,72 @@ import { uuid } from "@/utils";
 
 type BaseLlmOutput2Optional = "id" | "created" | "options";
 
+export function getResultAsMessage(
+  content: OutputResultContent[]
+) {
+  if (
+    content.length === 1 &&
+    content.every((a) => a.type === "text")
+  ) {
+    return {
+      role: "assistant",
+      content: content[0]?.text || "",
+    };
+  }
+  if (
+    content.length === 1 &&
+    content.every((a) => a.type === "function_use")
+  ) {
+    return {
+      role: "assistant",
+      content: null,
+      function_call: JSON.stringify(
+        content.find((a) => a.type === "function_use")
+      ),
+    };
+  }
+  if (
+    content.length === 2 &&
+    content.find((a) => a.type === "text") &&
+    content.find((a) => a.type === "function_use")
+  ) {
+    return {
+      role: "assistant",
+      content: content.find((a) => a.type === "text")?.text,
+      function_call: JSON.stringify(
+        content.find((a) => a.type === "function_use")
+      ),
+    };
+  }
+  throw new Error("Invalid response");
+}
+
+export function getResultText(
+  content: OutputResultContent[]
+): string {
+  if (
+    content.length === 1 &&
+    content.every((a) => a.type === "text")
+  ) {
+    return content[0]?.text || "";
+  }
+
+  return "";
+}
+
+export function getResultContent(
+  result: Omit<OutputResult, BaseLlmOutput2Optional> &
+    Partial<Pick<OutputResult, BaseLlmOutput2Optional>>,
+  index?: number
+): OutputResultContent[] {
+  if (index && index > 0) {
+    const arr = result?.options || [];
+    const val = arr[index];
+    return val ? val : [];
+  }
+  return [...result.content];
+}
+
 export function BaseLlmOutput2(
   result: Omit<OutputResult, BaseLlmOutput2Optional> &
     Partial<Pick<OutputResult, BaseLlmOutput2Optional>>
@@ -29,64 +95,10 @@ export function BaseLlmOutput2(
     };
   }
 
-  function getResultText(): string {
-    if (
-      __result.content.length === 1 &&
-      __result.content.every((a) => a.type === "text")
-    ) {
-      return __result.content[0]?.text || ""
-    }
-  
-    return "";
-  }
-
-  function getResultContent(index?: number): OutputResultContent[] {
-    if (index && index > 0) {
-      const arr = __result?.options || [];
-      const val = arr[index];
-      return val ? val : [];
-    }
-    return [...__result.content];
-  }
-
-  function getResultAsMessage(){
-    if (
-      __result.content.length === 1 &&
-      __result.content.every((a) => a.type === "text")
-    ) {
-      return {
-        role: "assistant",
-        content: __result.content[0]?.text || ""
-      }
-    }
-    if (
-      __result.content.length === 1 &&
-      __result.content.every((a) => a.type === "function_use")
-    ) {
-      return {
-        role: "assistant",
-        content: null,
-        function_call: JSON.stringify(__result.content.find(a=>a.type === "function_use"))
-      }
-    }
-    if (
-      __result.content.length === 2 &&
-      __result.content.find((a) => a.type === "text") && 
-      __result.content.find((a) => a.type === "function_use")
-    ) {
-      return {
-        role: "assistant",
-        content: __result.content.find((a) => a.type === "text")?.text,
-        function_call: JSON.stringify(__result.content.find(a=>a.type === "function_use"))
-      }
-    }
-    throw new Error("Invalid response")
-  }
-
   return {
-    getResultAsMessage,
-    getResultContent,
-    getResultText,
+    getResultAsMessage: () => getResultAsMessage(__result.content),
+    getResultContent: (index?: number) => getResultContent(__result, index),
+    getResultText: () => getResultText(__result.content),
     getResult,
   };
 }

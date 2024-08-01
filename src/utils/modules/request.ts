@@ -37,6 +37,7 @@ export async function apiRequest<T extends Record<string, any> | null>(
       string,
       any
     >;
+    // console.log({options, responseData})
     return responseData as T;
   } catch (error: unknown) {
     /* istanbul ignore next */
