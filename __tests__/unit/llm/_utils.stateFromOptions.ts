@@ -1,5 +1,5 @@
 import { get, pick, set } from "@/utils";
-import { Config, GenericLLm, LlmProvidor } from "@/types";
+import { Config, GenericLLm, LlmProvider } from "@/types";
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 
 describe("stateFromOptions", () => {
@@ -33,7 +33,7 @@ describe("stateFromOptions", () => {
     mockSet.mockClear();
   });
 
-  it("should return state with picked options, providor, and model", () => {
+  it("should return state with picked options, provider, and model", () => {
     const optionsWithMaxTokens: Partial<GenericLLm> = {
         model: "gpt-3",
         maxTokens: 100,
@@ -47,7 +47,7 @@ describe("stateFromOptions", () => {
     expect(state).toEqual({
       model: "gpt-3",
       key: "openai.chat.v1",
-      providor: "openai.chat",
+      provider: "openai.chat",
       temperature: 0.7,
       maxTokens: 100
     });
@@ -75,7 +75,7 @@ describe("stateFromOptions", () => {
 
   it("should handle undefined default values correctly", () => {
     const configWithoutDefaults = {
-      provider: "openai" as LlmProvidor,
+      provider: "openai" as LlmProvider,
       options: {
         maxTokens: { required: [true, "Field is required"] },
       },
@@ -110,7 +110,7 @@ describe("stateFromOptions", () => {
     expect(state).toEqual({
       model: "gpt-3",
       key: "openai.chat.v1",
-      providor: "openai.chat",
+      provider: "openai.chat",
     });
     expect(mockSet).not.toHaveBeenCalled();
   });

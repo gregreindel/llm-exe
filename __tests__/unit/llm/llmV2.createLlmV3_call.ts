@@ -4,8 +4,8 @@ import { getOutputParser } from "@/llm/output";
 import {
   GenericLLm,
   IChatMessages,
-  LlmProvidor,
-  LlmProvidorKey,
+  LlmProvider,
+  LlmProviderKey,
   OpenAiLlmExecutorOptions,
 } from "@/types";
 import { getLlmConfig } from "@/llm/config";
@@ -50,10 +50,10 @@ describe("useLlm_call", () => {
 
   const mockState = {
     key: "openai.chat-mock.v1",
-    providor: "openai.chat-mock",
+    provider: "openai.chat-mock",
   } as unknown as GenericLLm & {
-    key: LlmProvidorKey;
-    providor: LlmProvidor;
+    key: LlmProviderKey;
+    provider: LlmProvider;
   };
   const mockMessages = [
     {
@@ -122,7 +122,7 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(getOutputParser).toHaveBeenCalledWith({ key: mockState.key, providor: mockState.providor }, {
+    expect(getOutputParser).toHaveBeenCalledWith({ key: mockState.key, provider: mockState.provider }, {
       data: "response",
     });
 

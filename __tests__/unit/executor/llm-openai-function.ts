@@ -43,11 +43,9 @@ describe("llm-exe:executor/LlmExecutor", () => {
   it("MockExecutor returns correct result from execute", async () => {
     const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
     await executor.execute({ input: "input-value"}, { function_call: "none", functions: []})
-    // expect(response).toEqual("Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]");
   })
   it("MockExecutor returns correct result from execute", async () => {
     const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
     await executor.execute({ input: "input-value"}, { function_call: "auto", functions: []})
-    // expect(response).toEqual("Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]");
   })
 });

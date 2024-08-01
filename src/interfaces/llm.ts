@@ -249,12 +249,9 @@ export interface OpenAiEmbeddingApiResponseOutput {
   };
 }
 
-
-
 export interface AmazonTitanEmbeddingApiResponseOutput {
   embedding: number[];
   inputTextTokenCount: number;
-
 }
 
 export interface GenericLLm extends BaseLlmOptions {
@@ -297,7 +294,7 @@ export type AllEmbedding = {
   };
   "amazon.embedding.v1": {
     input: AmazonEmbeddingOptions;
-  }
+  };
 };
 
 export type AllLlm = {
@@ -324,8 +321,8 @@ export type AllLlm = {
   };
 };
 
-export type LlmProvidorKey = keyof AllLlm;
-export type EmbeddingProvidorKey = keyof AllEmbedding;
+export type LlmProviderKey = keyof AllLlm;
+export type EmbeddingProviderKey = keyof AllEmbedding;
 
 export interface BaseLlCall {
   getResultContent: () => OutputResultContent[];

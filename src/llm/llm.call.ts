@@ -10,14 +10,14 @@ import {
   GenericFunctionCall,
   GenericLLm,
   IChatMessages,
-  LlmProvidor,
-  LlmProvidorKey,
+  LlmProvider,
+  LlmProviderKey,
   OpenAiLlmExecutorOptions,
 } from "@/types";
 import { normalizeFunctionCall } from "./output/_util";
 
 export async function useLlm_call(
-  state: GenericLLm & { providor: LlmProvidor; key: LlmProvidorKey },
+  state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
   messages: string | IChatMessages,
   _options?: OpenAiLlmExecutorOptions<GenericFunctionCall>
 ) {
@@ -33,7 +33,7 @@ export async function useLlm_call(
   // move me!
   // this sucks!
   if (_options && _options?.function_call) {
-    if (state.providor === "anthropic.chat") {
+    if (state.provider === "anthropic.chat") {
       if(_options?.function_call === "none"){
          _options.functions = [];
       } else if (
@@ -44,18 +44,18 @@ export async function useLlm_call(
       } else {
         input["tool_choice"] = _options?.function_call
       }
-    } else if (state.providor === "openai.chat") {
+    } else if (state.provider === "openai.chat") {
       input["tool_choice"] = normalizeFunctionCall(_options?.function_call, "openai");
     }
   }
   if (_options && _options?.functions?.length) {
-    if (state.providor === "anthropic.chat") {
+    if (state.provider === "anthropic.chat") {
       input["tools"] = _options.functions.map((f) => ({
         name: f.name,
         description: f.description,
         input_schema: f.parameters,
       }));
-    } else if (state.providor === "openai.chat") {
+    } else if (state.provider === "openai.chat") {
       input["tools"] = _options.functions.map((f) => ({
         type: "function",
         function: pick(f, ["name", "description", "parameters"]),

@@ -2,10 +2,10 @@ import { GenericFunctionCall, OutputResultContent } from "@/interfaces";
 
 export function normalizeFunctionCall(
   input: GenericFunctionCall,
-  providor: "openai" | "anthropic"
+  provider: "openai" | "anthropic"
 ) {
   if (input === "any") {
-    if (providor === "openai") {
+    if (provider === "openai") {
       return "required";
     }
   }

@@ -10,8 +10,7 @@ export function replaceTemplateStringSimple(
       if (value && typeof value === "object" && k in value) {
         value = value[k];
       } else {
-        // return _match; // orig variable?
-        return "" // empty string
+        return ""
       }
     }
 

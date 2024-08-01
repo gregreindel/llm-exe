@@ -39,7 +39,6 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
     expect((output as any).id).toEqual(mock.id);
     expect((output as any).name).toEqual(mock.model);
     expect((output as any).created).toEqual(mock.created);
-    // expect((output as any).results).toEqual(mock.choices);
     expect((output as any).usage).toEqual({
       input_tokens: mock.usage.prompt_tokens,
       output_tokens: mock.usage.completion_tokens,
@@ -90,12 +89,6 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
         output_tokens: mock.usage.completion_tokens,
         total_tokens: mock.usage.total_tokens,
       },
-      // message: {
-      //   role: "assistant",
-      //   content: "This is the assistant message content.",
-      // },
-      // finish_reason: "stop",
-      // index: 0,
     });
   });
   it("getResultContent gets result", () => {
@@ -128,7 +121,6 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
             content: null,
             tool_calls: [
               {
-                // id: "",
                 type: "function",
                 function: {
                   name: "test_fn",
@@ -144,20 +136,6 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
     } as unknown as OpenAiResponse);
     expect(output.getResultContent()).toEqual(
       [{"input": {}, "name": "test_fn", "type": "function_use"}]
-      // JSON.stringify({
-      //   tool_calls: [
-      //     {
-      //       id: "",
-      //       type: "function",
-      //       function: {
-      //         name: "test_fn",
-      //         arguments: "{}",
-      //       },
-      //     },
-      //   ],
-      // })
     );
   });
 });
-
-// getResultContent

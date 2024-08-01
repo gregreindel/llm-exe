@@ -20,11 +20,9 @@ describe("llm-exe:parser/OpenAiFunctionParser", () => {
     expect(
       parser.parse([
         {
-          // function_call: {
           type: "function_use",
           name: "test_function",
           input: {},
-          // }
         },
       ])
     ).toEqual({

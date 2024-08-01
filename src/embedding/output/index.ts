@@ -1,11 +1,11 @@
 import { AmazonTitanEmbedding } from "./AmazonTitan";
 import { OpenAiEmbedding } from "./OpenAiEmbedding";
-import { EmbeddingProvidorKey } from "@/types";
+import { EmbeddingProviderKey } from "@/types";
 
 export function getEmbeddingOutputParser(
   config: {
     model?: string;
-    key: EmbeddingProvidorKey;
+    key: EmbeddingProviderKey;
   },
   response: any
 ) {

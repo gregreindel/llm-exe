@@ -5,8 +5,8 @@ import { parseHeaders } from "@/llm/_utils.parseHeaders";
 
 import {
   GenericLLm,
-  LlmProvidor,
-  EmbeddingProvidorKey,
+  LlmProvider,
+  EmbeddingProviderKey,
   OpenAiLlmExecutorOptions,
 } from "@/types";
 import { getEmbeddingConfig } from "./config";
@@ -14,8 +14,8 @@ import { getEmbeddingOutputParser } from "./output";
 
 export async function createEmbedding_call(
   state: GenericLLm & {
-    providor: Extract<LlmProvidor, "openai.embedding">;
-    key: EmbeddingProvidorKey;
+    provider: Extract<LlmProvider, "openai.embedding">;
+    key: EmbeddingProviderKey;
   },
   _input: string | string[],
   _options?: OpenAiLlmExecutorOptions

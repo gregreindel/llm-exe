@@ -1,10 +1,10 @@
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 import { getEnvironmentVariable } from "@/utils";
-import { Config, EmbeddingProvidorKey, LlmProvidorKey } from "@/types";
+import { Config, EmbeddingProviderKey, LlmProviderKey } from "@/types";
 import { getAwsAuthorizationHeaders } from "@/utils/modules/getAwsAuthorizationHeaders";
 
 export async function parseHeaders(
-  config: Config<EmbeddingProvidorKey | LlmProvidorKey>,
+  config: Config<EmbeddingProviderKey | LlmProviderKey>,
   replacements: Record<string, any>,
   payload: { url: string; headers: Record<string, any>; body: string }
 ): Promise<Record<string, any>> {

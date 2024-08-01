@@ -1,8 +1,8 @@
-import { Config, EmbeddingProvidorKey } from "@/types";
+import { Config, EmbeddingProviderKey } from "@/types";
 import { getEnvironmentVariable } from "@/utils";
 
 export const embeddingConfigs: {
-  [key in EmbeddingProvidorKey]: Config<EmbeddingProvidorKey>;
+  [key in EmbeddingProviderKey]: Config<EmbeddingProviderKey>;
 } = {
   "openai.embedding.v1": {
     key: "openai.embedding.v1",
@@ -59,10 +59,10 @@ export const embeddingConfigs: {
   },
 };
 
-export function getEmbeddingConfig(providor: EmbeddingProvidorKey) {
-  const pick = embeddingConfigs[providor];
+export function getEmbeddingConfig(provider: EmbeddingProviderKey) {
+  const pick = embeddingConfigs[provider];
   if (pick) {
     return pick;
   }
-  throw new Error("Invalid providor");
+  throw new Error("Invalid provider");
 }

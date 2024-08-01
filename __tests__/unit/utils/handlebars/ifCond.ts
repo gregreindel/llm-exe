@@ -32,14 +32,4 @@ describe('ifCond', () => {
     expect(mockOptions.fn).not.toHaveBeenCalled();
     expect(mockOptions.inverse).toHaveBeenCalled();
   });
-//   test('should return false when arg1 is equal to any value in arg2', () => {
-//     eq('banana', 'banana,orange', mockOptions);
-//     expect(mockOptions.fn).toHaveBeenCalled();
-//     expect(mockOptions.inverse).not.toHaveBeenCalled();
-//   });
-//   test('should return false when arg1 is an empty string and arg2 contains an empty string', () => {
-//       eq('', 'banana,orange,', mockOptions);
-//       expect(mockOptions.fn).toHaveBeenCalled();
-//       expect(mockOptions.inverse).not.toHaveBeenCalled();
-//     });
 });

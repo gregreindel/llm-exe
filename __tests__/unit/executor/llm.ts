@@ -55,7 +55,6 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(executor.runHook).toHaveBeenNthCalledWith(2, "onComplete", expect.any(Object));
 
     expect(executor.getHandlerInput).toHaveBeenCalledWith({ input: "input-value"}, expect.objectContaining({input}), undefined);
-    // expect(executor.getHandlerOutput).toHaveBeenCalledWith(`Hello world from LLM! The input was [{\"role\":\"system\",\"content\":\"This is a prompt.\"}]`, expect.objectContaining({input}), undefined);
     expect(executor.getHandlerOutput).toHaveBeenCalledWith({
       getResult: expect.any(Function),
       getResultAsMessage: expect.any(Function),
@@ -63,7 +62,6 @@ describe("llm-exe:executor/LlmExecutor", () => {
       getResultText: expect.any(Function),
     },  expect.objectContaining({input}), undefined);
 
-    // {"getResult": [Function getResult], "getResultAsMessage": [Function getResultAsMessage], "getResultContent": [Function getResultContent], "getResultText": [Function getResultText]}
   })
   it("MockExecutor returns correct result from execute", async () => {
     const executor = new LlmExecutor({ llm, prompt });
@@ -95,7 +93,6 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(initialMetadata).toHaveProperty("id");
 
     expect(initialMetadata).toHaveProperty("llm");
-    // expect((initialMetadata as any).llm).toHaveProperty("promptType");
 
     expect(executor.getMetadata().executions).toEqual(0);
     await executor.execute({ input: "input-value"})
@@ -143,7 +140,6 @@ describe("llm-exe:executor/LlmExecutor", () => {
   it("MockLlm can use withTraceId", () => {
     const llm = useLlm("openai.chat-mock.v1", {traceId: "llm-traceId", openAiApiKey: "", model: "text-ada-001"});
     const executor = new LlmExecutor({ llm, prompt });
-    // executor.withTraceId("1234")
     expect(executor.getTraceId()).toEqual("llm-traceId");
   });
   it("MockLlm can use withTraceId", () => {

@@ -13,7 +13,6 @@ describe('eq', () => {
 
   test('should return true when arg1 is not equal to any value in arg2', () => {
     eq('apple', 'banana,orange', mockOptions);
-  //   expect(result).toBe('true');
     expect(mockOptions.fn).not.toHaveBeenCalled();
     expect(mockOptions.inverse).toHaveBeenCalled();
   });

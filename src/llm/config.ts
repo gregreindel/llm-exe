@@ -1,5 +1,5 @@
 import { getEnvironmentVariable, replaceTemplateString } from "@/utils";
-import { IChatMessages, Config, LlmProvidorKey } from "@/types";
+import { IChatMessages, Config, LlmProviderKey } from "@/types";
 
 export function anthropicPromptSanitize(
   _messages: string | IChatMessages,
@@ -25,7 +25,7 @@ const ANTORPIC_VERSION = "2023-06-01";
 const ANTORPIC_BEDROCK_VERSION = "bedrock-2023-05-31";
 
 export const configs: {
-  [key in LlmProvidorKey]: Config;
+  [key in LlmProviderKey]: Config;
 } = {
   "openai.chat.v1": {
     key: "openai.chat.v1",
@@ -201,10 +201,10 @@ export const configs: {
   },
 };
 
-export function getLlmConfig(providor: LlmProvidorKey) {
-  const pick = configs[providor];
+export function getLlmConfig(provider: LlmProviderKey) {
+  const pick = configs[provider];
   if (pick) {
     return pick;
   }
-  throw new Error("Invalid providor");
+  throw new Error("Invalid provider");
 }

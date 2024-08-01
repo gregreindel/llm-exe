@@ -1,12 +1,12 @@
 import { OutputOpenAIChat } from "./openai";
 import { OutputAnthropicClaude3Chat } from "./claude";
 import { OutputMetaLlama3Chat } from "./llama";
-import { LlmProvidorKey } from "@/interfaces";
+import { LlmProviderKey } from "@/interfaces";
 import { OutputDefault } from "./default";
 
 export function getOutputParser(
   config: {
-    key: LlmProvidorKey;
+    key: LlmProviderKey;
     model?: string
   },
   response: any

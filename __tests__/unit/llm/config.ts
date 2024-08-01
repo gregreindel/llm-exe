@@ -1,5 +1,5 @@
 import { configs, getLlmConfig } from "@/llm/config";
-import { Config, LlmProvidorKey } from "@/types";
+import { Config, LlmProviderKey } from "@/types";
 
 describe("configs", () => {
   const OLD_ENV = process.env;
@@ -167,40 +167,40 @@ describe("configs", () => {
 });
 
 describe("getLlmConfig", () => {
-  it("should return the correct config for a valid providor", () => {
-    const key: LlmProvidorKey = "openai.chat.v1";
+  it("should return the correct config for a valid provider", () => {
+    const key: LlmProviderKey = "openai.chat.v1";
     const config: Config = getLlmConfig(key);
     expect(config).toEqual(configs[key]);
   });
 
-  it("should throw an error for an invalid providor", () => {
-    const providor: any = "invalid_providor";
-    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  it("should throw an error for an invalid provider", () => {
+    const provider: any = "invalid";
+    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
   });
 
-  it("should throw an error when providor is undefined", () => {
-    const providor: any = undefined;
-    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  it("should throw an error when provider is undefined", () => {
+    const provider: any = undefined;
+    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
   });
 
-  it("should throw an error when providor is empty string", () => {
-    const providor: any = "";
-    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  it("should throw an error when provider is empty string", () => {
+    const provider: any = "";
+    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
   });
 
-  it("should throw an error when providor is null", () => {
-    const providor: any = null;
-    expect(() => getLlmConfig(providor)).toThrow("Invalid providor");
+  it("should throw an error when provider is null", () => {
+    const provider: any = null;
+    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
   });
 
   it("should return the correct config for 'amazon:meta.chat.v1'", () => {
-    const key: LlmProvidorKey = "amazon:meta.chat.v1";
+    const key: LlmProviderKey = "amazon:meta.chat.v1";
     const config: Config = getLlmConfig(key);
     expect(config).toEqual(configs[key]);
   });
 
   it("should return the correct config for 'amazon:anthropic.chat.v1'", () => {
-    const key: LlmProvidorKey = "amazon:anthropic.chat.v1";
+    const key: LlmProviderKey = "amazon:anthropic.chat.v1";
     const config: Config = getLlmConfig(key);
     expect(config).toEqual(configs[key]);
   });

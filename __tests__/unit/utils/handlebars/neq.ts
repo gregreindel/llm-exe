@@ -12,7 +12,6 @@ describe('neq', () => {
   
     test('should return true when arg1 is not equal to any value in arg2', () => {
       neq('apple', 'banana,orange', mockOptions);
-    //   expect(result).toBe('true');
       expect(mockOptions.fn).toHaveBeenCalled();
       expect(mockOptions.inverse).not.toHaveBeenCalled();
     });

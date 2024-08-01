@@ -26,7 +26,6 @@ export interface CallableExecutorInput<
   visibilityHandler?(input: I, context: any, attributes?: Record<string, any>): boolean;
   handler?: FunctionOrExecutor<I, O>;
   validateInput?(input: I, ...args: any[]): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
-  // ((input: I) => Promise<any> | any) | CoreExecutor<I, O>;
 }
 
 /**

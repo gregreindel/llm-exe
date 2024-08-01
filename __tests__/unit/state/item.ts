@@ -20,7 +20,6 @@ describe("llm-exe:state/BaseStateItem", () => {
       expect(item).toHaveProperty("resetValue");
       expect(item).toHaveProperty("serializeValue");
       expect(item).toHaveProperty("serialize");
-      // expect(item).toHaveProperty("deserialize");
     });
 
     it("item.getKey", () => {
@@ -62,11 +61,9 @@ describe("llm-exe:state/BaseStateItem", () => {
         const defaultValue = "unknown"
         const item = new MockStateItem("intent", defaultValue);
         expect(item.serialize()).toEqual({
-            // intent: {
                 class: 'BaseStateItem',
                 name: 'intent',
                 value: { intent: 'unknown' }
-            //   }
         });
       });
 })
