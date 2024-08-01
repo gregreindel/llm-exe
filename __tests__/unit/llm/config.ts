@@ -28,6 +28,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
+          sanitize: expect.any(Function)
         },
         model: {
           key: "model",
@@ -53,6 +54,7 @@ describe("configs", () => {
       method: "POST",
       options: {
         prompt: {},
+        system: {},
         maxTokens: {
           required: [true, "maxTokens required"],
         },
@@ -67,6 +69,10 @@ describe("configs", () => {
         },
         prompt: {
           key: "messages",
+          sanitize: expect.any(Function)
+        },
+        system: {
+          key: "system",
         },
       },
     };
@@ -94,6 +100,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
+          sanitize: expect.any(Function)
         },
         topP: {
           key: "top_p",
@@ -154,7 +161,7 @@ describe("configs", () => {
     const sanitize = config.mapBody["prompt"].sanitize!;
     expect(typeof sanitize).toEqual("function");
 
-    const sanitized = sanitize([{ role: "assistant", content: "Hello World" }]);
+    const sanitized = sanitize([{ role: "assistant", content: "Hello World" }], {}, {});
     expect(sanitized.trim()).toEqual(`Assistant: Hello World`);
   });
 });

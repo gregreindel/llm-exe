@@ -33,10 +33,10 @@ function formatResult(
 
 export function OutputOpenAIChat(
   result: OpenAiResponse,
-  _config: { model?: string }
+  _config?: { model?: string }
 ) {
   const id = result.id;
-  const name = result.model || _config.model || "openai.unknown";
+  const name = result.model || _config?.model || "openai.unknown";
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];

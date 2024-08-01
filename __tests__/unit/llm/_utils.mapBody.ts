@@ -62,7 +62,7 @@ describe("mapBody", () => {
 
     expect(result).toHaveProperty("securePassword");
     expect(result.securePassword).toEqual("SANITIZED");
-    expect(sanitizeFn).toHaveBeenCalledWith("unsanitized_password");
+    expect(sanitizeFn).toHaveBeenCalledWith(body.password, body, {"securePassword": "SANITIZED"});
     // expect(convertDotNotation).toHaveBeenCalled();
   });
 

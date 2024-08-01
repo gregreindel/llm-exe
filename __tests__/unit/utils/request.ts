@@ -6,7 +6,7 @@ jest.mock("node-fetch-commonjs", () => jest.fn());
 describe("apiRequest", () => {
   const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
   const url = "https://api.example.com/data";
-  const dummyData = { data: { key: "value" } };
+  const dummyData = { key: "value" } 
   
   const jsonMock = jest.fn();
   const textMock = jest.fn();
@@ -24,7 +24,7 @@ describe("apiRequest", () => {
     } as unknown as Response);
 
     const data = await apiRequest<typeof dummyData>(url);
-    expect(data).toEqual(dummyData.data);
+    expect(data).toEqual(dummyData);
     expect(mockFetch).toHaveBeenCalledWith(url, expect.objectContaining({ agent: expect.anything() }));
   });
 

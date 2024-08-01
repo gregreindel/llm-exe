@@ -7,6 +7,7 @@ import { parseHeaders } from "@/llm/_utils.parseHeaders";
 import { pick } from "lodash";
 
 import {
+  GenericFunctionCall,
   GenericLLm,
   IChatMessages,
   LlmProvidor,
@@ -18,7 +19,7 @@ import { normalizeFunctionCall } from "./output/_util";
 export async function useLlm_call(
   state: GenericLLm & { providor: LlmProvidor; key: LlmProvidorKey },
   messages: string | IChatMessages,
-  _options?: OpenAiLlmExecutorOptions<"none">
+  _options?: OpenAiLlmExecutorOptions<GenericFunctionCall>
 ) {
   const config = getLlmConfig(state.key);
 

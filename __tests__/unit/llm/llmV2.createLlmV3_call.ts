@@ -122,7 +122,7 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(getOutputParser).toHaveBeenCalledWith(mockConfig.key, {
+    expect(getOutputParser).toHaveBeenCalledWith({ key: mockState.key, providor: mockState.providor }, {
       data: "response",
     });
 
