@@ -77,7 +77,7 @@ export interface BaseExecutorHooks {
 }
 
 export interface LlmExecutorHooks extends BaseExecutorHooks {
-  /** 
+  /**
    * If needed, can override allowedHooks on llmExecutor
    * and add llm-specific hooks here
    */

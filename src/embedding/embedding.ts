@@ -8,5 +8,5 @@ export function createEmbedding<T extends EmbeddingProviderKey>(
   options: AllEmbedding[T]["input"]
 ) {
   const config = getEmbeddingConfig(provider);
-  return apiRequestWrapper(config, options, createEmbedding_call)
+  return apiRequestWrapper(config, options, createEmbedding_call);
 }

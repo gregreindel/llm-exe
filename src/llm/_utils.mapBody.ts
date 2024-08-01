@@ -20,7 +20,11 @@ export function mapBody(
         providerSpecificSettings.sanitize &&
         typeof providerSpecificSettings.sanitize === "function"
       ) {
-        valueForThisKey = providerSpecificSettings.sanitize(valueForThisKey, Object.freeze({ ...body }), output);
+        valueForThisKey = providerSpecificSettings.sanitize(
+          valueForThisKey,
+          Object.freeze({ ...body }),
+          output
+        );
       }
 
       if (typeof valueForThisKey !== "undefined") {

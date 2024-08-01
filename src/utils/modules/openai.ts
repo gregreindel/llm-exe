@@ -1,4 +1,4 @@
-import { get } from '@/utils';
+import { get } from "@/utils";
 import { OpenAIModelName } from "@/types";
 import { OpenAiPricing } from "../const";
 
@@ -19,7 +19,7 @@ export function calculateOpenAiPrice(
     total_cost: 0,
   };
 
-  const price = get(OpenAiPricing, model, [0,0,0])
+  const price = get(OpenAiPricing, model, [0, 0, 0]);
   if (price) {
     const [amount, inputAmount, outputAmount] = price;
     if (inputAmount && input_tokens) {

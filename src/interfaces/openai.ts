@@ -26,12 +26,18 @@ export type OpenAIModelName =
   | OpenAIConversationModelName
   | OpenAIEmbeddingModelName;
 
-export type OpenAiFunctionCall = "auto" | "none" | "required" | { name: string; };
+export type OpenAiFunctionCall =
+  | "auto"
+  | "none"
+  | "required"
+  | { name: string };
 
 export interface LlmExecutorExecuteOptions {}
 
-export type GenericFunctionCall = "auto" | "none" | "any" | { name: string; };
-export interface OpenAiLlmExecutorOptions<T extends GenericFunctionCall = "auto"> extends LlmExecutorExecuteOptions {
+export type GenericFunctionCall = "auto" | "none" | "any" | { name: string };
+export interface OpenAiLlmExecutorOptions<
+  T extends GenericFunctionCall = "auto"
+> extends LlmExecutorExecuteOptions {
   functions: CallableExecutorCore[];
   function_call: T;
 }

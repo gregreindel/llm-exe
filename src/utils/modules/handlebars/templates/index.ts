@@ -1,4 +1,3 @@
-
 export const COMPLETION_END_TOKEN = "<--END";
 export const PROMPT_END_TOKEN = "-->";
 
@@ -38,7 +37,7 @@ const JsonSchema = `{{#if (getKeyOr key false)}}
 
 const JsonSchemaExampleJson = `{{#if (getOr key false)}}
 \`\`\`json\n{{{jsonSchemaExample key (getOr property '') collapse}}}\n\`\`\`
-{{~/if}}`
+{{~/if}}`;
 
 export const partials = {
   JsonSchema,

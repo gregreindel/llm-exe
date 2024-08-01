@@ -3,7 +3,7 @@ import Handlebars from "handlebars";
 import * as asyncHelpers from "handlebars-async-helpers";
 
 export const hbs = Handlebars;
-export const hbsAsync = asyncHelpers.default(Handlebars); 
+export const hbsAsync = asyncHelpers.default(Handlebars);
 
 export function importPartials(_partials: { [key in string]: string }) {
   let partials: PromptPartial[] = [];
@@ -23,7 +23,9 @@ export function importPartials(_partials: { [key in string]: string }) {
   return partials;
 }
 
-export function importHelpers(_helpers: { [key in string]: (...args: any[]) => any }) {
+export function importHelpers(_helpers: {
+  [key in string]: (...args: any[]) => any;
+}) {
   let helpers: PromptHelper[] = [];
   if (_helpers) {
     const externalHelperKeys = Object.keys(

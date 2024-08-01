@@ -1,4 +1,4 @@
-import { get, toNumber } from './';
+import { get, toNumber } from "./";
 
 function isObject(obj: any) {
   return obj === Object(obj);
@@ -20,7 +20,12 @@ function getType(schemaType: any) {
   }
 }
 
-export function filterObjectOnSchema(schema: any, doc: any, detach?: any, property?: string) {
+export function filterObjectOnSchema(
+  schema: any,
+  doc: any,
+  detach?: any,
+  property?: string
+) {
   let result: any; // returns the resulting filtered thing from this level; can be object, array, literal, ...
 
   // if the document is null/undefined, short-circuit and return it
@@ -40,29 +45,28 @@ export function filterObjectOnSchema(schema: any, doc: any, detach?: any, proper
 
       var filteredChild = filterObjectOnSchema(sp, child, detach, property);
 
-      if(property){
-        result[key] = get(sp, property, "")
-      }else{
+      if (property) {
+        result[key] = get(sp, property, "");
+      } else {
         if (filteredChild === undefined) {
           if (typeof sp?.default !== "undefined") {
             // add default value if undefined and has default
-            result[key] = get(sp, "default", "")
+            result[key] = get(sp, "default", "");
           } else {
             // filter out if the child is undefined and no default
             return;
           }
         } else {
           // keep the child if it's defined properly or null
-          if(sp.type === "integer" || sp.type === "number"){
+          if (sp.type === "integer" || sp.type === "number") {
             result[key] = toNumber(filteredChild);
-          }else if(sp.type === "boolean"){
-            result[key] = !!filteredChild
-          }else{
+          } else if (sp.type === "boolean") {
+            result[key] = !!filteredChild;
+          } else {
             result[key] = filteredChild;
           }
         }
       }
-
     });
   } else if (type === "object" && isObject(doc) && detach) {
     return {};
@@ -81,8 +85,8 @@ export function filterObjectOnSchema(schema: any, doc: any, detach?: any, proper
 }
 
 export function schemaExampleWith(schema: any, property: string) {
-  if(schema.type === "array"){
-    return filterObjectOnSchema(schema, [{}], undefined, property)
+  if (schema.type === "array") {
+    return filterObjectOnSchema(schema, [{}], undefined, property);
   }
-  return filterObjectOnSchema(schema, {}, undefined, property)
+  return filterObjectOnSchema(schema, {}, undefined, property);
 }

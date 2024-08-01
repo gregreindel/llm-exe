@@ -23,9 +23,18 @@ export interface CallableExecutorInput<
   parameters?: Record<string, any>;
   input: string;
   attributes?: Record<string, any>;
-  visibilityHandler?(input: I, context: any, attributes?: Record<string, any>): boolean;
+  visibilityHandler?(
+    input: I,
+    context: any,
+    attributes?: Record<string, any>
+  ): boolean;
   handler?: FunctionOrExecutor<I, O>;
-  validateInput?(input: I, ...args: any[]): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  validateInput?(
+    input: I,
+    ...args: any[]
+  ):
+    | ReturnType<typeof enforceResultAttributes<boolean>>
+    | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>;
 }
 
 /**
@@ -45,9 +54,20 @@ export interface CallableExecutor<I, O> extends CallableExecutorCore {
   input: string;
   _handler: BaseExecutor<I, O>;
   visibilityHandler(input: any, attributes?: Record<string, any>): boolean;
-  _visibilityHandler?(input: any, context: any, attributes?: Record<string, any>): boolean;
-  validateInput(input: I): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
-  _validateInput?(input: I, context: any): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
+  _visibilityHandler?(
+    input: any,
+    context: any,
+    attributes?: Record<string, any>
+  ): boolean;
+  validateInput(
+    input: I
+  ): Promise<ReturnType<typeof enforceResultAttributes<boolean>>>;
+  _validateInput?(
+    input: I,
+    context: any
+  ):
+    | ReturnType<typeof enforceResultAttributes<boolean>>
+    | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>;
 }
 
 /**
@@ -62,12 +82,21 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   public attributes: Record<string, any>;
   public parameters: Record<string, any>;
   public _handler: BaseExecutor<I, O>;
-  public _validateInput?(input: I, context: any): ReturnType<typeof enforceResultAttributes<boolean>> | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>
-  public _visibilityHandler?(input: any, context: any, attributes?: Record<string, any>): boolean;
+  public _validateInput?(
+    input: I,
+    context: any
+  ):
+    | ReturnType<typeof enforceResultAttributes<boolean>>
+    | Promise<ReturnType<typeof enforceResultAttributes<boolean>>>;
+  public _visibilityHandler?(
+    input: any,
+    context: any,
+    attributes?: Record<string, any>
+  ): boolean;
 
   constructor(options: CallableExecutorInput<I, O>) {
     const defaults = {
-      key: options.name
+      key: options.name,
     };
 
     this.name = options.name;
@@ -78,7 +107,7 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
     this.attributes = options?.attributes || {};
     this._validateInput = options.validateInput;
     this._visibilityHandler = options?.visibilityHandler;
-      
+
     if (options.handler instanceof BaseExecutor) {
       this._handler = options.handler;
     } else if (typeof options.handler === "function") {
@@ -93,20 +122,27 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
   }
   async validateInput(input: I): Promise<{ result: boolean; attributes: any }> {
     try {
-      if(typeof this._validateInput === "function"){
-        const response = await this._validateInput(ensureInputIsObject(input), this._handler.getMetadata());
+      if (typeof this._validateInput === "function") {
+        const response = await this._validateInput(
+          ensureInputIsObject(input),
+          this._handler.getMetadata()
+        );
         return enforceResultAttributes(response);
       }
-      return { result: true, attributes: {}}
+      return { result: true, attributes: {} };
     } catch (error: any) {
-      return { result: false, attributes: { error: error.message }}
+      return { result: false, attributes: { error: error.message } };
     }
   }
   visibilityHandler(input: any, attributes: any): boolean {
-    if(typeof this._visibilityHandler === "function"){
-      return this._visibilityHandler(input, this._handler.getMetadata(), attributes);
+    if (typeof this._visibilityHandler === "function") {
+      return this._visibilityHandler(
+        input,
+        this._handler.getMetadata(),
+        attributes
+      );
     }
-    return true
+    return true;
   }
 }
 
@@ -156,20 +192,19 @@ export abstract class UseExecutorsBase<
       return error.message;
     }
   }
-  async validateFunctionInput(
-    name: string,
-    input: string
-  ){
+  async validateFunctionInput(name: string, input: string) {
     try {
       const handler = this.getFunction(name);
       assert(
         handler,
         `[invalid handler] The handler (${name}) does not exist.`
       );
-      const result = await handler.validateInput(ensureInputIsObject(input) as any);
+      const result = await handler.validateInput(
+        ensureInputIsObject(input) as any
+      );
       return result;
     } catch (error: any) {
-      return { result: false, attributes: { error: error.message }}
+      return { result: false, attributes: { error: error.message } };
     }
   }
 }

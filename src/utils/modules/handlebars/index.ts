@@ -1,8 +1,12 @@
-import { importPartials, registerPartials, importHelpers,
-  registerHelpers } from "./hbs";
+import {
+  importPartials,
+  registerPartials,
+  importHelpers,
+  registerHelpers,
+} from "./hbs";
 import * as helpers from "./helpers";
 import * as contextPartials from "./templates";
-import { PromptTemplateOptions,  } from "@/types";
+import { PromptTemplateOptions } from "@/types";
 import { getEnvironmentVariable } from "@/utils";
 
 export function useHandlebars(
@@ -18,13 +22,15 @@ export function useHandlebars(
   }
 
   if (configuration?.helpers && Array.isArray(configuration.helpers)) {
-    registerHelpers(configuration.helpers)
+    registerHelpers(configuration.helpers);
   }
 
-  const helperPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH');
+  const helperPath = getEnvironmentVariable(
+    "CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH"
+  );
   if (helperPath) {
     const externalHelpers = require(helperPath);
-    registerHelpers(importHelpers(externalHelpers))
+    registerHelpers(importHelpers(externalHelpers));
   }
 
   const contextPartialKeys = Object.keys(
@@ -38,10 +44,12 @@ export function useHandlebars(
   }
 
   if (configuration?.partials && Array.isArray(configuration.partials)) {
-    registerPartials(configuration.partials)
+    registerPartials(configuration.partials);
   }
 
-  const partialsPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH');
+  const partialsPath = getEnvironmentVariable(
+    "CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH"
+  );
   if (typeof process === "object" && partialsPath) {
     const externalPartials = require(partialsPath);
     registerPartials(importPartials(externalPartials));
@@ -53,9 +61,12 @@ export function useHandlebars(
   });
 
   /* istanbul ignore next */
-  hbsInstance.registerHelper("cut", function (str: string, arg2: string | RegExp) {
-    return str.toString().replace(new RegExp(arg2, "g"), "");
-  });
+  hbsInstance.registerHelper(
+    "cut",
+    function (str: string, arg2: string | RegExp) {
+      return str.toString().replace(new RegExp(arg2, "g"), "");
+    }
+  );
 
   /* istanbul ignore next */
   hbsInstance.registerHelper(

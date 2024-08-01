@@ -1,1 +1,1 @@
-declare module "handlebars-async-helpers"
+declare module "handlebars-async-helpers";

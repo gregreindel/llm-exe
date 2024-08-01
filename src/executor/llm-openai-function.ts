@@ -36,14 +36,14 @@ export class LlmExecutorOpenAiFunctions<
       options
     );
   }
-async execute<T extends GenericFunctionCall>(
-  _input: PromptInput<Prompt>,
-  _options: OpenAiLlmExecutorOptions<T>
-): Promise<ParserOutput<Parser>>
+  async execute<T extends GenericFunctionCall>(
+    _input: PromptInput<Prompt>,
+    _options: OpenAiLlmExecutorOptions<T>
+  ): Promise<ParserOutput<Parser>>;
   async execute<T extends GenericFunctionCall>(
     _input: PromptInput<Prompt>,
     _options: OpenAiLlmExecutorOptions<T>
   ) {
-    return super.execute(_input, _options) 
+    return super.execute(_input, _options);
   }
 }

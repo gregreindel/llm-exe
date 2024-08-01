@@ -12,7 +12,7 @@ import escape from "lodash.escape";
 import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
 export { get, set, pick, camelCase, unEscape, escape };
-export { calculateOpenAiPrice } from "./openai"
+export { calculateOpenAiPrice } from "./openai";
 export {
   hbs,
   importPartials,
@@ -21,7 +21,10 @@ export {
   registerHelpers,
 } from "./handlebars/hbs";
 export { filterObjectOnSchema } from "./json-schema-filter";
-export { replaceTemplateString, replaceTemplateStringAsync } from "./replaceTemplateString";
+export {
+  replaceTemplateString,
+  replaceTemplateStringAsync,
+} from "./replaceTemplateString";
 export { asyncCallWithTimeout } from "./asyncCallWithTimeout";
 export {
   maybeStringifyJSON,

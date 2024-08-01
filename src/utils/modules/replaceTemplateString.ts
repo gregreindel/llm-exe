@@ -22,7 +22,6 @@ export function replaceTemplateString(
   return res;
 }
 
-
 export function replaceTemplateStringAsync(
   templateString?: string,
   substitutions: Record<string, any> = {},
@@ -32,11 +31,11 @@ export function replaceTemplateStringAsync(
   }
 ) {
   if (!templateString) return Promise.resolve(templateString || "");
-  const instance = useHandlebars(configuration, hbsAsync)
+  const instance = useHandlebars(configuration, hbsAsync);
   const template = instance.compile(templateString);
-   return template(substitutions, {
-      allowedProtoMethods: {
-        substring: true,
-      },
-    }) as unknown as Promise<string>
+  return template(substitutions, {
+    allowedProtoMethods: {
+      substring: true,
+    },
+  }) as unknown as Promise<string>;
 }

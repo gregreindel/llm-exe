@@ -7,7 +7,7 @@ import { OutputDefault } from "./default";
 export function getOutputParser(
   config: {
     key: LlmProviderKey;
-    model?: string
+    model?: string;
   },
   response: any
 ) {

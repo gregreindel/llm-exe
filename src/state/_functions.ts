@@ -13,7 +13,7 @@ export function createStateItem<T>(name: string, defaultValue: T) {
   return new DefaultStateItem(name, defaultValue);
 }
 
-export function createStateFrom(savedState?: any){
+export function createStateFrom(savedState?: any) {
   const state = createState();
   const dialogues = savedState?.dialogues || {};
   // const context = savedState?.context;
@@ -21,11 +21,11 @@ export function createStateFrom(savedState?: any){
 
   for (const dialogue of Object.keys(dialogues)) {
     const value = dialogues[dialogue].value;
-    state.createDialogue(dialogue).setHistory(value)
+    state.createDialogue(dialogue).setHistory(value);
   }
 
   for (const attribute of Object.keys(attributes)) {
-    state.setAttribute(attribute, attributes[attribute])
+    state.setAttribute(attribute, attributes[attribute]);
   }
-  return state
+  return state;
 }

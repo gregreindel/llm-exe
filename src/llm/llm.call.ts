@@ -34,18 +34,21 @@ export async function useLlm_call(
   // this sucks!
   if (_options && _options?.function_call) {
     if (state.provider === "anthropic.chat") {
-      if(_options?.function_call === "none"){
-         _options.functions = [];
+      if (_options?.function_call === "none") {
+        _options.functions = [];
       } else if (
         _options?.function_call === "auto" ||
-        _options?.function_call === "any" 
+        _options?.function_call === "any"
       ) {
         input["tool_choice"] = { type: _options?.function_call };
       } else {
-        input["tool_choice"] = _options?.function_call
+        input["tool_choice"] = _options?.function_call;
       }
     } else if (state.provider === "openai.chat") {
-      input["tool_choice"] = normalizeFunctionCall(_options?.function_call, "openai");
+      input["tool_choice"] = normalizeFunctionCall(
+        _options?.function_call,
+        "openai"
+      );
     }
   }
   if (_options && _options?.functions?.length) {

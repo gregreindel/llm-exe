@@ -1,8 +1,8 @@
-import { camelCase } from '@/utils';
+import { camelCase } from "@/utils";
 import { BaseParserOptionsWithSchema, ParserOutput } from "@/types";
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
-import { enforceParserSchema, validateParserSchema } from '../_utils';
+import { enforceParserSchema, validateParserSchema } from "../_utils";
 
 export class ListToJsonParser<
   S extends JSONSchema | undefined = undefined
@@ -21,13 +21,13 @@ export class ListToJsonParser<
     });
     if (this.schema) {
       const parsed = enforceParserSchema(this.schema, output);
-      if(this?.validateSchema){
+      if (this?.validateSchema) {
         const valid = validateParserSchema(this.schema, parsed);
-        if(valid && valid.length){
-          throw new Error(valid[0].message)
+        if (valid && valid.length) {
+          throw new Error(valid[0].message);
         }
       }
-      return parsed
+      return parsed;
     }
     return output;
   }

@@ -1,4 +1,8 @@
-import { BaseParserOptions, BaseParserOptionsWithSchema, OutputResultContent } from "@/types";
+import {
+  BaseParserOptions,
+  BaseParserOptionsWithSchema,
+  OutputResultContent,
+} from "@/types";
 import { FromSchema, JSONSchema } from "json-schema-to-ts";
 
 /**
@@ -32,7 +36,10 @@ export abstract class BaseParser<T = any> {
    * @param [attributes] - Optional attributes to use during parsing.
    * @returns The parsed data.
    */
-  abstract parse(text: string | OutputResultContent[], attributes?: Record<string, any>): T;
+  abstract parse(
+    text: string | OutputResultContent[],
+    attributes?: Record<string, any>
+  ): T;
 }
 
 export abstract class BaseParserWithJson<

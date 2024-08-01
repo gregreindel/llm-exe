@@ -58,7 +58,7 @@ export abstract class BaseExecutor<
   constructor(
     name: string,
     type: string,
-    options?: CoreExecutorExecuteOptions<H>,
+    options?: CoreExecutorExecuteOptions<H>
   ) {
     this.id = uuid();
     this.type = type;
@@ -111,7 +111,7 @@ export abstract class BaseExecutor<
    * @param _input
    * @returns handler output
    */
-  async execute(_input: I, _options?: any ): Promise<O> {
+  async execute(_input: I, _options?: any): Promise<O> {
     this.executions++;
     const _metadata = createMetadataState({
       start: new Date().getTime(),
@@ -231,11 +231,11 @@ export abstract class BaseExecutor<
     this.hooks[eventName].push(onceWrapper);
     return this;
   }
-  withTraceId(traceId : string){
-    this.traceId = traceId
+  withTraceId(traceId: string) {
+    this.traceId = traceId;
     return this;
   }
-  getTraceId(){
-    return this.traceId
+  getTraceId() {
+    return this.traceId;
   }
 }

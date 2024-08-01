@@ -16,7 +16,7 @@ export const maybeParseJSON = <Expected = any>(
 
   if (typeof objOrMaybeJSON === "string") {
     try {
-      const cleanMarkdown = helpJsonMarkup(objOrMaybeJSON)
+      const cleanMarkdown = helpJsonMarkup(objOrMaybeJSON);
       const result = JSON.parse(cleanMarkdown);
       if (typeof result === "object" && result !== null) {
         return result as Expected;
@@ -59,18 +59,20 @@ export function isObjectStringified(maybeObject: string) {
 }
 
 export function helpJsonMarkup(str: string) {
-  if(typeof str !== "string"){
+  if (typeof str !== "string") {
     return str;
   }
- // TODO: improve?
-  const input = str.trim()
+  // TODO: improve?
+  const input = str.trim();
   const markdownJsonStartsWith = "```json";
   const markdownJsonEndsWith = "```";
   if (
     input.substring(0, markdownJsonStartsWith.length) ===
       markdownJsonStartsWith &&
-    input.substring(input.length - markdownJsonEndsWith.length, input.length) ===
-      markdownJsonEndsWith
+    input.substring(
+      input.length - markdownJsonEndsWith.length,
+      input.length
+    ) === markdownJsonEndsWith
   ) {
     return str
       .substring(

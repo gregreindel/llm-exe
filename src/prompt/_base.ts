@@ -26,9 +26,9 @@ export abstract class BasePrompt<I extends Record<string, any>> {
     pre: ((prompt: string) => string)[];
     post: ((prompt: string) => string)[];
   } = {
-      pre: [],
-      post: [],
-    };
+    pre: [],
+    post: [],
+  };
 
   /**
    * constructor description
@@ -47,12 +47,12 @@ export abstract class BasePrompt<I extends Record<string, any>> {
         this.registerHelpers(options.helpers);
       }
       if (options.preFilters && Array.isArray(options.preFilters)) {
-        this.filters.pre.push(...options.preFilters)
+        this.filters.pre.push(...options.preFilters);
       }
       if (options.postFilters && Array.isArray(options.postFilters)) {
-        this.filters.post.push(...options.postFilters)
+        this.filters.post.push(...options.postFilters);
       }
-      if(options.replaceTemplateString){
+      if (options.replaceTemplateString) {
         this.replaceTemplateString = options.replaceTemplateString;
       }
     }
@@ -128,13 +128,13 @@ export abstract class BasePrompt<I extends Record<string, any>> {
       .map((message) => {
         return message.content && !Array.isArray(message.content)
           ? this.replaceTemplateString(
-            this.runPromptFilter(message.content, this.filters.pre, values),
-            replacements,
-            {
-              partials: this.partials,
-              helpers: this.helpers,
-            }
-          )
+              this.runPromptFilter(message.content, this.filters.pre, values),
+              replacements,
+              {
+                partials: this.partials,
+                helpers: this.helpers,
+              }
+            )
           : "";
       })
       .join(separator);

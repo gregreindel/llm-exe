@@ -123,7 +123,10 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param name (optional) The name of the user.
    * @return instance of ChatPrompt.
    */
-  addUserMessage(content: string | IChatMessageContentDetailed[], name?: string): ChatPrompt<I> {
+  addUserMessage(
+    content: string | IChatMessageContentDetailed[],
+    name?: string
+  ): ChatPrompt<I> {
     const message: IChatUserMessage = {
       role: "user",
       content,
@@ -367,24 +370,38 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
         if (safeToParseTemplate.includes(message.role)) {
           messagesOut.push(
             Object.assign({}, message, {
-              content: Array.isArray(message.content) ? message.content.map(m => m.text ? {
-                type: "text",
-                text: this.runPromptFilter(
-                  this.replaceTemplateString(
-                    this.runPromptFilter(m.text, this.filters.pre, values),
-                    replacements,
-                    {
-                      partials: this.partials,
-                      helpers: this.helpers,
-                    }
-                  ),
-                  this.filters.post,
-                  values
-                ),
-              } : m) : message.content
+              content: Array.isArray(message.content)
+                ? message.content.map((m) =>
+                    m.text
+                      ? {
+                          type: "text",
+                          text: this.runPromptFilter(
+                            this.replaceTemplateString(
+                              this.runPromptFilter(
+                                m.text,
+                                this.filters.pre,
+                                values
+                              ),
+                              replacements,
+                              {
+                                partials: this.partials,
+                                helpers: this.helpers,
+                              }
+                            ),
+                            this.filters.post,
+                            values
+                          ),
+                        }
+                      : m
+                  )
+                : message.content
                 ? this.runPromptFilter(
                     this.replaceTemplateString(
-                      this.runPromptFilter(message.content, this.filters.pre, values),
+                      this.runPromptFilter(
+                        message.content,
+                        this.filters.pre,
+                        values
+                      ),
                       replacements,
                       {
                         partials: this.partials,
@@ -401,16 +418,30 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           /* istanbul ignore next */
           messagesOut.push(
             Object.assign({}, message, {
-              content: Array.isArray(message.content) ? message.content.map(m => m.text ? {
-                type: "text",
-                text: this.runPromptFilter(
-                  this.runPromptFilter(m.text, this.filters.pre, values),
-                  this.filters.post,
-                  values
-                ),
-              } : m) : message.content && !Array.isArray(message.content)
+              content: Array.isArray(message.content)
+                ? message.content.map((m) =>
+                    m.text
+                      ? {
+                          type: "text",
+                          text: this.runPromptFilter(
+                            this.runPromptFilter(
+                              m.text,
+                              this.filters.pre,
+                              values
+                            ),
+                            this.filters.post,
+                            values
+                          ),
+                        }
+                      : m
+                  )
+                : message.content && !Array.isArray(message.content)
                 ? this.runPromptFilter(
-                    this.runPromptFilter(message.content, this.filters.pre, values),
+                    this.runPromptFilter(
+                      message.content,
+                      this.filters.pre,
+                      values
+                    ),
                     this.filters.post,
                     values
                   )

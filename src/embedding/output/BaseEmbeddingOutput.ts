@@ -7,8 +7,6 @@ export function BaseEmbeddingOutput(
   result: Omit<EmbeddingOutputResult, BaseLlmOutput2Optional> &
     Partial<Pick<EmbeddingOutputResult, BaseLlmOutput2Optional>>
 ) {
-
-    console.log("typing with", result)
   const __result = Object.freeze({
     id: result.id || uuid(),
     model: result.model,
@@ -33,7 +31,7 @@ export function BaseEmbeddingOutput(
       const val = arr[index];
       return val ? val : [];
     }
-    return __result.embedding[0]
+    return __result.embedding[0];
   }
 
   return {

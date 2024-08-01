@@ -3,22 +3,14 @@ import { uuid } from "@/utils";
 
 type BaseLlmOutput2Optional = "id" | "created" | "options";
 
-export function getResultAsMessage(
-  content: OutputResultContent[]
-) {
-  if (
-    content.length === 1 &&
-    content.every((a) => a.type === "text")
-  ) {
+export function getResultAsMessage(content: OutputResultContent[]) {
+  if (content.length === 1 && content.every((a) => a.type === "text")) {
     return {
       role: "assistant",
       content: content[0]?.text || "",
     };
   }
-  if (
-    content.length === 1 &&
-    content.every((a) => a.type === "function_use")
-  ) {
+  if (content.length === 1 && content.every((a) => a.type === "function_use")) {
     return {
       role: "assistant",
       content: null,
@@ -43,13 +35,8 @@ export function getResultAsMessage(
   throw new Error("Invalid response");
 }
 
-export function getResultText(
-  content: OutputResultContent[]
-): string {
-  if (
-    content.length === 1 &&
-    content.every((a) => a.type === "text")
-  ) {
+export function getResultText(content: OutputResultContent[]): string {
+  if (content.length === 1 && content.every((a) => a.type === "text")) {
     return content[0]?.text || "";
   }
 

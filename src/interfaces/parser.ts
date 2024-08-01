@@ -13,7 +13,6 @@ export type CreateParserType =
   | "markdownCodeBlocks"
   | "markdownCodeBlock";
 
-
 export interface BaseParserOptions {}
 
 export interface BaseParserOptionsWithSchema<

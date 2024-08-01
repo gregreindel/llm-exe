@@ -1,14 +1,16 @@
 import { OutputResultsText } from "@/types";
 import { BaseLlmOutput2 } from "./base";
 
-export function OutputDefault(result: {
-  stopReason?: "stop";
-  text: string;
-  output_tokens?: number;
-  input_tokens?: number;
-},
-_config: { model?: string }) {
-  const name = _config.model || "unknown"
+export function OutputDefault(
+  result: {
+    stopReason?: "stop";
+    text: string;
+    output_tokens?: number;
+    input_tokens?: number;
+  },
+  _config: { model?: string }
+) {
+  const name = _config.model || "unknown";
   const stopReason = result.stopReason || "stop";
 
   const content: OutputResultsText[] = [{ type: "text", text: result.text }];

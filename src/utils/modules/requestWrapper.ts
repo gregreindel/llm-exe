@@ -63,7 +63,7 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
           jitter: jitter,
           retry: (_error: any, _stepNumber: number) => {
             metrics.total_call_retry++;
-            if(doNotRetryErrorMessages.includes(_error.message)){
+            if (doNotRetryErrorMessages.includes(_error.message)) {
               return false;
             }
             return true;

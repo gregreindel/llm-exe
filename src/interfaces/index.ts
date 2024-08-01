@@ -24,7 +24,11 @@ export interface Config<Pk = LlmProviderKey> {
     [key in string]: {
       key: string;
       default?: number | string;
-      sanitize?: (i: any, arg: Record<string, any>, arg2: Record<string, any>) => any;
+      sanitize?: (
+        i: any,
+        arg: Record<string, any>,
+        arg2: Record<string, any>
+      ) => any;
     };
   };
   headers: string;
@@ -38,4 +42,4 @@ export type LlmProvider =
   | "anthropic.chat"
   | "amazon:anthropic.chat"
   | "amazon:meta.chat"
-  | "amazon.embedding"
+  | "amazon.embedding";

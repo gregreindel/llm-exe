@@ -6,7 +6,7 @@ export async function runWithTemporaryEnv<R>(
   try {
     env();
     const value = await handler();
-    return value
+    return value;
   } finally {
     process.env = previousEnv;
   }

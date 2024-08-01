@@ -28,7 +28,10 @@ function formatResult(response: Claude3Response): OutputResultContent[] {
   return out;
 }
 
-export function OutputAnthropicClaude3Chat(result: Claude3Response, _config?: { model?: string }) {
+export function OutputAnthropicClaude3Chat(
+  result: Claude3Response,
+  _config?: { model?: string }
+) {
   const id = result.id;
   const name = result.model || _config?.model || "anthropic.unknown";
   const stopReason = result.stop_reason;

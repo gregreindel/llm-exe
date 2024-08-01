@@ -1,4 +1,9 @@
-import { get, maybeParseJSON, maybeStringifyJSON, replaceTemplateString } from "@/utils";
+import {
+  get,
+  maybeParseJSON,
+  maybeStringifyJSON,
+  replaceTemplateString,
+} from "@/utils";
 import { schemaExampleWith } from "../../json-schema-filter";
 
 export function hbsInTemplate(this: any, arg1: string) {
@@ -6,7 +11,6 @@ export function hbsInTemplate(this: any, arg1: string) {
   const replace = replaceTemplateString(arg1, data);
   return replace;
 }
-
 
 export function getKeyOr(this: any, key: string, arg2: any) {
   const res = get(this, key);
@@ -20,33 +24,42 @@ export function getOr(this: any, arg1: string, arg2: string) {
 export function indentJson(
   this: any,
   arg1: Record<string, any>,
-  collapse = 'false'
+  collapse = "false"
 ) {
   if (typeof arg1 !== "object") {
     return replaceTemplateString(arg1 || "", this);
   }
-  const replaced = maybeParseJSON(replaceTemplateString(maybeStringifyJSON(arg1), this))
+  const replaced = maybeParseJSON(
+    replaceTemplateString(maybeStringifyJSON(arg1), this)
+  );
 
-  if (collapse == 'true') {
+  if (collapse == "true") {
     return JSON.stringify(replaced);
   }
 
   return JSON.stringify(replaced, null, 2);
 }
 
-export function jsonSchemaExample(this: any, key: string, prop: string, collapse: string) {
+export function jsonSchemaExample(
+  this: any,
+  key: string,
+  prop: string,
+  collapse: string
+) {
   const schema = get(this, key);
   if (schema && schema.type) {
     const result = schemaExampleWith(schema, prop);
     if (typeof result !== "object") {
       return "";
     }
-    const replaced = maybeParseJSON(replaceTemplateString(maybeStringifyJSON(result), this))
+    const replaced = maybeParseJSON(
+      replaceTemplateString(maybeStringifyJSON(result), this)
+    );
 
-    if (collapse == 'true') {
+    if (collapse == "true") {
       return JSON.stringify(replaced);
     }
-    
+
     return JSON.stringify(replaced, null, 2);
   }
   return "";
