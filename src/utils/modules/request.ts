@@ -20,7 +20,6 @@ export async function apiRequest<T extends Record<string, any> | null>(
     headers: Record<string, any>;
   }
 ): Promise<T> {
-  // Ensure the agent is used for this request
   const finalOptions: RequestInit = {
     ...options,
     agent: httpsAgent,

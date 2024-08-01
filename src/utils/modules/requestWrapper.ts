@@ -1,7 +1,10 @@
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
-
 import { OpenAiLlmExecutorOptions, Config } from "@/types";
 import { deepFreeze } from "./deepFreeze";
+import { backOff } from "exponential-backoff";
+import { asyncCallWithTimeout } from "@/utils";
+
+const doNotRetryErrorMessages: string[] = [];
 
 export function apiRequestWrapper<T extends Record<string, any>, I>(
   config: Config<any>,
@@ -31,7 +34,7 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
   /**
    * The maximum number of retries before giving up.
    */
-  const numOfAttempts: number = options.numOfAttempts || 5;
+  const numOfAttempts: number = options.numOfAttempts || 2;
 
   /**
    * The jitter strategy to use between retries. Options are "none" or "full".
@@ -41,11 +44,38 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
   let traceId: null | string = options?.traceId || null;
 
   async function call(messages: I, options?: OpenAiLlmExecutorOptions) {
-    return handler(
-      deepFreeze(state),
-      deepFreeze(messages),
-      deepFreeze(options)
-    );
+    try {
+      metrics.total_calls++;
+      const result = await backOff<T>(
+        () =>
+          asyncCallWithTimeout(
+            handler(
+              deepFreeze(state),
+              deepFreeze(messages),
+              deepFreeze(options)
+            ),
+            timeout
+          ),
+        {
+          startingDelay: 0,
+          maxDelay: maxDelay,
+          numOfAttempts: numOfAttempts,
+          jitter: jitter,
+          retry: (_error: any, _stepNumber: number) => {
+            metrics.total_call_retry++;
+            if(doNotRetryErrorMessages.includes(_error.message)){
+              return false;
+            }
+            return true;
+          },
+        }
+      );
+      metrics.total_call_success++;
+      return result;
+    } catch (error) {
+      metrics.total_call_error++;
+      throw error;
+    }
   }
 
   function getMetadata() {
