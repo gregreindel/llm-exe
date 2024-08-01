@@ -66,24 +66,6 @@ export default defineUserConfig({
         ],
       },
       {
-        text: "LLM Executor",
-        link: "/executor/index.html",
-        collapsible: true,
-        children: [
-          {
-            text: "OpenAI Functions",
-            link: "/executor/openai-functions.html",
-            children: [],
-            
-          },
-          {
-            text: "Hooks",
-            link: "/executor/hooks.html",
-            children: [],
-          },
-        ],
-      },
-      {
         text: "LLM",
         link: "/llm/index.html",
         collapsible: true,
@@ -92,6 +74,27 @@ export default defineUserConfig({
             text: "OpenAi",
             link: "/llm/openai.html",
             children: [],
+          },
+          {
+            text: "Anthropic",
+            link: "/llm/anthropic.html",
+            children: [],
+          },
+          {
+            text: "AWS Bedrock",
+            link: "/llm/anthropic.html",
+            children: [
+              {
+                text: "Anthropic",
+                link: "/llm/bedrock.anthropic.html",
+                children: [],
+              },
+              {
+                text: "Meta",
+                link: "/llm/bedrock.meta.html",
+                children: [],
+              },
+            ],
           },
         ],
       },
@@ -102,15 +105,16 @@ export default defineUserConfig({
         collapsible: true,
         children: [
           {
-            text: "Text Prompt",
-            link: "/prompt/text.html",
-            children: [],
-          },
-          {
             text: "Chat Prompt",
             link: "/prompt/chat.html",
             children: [],
           },
+          {
+            text: "Text Prompt",
+            link: "/prompt/text.html",
+            children: [],
+          },
+ 
           {
             text: "Advanced Templates",
             link: "/prompt/advanced.html",
@@ -146,6 +150,32 @@ export default defineUserConfig({
             link: "/state/dialogue.html",
             children: [],
           },
+        ],
+      },
+      {
+        text: "LLM Executor",
+        link: "/executor/index.html",
+        collapsible: true,
+        children: [
+          {
+            text: "Functions (tools)",
+            link: "/executor/openai-functions.html",
+            children: [],
+            
+          },
+          {
+            text: "Hooks",
+            link: "/executor/hooks.html",
+            children: [],
+          },
+        ],
+      },
+      {
+        text: "Embeddings",
+        link: "/state/index.html",
+        collapsible: true,
+        children: [
+      
         ],
       },
       {

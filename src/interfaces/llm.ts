@@ -302,7 +302,6 @@ export type AllLlm = {
     input: OpenAiRequest;
     // output: OpenAiRequest;
   };
-
   "openai.chat-mock.v1": {
     input: OpenAiRequest;
     // output: OpenAiRequest;
@@ -321,8 +320,30 @@ export type AllLlm = {
   };
 };
 
+export type AllUseLlmOptions = AllLlm & {
+  "openai.gpt-4": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
+  "openai.gpt-4o": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
+  "openai.gpt-4o-mini": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
+  "anthropic.claude3": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
+}
+
+
+
 export type LlmProviderKey = keyof AllLlm;
 export type EmbeddingProviderKey = keyof AllEmbedding;
+export type UseLlmKey = keyof AllUseLlmOptions;
 
 export interface BaseLlCall {
   getResultContent: () => OutputResultContent[];

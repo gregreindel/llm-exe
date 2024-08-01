@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { get } from "../../../build/src/utils";
-import { createPrompt } from "../../../build/src/prompt";
+import { get } from "../../../dist/utils";
+import { createPrompt } from "../../../dist/prompt";
 import { prompt as promptExamples } from "../../../build/examples/prompt/index";
 import { ref, reactive } from "vue";
 

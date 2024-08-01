@@ -9,8 +9,6 @@ LLM is a wrapper around various LLM providers, making your function implementati
 - Use different LLM's with different configurations for different functions.
 - Streaming coming soon.
 
-Currently, the only supported LLM is OpenAI, but more can and will be added.
-
 Note: You can use and call methods on LLM's directly, but they are usually passed to an LLM executor and then called internally.
 
 ## BaseLlm
