@@ -1,60 +1,10 @@
-import { OutputResult, OutputResultContent } from "@/interfaces";
+import { OutputResult } from "@/interfaces";
 import { uuid } from "@/utils";
+import { getResultContent } from "./_utils/getResultContent";
+import { getResultText } from "./_utils/getResultText";
 
 type BaseLlmOutput2Optional = "id" | "created" | "options";
 
-export function getResultAsMessage(content: OutputResultContent[]) {
-  if (content.length === 1 && content.every((a) => a.type === "text")) {
-    return {
-      role: "assistant",
-      content: content[0]?.text || "",
-    };
-  }
-  if (content.length === 1 && content.every((a) => a.type === "function_use")) {
-    return {
-      role: "assistant",
-      content: null,
-      function_call: JSON.stringify(
-        content.find((a) => a.type === "function_use")
-      ),
-    };
-  }
-  if (
-    content.length === 2 &&
-    content.find((a) => a.type === "text") &&
-    content.find((a) => a.type === "function_use")
-  ) {
-    return {
-      role: "assistant",
-      content: content.find((a) => a.type === "text")?.text,
-      function_call: JSON.stringify(
-        content.find((a) => a.type === "function_use")
-      ),
-    };
-  }
-  throw new Error("Invalid response");
-}
-
-export function getResultText(content: OutputResultContent[]): string {
-  if (content.length === 1 && content.every((a) => a.type === "text")) {
-    return content[0]?.text || "";
-  }
-
-  return "";
-}
-
-export function getResultContent(
-  result: Omit<OutputResult, BaseLlmOutput2Optional> &
-    Partial<Pick<OutputResult, BaseLlmOutput2Optional>>,
-  index?: number
-): OutputResultContent[] {
-  if (index && index > 0) {
-    const arr = result?.options || [];
-    const val = arr[index];
-    return val ? val : [];
-  }
-  return [...result.content];
-}
 
 export function BaseLlmOutput2(
   result: Omit<OutputResult, BaseLlmOutput2Optional> &
@@ -66,7 +16,7 @@ export function BaseLlmOutput2(
     usage: result.usage,
     stopReason: result.stopReason,
     options: [...(result?.options || [])],
-    content: [...(result?.content || [])],
+    content: [...(result.content)],
     created: result?.created || new Date().getTime(),
   });
 
@@ -83,7 +33,6 @@ export function BaseLlmOutput2(
   }
 
   return {
-    getResultAsMessage: () => getResultAsMessage(__result.content),
     getResultContent: (index?: number) => getResultContent(__result, index),
     getResultText: () => getResultText(__result.content),
     getResult,

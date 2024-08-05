@@ -15,7 +15,7 @@ function formatResult(
       text: result.message.content,
     };
   } else if (result?.message && "tool_calls" in result.message) {
-    const tool_calls = result.message.tool_calls || [];
+    const tool_calls = result.message.tool_calls;
     for (const call of tool_calls) {
       return {
         type: "function_use",

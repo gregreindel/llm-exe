@@ -1,10 +1,11 @@
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
-import { getEnvironmentVariable } from "@/utils";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { getAwsAuthorizationHeaders } from "@/utils/modules/getAwsAuthorizationHeaders";
 import { Config } from "@/types";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
 
 jest.mock('@/utils/modules/replaceTemplateStringSimple');
+jest.mock('@/utils/modules/getEnvironmentVariable');
 jest.mock('@/utils');
 jest.mock('@/utils/modules/getAwsAuthorizationHeaders');
 

@@ -235,13 +235,11 @@ export interface OpenAiEmbeddingApiRequestInput {
 // theirs
 export interface OpenAiEmbeddingApiResponseOutput {
   object: string;
-  data: [
-    {
-      object: string;
-      embedding: number[];
-      index: number;
-    }
-  ];
+  data: {
+    object: string;
+    embedding: number[];
+    index: number;
+  }[];
   model: string;
   usage: {
     prompt_tokens: number;
@@ -337,9 +335,7 @@ export type AllUseLlmOptions = AllLlm & {
     input: OpenAiRequest;
     // output: OpenAiRequest;
   };
-}
-
-
+};
 
 export type LlmProviderKey = keyof AllLlm;
 export type EmbeddingProviderKey = keyof AllEmbedding;

@@ -57,7 +57,6 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(executor.getHandlerInput).toHaveBeenCalledWith({ input: "input-value"}, expect.objectContaining({input}), undefined);
     expect(executor.getHandlerOutput).toHaveBeenCalledWith({
       getResult: expect.any(Function),
-      getResultAsMessage: expect.any(Function),
       getResultContent: expect.any(Function),
       getResultText: expect.any(Function),
     },  expect.objectContaining({input}), undefined);

@@ -1,5 +1,5 @@
 import { AmazonTitanEmbeddingApiResponseOutput } from "@/types";
-import { BaseEmbeddingOutput } from "./BaseEmbeddingOutput";
+import { BaseEmbeddingOutput } from "@/embedding/output/BaseEmbeddingOutput";
 import { deepClone } from "@/utils/modules/deepClone";
 
 export function AmazonTitanEmbedding(

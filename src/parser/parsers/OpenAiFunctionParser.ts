@@ -1,7 +1,7 @@
 import { BaseParserOptions, OutputResultContent, ParserOutput } from "@/types";
 import { BaseParser } from "../_base";
 import { maybeParseJSON } from "@/utils";
-import { getResultText } from "@/llm/output/base";
+import { getResultText } from "@/llm/output/_utils/getResultText";
 
 export interface OpenAiFunctionParserOptions<T extends BaseParser<any>>
   extends BaseParserOptions {

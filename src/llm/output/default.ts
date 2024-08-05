@@ -1,5 +1,5 @@
 import { OutputResultsText } from "@/types";
-import { BaseLlmOutput2 } from "./base";
+import { BaseLlmOutput2 } from "@/llm/output/base";
 
 export function OutputDefault(
   result: {
@@ -11,10 +11,14 @@ export function OutputDefault(
   _config: { model?: string }
 ) {
   const name = _config.model || "unknown";
-  const stopReason = result.stopReason || "stop";
+  const stopReason = result?.stopReason || "stop";
 
-  const content: OutputResultsText[] = [{ type: "text", text: result.text }];
+  const content: OutputResultsText[] = [];
 
+  if(result?.text){
+    content.push({ type: "text", text: result.text })
+  }
+  
   const usage = {
     output_tokens: result?.output_tokens || 0,
     input_tokens: result?.input_tokens || 0,

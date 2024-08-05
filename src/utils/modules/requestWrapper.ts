@@ -1,6 +1,6 @@
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 import { OpenAiLlmExecutorOptions, Config } from "@/types";
-import { deepFreeze } from "./deepFreeze";
+import { deepFreeze } from "@/utils/modules/deepFreeze";
 import { backOff } from "exponential-backoff";
 import { asyncCallWithTimeout } from "@/utils";
 
@@ -85,7 +85,7 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
       openAiApiKey,
       anthropicApiKey,
       ...rest
-    } = state as any;
+    } = options;
     return Object.assign(
       {
         traceId: getTraceId(),

@@ -22,8 +22,9 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
       },
     ],
   };
+
   it("creates class with expected properties", () => {
-    const output = OutputAnthropicClaude3Chat(mock as any).getResult()
+    const output = OutputAnthropicClaude3Chat(mock as any).getResult();
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
@@ -31,7 +32,7 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     expect(output).toHaveProperty("usage");
   });
   it("creates class with expected properties", () => {
-    const output = OutputAnthropicClaude3Chat(mock as any).getResult()
+    const output = OutputAnthropicClaude3Chat(mock as any).getResult();
     expect((output as any).id).toEqual(mock.id);
     expect((output as any).name).toEqual(mock.model);
     expect((output as any).content).toEqual(mock.content);
@@ -54,11 +55,44 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
       "This is the assistant message content."
     );
   });
-
   it("getResultContent gets [] if not exists", () => {
     const output = OutputAnthropicClaude3Chat(mock as any);
     expect(output.getResultContent(8)).toEqual([]);
   });
 
+  const mock_tools = {
+    id: "msg_01HwEDvPa9f1cjZanHVrZdG3",
+    type: "message",
+    role: "assistant",
+    model: "claude-3-5-sonnet-20240620",
+    content: [
+      {
+        type: "text",
+        text: "Certainly!",
+      },
+      {
+        type: "tool_use",
+        id: "toolu_01EJ17EQLV15S2b45FHD1t6w",
+        name: "move",
+        input: {
+          direction: "right",
+        },
+      },
+    ],
+    stop_reason: "tool_use",
+    stop_sequence: null,
+    usage: {
+      input_tokens: 418,
+      output_tokens: 124,
+    },
+  };
+
+  it("getResultContent gets [] if not exists", () => {
+    const output = OutputAnthropicClaude3Chat(mock_tools as any);
+    expect(output.getResultContent()).toEqual([
+      { type: 'text', text: 'Certainly!' },
+      { type: 'function_use', name: 'move', input: { direction: 'right' } }
+    ]);
+  });
 
 });

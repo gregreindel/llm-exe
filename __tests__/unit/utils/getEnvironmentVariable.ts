@@ -1,4 +1,4 @@
-import { getEnvironmentVariable } from "@/utils";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
 describe("getEnvironmentVariable handles no environment variables", () => {
   test("getEnvironmentVariable on variable that does not exist", () => {

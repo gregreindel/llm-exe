@@ -12,3 +12,5 @@ A package that provides simplified base components to make building and maintain
 - Not very opinionated. You have control on how you use it.
 
 See full docs [here](https://llm-exe.com)
+
+![llm-exe](https://llm-exe.com/images/llm-exe-featured.jpg)

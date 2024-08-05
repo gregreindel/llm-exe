@@ -29,4 +29,10 @@ describe("getOutputParser", () => {
     const response = { data: "exampleData" };
     expect(() => getOutputParser("unsupported" as any, response)).toThrowError("Unsupported provider");
   });
+
+  it("should return default for custom", () => {
+    const response = { data: "exampleData" };
+    const result = getOutputParser({key: "custom:meta.chat.v1" } as any, response);
+    expect(result).toBeInstanceOf(Object);
+  });
 });

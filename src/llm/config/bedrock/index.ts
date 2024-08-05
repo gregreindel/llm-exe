@@ -1,4 +1,5 @@
-import { getEnvironmentVariable, replaceTemplateString } from "@/utils";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { replaceTemplateString } from "@/utils";
 import { anthropicPromptSanitize } from "../anthropic";
 import { Config } from "@/types";
 

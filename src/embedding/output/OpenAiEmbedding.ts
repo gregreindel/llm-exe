@@ -1,6 +1,6 @@
 import { OpenAiEmbeddingApiResponseOutput } from "@/types";
-import { BaseEmbeddingOutput } from "./BaseEmbeddingOutput";
 import { deepClone } from "@/utils/modules/deepClone";
+import { BaseEmbeddingOutput } from "@/embedding/output/BaseEmbeddingOutput";
 
 export function OpenAiEmbedding(
   result: OpenAiEmbeddingApiResponseOutput,

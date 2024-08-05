@@ -7,7 +7,7 @@ import {
 import * as helpers from "./helpers";
 import * as contextPartials from "./templates";
 import { PromptTemplateOptions } from "@/types";
-import { getEnvironmentVariable } from "@/utils";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
 export function useHandlebars(
   configuration: PromptTemplateOptions = {

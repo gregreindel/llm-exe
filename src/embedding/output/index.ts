@@ -1,5 +1,5 @@
-import { AmazonTitanEmbedding } from "./AmazonTitan";
-import { OpenAiEmbedding } from "./OpenAiEmbedding";
+import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
+import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
 import { EmbeddingProviderKey } from "@/types";
 
 export function getEmbeddingOutputParser(

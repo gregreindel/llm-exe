@@ -1,5 +1,5 @@
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
-import { getEnvironmentVariable } from "@/utils";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { Config, EmbeddingProviderKey, LlmProviderKey } from "@/types";
 import { getAwsAuthorizationHeaders } from "@/utils/modules/getAwsAuthorizationHeaders";
 

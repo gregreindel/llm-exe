@@ -12,6 +12,7 @@ import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
 import { useLlm_call } from "@/llm/llm.call";
+// import { normalizeFunctionCall } from "@/llm/output/_util";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -33,6 +34,10 @@ jest.mock("@/llm/output", () => ({
   getOutputParser: jest.fn(),
 }));
 
+// jest.mock("@/llm/output/_util", () => ({
+//   normalizeFunctionCall: jest.fn(),
+// }));
+
 jest.mock("@/llm/config", () => ({
   getLlmConfig: jest.fn(),
 }));
@@ -47,6 +52,7 @@ describe("useLlm_call", () => {
   const parseHeadersMock = parseHeaders as jest.Mock;
   const apiRequestMock = apiRequest as jest.Mock;
   const getOutputParserMock = getOutputParser as jest.Mock;
+  // const normalizeFunctionCallMock = normalizeFunctionCall as jest.Mock;
 
   const mockState = {
     key: "openai.chat-mock.v1",
@@ -55,6 +61,25 @@ describe("useLlm_call", () => {
     key: LlmProviderKey;
     provider: LlmProvider;
   };
+
+  const mockStateAnthropic = {
+    key: "anthropic.chat.v1",
+    provider: "anthropic.chat",
+  } as unknown as GenericLLm & {
+    key: LlmProviderKey;
+    provider: LlmProvider;
+  };
+
+  const mockStateOpenAi = {
+    key: "openai.chat.v1",
+    provider: "openai.chat",
+  } as unknown as GenericLLm & {
+    key: LlmProviderKey;
+    provider: LlmProvider;
+  };
+
+
+
   const mockMessages = [
     {
       role: "user",
@@ -122,9 +147,12 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(getOutputParser).toHaveBeenCalledWith({ key: mockState.key, provider: mockState.provider }, {
-      data: "response",
-    });
+    expect(getOutputParser).toHaveBeenCalledWith(
+      { key: mockState.key, provider: mockState.provider },
+      {
+        data: "response",
+      }
+    );
 
     expect(result).toBe("parsedOutput");
   });
@@ -138,4 +166,126 @@ describe("useLlm_call", () => {
       useLlm_call(mockState, mockMessages, mockOptions)
     ).rejects.toThrow("API Request Failed");
   });
+
+  it("should anthropic and function_call is none, remove functions", async () => {
+
+    const mock_options = {
+      function_call: "none",
+      functions: [{ name: "something", description: "", parameters: {} }],
+    };
+    await useLlm_call(mockStateAnthropic, mockMessages, mock_options as any);
+    expect(apiRequestMock).toHaveBeenCalledWith(
+      "http://api.test/endpoint",
+      expect.objectContaining({
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+  });
+
+  it("should anthropic and function_call is none, remove functions", async () => {
+    const mock_options = {
+      function_call: "auto",
+      functions: [{ name: "something", description: "", parameters: {} }],
+    };
+    await useLlm_call(mockStateAnthropic, mockMessages, mock_options as any);
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        tool_choice: { type: mock_options.function_call },
+        tools: mock_options.functions.map((a) => ({
+          name: a.name,
+          description: a.description,
+          input_schema: a.parameters,
+        })),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+
+  it("should anthropic and function_call is none, remove functions", async () => {
+    const mock_options = {
+      function_call: "any",
+      functions: [{ name: "something", description: "", parameters: {} }],
+    };
+    await useLlm_call(mockStateAnthropic, mockMessages, mock_options as any);
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        tool_choice: { type: mock_options.function_call },
+        tools: mock_options.functions.map((a) => ({
+          name: a.name,
+          description: a.description,
+          input_schema: a.parameters,
+        })),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+
+  it("should anthropic and function_call is none, remove functions", async () => {
+    const mock_options = {
+      function_call: { name: "something"},
+      functions: [{ name: "something", description: "", parameters: {} }],
+    };
+    await useLlm_call(mockStateAnthropic, mockMessages, mock_options as any);
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        tool_choice: mock_options.function_call,
+        tools: mock_options.functions.map((a) => ({
+          name: a.name,
+          description: a.description,
+          input_schema: a.parameters,
+        })),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+
+
+  it("should anthropic and function_call is none, remove functions", async () => {
+    const mock_options = {
+      function_call: "any",
+      functions: [{ name: "something", description: "", parameters: {} }],
+    };
+    await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        tool_choice: "required",
+        tools: mock_options.functions.map((a) => ({
+          type: "function",
+          function: {
+            name: a.name,
+            description: a.description,
+            parameters: a.parameters,
+          }
+        })),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  
 });

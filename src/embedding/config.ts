@@ -1,5 +1,5 @@
 import { Config, EmbeddingProviderKey } from "@/types";
-import { getEnvironmentVariable } from "@/utils";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
 export const embeddingConfigs: {
   [key in EmbeddingProviderKey]: Config<EmbeddingProviderKey>;

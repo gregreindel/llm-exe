@@ -27,7 +27,7 @@ export function BaseEmbeddingOutput(
 
   function getEmbedding(index?: number): number[] {
     if (index && index > 0) {
-      const arr = __result?.embedding || [];
+      const arr = __result?.embedding;
       const val = arr[index];
       return val ? val : [];
     }
