@@ -1,6 +1,3 @@
-export const COMPLETION_END_TOKEN = "<--END";
-export const PROMPT_END_TOKEN = "-->";
-
 const MarkdownCode = `{{#if code}}\`\`\`{{#if language}}{{language}}{{/if}}
 {{{code}}}
 \`\`\`{{/if}}`;
