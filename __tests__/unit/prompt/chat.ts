@@ -34,6 +34,30 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     const format = prompt.format({});
     expect(format).toEqual([{ content: "Hello", role: "system" }]);
   });
+
+
+  it("parses detailed user message", () => {
+    const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
+    prompt.addUserMessage([{
+      type: "text",
+      text: "Hello"
+    }])
+    const format = prompt.format({});
+    expect(format).toEqual([{"content": [{"text": "Hello", "type": "text"}], "role": "user"}]);
+  });
+
+  it("parses detailed user message fallback", () => {
+    const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
+    prompt.addUserMessage([{
+      type: "image",
+      image_url: {
+        url: "www.url.string"
+      }
+    }])
+    const format = prompt.format({});
+    expect(format).toEqual([{"content": [{"type": "image", image_url: { url: "www.url.string"} }], "role": "user"}]);
+  });
+
   it("parses object to string", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addToPrompt("World", "system");

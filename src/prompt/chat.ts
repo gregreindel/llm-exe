@@ -368,52 +368,44 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
         );
       } else {
         if (safeToParseTemplate.includes(message.role)) {
-          messagesOut.push(
-            Object.assign({}, message, {
-              content: Array.isArray(message.content)
-                ? message.content.map((m) =>
-                    m.text
-                      ? {
-                          type: "text",
-                          text: this.runPromptFilter(
-                            this.replaceTemplateString(
-                              this.runPromptFilter(
-                                m.text,
-                                this.filters.pre,
-                                values
-                              ),
-                              replacements,
-                              {
-                                partials: this.partials,
-                                helpers: this.helpers,
-                              }
-                            ),
-                            this.filters.post,
-                            values
-                          ),
+          if (Array.isArray(message.content)) {
+            const content = message.content.map((m) =>
+              m.text
+                ? {
+                    type: "text",
+                    text: this.runPromptFilter(
+                      this.replaceTemplateString(
+                        this.runPromptFilter(m.text, this.filters.pre, values),
+                        replacements,
+                        {
+                          partials: this.partials,
+                          helpers: this.helpers,
                         }
-                      : m
-                  )
-                : message.content
-                ? this.runPromptFilter(
-                    this.replaceTemplateString(
-                      this.runPromptFilter(
-                        message.content,
-                        this.filters.pre,
-                        values
                       ),
-                      replacements,
-                      {
-                        partials: this.partials,
-                        helpers: this.helpers,
-                      }
+                      this.filters.post,
+                      values
                     ),
-                    this.filters.post,
-                    values
-                  )
-                : null,
-            })
-          );
+                  }
+                : m
+            );
+            messagesOut.push(Object.assign({}, message, { content }));
+          } else if (message.content) {
+            const content = this.runPromptFilter(
+              this.replaceTemplateString(
+                this.runPromptFilter(message.content, this.filters.pre, values),
+                replacements,
+                {
+                  partials: this.partials,
+                  helpers: this.helpers,
+                }
+              ),
+              this.filters.post,
+              values
+            );
+            messagesOut.push(Object.assign({}, message, { content }));
+          } else {
+            messagesOut.push(Object.assign({}, message, { content: null }));
+          }
         } else {
           /* istanbul ignore next */
           messagesOut.push(

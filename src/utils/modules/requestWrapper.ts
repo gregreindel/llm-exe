@@ -4,12 +4,13 @@ import { deepFreeze } from "@/utils/modules/deepFreeze";
 import { backOff } from "exponential-backoff";
 import { asyncCallWithTimeout } from "@/utils";
 
-const doNotRetryErrorMessages: string[] = [];
+// const doNotRetryErrorMessages: string[] = [];
 
 export function apiRequestWrapper<T extends Record<string, any>, I>(
   config: Config<any>,
   options: Record<string, any>,
-  handler: (_s: any, _i: I, o?: any) => Promise<T>
+  handler: (_s: any, _i: I, o?: any) => Promise<T>,
+  doNotRetryErrorMessages: string[] = []
 ) {
   const state = stateFromOptions(options, config);
 
@@ -62,10 +63,10 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
           numOfAttempts: numOfAttempts,
           jitter: jitter,
           retry: (_error: any, _stepNumber: number) => {
-            metrics.total_call_retry++;
             if (doNotRetryErrorMessages.includes(_error.message)) {
               return false;
             }
+            metrics.total_call_retry++;
             return true;
           },
         }
@@ -103,8 +104,8 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
     return traceId;
   }
 
-  function withTraceId(traceId: string) {
-    traceId = traceId;
+  function withTraceId(id: string) {
+    traceId = id;
   }
 
   return {

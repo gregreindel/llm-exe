@@ -112,4 +112,13 @@ describe("getResultContent", () => {
 
     expect(output).toEqual((result as any).content);
   });
+
+  it("should handle cases where options are not provided", () => {
+    const result: Omit<OutputResult, any> = {
+      content: [{ text: "text1", type: "text" }]
+    };
+
+    const output = getResultContent(result as any, 2);
+    expect(output).toEqual([]);
+  });
 });

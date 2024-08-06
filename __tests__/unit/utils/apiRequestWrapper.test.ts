@@ -2,6 +2,9 @@ import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 import { deepFreeze } from "@/utils/modules/deepFreeze";
 import { asyncCallWithTimeout } from "@/utils";
 import { backOff } from "exponential-backoff";
+import { Config } from "@/types";
+import { apiRequestWrapper } from "@/utils/modules/requestWrapper";
+
 
 jest.mock("exponential-backoff", () => ({
   backOff: jest.fn(),
@@ -19,8 +22,6 @@ jest.mock("@/utils", () => ({
   asyncCallWithTimeout: jest.fn(),
 }));
 
-import { Config } from "@/types";
-import { apiRequestWrapper } from "@/utils/modules/requestWrapper";
 
 describe("apiRequestWrapper", () => {
   const backOffMock = backOff as jest.Mock;
@@ -47,13 +48,12 @@ describe("apiRequestWrapper", () => {
   const mockHandler = jest.fn<Promise<any>, any>();
   const mockState = {};
   const mockMessages = { messageContent: "test" }
-//   const mockResult = { result: "success" }
 
   stateFromOptionsMock.mockReturnValue(mockState);
   deepFreezeMock.mockImplementation((obj) => obj);
 
-  function setupAPIRequestWrapper() {
-    return apiRequestWrapper(mockConfig, mockOptions, mockHandler);
+  function setupAPIRequestWrapper(doNotRetryErrorMessages: string[] = []) {
+    return apiRequestWrapper(mockConfig, mockOptions, mockHandler, doNotRetryErrorMessages);
   }
 
   it("should initialize with correct state and options", () => {
@@ -85,11 +85,11 @@ describe("apiRequestWrapper", () => {
     expect(apiRequest.getTraceId()).toBe("test-trace-id");
   });
 
-//   it("should update traceId correctly", () => {
-//     const apiRequest = setupAPIRequestWrapper();
-//     apiRequest.withTraceId("new-trace-id");
-//     expect(apiRequest.getTraceId()).toBe("new-trace-id");
-//   });
+  it("should update traceId correctly", () => {
+    const apiRequest = apiRequestWrapper(mockConfig, mockOptions, mockHandler, []);
+    apiRequest.withTraceId("new-trace-id");
+    expect(apiRequest.getTraceId()).toBe("new-trace-id");
+  });
 
 //   it("should call handler and backOff with correct parameters and handle success", async () => {
 //     backOffMock.mockImplementation(async (fn) => {
@@ -159,42 +159,40 @@ describe("apiRequestWrapper", () => {
     expect(mockHandler).toHaveBeenCalledWith(deepFreeze(mockState), deepFreeze(mockMessages), deepFreeze({}));
   });
 
-//   it("should not retry on certain errors", async () => {
-//     const specificError = new Error("Do Not Retry");
-//     asyncCallWithTimeoutMock.mockRejectedValue(specificError);
-//     backOffMock.mockClear().mockImplementation(async (fn, options) => {
-//       try {
-//         return await fn();
-//       } catch (err) {
-//         const shouldRetry = options.retry(err, 1);
-//         if (shouldRetry) {
-//           return await fn();
-//         } else {
-//           throw err;
-//         }
-//       }
-//     });
+  it("should not retry on certain errors", async () => {
+    const specificError = new Error("Do Not Retry");
+    asyncCallWithTimeoutMock.mockRejectedValue(specificError);
+    backOffMock.mockClear().mockImplementation(async (fn, options) => {
+      try {
+        return await fn();
+      } catch (err) {
+        const shouldRetry = options.retry(err, 1);
+        if (shouldRetry) {
+          return await fn();
+        } else {
+          throw err;
+        }
+      }
+    });
 
-//     (apiRequestWrapper as any).doNotRetryErrorMessages.push("Do Not Retry");
+    const apiRequest = setupAPIRequestWrapper(["Do Not Retry"]);
+    await expect(apiRequest.call(mockMessages)).rejects.toThrow("Do Not Retry");
 
-//     const apiRequest = setupAPIRequestWrapper();
-//     await expect(apiRequest.call(mockMessages)).rejects.toThrow("Do Not Retry");
+    const metrics = (apiRequest.getMetadata().metrics as any);
+    expect(metrics.total_calls).toBe(1);
+    expect(metrics.total_call_success).toBe(0);
+    expect(metrics.total_call_retry).toBe(0);
+    expect(metrics.total_call_error).toBe(1);
 
-//     const metrics = (apiRequest.getMetadata().metrics as any);
-//     expect(metrics.total_calls).toBe(1);
-//     expect(metrics.total_call_success).toBe(0);
-//     expect(metrics.total_call_retry).toBe(0);
-//     expect(metrics.total_call_error).toBe(1);
+    expect(backOffMock).toHaveBeenCalledWith(expect.any(Function), {
+      startingDelay: 0,
+      maxDelay: mockOptions.maxDelay,
+      numOfAttempts: mockOptions.numOfAttempts,
+      jitter: mockOptions.jitter,
+      retry: expect.any(Function),
+    });
 
-//     expect(backOffMock).toHaveBeenCalledWith(expect.any(Function), {
-//       startingDelay: 0,
-//       maxDelay: mockOptions.maxDelay,
-//       numOfAttempts: mockOptions.numOfAttempts,
-//       jitter: mockOptions.jitter,
-//       retry: expect.any(Function),
-//     });
-
-//     expect(mockHandler).toHaveBeenCalledWith(deepFreeze(mockState), deepFreeze(mockMessages), deepFreeze({}));
-//   });
+    expect(mockHandler).toHaveBeenCalledWith(deepFreeze(mockState), deepFreeze(mockMessages), deepFreeze({}));
+  });
 
 });
