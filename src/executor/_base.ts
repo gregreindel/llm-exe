@@ -84,11 +84,11 @@ export abstract class BaseExecutor<
    * @param _input
    * @returns original input formatted for handler
    */
-  getHandlerInput(
+  async getHandlerInput(
     _input: I,
     _metadata: ExecutorExecutionMetadata<I, any>,
     _options?: any
-  ): any {
+  ): Promise<any> {
     return ensureInputIsObject(_input);
   }
 
@@ -119,7 +119,7 @@ export abstract class BaseExecutor<
     });
 
     try {
-      const input = this.getHandlerInput(
+      const input = await this.getHandlerInput(
         _input,
         _metadata.asPlainObject(),
         _options

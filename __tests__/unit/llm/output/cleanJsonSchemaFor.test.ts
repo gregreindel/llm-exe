@@ -120,4 +120,12 @@ import { cleanJsonSchemaFor } from "@/llm/output/_utils/cleanJsonSchemaFor";
       expect(result).toEqual(schema);
     });
   
+
+    it("should return empty object if schema is not defined", () => {
+      const schema = undefined as any
+      const result = cleanJsonSchemaFor(schema, "openai.chat");
+      expect(result).toEqual({});
+    });
+
+
   });

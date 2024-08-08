@@ -261,7 +261,7 @@ describe("useLlm_call", () => {
 
 
 
-  it("should anthropic and function_call is none, remove functions", async () => {
+  it("should openai and function_call is none, remove functions", async () => {
     const mock_options = {
       function_call: "any",
       functions: [{ name: "something", description: "", parameters: {} }],
@@ -287,5 +287,38 @@ describe("useLlm_call", () => {
     });
   });
 
-  
+  it("should openai and response_format ", async () => {
+    
+    const mock_options = {
+      json_schema: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          age: { type: "integer" },
+        },
+        required: ["age", "name"],
+        additionalProperties: false,
+      }
+    };
+
+
+    await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            strict: true,
+            name: "output",
+            schema: mock_options.json_schema
+          },
+        }
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
 });

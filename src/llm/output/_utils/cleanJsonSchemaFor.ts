@@ -12,7 +12,7 @@ type JSONSchema = {
   };
   
   export function cleanJsonSchemaFor(
-    schema: JSONSchema,
+    schema: JSONSchema = {},
     provider: LlmProvider
   ): JSONSchema {
     const clone = deepClone(schema)

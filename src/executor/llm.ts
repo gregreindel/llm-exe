@@ -13,6 +13,7 @@ import { BaseParser, JsonParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { BaseExecutor } from "./_base";
+import { isPromise } from "@/utils/modules/isPromise";
 
 /**
  * Core Executor With LLM
@@ -71,9 +72,13 @@ export class LlmExecutor<
     return call;
   }
 
-  getHandlerInput(_input: PromptInput<Prompt>): any {
+  async getHandlerInput(_input: PromptInput<Prompt>): Promise<any> {
     if (this.prompt) {
-      return this.prompt.format(_input);
+      if(isPromise(this.prompt.formatAsync)){
+        return await this.prompt.formatAsync(_input);
+      }else {
+        return this.prompt.format(_input);
+      }
     }
 
     if (this.promptFn) {

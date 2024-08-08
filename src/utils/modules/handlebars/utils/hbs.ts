@@ -1,9 +1,6 @@
-import { PromptPartial, PromptHelper } from "@/types";
 import Handlebars from "handlebars";
-import * as asyncHelpers from "handlebars-async-helpers";
-
-export const hbs = Handlebars;
-export const hbsAsync = asyncHelpers.default(Handlebars);
+// import { asyncHelpers } from "./utils/asyncHelpers";
+import { PromptPartial, PromptHelper } from "@/types";
 
 export function importPartials(_partials: { [key in string]: string }) {
   let partials: PromptPartial[] = [];
@@ -43,7 +40,7 @@ export function importHelpers(_helpers: {
   return helpers;
 }
 
-export function registerPartials(partials: any[]) {
+export function registerPartials(instance: typeof Handlebars, partials: any[]) {
   if (partials && Array.isArray(partials)) {
     for (const partial of partials) {
       if (
@@ -51,14 +48,13 @@ export function registerPartials(partials: any[]) {
         typeof partial.name === "string" &&
         typeof partial.template === "string"
       ) {
-        hbs.registerPartial(partial.name, partial.template);
-        hbsAsync.registerPartial(partial.name, partial.template);
+        instance.registerPartial(partial.name, partial.template);
       }
     }
   }
 }
 
-export function registerHelpers(helpers: any[]) {
+export function registerHelpers(instance: typeof Handlebars, helpers: any[]) {
   if (helpers && Array.isArray(helpers)) {
     for (const helper of helpers) {
       if (
@@ -66,8 +62,7 @@ export function registerHelpers(helpers: any[]) {
         typeof helper.name === "string" &&
         typeof helper.handler === "function"
       ) {
-        hbs.registerHelper(helper.name, helper.handler);
-        hbsAsync.registerHelper(helper.name, helper.handler);
+        instance.registerHelper(helper.name, helper.handler);
       }
     }
   }

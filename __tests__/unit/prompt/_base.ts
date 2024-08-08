@@ -32,6 +32,9 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(prompt).toHaveProperty("addToPrompt")
     expect(prompt).toHaveProperty("addSystemMessage")
     expect(prompt).toHaveProperty("format")
+    expect(prompt).toHaveProperty("formatAsync")
+
+    
     expect(prompt).toHaveProperty("registerPartial")
     expect(prompt).toHaveProperty("registerHelpers")
     expect(prompt).toHaveProperty("validate")
@@ -52,4 +55,68 @@ describe("llm-exe:prompt/TextPrompt", () => {
     const textPrompt = new MockPrompt("", { partials });
     expect(textPrompt.partials[0]).toEqual(partials[0]);
   });
+
+  test("gets formatAsync", async () => {
+    async function getSomethingAsync() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("this is from another world");
+        }, 200);
+      });
+    }
+
+    const textPrompt = new MockPrompt("Hello {{getSomethingAsync}}", {});
+    const formatted = await textPrompt.formatAsync({ getSomethingAsync });
+    expect(formatted).toEqual("Hello this is from another world");
+  });
+
+  test("gets formatAsync", async () => {
+    async function getObjectAsync() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+              value: "this is from another world"
+          });
+        }, 200);
+      });
+    }
+  
+    const textPrompt = new MockPrompt("Hello {{getObjectAsync.value}}", {});
+    const formatted = await textPrompt.formatAsync({ cond: true, getObjectAsync,  });
+    expect(formatted).toEqual("Hello this is from another world");
+  });
+
+  test("gets formatAsync from Promise", async () => {
+    const textPrompt = new MockPrompt("Hello {{getObjectAsync.value}}", {});
+    const formatted = await textPrompt.formatAsync({ cond: true, getObjectAsync: new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+              value: "this is from another world"
+          });
+        }, 200);
+      })});
+    expect(formatted).toEqual("Hello this is from another world");
+  });
+
+
+
+  test("gets formatAsync", async () => {
+    async function getObjectAsync() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+              value: "this is from another world"
+          });
+        }, 200);
+      });
+    }
+  
+    const textPrompt = new MockPrompt(undefined, {});
+
+    textPrompt.messages = [{invalid: "message"}]as any
+    const formatted = await textPrompt.formatAsync({ cond: true, getObjectAsync });
+    expect(formatted).toEqual("");
+  });
+
+
 })

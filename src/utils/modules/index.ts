@@ -13,12 +13,11 @@ import { v4 as uuidv4 } from "uuid";
 export { uuidv4 as uuid };
 export { get, set, pick, camelCase, unEscape, escape };
 export {
-  hbs,
   importPartials,
   importHelpers,
   registerPartials,
   registerHelpers,
-} from "./handlebars/hbs";
+} from "./handlebars/utils/hbs";
 export { filterObjectOnSchema } from "./json-schema-filter";
 export {
   replaceTemplateString,

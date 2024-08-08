@@ -82,7 +82,7 @@ export async function useLlm_call(
             props,
             {
               parameters: cleanJsonSchemaFor(
-                props.parameters || {},
+                props.parameters,
                 "openai.chat"
               ),
             },

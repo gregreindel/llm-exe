@@ -5,8 +5,8 @@ import {
     importHelpers,
     registerPartials,
     registerHelpers,
-    hbs
  } from "@/utils";
+import { hbs } from "@/utils/modules/handlebars";
 
 
 describe('handlebars hbs helpers', () => {
@@ -28,7 +28,7 @@ describe('handlebars hbs helpers', () => {
       });
 
       test('registerPartials', () => {
-        registerPartials([{name: "template1", template: "template-content"}])
+        registerPartials(hbs, [{name: "template1", template: "template-content"}])
         expect(hbs.partials["template1"]).toEqual("template-content")
       });
       
@@ -43,7 +43,7 @@ describe('handlebars hbs helpers', () => {
 
       test('registerHelpers', () => {
         const fn1 =  () => "val"
-        registerHelpers([{name: "helper1", handler: fn1}])
+        registerHelpers(hbs, [{name: "helper1", handler: fn1}])
         expect(hbs.helpers["helper1"]).toBeDefined()
       });
 });

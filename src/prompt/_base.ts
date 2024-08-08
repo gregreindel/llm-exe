@@ -1,4 +1,4 @@
-import { replaceTemplateString } from "@/utils";
+import { replaceTemplateString, replaceTemplateStringAsync } from "@/utils";
 import {
   IChatMessages,
   PromptOptions,
@@ -21,6 +21,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   public helpers: PromptHelper[] = [];
 
   public replaceTemplateString = replaceTemplateString;
+  public replaceTemplateStringAsync = replaceTemplateStringAsync;
 
   public filters: {
     pre: ((prompt: string) => string)[];
@@ -140,6 +141,32 @@ export abstract class BasePrompt<I extends Record<string, any>> {
       .join(separator);
 
     return this.runPromptFilter(messages, this.filters.post, values);
+  }
+
+  /**
+   * format description
+   * @param values The message content
+   * @param separator The separator between messages. defaults to "\n\n"
+   * @return returns messages formatted with template replacement
+   */
+  async formatAsync(values: I, separator: string = "\n\n"): Promise<string | IChatMessages> {
+    const replacements = this.getReplacements(values);
+    const _messages = await Promise.all(this.messages
+      .map((message) => {
+        return message.content && !Array.isArray(message.content)
+          ?  this.replaceTemplateStringAsync(
+              this.runPromptFilter(message.content, this.filters.pre, values),
+              replacements,
+              {
+                partials: this.partials,
+                helpers: this.helpers,
+              }
+            )
+          : ""
+      }))
+    
+    const messages = _messages.join(separator);
+    return this.runPromptFilter(messages, this.filters.post, values)
   }
 
   runPromptFilter(
