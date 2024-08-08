@@ -15,6 +15,7 @@ import {
   OpenAiLlmExecutorOptions,
 } from "@/types";
 import { normalizeFunctionCall } from "./output/_util";
+import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
@@ -31,7 +32,21 @@ export async function useLlm_call(
   );
 
   // move me!
-  // this sucks!
+  // this needs to be improved
+  if (_options && _options?.json_schema) {
+    if (state.provider === "openai.chat") {
+      const curr = input["response_format"] || {};
+      input["response_format"] = Object.assign(curr, {
+        type: "json_schema",
+        json_schema: {
+          strict: true,
+          name: "output",
+          schema: cleanJsonSchemaFor(_options?.json_schema, "openai.chat"),
+        },
+      });
+    }
+  }
+
   if (_options && _options?.function_call) {
     if (state.provider === "anthropic.chat") {
       if (_options?.function_call === "none") {
@@ -59,10 +74,22 @@ export async function useLlm_call(
         input_schema: f.parameters,
       }));
     } else if (state.provider === "openai.chat") {
-      input["tools"] = _options.functions.map((f) => ({
-        type: "function",
-        function: pick(f, ["name", "description", "parameters"]),
-      }));
+      input["tools"] = _options.functions.map((f) => {
+        const props = pick(f, ["name", "description", "parameters"]);
+        return {
+          type: "function",
+          function: Object.assign(
+            props,
+            {
+              parameters: cleanJsonSchemaFor(
+                props.parameters || {},
+                "openai.chat"
+              ),
+            },
+            { strict: true }
+          ),
+        };
+      });
     }
   }
   // END move me!

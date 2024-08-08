@@ -9,7 +9,7 @@ import {
   LlmExecutorExecuteOptions,
   BaseLlCall,
 } from "@/types";
-import { BaseParser, StringParser } from "@/parser";
+import { BaseParser, JsonParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { BaseExecutor } from "./_base";
@@ -58,6 +58,11 @@ export class LlmExecutor<
     _input: PromptInput<Prompt>,
     _options?: LlmExecutorExecuteOptions
   ): Promise<ParserOutput<Parser>> {
+    if (this?.parser instanceof JsonParser && this.parser.schema) {
+      _options = Object.assign(_options || {}, {
+        json_schema: this.parser.schema,
+      });
+    }
     return super.execute(_input, _options);
   }
 

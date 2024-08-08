@@ -32,12 +32,17 @@ export type OpenAiFunctionCall =
   | "required"
   | { name: string };
 
-export interface LlmExecutorExecuteOptions {}
+export interface LlmExecutorExecuteOptions {
+  functions?: CallableExecutorCore[];
+  function_call?: any;
+  json_schema?: Record<string, any>
+}
 
 export type GenericFunctionCall = "auto" | "none" | "any" | { name: string };
 export interface OpenAiLlmExecutorOptions<
   T extends GenericFunctionCall = "auto"
 > extends LlmExecutorExecuteOptions {
-  functions: CallableExecutorCore[];
-  function_call: T;
+  functions?: CallableExecutorCore[];
+  function_call?: T;
+  json_schema?: Record<string, any>
 }

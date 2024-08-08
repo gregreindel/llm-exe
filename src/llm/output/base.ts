@@ -5,7 +5,6 @@ import { getResultText } from "./_utils/getResultText";
 
 type BaseLlmOutput2Optional = "id" | "created" | "options";
 
-
 export function BaseLlmOutput2(
   result: Omit<OutputResult, BaseLlmOutput2Optional> &
     Partial<Pick<OutputResult, BaseLlmOutput2Optional>>
