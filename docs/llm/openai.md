@@ -2,12 +2,19 @@
 
 ## Basic Usage
 
+### OpenAi Chat
+
 ```typescript:no-line-numbers
-const llm = useLlm("openai", { // 
+const llm = useLlm("openai.chat.v1", { //
   model: "gpt-3.5-turbo",
-  openAiApiKey: "your-open-ai-key", // optional.
-  maxTokens: 500, // optional.
-  temperature: 0, // optional.
+});
+```
+
+### OpenAi Chat By Model
+
+```typescript:no-line-numbers
+const llm = useLlm("openai.gpt-4o", {
+  // options
 });
 ```
 
@@ -21,32 +28,28 @@ await llm.chat([]);
 await llm.completion("");
 ```
 
-
-
 ::: tip
-Note: The `OpenAILlm` checks to make sure you are using the correct prompt type when using chat vs completion, and will throw an error if you try to use the wrong prompt type with the wrong model. 
+Note: The `OpenAILlm` checks to make sure you are using the correct prompt type when using chat vs completion, and will throw an error if you try to use the wrong prompt type with the wrong model.
 :::
 
+## OpenAi-Specific Options
 
-## Options
+| Option             | Type              | Default       | Description                                                                 |
+| ------------------ | ----------------- | ------------- | --------------------------------------------------------------------------- |
+| `openAIApiKey`     | `string`          | `undefined`   | API key for OpenAI. Optionally can be set using process.env.OPEN_AI_API_KEY |
+| `model`            | `string`          | `gpt-4o-mini` | The model to use. Can be any one of: gpt-4, gpt-4o, gpt-4o-mini, etc.       |
+| `temperature`      | `number`          | `0`           | See OpenAI Docs                                                             |
+| `maxTokens`        | `number`          | `500`         | See OpenAI Docs                                                             |
+| `topP`             | `number \| null`  | `null`        | See OpenAI Docs                                                             |
+| `n`                | `number \| null`  | `null`        | See OpenAI Docs                                                             |
+| `stream`           | `boolean \| null` | `null`        | See OpenAI Docs. Note: Not supported yet.                                   |
+| `stop`             | ?                 | `null`        | See OpenAI Docs                                                             |
+| `presencePenalty`  | `number \| null`  | `null`        | See OpenAI Docs                                                             |
+| `frequencyPenalty` | `number \| null`  | `null`        | See OpenAI Docs                                                             |
+| `logitBias`        | `object \| null`  | `null`        | See OpenAI Docs                                                             |
+| `user`             | `string \| null`  | `null`        | See OpenAI Docs                                                             |
 
-| Option           | Type            | Default       | Description                               |
-| ---------------- | --------------- | ------------- | ----------------------------------------- |
-| `openAIApiKey`     | `string`          | `undefined`     | API key for OpenAI. Optionally can be set using process.env.OPEN_AI_API_KEY                        |
-| `model`            | `string`          | `gpt-3.5-turbo` | The model to use. Can be any one of: gpt-4, gpt-3.5-turbo, davinci, text-curie-001, text-babbage-001, text-ada-001                                      |
-| `temperature`      | `number`          | `0`             | See OpenAI Docs                            |
-| `maxTokens`        | `number`          | `500`           | See OpenAI Docs                            |
-| `topP`             | `number \| null`  | `null`          | See OpenAI Docs                            |
-| `n`                | `number \| null`  | `null`          | See OpenAI Docs                            |
-| `stream`           | `boolean \| null` | `null`          | See OpenAI Docs. Note: Not supported yet. |
-| `stop`             | ?               | `null`          | See OpenAI Docs                           |
-| `presencePenalty`  | `number \| null`  | `null`          | See OpenAI Docs 
-| `frequencyPenalty` | `number \| null`  | `null`          | See OpenAI Docs                           |
-| `logitBias`        | `object \| null`  | `null`          | See OpenAI Docs                           |
-| `user`             | `string \| null`  | `null`          | See OpenAI Docs                           |
-
-OpenAI Docs: [link](https://platform.openai.com/docs/api-reference/completions) 
-
+OpenAI Docs: [link](https://platform.openai.com/docs/api-reference/completions)
 
 ## OpenApi LLM Methods
 

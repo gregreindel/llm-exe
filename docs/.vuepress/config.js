@@ -1,7 +1,7 @@
 import { defineUserConfig, defaultTheme } from "vuepress";
 import { googleAnalyticsPlugin } from "@vuepress/plugin-google-analytics";
-import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
-import * as path from "path"
+import { registerComponentsPlugin } from "@vuepress/plugin-register-components";
+import * as path from "path";
 export default defineUserConfig({
   lang: "en-US",
   title: "llm-exe",
@@ -11,7 +11,8 @@ export default defineUserConfig({
       "link",
       { rel: "icon", href: "/images/favicon.ico" },
       { rel: "canonical", href: "https://llm-exe.com" },
-    ],[
+    ],
+    [
       "meta",
       { property: "og:image", content: "/images/llm-exe-featured.jpg" },
       { property: "og:locale", content: "en_US" },
@@ -23,7 +24,7 @@ export default defineUserConfig({
         property: "og:description",
         content:
           "A package that provides utilities, wrappers, and base abstractions to help make writing applications with llm-powered functions easier.",
-      }
+      },
     ],
   ],
   theme: defaultTheme({
@@ -71,6 +72,11 @@ export default defineUserConfig({
         collapsible: true,
         children: [
           {
+            text: "Generic Options",
+            link: "/llm/generic.html",
+            children: [],
+          },
+          {
             text: "OpenAi",
             link: "/llm/openai.html",
             children: [],
@@ -114,7 +120,7 @@ export default defineUserConfig({
             link: "/prompt/text.html",
             children: [],
           },
- 
+
           {
             text: "Advanced Templates",
             link: "/prompt/advanced.html",
@@ -161,7 +167,6 @@ export default defineUserConfig({
             text: "Functions (tools)",
             link: "/executor/openai-functions.html",
             children: [],
-            
           },
           {
             text: "Hooks",
@@ -172,11 +177,9 @@ export default defineUserConfig({
       },
       {
         text: "Embeddings",
-        link: "/state/index.html",
+        link: "/embeddings/index.html",
         collapsible: true,
-        children: [
-      
-        ],
+        children: [],
       },
       {
         text: "Examples",
@@ -275,8 +278,11 @@ export default defineUserConfig({
   plugins: [
     registerComponentsPlugin({
       components: {
-        PromptOutput: path.resolve(__dirname, './components/PromptOutput.vue'),
-        DialogueOutput: path.resolve(__dirname, './components/DialogueOutput.vue'),
+        PromptOutput: path.resolve(__dirname, "./components/PromptOutput.vue"),
+        DialogueOutput: path.resolve(
+          __dirname,
+          "./components/DialogueOutput.vue"
+        ),
       },
     }),
     googleAnalyticsPlugin({

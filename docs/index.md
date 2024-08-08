@@ -22,8 +22,7 @@ A package that provides simplified base components to make building and maintain
   - [Parser](/parser)
 - [State](/parser)
 - [Callable Executor Wrapper](/callable)
-- Embeddings (coming soon)
-- Vector Store (coming soon)
+- [Embeddings](/embeddings)
 
 
 
