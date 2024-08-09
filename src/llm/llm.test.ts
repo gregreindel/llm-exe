@@ -72,4 +72,22 @@ describe("useLlm", () => {
       undefined
     );
   });
+
+  it("call method should invoke useLlm_call with correct arguments when undefined", async () => {
+    const mockMessages = [
+      {
+        role: "user",
+        content: "Hello",
+      },
+    ] as IChatMessages;
+    const { call } = useLlm(mockProvider);
+
+    await call(mockMessages);
+
+    expect(useLlm_call).toHaveBeenCalledWith(
+      expect.anything(),
+      mockMessages,
+      undefined
+    );
+  });
 });

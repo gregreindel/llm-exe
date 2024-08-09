@@ -207,12 +207,12 @@ export interface BaseLlmOptions {
 
 export interface GenericEmbeddingOptions extends BaseLlmOptions {
   model?: string;
-  input: string;
+  // input: string;
   dimensions?: number;
 }
 
 export interface OpenAiEmbeddingOptions extends GenericEmbeddingOptions {
-  model: string;
+  model?: string;
   openAiApiKey?: string;
 }
 

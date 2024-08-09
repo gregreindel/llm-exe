@@ -1,1 +1,0 @@
-export { createEmbedding } from "./embedding";

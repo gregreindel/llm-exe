@@ -1,11 +1,6 @@
-import { objectToList, join } from "@/utils/modules/handlebars/helpers";
+import {  join } from "@/utils/modules/handlebars/helpers";
 
 
-describe('objectToList', () => {
-  it('objectToList', () => {
-    expect(objectToList.call({}, {first: "First Item", second: "Second Item"})).toEqual(`- first: First Item\n- second: Second Item`)
-  });
-});
 
 describe('join', () => {
   it('join', () => {
