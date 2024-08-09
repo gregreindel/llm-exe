@@ -199,7 +199,7 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(executor.handler).toHaveBeenCalledWith(
       [{ content: "This is a prompt.", role: "system" }],
       {
-        json_schema: schema,
+        jsonSchema: schema,
       }
     );
   });

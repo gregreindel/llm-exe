@@ -321,19 +321,24 @@ export type AllLlm = {
 export type AllUseLlmOptions = AllLlm & {
   "openai.gpt-4": {
     input: OpenAiRequest;
-    // output: OpenAiRequest;
   };
   "openai.gpt-4o": {
-    input: OpenAiRequest;
-    // output: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o-mini": {
-    input: OpenAiRequest;
-    // output: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
-  "anthropic.claude3": {
-    input: OpenAiRequest;
-    // output: OpenAiRequest;
+  "claude-3-5-sonnet-20240620": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "claude-3-opus-20240229": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "claude-3-sonnet-20240229": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "claude-3-haiku-20240307": {
+    input: Omit<AnthropicRequest, "model">;
   };
 };
 

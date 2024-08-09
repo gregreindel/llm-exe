@@ -42,10 +42,10 @@ describe("llm-exe:executor/LlmExecutor", () => {
 
   it("MockExecutor returns correct result from execute", async () => {
     const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
-    await executor.execute({ input: "input-value"}, { function_call: "none", functions: []})
+    await executor.execute({ input: "input-value"}, { functionCall: "none", functions: []})
   })
   it("MockExecutor returns correct result from execute", async () => {
     const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
-    await executor.execute({ input: "input-value"}, { function_call: "auto", functions: []})
+    await executor.execute({ input: "input-value"}, { functionCall: "auto", functions: []})
   })
 });

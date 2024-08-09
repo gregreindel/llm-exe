@@ -71,4 +71,8 @@ export const openai = {
     mapBody: { model: "gpt-4o" },
     options: { model: "gpt-4o" },
   }),
+  "openai.gpt-4o-mini": Object.assign({}, openAiChatV1, {
+    mapBody: { model: "gpt-4o-mini" },
+    options: { model: "gpt-4o-mini" },
+  }),
 };

@@ -30,7 +30,7 @@ const functions = [{
 const response = await executor.execute({
   input: "Hello!"
 }, {
-  function_call: "auto",
+  functionCall: "auto",
   functions: functions,
 })
 ```

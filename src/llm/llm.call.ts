@@ -33,35 +33,42 @@ export async function useLlm_call(
 
   // move me!
   // this needs to be improved
-  if (_options && _options?.json_schema) {
+  if (_options && _options?.jsonSchema) {
     if (state.provider === "openai.chat") {
       const curr = input["response_format"] || {};
-      input["response_format"] = Object.assign(curr, {
+      const newObj = Object.assign(curr, {
         type: "json_schema",
         json_schema: {
-          strict: true,
           name: "output",
-          schema: cleanJsonSchemaFor(_options?.json_schema, "openai.chat"),
+          schema: cleanJsonSchemaFor(_options?.jsonSchema, "openai.chat"),
         },
       });
+
+      if (
+        typeof _options?.functionCallStrictInput === "undefined" ||
+        !!_options?.functionCallStrictInput
+      ) {
+        newObj["json_schema"]["strict"] = true;
+      }
+      input["response_format"] = newObj;
     }
   }
 
-  if (_options && _options?.function_call) {
+  if (_options && _options?.functionCall) {
     if (state.provider === "anthropic.chat") {
-      if (_options?.function_call === "none") {
+      if (_options?.functionCall === "none") {
         _options.functions = [];
       } else if (
-        _options?.function_call === "auto" ||
-        _options?.function_call === "any"
+        _options?.functionCall === "auto" ||
+        _options?.functionCall === "any"
       ) {
-        input["tool_choice"] = { type: _options?.function_call };
+        input["tool_choice"] = { type: _options?.functionCall };
       } else {
-        input["tool_choice"] = _options?.function_call;
+        input["tool_choice"] = _options?.functionCall;
       }
     } else if (state.provider === "openai.chat") {
       input["tool_choice"] = normalizeFunctionCall(
-        _options?.function_call,
+        _options?.functionCall,
         "openai"
       );
     }
@@ -81,10 +88,7 @@ export async function useLlm_call(
           function: Object.assign(
             props,
             {
-              parameters: cleanJsonSchemaFor(
-                props.parameters,
-                "openai.chat"
-              ),
+              parameters: cleanJsonSchemaFor(props.parameters, "openai.chat"),
             },
             { strict: true }
           ),

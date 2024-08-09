@@ -55,4 +55,20 @@ const anthropicChatV1: Config = {
 
 export const anthropic = {
   "anthropic.chat.v1": anthropicChatV1,
+  "claude-3-5-sonnet-20240620": Object.assign({}, anthropicChatV1, {
+    mapBody: { model: "claude-3-5-sonnet-20240620" },
+    options: { model: "claude-3-5-sonnet-20240620" },
+  }),
+  "claude-3-opus-20240229": Object.assign({}, anthropicChatV1, {
+    mapBody: { model: "claude-3-opus-20240229" },
+    options: { model: "claude-3-opus-20240229" },
+  }),
+  "claude-3-sonnet-20240229": Object.assign({}, anthropicChatV1, {
+    mapBody: { model: "claude-3-sonnet-20240229" },
+    options: { model: "claude-3-sonnet-20240229" },
+  }),
+  "claude-3-haiku-20240307": Object.assign({}, anthropicChatV1, {
+    mapBody: { model: "claude-3-haiku-20240307" },
+    options: { model: "claude-3-haiku-20240307" },
+  })
 };
