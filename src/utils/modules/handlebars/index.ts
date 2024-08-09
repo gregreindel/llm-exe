@@ -1,25 +1,50 @@
-import {
-  importPartials,
-  registerPartials,
-  importHelpers,
-  registerHelpers,
-} from "./utils/hbs";
-import * as helpers from "./helpers";
-import { asyncCoreOverrideHelpers } from "./helpers/async/async-helpers";
-import * as contextPartials from "./templates";
+import Handlebars from "handlebars";
+
+import { importHelpers } from "@/utils/modules/handlebars/utils/importHelpers";
+import { importPartials } from "@/utils/modules/handlebars/utils/importPartials";
+
+import * as helpers from "@/utils/modules/handlebars/helpers";
+import * as contextPartials from "@/utils/modules/handlebars/templates";
+import { makeHandlebarsInstanceAsync } from "@/utils/modules/handlebars/utils/makeHandlebarsInstanceAsync";
+
+import { asyncCoreOverrideHelpers } from "@/utils/modules/handlebars/helpers/async/async-helpers";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
-import Handlebars from "handlebars";
-import { makeHandlebarsInstanceAsync } from "./utils/asyncHelpers";
-
-const __hbs = Handlebars;
 const __hbsAsync = makeHandlebarsInstanceAsync(Handlebars);
+const __hbs = Handlebars
+
+export function registerPartials(partials: any[], instance: typeof Handlebars = __hbs ) {
+  if (partials && Array.isArray(partials)) {
+    for (const partial of partials) {
+      if (
+        partial.name &&
+        typeof partial.name === "string" &&
+        typeof partial.template === "string"
+      ) {
+        instance.registerPartial(partial.name, partial.template);
+      }
+    }
+  }
+}
+
+export function registerHelpers(helpers: any[], instance: typeof Handlebars = __hbs) {
+  if (helpers && Array.isArray(helpers)) {
+    for (const helper of helpers) {
+      if (
+        helper.name &&
+        typeof helper.name === "string" &&
+        typeof helper.handler === "function"
+      ) {
+        instance.registerHelper(helper.name, helper.handler);
+      }
+    }
+  }
+}
 
 export function useHandlebars(
   hbsInstance: typeof Handlebars,
   preferAsync: boolean = false
 ) {
-
   /* istanbul ignore next */
   hbsInstance.registerHelper("with", function (context: any, options: any) {
     return options.fn(context);
@@ -47,15 +72,12 @@ export function useHandlebars(
 
   hbsInstance.registerHelper(
     "unless",
-    function (
-      conditional: any,
-      options: any
-    ) {
+    function (conditional: any, options: any) {
       if (arguments.length !== 2) {
         throw new Error("#unless requires exactly one argument");
       }
 
-      const ifFn = hbsInstance.helpers["if"]
+      const ifFn = hbsInstance.helpers["if"];
       return ifFn(conditional, {
         fn: options.inverse,
         inverse: options.fn,
@@ -65,24 +87,30 @@ export function useHandlebars(
   );
 
   const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
-  registerHelpers(hbsInstance, helperKeys.map(a => ({ handler: helpers[a], name: a})));
+  registerHelpers(
+    helperKeys.map((a) => ({ handler: helpers[a], name: a })),
+    hbsInstance,
+  );
 
-  if(preferAsync){
-    const asyncHelperKeys = Object.keys(asyncCoreOverrideHelpers) as (keyof typeof asyncCoreOverrideHelpers)[];
-    registerHelpers(hbsInstance, asyncHelperKeys.map(a => ({ handler: asyncCoreOverrideHelpers[a], name: a})));
+  if (preferAsync) {
+    const asyncHelperKeys = Object.keys(
+      asyncCoreOverrideHelpers
+    ) as (keyof typeof asyncCoreOverrideHelpers)[];
+    registerHelpers(
+      asyncHelperKeys.map((a) => ({
+        handler: asyncCoreOverrideHelpers[a],
+        name: a,
+      })),
+      hbsInstance,
+    );
   }
-
-
-  // if (configuration?.helpers && Array.isArray(configuration.helpers)) {
-  //   registerHelpers(hbsInstance, configuration.helpers);
-  // }
 
   const helperPath = getEnvironmentVariable(
     "CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH"
   );
   if (helperPath) {
     const externalHelpers = require(helperPath);
-    registerHelpers(hbsInstance, importHelpers(externalHelpers));
+    registerHelpers(importHelpers(externalHelpers), hbsInstance);
   }
 
   const contextPartialKeys = Object.keys(
@@ -95,20 +123,16 @@ export function useHandlebars(
     );
   }
 
-  // if (configuration?.partials && Array.isArray(configuration.partials)) {
-  //   registerPartials(hbsInstance, configuration.partials);
-  // }
-
   const partialsPath = getEnvironmentVariable(
     "CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH"
   );
   if (typeof process === "object" && partialsPath) {
     const externalPartials = require(partialsPath);
-    registerPartials(hbsInstance, importPartials(externalPartials));
+    registerPartials(importPartials(externalPartials), hbsInstance);
   }
 
   return hbsInstance;
 }
 
-export const hbsAsync = useHandlebars(__hbsAsync)
-export const hbs = useHandlebars(__hbs)
+export const hbsAsync = useHandlebars(__hbsAsync);
+export const hbs = useHandlebars(__hbs);

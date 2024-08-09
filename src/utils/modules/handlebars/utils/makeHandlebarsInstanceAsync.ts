@@ -1,7 +1,7 @@
 import Handlebars from "handlebars";
-
 import { isPromise } from "@/utils/modules/isPromise";
 
+/** From: https://github.com/gastonrobledo/handlebars-async-helpers/blob/main/index.js */
 export function makeHandlebarsInstanceAsync(hbs: any) {
   const handlebars: typeof Handlebars = hbs.create()
   const asyncCompiler = class extends hbs.JavaScriptCompiler {

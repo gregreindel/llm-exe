@@ -10,14 +10,13 @@ import unEscape from "lodash.unescape";
 import escape from "lodash.escape";
 
 import { v4 as uuidv4 } from "uuid";
+export { importPartials } from "./handlebars/utils/importPartials";
+export { importHelpers } from "./handlebars/utils/importHelpers";
+
 export { uuidv4 as uuid };
 export { get, set, pick, camelCase, unEscape, escape };
-export {
-  importPartials,
-  importHelpers,
-  registerPartials,
-  registerHelpers,
-} from "./handlebars/utils/hbs";
+
+export { registerPartials, registerHelpers } from "./handlebars";
 export { filterObjectOnSchema } from "./json-schema-filter";
 export {
   replaceTemplateString,

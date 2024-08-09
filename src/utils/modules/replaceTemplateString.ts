@@ -1,6 +1,6 @@
 import { PromptTemplateOptions } from "@/types";
 import { hbs, hbsAsync } from "./handlebars";
-import { registerHelpers, registerPartials } from "./handlebars/utils/hbs";
+import { registerHelpers, registerPartials } from "./handlebars";
 
 export function replaceTemplateString(
   templateString?: string,
@@ -16,12 +16,12 @@ export function replaceTemplateString(
   const tempPartials = [];
 
   if (Array.isArray(configuration.helpers)) {
-    registerHelpers(hbs, configuration.helpers);
+    registerHelpers(configuration.helpers, hbs);
     tempHelpers.push(...configuration.helpers.map((a) => a.name));
   }
 
   if (Array.isArray(configuration.partials)) {
-    registerPartials(hbs, configuration.partials);
+    registerPartials(configuration.partials, hbs);
     tempPartials.push(...configuration.partials.map((a) => a.name));
   }
 
@@ -56,12 +56,12 @@ export async function replaceTemplateStringAsync(
   const tempPartials = [];
 
   if (Array.isArray(configuration.helpers)) {
-    registerHelpers(hbsAsync, configuration.helpers);
+    registerHelpers(configuration.helpers, hbsAsync);
     tempHelpers.push(...configuration.helpers.map((a) => a.name));
   }
 
   if (Array.isArray(configuration.partials)) {
-    registerPartials(hbsAsync, configuration.partials);
+    registerPartials(configuration.partials, hbsAsync);
     tempPartials.push(...configuration.partials.map((a) => a.name));
   }
 
