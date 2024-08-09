@@ -1,4 +1,5 @@
 import { Config, IChatMessages } from "@/types";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
 const ANTORPIC_VERSION = "2023-06-01";
 
@@ -34,7 +35,9 @@ const anthropicChatV1: Config = {
     maxTokens: {
       required: [true, "maxTokens required"],
     },
-    anthropicApiKey: {},
+    anthropicApiKey: {
+      default: getEnvironmentVariable("ANTHROPIC_API_KEY")
+    },
   },
   mapBody: {
     model: {

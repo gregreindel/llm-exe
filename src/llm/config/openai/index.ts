@@ -1,4 +1,5 @@
 import { Config } from "@/types";
+import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
 const openAiChatV1: Config = {
   key: "openai.chat.v1",
@@ -8,7 +9,9 @@ const openAiChatV1: Config = {
     prompt: {},
     topP: {},
     useJson: {},
-    openAiApiKey: {},
+    openAiApiKey: {
+      default: getEnvironmentVariable("OPENAI_API_KEY")
+    },
   },
   method: "POST",
   headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
@@ -43,7 +46,9 @@ const openAiChatMockV1: Config = {
     prompt: {},
     topP: {},
     useJson: {},
-    openAiApiKey: {},
+    openAiApiKey: {
+      default: getEnvironmentVariable("OPENAI_API_KEY_MOCK")
+    },
   },
   method: "POST",
   headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,

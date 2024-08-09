@@ -88,16 +88,16 @@ export default defineUserConfig({
           },
           {
             text: "AWS Bedrock",
-            link: "/llm/anthropic.html",
+            link: "/llm/bedrock/index.html",
             children: [
               {
                 text: "Anthropic",
-                link: "/llm/bedrock.anthropic.html",
+                link: "/llm/bedrock/anthropic.html",
                 children: [],
               },
               {
                 text: "Meta",
-                link: "/llm/bedrock.meta.html",
+                link: "/llm/bedrock/meta.html",
                 children: [],
               },
             ],
