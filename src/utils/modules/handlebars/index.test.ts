@@ -1,4 +1,5 @@
 import { hbs as hbsInstance } from "@/utils/modules/handlebars";
+import { registerPartials, registerHelpers } from "@/utils";
 import { useHandlebars } from "@/utils/modules/handlebars";
 // import { asyncCoreOverrideHelpers } from "@/utils/modules/handlebars/helpers/async/async-helpers";
 
@@ -28,6 +29,27 @@ describe("useHandlebars", () => {
     process.env = OLD_ENV; // Restore old environment
   });
 
+  test("hbs", () => {
+    expect(hbsInstance).toHaveProperty("helpers");
+    expect(hbsInstance).toHaveProperty("partials");
+    expect(hbsInstance).toHaveProperty("VERSION");
+    expect(hbsInstance.VERSION).toEqual("4.7.8");
+  });
+
+  test("registerPartials", () => {
+    registerPartials([
+      { name: "template1", template: "template-content" },
+    ], hbsInstance);
+    expect(hbsInstance.partials["template1"]).toEqual("template-content");
+  });
+
+  test("registerHelpers", () => {
+    const fn1 = () => "val";
+    registerHelpers([{ name: "helper1", handler: fn1 }], hbsInstance);
+    expect(hbsInstance.helpers["helper1"]).toBeDefined();
+  });
+
+
   test("useHandlebars", () => {
     const hbs = useHandlebars(hbsInstance);
     expect(hbs).toHaveProperty("helpers");
@@ -55,7 +77,7 @@ describe("useHandlebars", () => {
   test("useHandlebars registers custom partial from CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH", () => {
     process.env.CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH = path.join(
       __dirname,
-      "../../../__data__/handlebars-partials.js"
+      "../../../../__tests__/__data__/handlebars-partials.js"
     );
     const hbs = useHandlebars(hbsInstance);
     expect(hbs).toHaveProperty("partials");
@@ -66,7 +88,7 @@ describe("useHandlebars", () => {
   test("useHandlebars registers custom helpers from CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH", () => {
     process.env.CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH = path.join(
       __dirname,
-      "../../../__data__/handlebars-helpers.js"
+      "../../../../__tests__/__data__/handlebars-helpers.js"
     );
     const hbs = useHandlebars(hbsInstance);
     expect(hbs).toHaveProperty("helpers");

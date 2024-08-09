@@ -1,4 +1,4 @@
-import { getEmbeddingOutputParser } from "@/embedding/output";
+import { getEmbeddingOutputParser } from "@/embedding/output/getEmbeddingOutputParser";
 import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
 import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
 import { EmbeddingProviderKey } from "@/types";

@@ -10,7 +10,7 @@ import {
   OpenAiLlmExecutorOptions,
 } from "@/types";
 import { getEmbeddingConfig } from "./config";
-import { getEmbeddingOutputParser } from "./output";
+import { getEmbeddingOutputParser } from "./output/getEmbeddingOutputParser";
 
 export async function createEmbedding_call(
   state: GenericLLm & {
