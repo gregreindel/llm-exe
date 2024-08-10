@@ -1,4 +1,4 @@
-import { inferFunctionName } from "@/utils";
+import { inferFunctionName } from "./inferFunctionName";
 
 describe("inferFunctionName", () => {
   it("should return the function name for a named function with no prefix", () => {

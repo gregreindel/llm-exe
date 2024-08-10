@@ -1,4 +1,4 @@
-import { extractPromptPlaceholderToken } from "@/utils";
+import { extractPromptPlaceholderToken } from "./extractPromptPlaceholderToken";
 
 describe("extractPromptPlaceholderToken", () => {
   it("returns empty string if input not provided", async () => {

@@ -1,4 +1,4 @@
-import { isNull } from "@/utils";
+import { isNull } from "./isNull";
 
 describe("isNull", () => {
   it("isNull detects null", async () => {

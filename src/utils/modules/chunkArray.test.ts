@@ -1,4 +1,4 @@
-import { chunkArray } from "@/utils";
+import { chunkArray } from "./chunkArray";
 
 describe('chunkArray', () => {
   it('should return chunked array with the given size', () => {

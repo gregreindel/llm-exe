@@ -74,8 +74,11 @@ describe("openai configuration", () => {
     });
 
     it("should override model in mapBody and options as gpt-4o", () => {
-      expect(openAiGpt4o.mapBody.model).toBe("gpt-4o");
-      expect(openAiGpt4o.options.model).toBe("gpt-4o");
+      expect(openAiGpt4o.mapBody.model).toEqual({
+        default: "gpt-4o",
+        key: "model",
+      });
+      expect(openAiGpt4o.options.model).toEqual({ default: "gpt-4o" });
     });
   });
 });

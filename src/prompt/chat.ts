@@ -1,7 +1,6 @@
 import {
   assert,
   escape,
-  extractPromptPlaceholderToken,
   get,
   maybeStringifyJSON,
   pick,
@@ -17,6 +16,7 @@ import {
   IChatMessage,
   IChatMessageContentDetailed,
 } from "@/types";
+import { extractPromptPlaceholderToken } from "@/utils/modules/extractPromptPlaceholderToken";
 
 export interface ChatPrompt<I extends Record<string, any>>
   extends BasePrompt<I> {

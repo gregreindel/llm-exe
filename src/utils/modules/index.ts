@@ -10,6 +10,7 @@ import unEscape from "lodash.unescape";
 import escape from "lodash.escape";
 
 import { v4 as uuidv4 } from "uuid";
+import { isNull } from "./isNull";
 export { importPartials } from "./handlebars/utils/importPartials";
 export { importHelpers } from "./handlebars/utils/importHelpers";
 
@@ -43,14 +44,6 @@ export function assert(
     }
   }
 }
-
-export const chunkArray = (arr: any[], chunkSize: number) =>
-  arr.reduce((chunks, elem, index) => {
-    const chunkIndex = Math.floor(index / chunkSize);
-    const chunk = chunks[chunkIndex] || [];
-    chunks[chunkIndex] = chunk.concat([elem]);
-    return chunks;
-  }, []);
 
 export function defineSchema<T>(obj: Narrow<T>) {
   (obj as any).additionalProperties = false;
@@ -100,19 +93,6 @@ export function ensureInputIsObject<T>(input: any): PlainObject | { input: T } {
       return { input: input };
   }
 }
-export function inferFunctionName(func: any, defaultName: string) {
-  const name = func?.name;
-  if (name && typeof name === "string") {
-    if (name.substring(0, 6) === "bound ") {
-      return name.replace("bound ", "");
-    } else {
-      return name;
-    }
-  }
-  var result = /^function\s+([\w\$]+)\s*\(/.exec(func.toString());
-  /* istanbul ignore next */
-  return result ? result[1] : defaultName;
-}
 
 export function removeEmptyFromObject<T extends Record<string, any>>(
   obj: T
@@ -130,10 +110,6 @@ export function generateUniqueNameId(prefix = "", suffix = "") {
   const firstPart = ("000" + _firstPart.toString(36)).slice(-3);
   const secondPart = ("000" + _secondPart.toString(36)).slice(-3);
   return `${prefix}${firstPart}${secondPart}${suffix}`;
-}
-
-export function isNull(value: any): boolean {
-  return Object.is(value, null);
 }
 
 export function isUndefined(value: any): boolean {
@@ -154,33 +130,3 @@ export function toNumber(value: any): number {
   return NaN;
 }
 
-export function extractPromptPlaceholderToken(tok: string) {
-  if (!tok) return { token: "" };
-  const token = tok.replace(/ /g, "");
-  if (token.substring(2, 18) === ">DialogueHistory") {
-    const matchKey = tok.match(/key=(['"`])((?:(?!\1).)*)\1/);
-    const matchAssistant = tok.match(/assistant=(['"`])((?:(?!\1).)*)\1/);
-    const matchUser = tok.match(/user=(['"`])((?:(?!\1).)*)\1/);
-    if (matchKey) {
-      return {
-        token: ">DialogueHistory",
-        key: matchKey[2],
-        assistant: get(matchAssistant, "[2]", ""),
-        user: get(matchUser, "[2]", ""),
-      };
-    }
-  } else if (token.substring(2, 20) === ">SingleChatMessage") {
-    const matchRole = tok.match(/role=(['"`])((?:(?!\1).)*)\1/);
-    const matchContent = tok.match(/content=(['"`])((?:(?!\1).)*)\1/);
-    const matchName = tok.match(/name=(['"`])((?:(?!\1).)*)\1/);
-    if (matchRole) {
-      return {
-        token: ">SingleChatMessage",
-        name: get(matchName, "[2]"),
-        content: unEscape(get(matchContent, "[2]", "")),
-        role: get(matchRole, "[2]", ""),
-      };
-    }
-  }
-  return { token: "" };
-}

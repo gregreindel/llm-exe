@@ -26,7 +26,7 @@ interface ExampleInput {
 }
 
 export function llmExecutorExample<I extends ExampleInput>() {
-  const llm = useLlm("openai.mock", {});
+  const llm = useLlm("openai.gpt-4o", {});
   const prompt = createChatPrompt<I>(PROMPT);
   const parser = createParser("listToArray");
   return createLlmExecutor({
@@ -39,7 +39,7 @@ export function llmExecutorExample<I extends ExampleInput>() {
 export async function llmExecutorExampleExecute<I extends ExampleInput>(
   input: I
 ) {
-  const llm = useLlm("openai.mock", {});
+  const llm = useLlm("openai.gpt-4o", {});
   const prompt = createChatPrompt<I>(PROMPT);
   const parser = createParser("listToArray");
   return createLlmExecutor({
@@ -81,7 +81,7 @@ interface ExampleInput {
 }
 
 export function llmExecutorExample2<I extends ExampleInput>() {
-  const llm = useLlm("openai.mock", {});
+  const llm = useLlm("openai.gpt-4o", {});
   const prompt = createChatPrompt<I>(PROMPT2);
   const parser = createParser("stringExtract", {
     enum: ["forward", "back", "left", "right"],
