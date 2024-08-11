@@ -41,13 +41,13 @@ Some core partials are included by default:
 <CodeGroup>
   <CodeGroupItem title="Raw Template" active>
 
-```:no-line-numbers
+```
 {{> MarkdownCode code='const name="Greg";' language='typescript' }}
 ```
   </CodeGroupItem>
   <CodeGroupItem title="Parsed">
 
-```:no-line-numbers
+```
 '''typescript
 const name="Greg";
 '''
@@ -60,7 +60,7 @@ const name="Greg";
 <CodeGroup>
   <CodeGroupItem title="Raw Template" active>
 
-```:no-line-numbers
+```txt
 // Basic example
 {{> DialogueHistory key='keyOfTheChatHistory' }}
 
@@ -94,7 +94,7 @@ const name="Greg";
   </CodeGroupItem>
   <CodeGroupItem title="Parsed">
 
-```:no-line-numbers
+```txt
 // Basic example
 User: Hello?
 Assistant: Hi! How can I help you?
@@ -138,8 +138,7 @@ You can load custom Handlebars partials and helpers a few different ways:
 
 ### 1. Pass them in when initializing the prompt
 
-```typescript:no-line-numbers
-
+```ts
 // these could be managed elsewhere and imported here
 const helpers = [{
   handler: (date: Date) => "morning", name: "getTimeOfDay"
@@ -158,20 +157,20 @@ const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials })
 
 ### 2. Set environment variable pointing to a file that exports them (optional)
 
-```env:no-line-numbers
+```txt
 # .env
 # Custom helpers: Set this as a path to a file that exports custom helpers.
 CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH=/var/app/build/prompt-template-helpers.js
 ```
 
-```env:no-line-numbers
+```txt
 # .env
 # Custom partials: Set this as a path to a file that exports custom partials.
 CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH=/var/app/build/prompt-template-partials.js
 ```
 
 Example files
-```typescript:no-line-numbers
+```ts
 // prompt-template-helpers.js
 export function getTimeOfDay(date: Date): string {
   // implementation

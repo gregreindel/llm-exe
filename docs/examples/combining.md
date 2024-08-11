@@ -9,18 +9,20 @@ This can be useful as:
 This is really just a simple loop that combines 2 functions, but using LLM executors keeps the code simple.
 
 #### Step 1 - Create LLM Executor to make list of test cases given a function
-@[code{17-37} ts:no-line-numbers](../../examples/ListInList.ts)
+
+<<< ../../examples/ListInList.ts#StepOne
 
 #### Step 2 - Create LLM Executor to write single test case
-@[code{38-71} ts:no-line-numbers](../../examples/ListInList.ts)
+<<< ../../examples/ListInList.ts#StepTwo
 
 #### Step 3 - Combine into single method
 Combine the prompt, LLM, and parser into a single function.
-@[code{73-92} ts:no-line-numbers](../../examples/ListInList.ts)
+
+<<< ../../examples/ListInList.ts#StepThree
 
 
 #### Step 4 - Use it!
-```typescript:no-line-numbers
+```ts
 import { generateTestSuite } from "./somewhere"
 
 // the input you get from somewhere
@@ -82,8 +84,8 @@ const response = await generateTestSuite({
     ]
 }
  ** 
- */s
+ */
 ```
 
 ### Complete File
-@[code{0-93}](../../examples/ListInList.ts)
+<<< ../../examples/ListInList.ts

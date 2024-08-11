@@ -29,7 +29,7 @@ Returns: string
 
 > **Example Prompt:** <br>You need to reply with one of three options. Either stop, go forward, turn left, turn right.
 
-```typescript:no-line-numbers
+```ts
 const parser = createParser("stringExtract", {
     enum: [
         "stop",
@@ -60,7 +60,7 @@ Returns: string[]
 
 > **Example Prompt:** <br>You need to reply with a list of test cases that should be written for the code I included below. You must reply in an unordered list.
 
-```typescript:no-line-numbers
+```ts
 const parser = createParser("listToArray")
 ```
 

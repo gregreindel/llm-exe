@@ -2,7 +2,7 @@
 
 If you want an LLM to call other 'tools' or functions, then we provide a simple wrapper to assist. 
 
-```typescript:no-line-numbers
+```ts
 const executors = useExecutors([
   finalAnswerCallable,
   interactWithUserCallable,

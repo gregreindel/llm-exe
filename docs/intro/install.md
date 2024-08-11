@@ -1,7 +1,7 @@
 # Install
 
 Install llm-exe using npm.
-```cli
+```txt
 npm i llm-exe
 ```
 

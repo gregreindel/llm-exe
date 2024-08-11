@@ -13,20 +13,23 @@ Note this is a basic example, and should be improved for error handling, etc.
 To allow our LLM to be able to search the internet, we'll need to define a callable function. You can use whatever search API configuration you'd like.
 
 Note that `searchInternetCallable` is the configuration object that makes `searchGoogleApi` callable. Nothing really fancy going on.
-@[code{0-100} ts:no-line-numbers](../../examples/actions/search.ts)
+
+<<< ../../examples/actions/search.ts
 
 #### Step 2 - Define Calculator Action
 To allow our LLM to be able to perform advanced calculations, we'll need to define a callable function. You can use whatever calculation library you'd like.
-@[code{0-100} ts:no-line-numbers](../../examples/actions/calculator.ts)
+
+<<< ../../examples/actions/calculator.ts
 
 #### Step 3 - Define Final Answer Action
 We need to define a final answer action, but in this example we won't be doing anything with it, so we'll just pass through the input.
-@[code{0-100} ts:no-line-numbers](../../examples/actions/finalAnswer.ts)
+
+<<< ../../examples/actions/finalAnswer.ts
 
 
 #### Step 4 - Configure Thought/Action/Input LLM executor
 Configure a prompt and LLM executor that is directed to think step by step through the question to decide the next action to take.
-@[code{15-67} ts:no-line-numbers](../../examples/_testing/react.ts)
+@[code{15-67} ts](../../examples/_testing/react.ts)
 
 
 #### Step 5 - Write Some Code
@@ -60,7 +63,7 @@ First Iteration:
 <CodeGroup>
   <CodeGroupItem title="Result" active>
 
-```text:no-line-numbers
+```text
 # LLM Output: 
 {
   action: 'search_internet',
@@ -117,7 +120,7 @@ Second Iteration:
 <CodeGroup>
   <CodeGroupItem title="Result" active>
 
-```text:no-line-numbers
+```text
 # LLM Output: 
 {
   action: 'calculator',
@@ -130,7 +133,7 @@ Second Iteration:
   </CodeGroupItem>
   <CodeGroupItem title="Prompt">
 
-```text:no-line-numbers
+```text
 [
     {
       role: 'system',
@@ -184,7 +187,7 @@ Third Iteration:
 <CodeGroup>
   <CodeGroupItem title="Result" active>
 
-```text:no-line-numbers
+```text
 # LLM Output: 
 {
   action: 'calculator',
@@ -197,7 +200,7 @@ Third Iteration:
   </CodeGroupItem>
   <CodeGroupItem title="Prompt">
 
-```text:no-line-numbers
+```text
   [
     {
       role: 'system',
@@ -255,7 +258,7 @@ Fourth Iteration:
 <CodeGroup>
   <CodeGroupItem title="Result" active>
 
-```text:no-line-numbers
+```text
 # LLM Output: 
 {
   action: 'final_answer',

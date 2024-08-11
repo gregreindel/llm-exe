@@ -3,7 +3,7 @@
 ## Setup
 
 ### Anthropic Chat
-```typescript:no-line-numbers
+```ts
 const llm = useLlm("anthropic.chat.v1", { //
   model: "claude-3-5-sonnet-20240620",
   anthropicApiKey: "<your anthropic API Key>" // optional, see `Authentication` below
@@ -11,7 +11,7 @@ const llm = useLlm("anthropic.chat.v1", { //
 ```
 
 ### Anthropic Chat By Model
-```typescript:no-line-numbers
+```ts
 const llm = useLlm("claude-3-5-sonnet", {
   anthropicApiKey: "<your anthropic API Key>" // optional, see `Authentication` below
   // options
@@ -28,7 +28,7 @@ To authenticate, you need to provide an Anthropic API Key. You can either provid
 
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
-```typescript:no-line-numbers
+```ts
 // given array of chat messages, calls chat completion
 await llm.call([]);
 

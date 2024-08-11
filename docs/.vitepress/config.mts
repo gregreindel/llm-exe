@@ -1,5 +1,5 @@
 import { defineConfig } from "vitepress";
-import { transformerTwoslash } from "@shikijs/vitepress-twoslash";
+// import { transformerTwoslash } from "@shikijs/vitepress-twoslash";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -308,7 +308,7 @@ export default defineConfig({
     ],
   },
   markdown: {
-    codeTransformers: [transformerTwoslash()],
+    // codeTransformers: [transformerTwoslash()],
     theme: { light: "github-light-default", dark: "github-dark-default" },
   },
 });

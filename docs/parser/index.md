@@ -18,7 +18,7 @@ When working with output parsers, you have two options:
 
 ####  Use a Default Parser
 
-```typescript:no-line-numbers
+```ts
 const parser = createParser("listToArray"); // see list of included parsers
 
 // example output string from LLM
@@ -45,7 +45,7 @@ const parsed = parser.parse(exampleOutputFromLlm);
 #### Using a Parser with Schema
 When instructing the LLM to respond with json or a format that can be parsed to json, it can be helpful to define schema. This allows you to validate, provide default values, and have a fully-typed response. In fact, the JSON Schema you define can be really useful (and re-used!) in your prompt. [See tips](/examples/concepts/working-with-json) for working with JSON.
 
-```typescript:no-line-numbers
+```ts
 import { utils, createParser } from "unnamed-package";
 
 const schema = utils.defineSchema({

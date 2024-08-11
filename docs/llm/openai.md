@@ -4,7 +4,7 @@
 
 ### OpenAi Chat
 
-```typescript:no-line-numbers
+```ts
 const llm = useLlm("openai.chat.v1", { //
   model: "gpt-4o",
 });
@@ -12,7 +12,7 @@ const llm = useLlm("openai.chat.v1", { //
 
 ### OpenAi Chat By Model
 
-```typescript:no-line-numbers
+```ts
 const llm = useLlm("openai.gpt-4o", {
   // options
 });
@@ -20,7 +20,7 @@ const llm = useLlm("openai.gpt-4o", {
 
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
-```typescript:no-line-numbers
+```ts
 // given array of chat messages, calls chat completion
 await llm.chat([]);
 

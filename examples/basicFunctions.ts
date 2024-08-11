@@ -6,6 +6,7 @@ import { BaseLlm } from "@/types";
 /**
  *
  */
+// #region IntroduceSharedInstructions
 const PROMPT = `Based on the user input and time of day,
 come up with a list of greetings we could say to the user.
 
@@ -24,7 +25,9 @@ interface ExampleInput {
   userInput: string;
   timeOfDay: TimeOfDay;
 }
+// #endregion IntroduceSharedInstructions
 
+// #region llmExecutorExample
 export function llmExecutorExample<I extends ExampleInput>() {
   const llm = useLlm("openai.gpt-4o", {});
   const prompt = createChatPrompt<I>(PROMPT);
@@ -35,8 +38,10 @@ export function llmExecutorExample<I extends ExampleInput>() {
     llm,
   });
 }
+// #endregion llmExecutorExample
 
-export async function llmExecutorExampleExecute<I extends ExampleInput>(
+// #region llmExecutorExampleExecute
+export async function llmExecutorExampleExecuteExecute<I extends ExampleInput>(
   input: I
 ) {
   const llm = useLlm("openai.gpt-4o", {});
@@ -48,7 +53,9 @@ export async function llmExecutorExampleExecute<I extends ExampleInput>(
     llm,
   }).execute(input);
 }
+// #endregion llmExecutorExampleExecute
 
+// #region llmExecutorExampleNeedsLlm
 export async function llmExecutorExampleNeedsLlm<I extends ExampleInput>(
   llm: BaseLlm,
   input: I
@@ -61,6 +68,7 @@ export async function llmExecutorExampleNeedsLlm<I extends ExampleInput>(
     llm,
   }).execute(input);
 }
+// #endregion llmExecutorExampleNeedsLlm
 
 /**
  *

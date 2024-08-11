@@ -3,7 +3,7 @@
 ## Setup
 
 ### AWS Bedrock Chat
-```typescript:no-line-numbers
+```ts
 const llm = useLlm("bedrock:meta.chat.v1", { //
   model: "claude-3-5-sonnet-20240620",
 

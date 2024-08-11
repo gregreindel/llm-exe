@@ -6,6 +6,7 @@ import { useLlm } from "@/llm";
 
 const llm = useLlm("openai.chat-mock.v1", { model: "something" });
 
+// #region StepOne
 const PROMPT = `You are a senior typescript developer. I need you make 
 a concise list of test cases that need to be written for the function below. 
 We need to write an extensive test suite that covers all paths and edge-cases. 
@@ -34,7 +35,9 @@ export function llmExecutorThatMakesAListOfTestCases<T extends {
     llm,
   }).execute(input)
 }
+// #endregion StepOne
 
+// #region StepTwo
 const PROMPT2 = `You are a senior typescript developer. You need to write 
 a single Jest test for the function below.
 
@@ -69,7 +72,9 @@ export function llmExecutorThatWritesTests<T extends {
     llm,
   }).execute(input)
 }
+// #endregion StepTwo
 
+// #region StepThree
 export async function generateTestSuite(functionToTest: string) {
   const tests = [];
 
@@ -90,6 +95,8 @@ export async function generateTestSuite(functionToTest: string) {
   }
   return { requirements, tests};
 }
+// #endregion StepThree
+
 
 (async () => {
   const functionToTest = `function add(a: number, b: number){

@@ -23,7 +23,7 @@ Combine the prompt, LLM, and parser into a single function.
 #### Step 4 - Use it!
 
 
-```typescript:no-line-numbers
+```ts
 import { checkPolicy } from "./somewhere"
 
 // the input you get from somewhere

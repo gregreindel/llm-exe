@@ -6,7 +6,7 @@ A custom parser is really just a function that is provided 2 arguments, and is e
 When using Typescript, as long as you type things well, the types will get inferred into your LLM executors.
 
 ## Defining a custom parser
-```typescript:no-line-numbers
+```ts
 function customParserHandler(
   /* input is the response from the LLM */
   input: string,
@@ -28,7 +28,7 @@ export const customParser = createCustomParser(
 ```
 
 ## Using a custom parser
-```typescript:no-line-numbers
+```ts
 import { customParser } from "the-example-above"
 
 // the .parse method on a custom parser is the function you assigned.
