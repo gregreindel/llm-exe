@@ -2,8 +2,9 @@ import { llmExe } from "@/index";
 import { BaseLlm } from "@/types";
 import { createCustomParser } from "@/parser";
 import { ExecutorContext, IChatMessages } from "@/types";
-import { maybeParseJSON, toNumber } from "@/utils";
+import { maybeParseJSON } from "@/utils";
 import { snakeCase } from "lodash";
+import { toNumber } from "@/utils/modules/toNumber";
 
 export const intents = {
   book_hotel: {

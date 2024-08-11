@@ -8,11 +8,10 @@ module.exports = {
   transform: {
     "^.+\\.[tj]sx?$": ["ts-jest"],
   },
-  transformIgnorePatterns: ["/node_modules/", "__tests__", "dist", "build"],
+  transformIgnorePatterns: ["/node_modules/", "dist", "build"],
   testPathIgnorePatterns: [
     "/node_modules/",
     "/__mocks__/",
-    "/__utils__/",
     "/__data__/",
     "/build/",
     "/dist/",

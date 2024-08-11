@@ -1,5 +1,5 @@
 import { JSONSchema, FromSchema } from "json-schema-to-ts";
-import { filterObjectOnSchema } from "@/utils";
+import { filterObjectOnSchema } from "@/utils/modules/filterObjectOnSchema";
 import { validate as validateSchema } from "jsonschema";
 
 export function enforceParserSchema<

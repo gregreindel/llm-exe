@@ -1,4 +1,5 @@
-import { replaceTemplateString, replaceTemplateStringAsync } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
+import { replaceTemplateStringAsync } from "@/utils/modules/replaceTemplateStringAsync";
 import {
   IChatMessages,
   PromptOptions,

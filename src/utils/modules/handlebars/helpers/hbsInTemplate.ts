@@ -1,4 +1,4 @@
-import { replaceTemplateString } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
 export function hbsInTemplate(this: any, arg1: string) {
   const data = this;

@@ -1,4 +1,4 @@
-import { camelCase } from "@/utils";
+import { camelCase } from "@/utils/modules/camelCase";
 import { BaseParserOptionsWithSchema, ParserOutput } from "@/types";
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";

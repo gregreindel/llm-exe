@@ -1,6 +1,6 @@
 
 import { BaseParser, JsonParser } from "@/parser";
-import { defineSchema } from "@/utils";
+import { defineSchema } from "@/utils/modules/defineSchema";
 
 /**
  * Tests the JsonParser class

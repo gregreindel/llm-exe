@@ -1,16 +1,26 @@
-import { get as mockedGet } from "@/utils";
-import { schemaExampleWith } from "../../json-schema-filter";
-import { maybeParseJSON, maybeStringifyJSON, replaceTemplateString } from "@/utils";
+import { get as mockedGet } from "@/utils/modules/get";
+import { schemaExampleWith } from "@/utils/modules/schemaExampleWith";
+import {
+  maybeParseJSON,
+  maybeStringifyJSON,
+} from "@/utils";
 import { jsonSchemaExample } from "./jsonSchemaExample";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/get", () => ({
   get: jest.fn(),
-  maybeParseJSON: jest.fn(),
-  maybeStringifyJSON: jest.fn(),
+}));
+
+jest.mock("@/utils/modules/replaceTemplateString", () => ({
   replaceTemplateString: jest.fn(),
 }));
 
-jest.mock("../../json-schema-filter", () => ({
+jest.mock("@/utils", () => ({
+  maybeParseJSON: jest.fn(),
+  maybeStringifyJSON: jest.fn(),
+}));
+
+jest.mock("@/utils/modules/schemaExampleWith", () => ({
   schemaExampleWith: jest.fn(),
 }));
 

@@ -1,5 +1,5 @@
 import { BasePrompt, ChatPrompt } from "@/prompt";
-import { assert } from "@/utils";
+import { assert } from "@/utils/modules/assert";
 
 /**
  * Tests the ChatPrompt class

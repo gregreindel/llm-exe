@@ -7,8 +7,9 @@ import {
   CoreExecutorExecuteOptions,
   BaseExecutorHooks,
 } from "@/types";
-
-import { ensureInputIsObject, pick, uuid } from "@/utils";
+import { pick } from "@/utils/modules/pick";
+import { ensureInputIsObject } from "@/utils/modules/ensureInputIsObject";
+import { uuid } from "@/utils/modules/uuid";
 import { createMetadataState } from "./_metadata";
 import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
 

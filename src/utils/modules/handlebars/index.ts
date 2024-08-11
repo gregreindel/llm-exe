@@ -128,7 +128,7 @@ export function registerPartials(partials: any[], instance?: typeof Handlebars )
   }
 }
 
-export function registerHelpers(helpers: any[], instance: typeof Handlebars = hbs) {
+export function registerHelpers(helpers: any[], instance?: typeof Handlebars) {
   if (helpers && Array.isArray(helpers)) {
     for (const helper of helpers) {
       if (

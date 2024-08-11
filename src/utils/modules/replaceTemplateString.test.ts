@@ -1,4 +1,4 @@
-import { replaceTemplateString } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
 describe("replaceTemplateString", () => {
   it("replaceTemplateString replaces template", async () => {

@@ -1,7 +1,8 @@
 import { BaseParserWithJson } from "@/parser";
 import { enforceParserSchema } from "@/parser/_utils";
 import { BaseParserOptionsWithSchema, JSONSchema, ParserOutput } from "@/types";
-import { defineSchema, maybeParseJSON } from "@/utils";
+import { defineSchema } from "@/utils/modules/defineSchema";
+import { maybeParseJSON } from "@/utils";
 
 /**
  * Tests the BaseParser class

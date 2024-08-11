@@ -3,6 +3,7 @@
       "strict": true,
       "declaration": true,
       "module": "commonjs",
+      "declarationMap": true,
       "moduleResolution": "nodenext",
       "target": "es2021",
       "esModuleInterop": true,
@@ -24,22 +25,18 @@
       "resolveJsonModule": true,
       "lib": ["ES2021", "ES2022.Object", "DOM"],
       "paths": {
-        "@/*": ["src/*"],
-        "@@/*": ["__tests__/*"]
+        "@/*": ["src/*"]
       }
     },
     "exclude": [
-      "node_modules",
-      "dist",
+      ".github",
       "build",
       "coverage",
-      "logs",
-      "events",
-      "nodejs",
-      "__tests__",
-      "layer",
+      "dist",
       "docs",
-      "examples"
+      "examples",
+      "node_modules",
+      "src/**/*.test.*"
     ],
     "include": ["src/**/*"]
   }

@@ -1,4 +1,4 @@
-import { enforceResultAttributes } from "@/utils";
+import { enforceResultAttributes } from "@/utils/modules/enforceResultAttributes";
 
 describe("enforceResultAttributes", () => {
   it("enforceResultAttributes wraps string into object", async () => {

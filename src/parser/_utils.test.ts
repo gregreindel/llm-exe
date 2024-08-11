@@ -1,7 +1,7 @@
 
 
 import { enforceParserSchema, validateParserSchema } from "@/parser/_utils";
-import { defineSchema } from "@/utils";
+import { defineSchema } from "@/utils/modules/defineSchema";
 
 /**
  * Tests the enforceParserSchema 

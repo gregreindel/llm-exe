@@ -1,4 +1,4 @@
-import { isUndefined } from "@/utils";
+import { isUndefined } from "@/utils/modules/isUndefined";
 
 describe("isUndefined", () => {
   it("isUndefined detects undefined", async () => {

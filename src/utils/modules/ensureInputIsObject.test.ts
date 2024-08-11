@@ -1,4 +1,4 @@
-import { ensureInputIsObject } from "@/utils";
+import { ensureInputIsObject } from "@/utils/modules/ensureInputIsObject";
 
 describe("ensureInputIsObject", () => {
   it("ensureInputIsObject wraps string into object", async () => {

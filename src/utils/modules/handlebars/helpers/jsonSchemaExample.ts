@@ -1,10 +1,10 @@
 import {
-  get,
   maybeParseJSON,
   maybeStringifyJSON,
-  replaceTemplateString,
 } from "@/utils";
-import { schemaExampleWith } from "../../json-schema-filter";
+import { get } from "@/utils/modules/get";
+import { schemaExampleWith } from "@/utils/modules/schemaExampleWith";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
 export function jsonSchemaExample(
   this: any,

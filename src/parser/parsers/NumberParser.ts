@@ -1,6 +1,7 @@
 import { BaseParserOptions } from "@/types";
 import { BaseParser } from "../_base";
-import { isFinite, toNumber } from "@/utils";
+import { isFinite } from "@/utils/modules/isFinite";
+import { toNumber } from "@/utils/modules/toNumber";
 
 export interface NumberParserOptions extends BaseParserOptions {}
 

@@ -1,8 +1,8 @@
-import { Readable } from "stream";
 import { appendContextPath } from "@/utils/modules/handlebars/utils/appendContextPath";
 import { blockParams } from "@/utils/modules/handlebars/utils/blockParams";
 import { isPromise } from "@/utils/modules/isPromise";
 import { createFrame } from "@/utils/modules/handlebars/utils/createFrame";
+import { isReadableStream } from "@/utils/modules/isReadableStream";
 
 export async function eachFnAsync(this: any, context: any, options: any) {
   if (!options) {
@@ -86,7 +86,7 @@ export async function eachFnAsync(this: any, context: any, options: any) {
       for (let j = context.length; i < j; i++) {
         await execIteration(i, i, i === context.length - 1);
       }
-    } else if (context instanceof Readable) {
+    } else if (isReadableStream(context)) {
       const newContext: any[] = [];
       await new Promise((resolve, reject) => {
         context

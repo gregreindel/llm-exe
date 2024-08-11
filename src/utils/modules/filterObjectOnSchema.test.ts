@@ -1,6 +1,6 @@
-import { filterObjectOnSchema } from "@/utils";
+import { filterObjectOnSchema } from "./filterObjectOnSchema";
 
-describe("json-schema-filter-js", function () {
+describe("filterObjectOnSchema", function () {
   var schema = {
     title: "Example Schema",
     type: "object",

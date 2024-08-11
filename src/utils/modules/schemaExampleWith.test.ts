@@ -1,4 +1,4 @@
-import { schemaExampleWith } from "@/utils/modules/json-schema-filter";
+import { schemaExampleWith } from "@/utils/modules/schemaExampleWith";
 
 var schema = {
   title: "Example Schema",

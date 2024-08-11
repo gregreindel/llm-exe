@@ -1,4 +1,4 @@
-import { defineSchema } from "@/utils";
+import { defineSchema } from "@/utils/modules/defineSchema";
 
 describe("defineSchema", () => {
   it("should handle null", () => {

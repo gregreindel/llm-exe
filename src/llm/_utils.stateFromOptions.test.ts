@@ -1,16 +1,18 @@
-import { get, pick, set } from "@/utils";
+import { get } from "@/utils/modules/get";
+import { pick } from "@/utils/modules/pick";
 import { Config, GenericLLm, LlmProvider } from "@/types";
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 
 describe("stateFromOptions", () => {
   const mockGet = jest.fn(get);
   const mockPick = jest.fn(pick);
-  const mockSet = jest.fn(set);
   
-  jest.mock("@/utils", () => ({
-    get: mockGet,
+  jest.mock("@/utils/modules/pick", () => ({
     pick: mockPick,
-    set: mockSet,
+  }));
+
+  jest.mock("@/utils/modules/get", () => ({
+    get: mockGet,
   }));
 
   const options: Partial<GenericLLm> = { model: "gpt-3", };
@@ -30,7 +32,6 @@ describe("stateFromOptions", () => {
   beforeEach(() => {
     mockGet.mockClear();
     mockPick.mockClear();
-    mockSet.mockClear();
   });
 
   it("should return state with picked options, provider, and model", () => {
@@ -112,6 +113,5 @@ describe("stateFromOptions", () => {
       key: "openai.chat.v1",
       provider: "openai.chat",
     });
-    expect(mockSet).not.toHaveBeenCalled();
   });
 });

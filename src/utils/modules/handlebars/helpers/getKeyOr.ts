@@ -1,4 +1,4 @@
-import { get } from "@/utils";
+import { get } from "@/utils/modules/get";
 
 export function getKeyOr(this: any, key: string, arg2: any) {
   const res = get(this, key);

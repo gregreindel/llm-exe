@@ -1,87 +1,20 @@
-import { generateUniqueNameId, removeEmptyFromObject } from "@/utils";
+import * as utils from "."
 
-describe('generateUniqueNameId', () => {
-    it('should generate a unique ID with no prefix and no suffix', () => {
-      const id1 = generateUniqueNameId();
-      const id2 = generateUniqueNameId();
-      expect(id1).toBeDefined();
-      expect(id2).toBeDefined();
-      expect(id1).not.toEqual(id2);
-    });
-  
-    it('should generate a unique ID with a prefix only', () => {
-      const prefix = 'prefix-';
-      const id1 = generateUniqueNameId(prefix);
-      const id2 = generateUniqueNameId(prefix);
-      expect(id1).toBeDefined();
-      expect(id2).toBeDefined();
-      expect(id1).not.toEqual(id2);
-      expect(id1.startsWith(prefix)).toBe(true);
-      expect(id2.startsWith(prefix)).toBe(true);
-    });
-  
-    it('should generate a unique ID with a suffix only', () => {
-      const suffix = '-suffix';
-      const id1 = generateUniqueNameId('', suffix);
-      const id2 = generateUniqueNameId('', suffix);
-      expect(id1).toBeDefined();
-      expect(id2).toBeDefined();
-      expect(id1).not.toEqual(id2);
-      expect(id1.endsWith(suffix)).toBe(true);
-      expect(id2.endsWith(suffix)).toBe(true);
-    });
-  
-    it('should generate a unique ID with both prefix and suffix', () => {
-      const prefix = 'prefix-';
-      const suffix = '-suffix';
-      const id1 = generateUniqueNameId(prefix, suffix);
-      const id2 = generateUniqueNameId(prefix, suffix);
-      expect(id1).toBeDefined();
-      expect(id2).toBeDefined();
-      expect(id1).not.toEqual(id2);
-      expect(id1.startsWith(prefix)).toBe(true);
-      expect(id2.startsWith(prefix)).toBe(true);
-      expect(id1.endsWith(suffix)).toBe(true);
-      expect(id2.endsWith(suffix)).toBe(true);
-    });
-  
-    it('should generate unique IDs for multiple calls', () => {
-      const ids = new Set();
-      for (let i = 0; i < 100; i++) {
-        ids.add(generateUniqueNameId());
-      }
-      expect(ids.size).toEqual(100);
-    });
+describe("exports correct utils", () => {
+  it("exports correct utils", async () => {
+    expect(typeof utils.asyncCallWithTimeout).toBe("function");
+    expect(typeof utils.assert).toBe("function");
+    expect(typeof utils.defineSchema).toBe("function");
+    expect(typeof utils.filterObjectOnSchema).toBe("function");
+    expect(typeof utils.importHelpers).toBe("function");
+    expect(typeof utils.importPartials).toBe("function");
+    expect(typeof utils.maybeParseJSON).toBe("function");
+    expect(typeof utils.maybeStringifyJSON).toBe("function");
+    expect(typeof utils.replaceTemplateString).toBe("function");
+    expect(typeof utils.replaceTemplateStringAsync).toBe("function")
+    expect(typeof utils.registerHelpers).toBe("function");
+    expect(typeof utils.registerPartials).toBe("function");
+    expect(typeof utils.isObjectStringified).toBe("function");
   });
 
-  describe("removeEmptyFromObject", () => {
-    test("should return the same object if no empty values are found", () => {
-      const obj = { name: "John", age: 30, city: "New York" };
-      expect(removeEmptyFromObject(obj)).toEqual(obj);
-    });
-  
-    test("should remove empty values from the object", () => {
-      const obj = { name: "John", age: null, city: "", address: "" };
-      expect(removeEmptyFromObject(obj)).toEqual({ name: "John", city: "", address: "" });
-    });
-  
-    test("should remove empty values from nested objects", () => {
-      const obj = { name: "John", age: null, city: "", address: { street: "", zip: "12345" } };
-      expect(removeEmptyFromObject(obj)).toEqual({ name: "John", city: "", address: { street: "",zip: "12345" } });
-    });
-  
-    test("should remove empty values from mixed data types", () => {
-      const obj = { name: "John", age: null, city: "", address: { street: "", zip: "12345" }, hobbies: [], job: undefined };
-      expect(removeEmptyFromObject(obj)).toEqual({ name: "John", city: "", address: { street: "", zip: "12345" }, hobbies: []});
-    });
-  
-    test("should throw an error for invalid input", () => {
-      expect(() => {
-        removeEmptyFromObject("invalidInput" as any);
-      }).toThrow("invalid object");
-    });
-  });
-
-
-
-
+})

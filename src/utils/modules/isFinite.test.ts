@@ -1,4 +1,4 @@
-import { isFinite } from "@/utils";
+import { isFinite } from "@/utils/modules/isFinite";
 
 describe("isFinite", () => {
   it("isFinite detects number", async () => {

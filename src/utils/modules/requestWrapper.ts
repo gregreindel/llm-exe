@@ -2,7 +2,7 @@ import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 import { OpenAiLlmExecutorOptions, Config } from "@/types";
 import { deepFreeze } from "@/utils/modules/deepFreeze";
 import { backOff } from "exponential-backoff";
-import { asyncCallWithTimeout } from "@/utils";
+import { asyncCallWithTimeout } from "@/utils/modules/asyncCallWithTimeout";
 
 // const doNotRetryErrorMessages: string[] = [];
 

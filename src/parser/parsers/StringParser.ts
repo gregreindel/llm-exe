@@ -1,4 +1,4 @@
-import { assert } from "@/utils";
+import { assert } from "@/utils/modules/assert";
 import { BaseParser } from "../_base";
 import { BaseParserOptions, OutputResultContent } from "@/types";
 

@@ -1,6 +1,6 @@
 import { BaseStateItem, Dialogue, createDialogue } from "@/state";
 import { IChatUserMessage } from "@/types";
-import { assert } from "@/utils";
+import { assert } from "@/utils/modules/assert";
 
 /**
  * Tests Dialogue

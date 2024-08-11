@@ -1,7 +1,7 @@
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
-import { Config, EmbeddingProviderKey, LlmProviderKey } from "@/types";
 import { getAwsAuthorizationHeaders } from "@/utils/modules/getAwsAuthorizationHeaders";
+import { Config, EmbeddingProviderKey, LlmProviderKey } from "@/types";
 
 export async function parseHeaders(
   config: Config<EmbeddingProviderKey | LlmProviderKey>,

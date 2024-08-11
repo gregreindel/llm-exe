@@ -1,6 +1,6 @@
 import { BaseParser, BooleanParser, JsonParser, ListToArrayParser, ListToJsonParser, ListToKeyValueParser, MarkdownCodeBlockParser, MarkdownCodeBlocksParser, NumberParser, ReplaceStringTemplateParser, StringParser, createParser } from "@/parser";
 import { StringExtractParser } from "@/parser/parsers/StringExtractParser";
-import { defineSchema } from "@/utils";
+import { defineSchema } from "@/utils/modules/defineSchema";
 
 /**
  * Tests the createParser class

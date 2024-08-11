@@ -2,7 +2,7 @@ import { LlmExecutor } from "@/executor";
 import { useLlm } from "@/llm";
 import { JsonParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
-import { defineSchema } from "@/utils";
+import { defineSchema } from "@/utils/modules/defineSchema";
 
 /**
  * Tests LlmExecutor

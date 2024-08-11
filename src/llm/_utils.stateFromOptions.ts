@@ -1,8 +1,10 @@
-import { get, pick, set } from "@/utils";
+import { get } from "@/utils/modules/get";
 import { Config, GenericLLm, LlmProvider, LlmProviderKey } from "@/types";
+import { pick } from "@/utils/modules/pick";
 
 export function stateFromOptions(options: Partial<GenericLLm>, config: Config) {
-  const state = Object.assign(pick(options, Object.keys(config.options)), {
+  const optionsKeys = Object.keys(config.options) as (keyof typeof options)[];
+  const state = Object.assign(pick(options, optionsKeys), {
     provider: config.provider,
     key: config.key,
     model: options.model,
@@ -15,7 +17,7 @@ export function stateFromOptions(options: Partial<GenericLLm>, config: Config) {
     const thisValue = get(state, key);
     if (typeof thisValue === "undefined") {
       if (typeof thisConfig?.default !== "undefined") {
-        set(state, key, thisConfig.default);
+        (state as any)[key] = thisConfig.default;
       }
     }
 

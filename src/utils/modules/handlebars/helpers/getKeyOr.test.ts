@@ -1,7 +1,7 @@
-import { get } from "@/utils";
+import { get } from "@/utils/modules/get";
 import { getKeyOr } from "./getKeyOr";
 
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/get", () => ({
   get: jest.fn(),
 }));
 

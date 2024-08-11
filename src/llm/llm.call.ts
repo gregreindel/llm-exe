@@ -4,7 +4,6 @@ import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStri
 import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
-import { pick } from "lodash";
 
 import {
   GenericFunctionCall,
@@ -16,6 +15,7 @@ import {
 } from "@/types";
 import { normalizeFunctionCall } from "./output/_util";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
+
 
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
@@ -82,7 +82,11 @@ export async function useLlm_call(
       }));
     } else if (state.provider === "openai.chat") {
       input["tools"] = _options.functions.map((f) => {
-        const props = pick(f, ["name", "description", "parameters"]);
+        const props = {
+          name: f?.name,
+          description: f?.description,
+          parameters: f?.parameters,
+        } 
         return {
           type: "function",
           function: Object.assign(

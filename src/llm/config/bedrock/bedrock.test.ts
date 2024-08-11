@@ -1,9 +1,9 @@
 import { anthropicPromptSanitize } from "@/llm/config/anthropic";
 import { bedrock } from "@/llm/config/bedrock";
-import { replaceTemplateString } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
 // Mock the external dependencies
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/replaceTemplateString", () => ({
   replaceTemplateString: jest.fn(),
 }));
 

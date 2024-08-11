@@ -1,8 +1,8 @@
 import { BaseEmbeddingOutput } from "@/embedding/output/BaseEmbeddingOutput";
 import { EmbeddingOutputResult } from "@/interfaces";
-import { uuid } from "@/utils";
+import { uuid } from "@/utils/modules/uuid";
 
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/uuid", () => ({
   uuid: jest.fn(),
 }));
 

@@ -1,4 +1,4 @@
-import { asyncCallWithTimeout } from "@/utils";
+import { asyncCallWithTimeout } from "@/utils/modules/asyncCallWithTimeout";
 
 describe("asyncCallWithTimeout", () => {
   it("should resolve if asyncPromise resolves within timeLimit", async () => {

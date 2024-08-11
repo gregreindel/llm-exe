@@ -1,4 +1,4 @@
-import { toNumber } from "@/utils";
+import { toNumber } from "./toNumber";
 
 describe("toNumber", () => {
   it("toNumber casts string to number", async () => {

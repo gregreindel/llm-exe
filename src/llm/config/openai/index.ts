@@ -1,5 +1,5 @@
+import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
-import { deepClone } from "@/utils/modules/deepClone";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
 const openAiChatV1: Config = {
@@ -71,28 +71,7 @@ const openAiChatMockV1: Config = {
 };
 
 
-function withDefaultModel(obj1: Config, model: string){
-  const copy = deepClone(obj1);
-  
-  if(copy.options.model){
-    copy.options.model.default = model
-  }else {
-    copy.options.model = {
-      default: model
-    }
-  }
 
-  if(copy.mapBody.model){
-    copy.mapBody.model.default = model
-  }else {
-    copy.mapBody.model = {
-      key: "model",
-      default: model
-    }
-  }
-
-  return copy;
-}
 
 export const openai = {
   "openai.chat.v1": openAiChatV1,

@@ -1,14 +1,16 @@
 import {
   maybeParseJSON,
   maybeStringifyJSON,
-  replaceTemplateString,
 } from "@/utils";
 import { indentJson } from "./indentJson";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
+jest.mock("@/utils/modules/replaceTemplateString", () => ({
+  replaceTemplateString: jest.fn(),
+}));
 jest.mock("@/utils", () => ({
   maybeParseJSON: jest.fn(),
   maybeStringifyJSON: jest.fn(),
-  replaceTemplateString: jest.fn(),
 }));
 
 describe("indentJson", () => {

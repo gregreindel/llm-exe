@@ -1,7 +1,9 @@
 import { createCoreExecutor } from "@/executor/_functions";
 import { CallableExecutorCore, FunctionOrExecutor, PlainObject } from "@/types";
-import { ensureInputIsObject, assert, enforceResultAttributes } from "@/utils";
+import { ensureInputIsObject } from "@/utils/modules/ensureInputIsObject";
+import { assert } from "@/utils/modules/assert";
 import { BaseExecutor } from "@/executor";
+import { enforceResultAttributes } from "@/utils/modules/enforceResultAttributes";
 
 /**
  * Represents the input for a CallableExecutor.

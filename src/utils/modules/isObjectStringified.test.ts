@@ -1,4 +1,4 @@
-import { isObjectStringified } from "@/utils";
+import { isObjectStringified } from "@/utils/modules/json";
 
 describe('isObjectStringified', () => {
     test('should return false if input is not a string', () => {

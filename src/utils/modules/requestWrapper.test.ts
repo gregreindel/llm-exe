@@ -1,6 +1,6 @@
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
 import { deepFreeze } from "@/utils/modules/deepFreeze";
-import { asyncCallWithTimeout } from "@/utils";
+import { asyncCallWithTimeout } from "@/utils/modules/asyncCallWithTimeout";
 import { backOff } from "exponential-backoff";
 import { Config } from "@/types";
 import { apiRequestWrapper } from "@/utils/modules/requestWrapper";
@@ -18,7 +18,7 @@ jest.mock("@/utils/modules/deepFreeze", () => ({
   deepFreeze: jest.fn(),
 }));
 
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/asyncCallWithTimeout", () => ({
   asyncCallWithTimeout: jest.fn(),
 }));
 

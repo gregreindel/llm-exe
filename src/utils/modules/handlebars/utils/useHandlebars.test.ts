@@ -49,7 +49,7 @@ describe("useHandlebars", () => {
   test("useHandlebars registers custom partial from CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH", () => {
     process.env.CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH = path.join(
       __dirname,
-      "../../../../../__tests__/__data__/handlebars-partials.js"
+      "./mock/handlebars-partials.js"
     );
     const hbs = useHandlebars(hbsInstance);
     expect(hbs).toHaveProperty("partials");
@@ -60,7 +60,7 @@ describe("useHandlebars", () => {
   test("useHandlebars registers custom helpers from CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH", () => {
     process.env.CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH = path.join(
       __dirname,
-      "../../../../../__tests__/__data__/handlebars-helpers.js"
+      "./mock/handlebars-helpers.js"
     );
     const hbs = useHandlebars(hbsInstance);
     expect(hbs).toHaveProperty("helpers");

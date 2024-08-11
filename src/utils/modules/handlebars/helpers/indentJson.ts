@@ -1,8 +1,5 @@
-import {
-  maybeParseJSON,
-  maybeStringifyJSON,
-  replaceTemplateString,
-} from "@/utils";
+import { maybeParseJSON, maybeStringifyJSON } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
 export function indentJson(
   this: any,

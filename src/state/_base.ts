@@ -1,4 +1,4 @@
-import { assert } from "@/utils";
+import { assert } from "@/utils/modules/assert";
 import { Dialogue } from "./dialogue";
 import { BaseStateItem } from "./item";
 

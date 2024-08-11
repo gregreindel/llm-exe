@@ -1,5 +1,5 @@
 import { EmbeddingOutputResult } from "@/interfaces";
-import { uuid } from "@/utils";
+import { uuid } from "@/utils/modules/uuid";
 
 type BaseLlmOutput2Optional = "id" | "created" | "embedding";
 

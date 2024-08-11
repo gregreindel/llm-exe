@@ -1,5 +1,5 @@
 import { OutputResult } from "@/interfaces";
-import { uuid } from "@/utils";
+import { uuid } from "@/utils/modules/uuid";
 import { getResultContent } from "./_utils/getResultContent";
 import { getResultText } from "./_utils/getResultText";
 

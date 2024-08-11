@@ -52,7 +52,7 @@ describe("useHandlebars", () => {
     expect(hbsInstance.helpers["helper1"]).toBeDefined();
   });
 
-
+  
   test("registerHelpers defaults to default instance if not set", () => {
     const fn1 = () => "val";
     registerHelpers([{ name: "helper12", handler: fn1 }]);

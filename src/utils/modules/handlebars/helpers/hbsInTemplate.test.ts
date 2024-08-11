@@ -1,7 +1,7 @@
-import { replaceTemplateString } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { hbsInTemplate } from "./hbsInTemplate";
 
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/replaceTemplateString", () => ({
   replaceTemplateString: jest.fn(),
 }));
 

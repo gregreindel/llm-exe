@@ -60,4 +60,38 @@ describe("extractPromptPlaceholderToken", () => {
     expect(value.content).toEqual("This is the content");
     expect(typeof value.name).toEqual("undefined");
   });
+
+  it("returns undefined for assistant if not provided", async () => {
+    const valid = `{{> DialogueHistory key='thisIsTheKey'}}`;
+    const value = extractPromptPlaceholderToken(valid);
+    expect(value.token).toEqual(">DialogueHistory");
+    expect(value.key).toEqual("thisIsTheKey");
+    expect(value.assistant).toBeUndefined();
+  });
+
+  it("returns correct value for assistant if provided", async () => {
+    const valid = `{{> DialogueHistory key='thisIsTheKey' assistant='AssistantData'}}`;
+    const value = extractPromptPlaceholderToken(valid);
+    expect(value.token).toEqual(">DialogueHistory");
+    expect(value.key).toEqual("thisIsTheKey");
+    expect(value.assistant).toEqual("AssistantData");
+  });
+});
+
+describe("extractPromptPlaceholderToken with content parameter for SingleChatMessage", () => {
+  it("returns undefined for content if not provided", async () => {
+    const valid = `{{> SingleChatMessage role='assistant'}}`;
+    const value = extractPromptPlaceholderToken(valid);
+    expect(value.token).toEqual(">SingleChatMessage");
+    expect(value.role).toEqual("assistant");
+    expect(value.content).toBeUndefined();
+  });
+
+  it("returns correct value for content if provided", async () => {
+    const valid = `{{> SingleChatMessage role='assistant' content='This is the content'}}`;
+    const value = extractPromptPlaceholderToken(valid);
+    expect(value.token).toEqual(">SingleChatMessage");
+    expect(value.role).toEqual("assistant");
+    expect(value.content).toEqual('This is the content');
+  });
 });
