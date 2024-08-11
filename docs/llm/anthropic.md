@@ -42,18 +42,18 @@ await llm.call("");
 
 | Option             | Type              | Default       | Description                                                                 |
 | ------------------ | ----------------- | ------------- | --------------------------------------------------------------------------- |
-| `anthropicApiKey`     | `string`          | `undefined`   | API key for Anthropic. Optionally can be set using process.env.OPEN_AI_API_KEY |
-| `model`            | `string`          | `claude-3-5-sonnet` | The model to use. Can be any one of: claude-3-5-sonnet, etc.       |
-| `temperature`      | `number`          | `0`           | See Anthropic Docs                                                             |
-| `maxTokens`        | `number`          | `500`         | See Anthropic Docs                                                             |
-| `topP`             | `number \| null`  | `null`        | See Anthropic Docs                                                             |
-| `n`                | `number \| null`  | `null`        | See Anthropic Docs                                                             |
-| `stream`           | `boolean \| null` | `null`        | See Anthropic Docs. Note: Not supported yet.                                   |
-| `stop`             | ?                 | `null`        | See Anthropic Docs                                                             |
-| `presencePenalty`  | `number \| null`  | `null`        | See Anthropic Docs                                                             |
-| `frequencyPenalty` | `number \| null`  | `null`        | See Anthropic Docs                                                             |
-| `logitBias`        | `object \| null`  | `null`        | See Anthropic Docs                                                             |
-| `user`             | `string \| null`  | `null`        | See Anthropic Docs                                                             |
+| anthropicApiKey     | string          | undefined   | API key for Anthropic. Optionally can be set using process.env.OPEN_AI_API_KEY |
+| model            | string          | claude-3-5-sonnet | The model to use. Can be any one of: claude-3-5-sonnet, etc.       |
+| temperature      | number          | 0           | See Anthropic Docs                                                             |
+| maxTokens        | number          | 500         | See Anthropic Docs                                                             |
+| topP             | number \| null  | null        | See Anthropic Docs                                                             |
+| n                | number \| null  | null        | See Anthropic Docs                                                             |
+| stream           | boolean \| null | null        | See Anthropic Docs. Note: Not supported yet.                                   |
+| stop             | ?                 | null        | See Anthropic Docs                                                             |
+| presencePenalty  | number \| null  | null        | See Anthropic Docs                                                             |
+| frequencyPenalty | number \| null  | null        | See Anthropic Docs                                                             |
+| logitBias        | object \| null  | null        | See Anthropic Docs                                                             |
+| user             | string \| null  | null        | See Anthropic Docs                                                             |
 
 Anthropic Docs: [link](https://platform.openai.com/docs/api-reference/completions)
 

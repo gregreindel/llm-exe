@@ -20,60 +20,71 @@
 
 <script setup lang="ts">
 import { get } from "../../../build/src/utils/modules/get";
-import { prompt as promptExamples } from "../../../build/examples/prompt";
+  import { prompt as promptExamples } from "../../../build/examples/prompt";
+import { state } from "../../../build/examples/state";
+
 import { ref, reactive } from "vue";
 
 const props = defineProps<{
   example: string;
+//   input: {
+//     prompt: Record<string, any>;
+//     format: Record<string, any>;
+//     display: Record<string, any>;
+//   };
 }>();
 
 const selected = ref(false);
 
-const getExampleFromPath = get({ prompt: promptExamples }, props.example, () => ({
-  prompt: {},
-  format: {},
-  display: {},
-}));
+  const getExampleFromPath = get({ prompt: promptExamples, state }, props.example, () => ({
+prompt: {},
+format: {},
+display: {},
+  }));
 
-const { display } = getExampleFromPath();
+  const { display } = getExampleFromPath();
 </script>
 
 <style>
 .log-area {
   background: #0f0f11ed !important;
-  margin-left:30px!important;
+  margin-left: 30px !important;
   position: relative;
-  overflow-x: visible!important;;
+  overflow-x: visible !important;
 }
 
 .log-area::before {
   background: #f6f6f7 !important;
-  width:2px;
-  height:25%;
-  left:-8px;
-  top:-16px;
+  width: 2px;
+  height: 25%;
+  left: -8px;
+  top: -16px;
   content: "";
   position: absolute;
-  display:block;
+  display: block;
 }
 .log-area::after {
   background: #f6f6f7 !important;
-  width:8px;
-  height:2px;
-  left:-8px;
-  top:19%;
-  top:calc(25% - 16px);
+  width: 8px;
+  height: 2px;
+  left: -8px;
+  top: 19%;
+  top: calc(25% - 16px);
   content: "";
   position: absolute;
-  display:block;
+  display: block;
 }
 
 .dark .log-area::before,
 .dark .log-area::after {
   background: #161618 !important;
-  background: linear-gradient(0deg, #0f0f11ed 0%, #161618 80%,  #161618 100%) !important;
+  background: linear-gradient(
+    0deg,
+    #0f0f11ed 0%,
+    #161618 80%,
+    #161618 100%
+  ) !important;
 }
-
 
 code.log-output {
   color: #acb7c9 !important;

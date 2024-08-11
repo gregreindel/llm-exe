@@ -30,7 +30,7 @@
     "tsc-build": "(concurrently \"tsc --p ./tsconfig-build.json -w\" \"tsc-alias -p tsconfig-build.json -w\")",
     "tsc-ci": "tsc --project ./tsconfig.json && tsc-alias -p ./tsconfig.json",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit",
-    "docs:dev": "vitepress dev docs",
+    "docs:dev": "vitepress dev docs --host",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "lint": "eslint",

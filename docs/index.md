@@ -16,8 +16,11 @@ hero:
     - theme: alt
       text: See Examples
       link: /api-examples
+    - theme: text
+      text: Github
+      link: https://github.com/gregreindel/llm-exe
 
-
+      
 features:
   - title: Feature A
     details: Write functions powered by LLM's with easy to use building blocks.

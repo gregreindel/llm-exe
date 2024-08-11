@@ -12,6 +12,8 @@ import DialogueOutput from "../components/DialogueOutput.vue";
 // @ts-ignore
 import PromptOutput from "../components/PromptOutput.vue";
 // @ts-ignore
+import GenericOutput from "../components/GenericOutput.vue";
+// @ts-ignore
 import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
 
 export default {
@@ -20,6 +22,9 @@ export default {
     // app.use(TwoslashFloatingVue);
     app.component("PromptOutput", PromptOutput);
     app.component("DialogueOutput", DialogueOutput);
+    app.component("GenericOutput", GenericOutput);
+
+    
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {

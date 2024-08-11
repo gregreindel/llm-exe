@@ -60,10 +60,9 @@ Let's see how it got there:
 
 
 First Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
+::: code-group
 
-```text
+```text [Result]
 # LLM Output: 
 {
   action: 'search_internet',
@@ -74,10 +73,8 @@ First Iteration:
 # Action Output: 
 Dallas Stars Roope Hintz's salary is $11,500,000 and his cap hit is $8,450,000 for the 2023-24 season. His salary is comprised of $4,000,000 in signing bonuses and $7,500,000 in base salary. He is a 26 year old centre who was born on Nov. 17, 1996.
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Prompt">
 
-```text
+```text [Prompt]
     [{
       role: 'system',
       content: 'We need to think step by step on how to answer the question outlined below.\n' +
@@ -112,15 +109,12 @@ Dallas Stars Roope Hintz's salary is $11,500,000 and his cap hit is $8,450,000 f
         'Input: <The input for the action. Reference the action input from the list above, and provide valid input for the action>'
     }]
 ```
-  </CodeGroupItem>
 
-</CodeGroup>
+:::
 
 Second Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
-
-```text
+::: code-group
+```text [Result]
 # LLM Output: 
 {
   action: 'calculator',
@@ -130,10 +124,8 @@ Second Iteration:
 
 # Action Output: 11500000
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Prompt">
 
-```text
+```text [Prompt]
 [
     {
       role: 'system',
@@ -179,15 +171,13 @@ Second Iteration:
   ]
 ```
 
-  </CodeGroupItem>
-</CodeGroup>
+:::
 
 
 Third Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
+::: code-group
 
-```text
+```text [Result]
 # LLM Output: 
 {
   action: 'calculator',
@@ -197,10 +187,8 @@ Third Iteration:
 
 # Action Output: 8671000000
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Prompt">
 
-```text
+```text [Prompt]
   [
     {
       role: 'system',
@@ -250,15 +238,12 @@ Third Iteration:
     }
   ]
 ```
-
-  </CodeGroupItem>
-</CodeGroup>
+:::
 
 Fourth Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
+::: code-group
 
-```text
+```text [Result]
 # LLM Output: 
 {
   action: 'final_answer',
@@ -269,5 +254,4 @@ Fourth Iteration:
 # Action Output: 
 Roope Hintz made $8,671,000,000 in 2023. This was calculated by multiplying his salary of $11,500,000 by 754.
 ```
-  </CodeGroupItem>
-</CodeGroup>
+:::

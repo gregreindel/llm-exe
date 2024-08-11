@@ -3,33 +3,33 @@ The other type of prompt is a chat prompt. The chat prompt can be used with mode
 
 You create a chat prompt using `createPrompt("chat")` or `createChatPrompt()`.
 
-<PromptOutput example="prompt.chat.exampleCreateChatPrompt">
+<GenericOutput example="prompt.chat.exampleCreateChatPrompt">
 
 <<< ../../examples/prompt/chat.ts#exampleCreateChatPrompt
-</PromptOutput>
+</GenericOutput>
 
 When creating a chat prompt, you can optionally set an initial system message.
 
-<PromptOutput example="prompt.chat.exampleCreateChatPromptWithSystem">
+<GenericOutput example="prompt.chat.exampleCreateChatPromptWithSystem">
 
 <<< ../../examples/prompt/chat.ts#exampleCreateChatPromptWithSystem
-</PromptOutput>
+</GenericOutput>
 
 To use the prompt as input to an LLM, you can call the `format()` method on the prompt. The format method accepts an object, which is used to supply the prompt template with replacement values.
 
-<PromptOutput example="prompt.chat.exampleCreateChatPromptUseFormat">
+<GenericOutput example="prompt.chat.exampleCreateChatPromptUseFormat">
 
 <<< ../../examples/prompt/chat.ts#exampleCreateChatPromptUseFormat
-</PromptOutput>
+</GenericOutput>
 
 
 
 Chat prompts support more than just a basic text-based message. You can also add assistant and user content.
 
-<PromptOutput example="prompt.chat.exampleCreateChatPromptWithAssistant">
+<GenericOutput example="prompt.chat.exampleCreateChatPromptWithAssistant">
 
 <<< ../../examples/prompt/chat.ts#exampleCreateChatPromptWithAssistant
-</PromptOutput>
+</GenericOutput>
 
 
 See [prompt templates](/prompt/advanced.html) for more advanced prompt usage.

@@ -19,16 +19,16 @@ See:
 ## Basic Replacements
 The object that you pass to `prompt.format` (or `.execute` when a prompt is part of an LLM executor) gets passed to the template engine, making all those variables available to you in your prompt template.
 
-<PromptOutput example="prompt.basic.exampleOne">
+<GenericOutput example="prompt.basic.exampleOne">
 
 <<< ../../examples/prompt/basic.ts#exampleOne
-</PromptOutput>
+</GenericOutput>
 
 For advanced uses and working with custom helpers/partials, [see here](/prompt/advanced.html).
 
 ## Using Types with Prompts
 
-<PromptOutput example="prompt.basic.exampleTwo">
+<GenericOutput example="prompt.basic.exampleTwo">
 
 <<< ../../examples/prompt/basic.ts#exampleTwo
-</PromptOutput>
+</GenericOutput>

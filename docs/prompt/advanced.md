@@ -3,27 +3,27 @@ Handlebars is used as a template engine when generating the prompt, so you can t
 
 Below is a simple example showing syntax for replacing simple variables in the template.
 
-<PromptOutput example="prompt.advanced.withReplacements">
+<GenericOutput example="prompt.advanced.withReplacements">
 
 <<< ../../examples/prompt/advanced.ts#withReplacements
-</PromptOutput>
+</GenericOutput>
 
 
 Here is a slightly more advanced example showing a template that uses the `if` and `each` helpers supplies by Handlebars.
-<PromptOutput example="prompt.advanced.withReplacementsTwo">
+<GenericOutput example="prompt.advanced.withReplacementsTwo">
 
 <<< ../../examples/prompt/advanced.ts#withReplacementsTwo
-</PromptOutput>
+</GenericOutput>
 
 
 
 
 Below is a robust example showing multiple variables, and defining types.
 
-<PromptOutput example="prompt.advanced.withReplacementsAndTypes">
+<GenericOutput example="prompt.advanced.withReplacementsAndTypes">
 
 <<< ../../examples/prompt/advanced.ts#withReplacementsAndTypes
-</PromptOutput>
+</GenericOutput>
 
 
 ## Prompt Template Default Helpers
@@ -38,29 +38,22 @@ Prompts are powered by handlebars, and you are able to register your own custom 
 Some core partials are included by default:
 
 ### MarkdownCode
-<CodeGroup>
-  <CodeGroupItem title="Raw Template" active>
-
-```
+::: code-group
+``` [Raw Template]
 {{> MarkdownCode code='const name="Greg";' language='typescript' }}
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Parsed">
-
-```
+``` [Parsed]
 '''typescript
 const name="Greg";
 '''
 ```
-  </CodeGroupItem>
-</CodeGroup>
+:::
 
 ### DialogueHistory
 
-<CodeGroup>
-  <CodeGroupItem title="Raw Template" active>
+::: code-group
 
-```txt
+```txt [Raw Template]
 // Basic example
 {{> DialogueHistory key='keyOfTheChatHistory' }}
 
@@ -91,10 +84,8 @@ const name="Greg";
   }]
 }
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Parsed">
 
-```txt
+```txt [Parsed]
 // Basic example
 User: Hello?
 Assistant: Hi! How can I help you?
@@ -121,8 +112,8 @@ Thought: I was wondering if you were open
 Observation: We sure are!
 
 ```
-  </CodeGroupItem>
-</CodeGroup>
+:::
+
 
 <!-- ### JsonSchema
 ```:no-line-numbers
