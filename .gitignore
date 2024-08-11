@@ -16,6 +16,9 @@ _testing/
 docs/.vuepress/.cache
 docs/.vuepress/.temp
 
+docs/.vitepress/dist
+docs/.vitepress/cache
+
 examples/_testing
 
 testing.ts

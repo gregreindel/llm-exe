@@ -2,10 +2,10 @@ import { createChatPrompt } from "@/prompt"
 import { IChatMessages } from "@/types"
 
 const withReplacements = () => {
-// START example
+// #region withReplacements
 const prompt = createChatPrompt("Your name is {{agentName}}")
 const formatted = prompt.format({agentName: "Greg"})
-
+// #endregion withReplacements
 // exporting for docs
 return {
     prompt,
@@ -17,7 +17,7 @@ return {
 
 
 const withReplacementsTwo = () => {
-// START example
+// #region withReplacementsTwo
 const prompt = createChatPrompt("Your name is {{agentName}}")
 
 const template = `{{#if fruits.length}}
@@ -33,7 +33,7 @@ const formatted = prompt.format({
     agentName: "Greg",
     fruits: ["apple", "banana"]
 });
-
+// #endregion withReplacementsTwo
 // exporting for docs
 return {
     prompt,
@@ -44,7 +44,7 @@ return {
 }
 
 const withReplacementsAndTypes = () => {
-// START example
+// #region withReplacementsAndTypes
 interface PromptTemplate {
     actions: {
       name: string;
@@ -96,7 +96,7 @@ const prompt = createChatPrompt<PromptTemplate>(template)
   
 // prompt.format is well-typed based on the generic you passed into createChatPrompt
 const formatted = prompt.format({ actions, previousSteps });
-  
+// #endregion withReplacementsAndTypes
 // exporting for docs
 return {
     prompt,

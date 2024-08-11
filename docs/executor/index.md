@@ -21,7 +21,7 @@ import {
   createParser
 } from "llm-exe";
 
-const llm = useLlm("openai", {/* options */});
+const llm = useLlm("openai.chat.v1", {/* options */});
 const instruction = `You are a customer support agent. Reply below.`;
 const prompt = createChatPrompt(instruction);
 
@@ -41,7 +41,7 @@ import {
   createParser
 } from "llm-exe";
 
-const llm = useLlm("openai", {/* options */});
+const llm = useLlm("openai.chat.v1", {/* options */});
 const instruction = `You are a customer support agent. Reply to the user as JSON.`;
 const prompt = createChatPrompt(instruction);
 const parser = createParser("json");

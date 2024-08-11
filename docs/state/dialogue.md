@@ -3,11 +3,11 @@ Internally, `state` uses the `Dialogue` class to manage dialogues, and you can u
 
 <DialogueOutput example="state.dialogue.basic.exampleOne">
 
-@[code{5-9}](../../examples/state/dialogue/basic.ts)
+<<< ../../examples/state/dialogue/basic.ts#exampleOne
 </DialogueOutput>
 
 
 <DialogueOutput example="state.dialogue.functions.dialogueWithFunctionCall">
 
-@[code{5-17}](../../examples/state/dialogue/functions.ts)
+<<< ../../examples/state/dialogue/functions.ts#dialogueWithFunctionCall
 </DialogueOutput>

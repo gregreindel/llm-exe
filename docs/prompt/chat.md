@@ -1,27 +1,25 @@
 # Chat Prompt
-The other type of prompt is a chat prompt. The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4.
+The other type of prompt is a chat prompt. The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4(+).
 
 You create a chat prompt using `createPrompt("chat")` or `createChatPrompt()`.
 
 <PromptOutput example="prompt.chat.exampleCreateChatPrompt">
 
-@[code{4-7} ts:no-line-numbers](../../examples/prompt/chat.ts)
+<<< ../../examples/prompt/chat.ts#exampleCreateChatPrompt
 </PromptOutput>
 
 When creating a chat prompt, you can optionally set an initial system message.
 
 <PromptOutput example="prompt.chat.exampleCreateChatPromptWithSystem">
 
-@[code{18-19} ts:no-line-numbers](../../examples/prompt/chat.ts)
+<<< ../../examples/prompt/chat.ts#exampleCreateChatPromptWithSystem
 </PromptOutput>
-
-
 
 To use the prompt as input to an LLM, you can call the `format()` method on the prompt. The format method accepts an object, which is used to supply the prompt template with replacement values.
 
 <PromptOutput example="prompt.chat.exampleCreateChatPromptUseFormat">
 
-@[code{31-35} ts:no-line-numbers](../../examples/prompt/chat.ts)
+<<< ../../examples/prompt/chat.ts#exampleCreateChatPromptUseFormat
 </PromptOutput>
 
 
@@ -30,7 +28,7 @@ Chat prompts support more than just a basic text-based message. You can also add
 
 <PromptOutput example="prompt.chat.exampleCreateChatPromptWithAssistant">
 
-@[code{49-54} ts:no-line-numbers](../../examples/prompt/chat.ts)
+<<< ../../examples/prompt/chat.ts#exampleCreateChatPromptWithAssistant
 </PromptOutput>
 
 

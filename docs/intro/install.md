@@ -1,11 +1,11 @@
 # Install
 
 Install llm-exe using npm.
-```
+```cli
 npm i llm-exe
 ```
 
-```typescript
+```ts
 import * as llmExe from "llm-exe"
 
 // or 
@@ -15,24 +15,21 @@ import { /* specific modules */ } from from "llm-exe"
 
 ## Basic Example
 Below is simple example:
-```javascript
+```js
 import {
   useLlm,
   createChatPrompt,
   createParser
 } from "llm-exe";
 
-const instruction = `Based on the user message, I need you to provide a
-list of subtasks that need to be taken to answer their question.
+const instruction = `<some prompt>
 
 Your response must be formatted like:
 <subtask>
 <subtask>
-<subtask>
+<subtask>`;
 
-Review the user message and reply with a list of subtasks:`;
-
-const llm = useLlm("openai",{/* options */});
+const llm = useLlm("openai.chat.v1",{ /* options */ });
 const prompt = createChatPrompt(instruction).addUserMessage()
 const parser = createParser("listToArray");
 
@@ -51,11 +48,11 @@ const response = await executor.execute({ input })
  * 
  * [{ 
  *   role: 'system', 
- *    content: 'Based on the user message, I need you to provide a list of 
- *              subtasks that need to be taken to answer their question.\n 
- *              Your response must be formatted like:\n<subtask>\n<subtask>\n 
- *              <subtask>\nReview the user message and reply with a list 
- *              of subtasks:' 
+ *   content: '<some prompt>
+ *             Your response must be formatted like:
+ *             - <subtask>
+ *             - <subtask>
+ *             - <subtask>' 
  * },
  * { 
  *   role: 'user',
@@ -66,7 +63,7 @@ const response = await executor.execute({ input })
 
 /**
  * 
- * console.log(response)
+ * Output from LLM executor:
  * [
  *  "a subtask the llm generated",
  *  "a subtask the llm generated",
@@ -77,7 +74,7 @@ const response = await executor.execute({ input })
 
 Below is the above example with types added:
 
-```typescript
+```ts
 import {
   useLlm,
   createChatPrompt,
@@ -91,7 +88,7 @@ interface ChatInput {
 
 const instruction = `You are a customer support agent. Reply below.`;
 
-const llm = useLlm("openai", {/* options */});
+const llm = useLlm("openai.chat.v1", {/* options */});
 const prompt = createChatPrompt<ChatInput>(instruction);
 const parser = createParser("json");
 
@@ -101,7 +98,6 @@ const executor = createLlmExecutor({
   parser
 })
 
-const execute = executor.execute({ input });
-
-const response = await executor.execute({input: "Hello!"})
+const input = "Hello! When was my last appointment?";
+const response = await executor.execute({ input })
 ```

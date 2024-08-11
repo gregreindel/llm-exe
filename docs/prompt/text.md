@@ -5,7 +5,7 @@ You create a prompt using `createPrompt()`.
 
 <PromptOutput example="prompt.text.exampleCreateTextPrompt">
 
-@[code{4-6} ts:no-line-numbers](../../examples/prompt/text.ts)
+<<< ../../examples/prompt/text.ts#exampleCreateTextPrompt
 </PromptOutput>
 
 
@@ -13,7 +13,7 @@ When creating a prompt, you can optionally set an initial message.
 
 <PromptOutput example="prompt.text.exampleCreateTextPromptWithInitial">
 
-@[code{18-19} ts:no-line-numbers](../../examples/prompt/text.ts)
+<<< ../../examples/prompt/text.ts#exampleCreateTextPromptWithInitial
 </PromptOutput>
 
 
@@ -21,7 +21,7 @@ You can also add additional content to the prompt by calling `addToPrompt()` on 
 
 <PromptOutput example="prompt.text.exampleCreateTextPromptAddToPrompt">
 
-@[code{31-36} ts:no-line-numbers](../../examples/prompt/text.ts)
+<<< ../../examples/prompt/text.ts#exampleCreateTextPromptAddToPrompt
 </PromptOutput>
 
 
@@ -29,14 +29,14 @@ To use the prompt as input to an LLM, you can call the `format()` method on the 
 
 <PromptOutput example="prompt.text.exampleCreateTextPromptFormat">
 
-@[code{48-56} ts:no-line-numbers](../../examples/prompt/text.ts)
+<<< ../../examples/prompt/text.ts#exampleCreateTextPromptFormat
 </PromptOutput>
 
 
 Prompt methods are chainable
 <PromptOutput example="prompt.text.exampleCreateTextPromptChainable">
 
-@[code{67-74} ts:no-line-numbers](../../examples/prompt/text.ts)
+<<< ../../examples/prompt/text.ts#exampleCreateTextPromptChainable
 </PromptOutput>
 
 
@@ -44,7 +44,7 @@ By default, formatted text prompt messages are separated using 2 line breaks (\\
 
 <PromptOutput example="prompt.text.exampleCreateTextPromptCustomDelimiter">
 
-@[code{86-92} ts:no-line-numbers](../../examples/prompt/text.ts)
+<<< ../../examples/prompt/text.ts#exampleCreateTextPromptCustomDelimiter
 </PromptOutput>
 
 See [prompt templates](/prompt/advanced.html) for more advanced prompt usage.

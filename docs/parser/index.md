@@ -75,8 +75,3 @@ const parsed = parser.parse(exampleOutputFromLlm);
  * 
  */
 ```
-
-
-
-## Extending `BaseParser`
-// TODO: elaborate. Until then check the source, it should have comments.

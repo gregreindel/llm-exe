@@ -60,7 +60,7 @@ Anthropic Docs: [link](https://platform.openai.com/docs/api-reference/completion
 ## Anthropic LLM Methods
 
 **chat**
-Calls chat completions endpoint. Must by using text prompt and one of these models: gpt-4, gpt-3.5-turbo.
+Calls chat completions endpoint. Must by using text prompt and one of these models: .
 
 **completion**
 Calls completions endpoint. Must by using text prompt and one of these models: davinci, text-curie-001, text-babbage-001.

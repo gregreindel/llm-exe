@@ -5,14 +5,14 @@ Below is a simple example showing syntax for replacing simple variables in the t
 
 <PromptOutput example="prompt.advanced.withReplacements">
 
-@[code{6-7} ts:no-line-numbers](../../examples/prompt/advanced.ts)
+<<< ../../examples/prompt/advanced.ts#withReplacements
 </PromptOutput>
 
 
 Here is a slightly more advanced example showing a template that uses the `if` and `each` helpers supplies by Handlebars.
 <PromptOutput example="prompt.advanced.withReplacementsTwo">
 
-@[code{21-35} ts:no-line-numbers](../../examples/prompt/advanced.ts)
+<<< ../../examples/prompt/advanced.ts#withReplacementsTwo
 </PromptOutput>
 
 
@@ -22,7 +22,7 @@ Below is a robust example showing multiple variables, and defining types.
 
 <PromptOutput example="prompt.advanced.withReplacementsAndTypes">
 
-@[code{48-99} ts:no-line-numbers](../../examples/prompt/advanced.ts)
+<<< ../../examples/prompt/advanced.ts#withReplacementsAndTypes
 </PromptOutput>
 
 

@@ -5,7 +5,7 @@ To take advantage of OpenAI Function Calling [announcement](https://openai.com/b
 ## Basic Example
 Highlighted below are the few lines that demonstrate the options for a 
 ```typescript{13,14,15,16,17,18,19,20,21,26,27}:no-line-numbers
-const llm = useLlm("openai", {/* options */});
+const llm = useLlm("openai.chat.v1", {/* options */});
 const instruction = `You are walking through a maze.
 You must take one step at a time.
 Pick a direction to move.`;

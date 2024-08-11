@@ -6,7 +6,7 @@
 
 ```typescript:no-line-numbers
 const llm = useLlm("openai.chat.v1", { //
-  model: "gpt-3.5-turbo",
+  model: "gpt-4o",
 });
 ```
 
@@ -54,7 +54,7 @@ OpenAI Docs: [link](https://platform.openai.com/docs/api-reference/completions)
 ## OpenApi LLM Methods
 
 **chat**
-Calls chat completions endpoint. Must by using text prompt and one of these models: gpt-4, gpt-3.5-turbo.
+Calls chat completions endpoint. Must by using text prompt and one of these models: gpt-4o, gpt-4o-mini, gpt-3.5-turbo.
 
 **completion**
 Calls completions endpoint. Must by using text prompt and one of these models: davinci, text-curie-001, text-babbage-001.
