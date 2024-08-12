@@ -1,3 +1,4 @@
+import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config, IChatMessages } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
@@ -36,7 +37,7 @@ const anthropicChatV1: Config = {
       required: [true, "maxTokens required"],
     },
     anthropicApiKey: {
-      default: getEnvironmentVariable("ANTHROPIC_API_KEY")
+      default: getEnvironmentVariable("ANTHROPIC_API_KEY"),
     },
   },
   mapBody: {
@@ -58,20 +59,17 @@ const anthropicChatV1: Config = {
 
 export const anthropic = {
   "anthropic.chat.v1": anthropicChatV1,
-  "claude-3-5-sonnet-20240620": Object.assign({}, anthropicChatV1, {
-    mapBody: { model: "claude-3-5-sonnet-20240620" },
-    options: { model: "claude-3-5-sonnet-20240620" },
-  }),
-  "claude-3-opus-20240229": Object.assign({}, anthropicChatV1, {
-    mapBody: { model: "claude-3-opus-20240229" },
-    options: { model: "claude-3-opus-20240229" },
-  }),
-  "claude-3-sonnet-20240229": Object.assign({}, anthropicChatV1, {
-    mapBody: { model: "claude-3-sonnet-20240229" },
-    options: { model: "claude-3-sonnet-20240229" },
-  }),
-  "claude-3-haiku-20240307": Object.assign({}, anthropicChatV1, {
-    mapBody: { model: "claude-3-haiku-20240307" },
-    options: { model: "claude-3-haiku-20240307" },
-  })
+  "claude-3-5-sonnet": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-5-sonnet-20240620"
+  ),
+  "claude-3-opus": withDefaultModel(anthropicChatV1, "claude-3-opus-20240229"),
+  "claude-3-sonnet": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-sonnet-20240229"
+  ),
+  "claude-3-haiku": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-haiku-20240307"
+  ),
 };

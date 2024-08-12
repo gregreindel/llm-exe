@@ -20,29 +20,28 @@
 
 <script setup lang="ts">
 import { get } from "../../../build/src/utils/modules/get";
-  import { prompt as promptExamples } from "../../../build/examples/prompt";
+import { prompt as promptExamples } from "../../../build/examples/prompt";
 import { state } from "../../../build/examples/state";
 
 import { ref, reactive } from "vue";
 
 const props = defineProps<{
   example: string;
-//   input: {
-//     prompt: Record<string, any>;
-//     format: Record<string, any>;
-//     display: Record<string, any>;
-//   };
 }>();
 
 const selected = ref(false);
 
-  const getExampleFromPath = get({ prompt: promptExamples, state }, props.example, () => ({
-prompt: {},
-format: {},
-display: {},
-  }));
+const getExampleFromPath = get(
+  { prompt: promptExamples, state },
+  props.example,
+  () => ({
+    prompt: {},
+    format: {},
+    display: {},
+  })
+);
 
-  const { display } = getExampleFromPath();
+const { display } = getExampleFromPath();
 </script>
 
 <style>

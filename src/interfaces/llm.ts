@@ -328,16 +328,16 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.gpt-4o-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "claude-3-5-sonnet-20240620": {
+  "anthropic.claude-3-5-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "claude-3-opus-20240229": {
+  "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "claude-3-sonnet-20240229": {
+  "anthropic.claude-3-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "claude-3-haiku-20240307": {
+  "anthropic.claude-3-haiku": {
     input: Omit<AnthropicRequest, "model">;
   };
 };

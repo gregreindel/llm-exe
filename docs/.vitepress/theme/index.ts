@@ -14,6 +14,12 @@ import PromptOutput from "../components/PromptOutput.vue";
 // @ts-ignore
 import GenericOutput from "../components/GenericOutput.vue";
 // @ts-ignore
+import PromptPlayground from "../components/PromptPlayground.vue";
+// @ts-ignore
+import PromptMessage from "../components/Prompt/PromptMessage.vue";
+
+
+// @ts-ignore
 import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
 
 export default {
@@ -23,8 +29,8 @@ export default {
     app.component("PromptOutput", PromptOutput);
     app.component("DialogueOutput", DialogueOutput);
     app.component("GenericOutput", GenericOutput);
-
-    
+    app.component("PromptPlayground", PromptPlayground);
+    app.component("PromptMessage", PromptMessage);
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {

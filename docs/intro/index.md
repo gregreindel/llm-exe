@@ -62,12 +62,12 @@ export async function YesOrNoBot(
 }
 ```
 
-##  Example: A llm-powered function (with llm-exe) - Yes/No bot.
+##  Example (with llm-exe) : A llm-exe-powered function Yes/No bot.
 ::: tip
 This example does use llm-exe!
 :::
 This example uses llm-exe to accomplish the same task.
-```ts twoslash
+```ts
 export const instruction = `You are not an assistant, I need you to reply with only 
   'yes' or 'no' as an answer to the question below. Do not explain yourself 
   or ask questions. Answer with only yes or no.`;
@@ -91,6 +91,7 @@ export async function YesOrNoBot<I extends string>(
 ```
 
 This is a simple example, but to highlight some key differences:
+- The example uses openai, but you could use a different model from a different vendor.
 - The llm-exe version is structured in a way that each component could be testable. 
-- Extra configuration details are hidden away
+- Extra configuration details are hidden away.
 - Parsing the output - the llm-exe version enforces the output we desire, and makes sure it is well-typed, without needing to deal with the response.

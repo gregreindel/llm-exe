@@ -1,4 +1,7 @@
 # Prompts with Templates
+
+<!-- <PromptPlayground /> -->
+
 Handlebars is used as a template engine when generating the prompt, so you can take advantage of advanced template features in the prompt. See full capabilities [here](https://handlebarsjs.com/guide/).
 
 Below is a simple example showing syntax for replacing simple variables in the template.
