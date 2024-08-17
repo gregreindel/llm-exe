@@ -20,7 +20,6 @@ const llm = useLlm("bedrock:meta.chat.v1", { //
 - bedrock:meta.chat.v1
  - llama3.5
 - bedrock:anthropic.chat.v1
- - llama3.5
 
 
 ## Authentication

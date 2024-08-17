@@ -22,21 +22,21 @@ hero:
 
       
 features:
-  - title: Feature A
+  - title: Modular 
     details: Write functions powered by LLM's with easy to use building blocks.
-  - title: Feature B
+  - title: Few Dependencies
     details: Pure Javascript and Typescript. Allows you to pass and infer types.
-  - title: Feature C
+  - title: Prompt Templates
     details: Supercharge your prompts by using handlebars within prompt template.
-  - title: Feature C
+  - title: Control
     details: Not very opinionated. You have control on how you use it.
   - title: Feature A
     details: Support for text-based and chat-based prompts (gpt-3.5-turbo and gpt-4).
-  - title: Feature B
+  - title: Function Calling
     details: Allow LLM's to call functions (or call other LLM executors).
   - title: Feature C
     details: Supercharge your prompts by using handlebars within prompt template.
-  - title: 100% test coverage
+  - title: Test Coverage
     details: 100% test coverage
 
 

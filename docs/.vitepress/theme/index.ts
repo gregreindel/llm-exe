@@ -1,6 +1,7 @@
 import type { Theme } from "vitepress";
 import DefaultTheme from "vitepress/theme";
 import { h } from "vue";
+import './styles.css';
 
 // import TwoslashFloatingVue from "@shikijs/vitepress-twoslash/client";
 // import "@shikijs/twoslash/style-rich.css";

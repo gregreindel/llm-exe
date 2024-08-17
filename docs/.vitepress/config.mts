@@ -169,6 +169,11 @@ export default defineConfig({
             link: "/prompt/advanced.html",
             items: [],
           },
+          {
+            text: "Playground",
+            link: "/prompt/playground.html",
+            items: [],
+          },
         ],
       },
       {
@@ -217,6 +222,16 @@ export default defineConfig({
         text: "Embeddings",
         link: "/embeddings/index.html",
         collapsed: true,
+        items: [
+          {
+            text: "OpenAi",
+            link: "/embeddings/openai.html",
+          },
+          {
+            text: "Amazon",
+            link: "/embeddings/amazon.html",
+          },
+        ]
       },
       {
         text: "Examples",
@@ -311,4 +326,13 @@ export default defineConfig({
     // codeTransformers: [transformerTwoslash()],
     theme: { light: "github-light-default", dark: "github-dark-default" },
   },
+  vite: {
+    css: {
+      preprocessorOptions: {
+        css: {
+          additionalData: `@import "./theme/style.css";`,
+        },
+      },
+    }
+  }
 });

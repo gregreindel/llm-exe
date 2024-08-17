@@ -51,7 +51,6 @@
     "uuid": "10.0.0"
   },
   "devDependencies": {
-    "@shikijs/vitepress-twoslash": "^1.12.1",
     "@tsconfig/recommended": "^1.0.2",
     "@types/jest": "^29.5.2",
     "@types/json-schema": "^7.0.11",
