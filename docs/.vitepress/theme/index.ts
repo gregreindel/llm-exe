@@ -9,10 +9,6 @@ import './styles.css';
 // import "@shikijs/vitepress-twoslash/style-core.css";
 
 // @ts-ignore
-import DialogueOutput from "../components/DialogueOutput.vue";
-// @ts-ignore
-import PromptOutput from "../components/PromptOutput.vue";
-// @ts-ignore
 import GenericOutput from "../components/GenericOutput.vue";
 // @ts-ignore
 import PromptPlayground from "../components/PromptPlayground.vue";
@@ -27,11 +23,13 @@ export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
     // app.use(TwoslashFloatingVue);
-    app.component("PromptOutput", PromptOutput);
-    app.component("DialogueOutput", DialogueOutput);
     app.component("GenericOutput", GenericOutput);
     app.component("PromptPlayground", PromptPlayground);
     app.component("PromptMessage", PromptMessage);
+
+    if(import.meta.env.DEV){
+      new EventSource('/esbuild').addEventListener('change', () => location.reload())
+    }
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {

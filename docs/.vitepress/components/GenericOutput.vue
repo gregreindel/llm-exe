@@ -19,11 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import { get } from "../../../build/src/utils/modules/get";
-import { prompt as promptExamples } from "../../../build/examples/prompt";
-import { state } from "../../../build/examples/state";
+import { get } from "../utils/get";
+import { prompt } from "../components/examples/prompt";
+import { state } from "../components/examples/state";
 
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 
 const props = defineProps<{
   example: string;
@@ -32,7 +32,7 @@ const props = defineProps<{
 const selected = ref(false);
 
 const getExampleFromPath = get(
-  { prompt: promptExamples, state },
+  { prompt: prompt, state: state },
   props.example,
   () => ({
     prompt: {},

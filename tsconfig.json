@@ -3,9 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "declaration": false,
-    "module": "ESNext",
-    "target": "ES6",
-    "moduleResolution": "Node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2021",
     "esModuleInterop": true,
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,

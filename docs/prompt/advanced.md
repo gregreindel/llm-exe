@@ -152,13 +152,13 @@ const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials })
 ```txt
 # .env
 # Custom helpers: Set this as a path to a file that exports custom helpers.
-CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH=/var/app/build/prompt-template-helpers.js
+CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH=/var/app/prompt-template-helpers.js
 ```
 
 ```txt
 # .env
 # Custom partials: Set this as a path to a file that exports custom partials.
-CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH=/var/app/build/prompt-template-partials.js
+CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH=/var/app/prompt-template-partials.js
 ```
 
 Example files
