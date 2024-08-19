@@ -1,4 +1,4 @@
-import * as utils from "."
+import * as utils from "./index"
 
 describe("exports correct utils", () => {
   it("exports correct utils", async () => {

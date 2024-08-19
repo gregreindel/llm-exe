@@ -1,4 +1,4 @@
-import { DefaultState } from ".";
+import { DefaultState } from "./index";
 import { Dialogue } from "./dialogue";
 import { DefaultStateItem } from "./item";
 

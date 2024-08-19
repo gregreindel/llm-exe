@@ -1,4 +1,4 @@
-import { llmExe } from "@/index";
+import * as llmExe from "@/index";
 
 describe("llmExe", () => {
   test("has all exports", () => {

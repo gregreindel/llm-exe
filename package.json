@@ -16,9 +16,17 @@
     "prompt",
     "agent"
   ],
-  "source": "src/index.ts",
-  "types": "dist/index.d.ts",
-  "main": "dist/index.js",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -28,8 +36,8 @@
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit",
     "build": "(concurrently \"tsc --p ./tsconfig.json -w\" \"tsc-alias -p tsconfig.json -w\")",
-    "build:ci": "(concurrently \"tsc --p ./tsconfig.json\" \"tsc-alias -p tsconfig.json\")",
-    "build:package": "(concurrently \"tsc --p ./tsconfig-build.json -w\" \"tsc-alias -p tsconfig-build.json -w\")",
+    "build:ci": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build:package": "tsup src/index.ts --format cjs,esm --dts --clean",
     "build:docs-examples": "./node_modules/.bin/esbuild examples/prompt/index.ts examples/state/index.ts --bundle --outdir=docs/.vitepress/components/examples  --platform=node --target=es6 --format=esm",
     "build:watch:docs-examples": "./node_modules/.bin/esbuild  examples/prompt/index.ts examples/state/index.ts  --watch --bundle --outdir=docs/.vitepress/components/examples  --platform=node --target=es6 --format=esm",
     "predocs:build": "npm run build:docs-examples",
@@ -50,6 +58,7 @@
     "json-schema-to-ts": "3.1.0",
     "jsonschema": "1.4.1",
     "node-fetch-commonjs": "^3.3.2",
+    "tsup": "^8.2.4",
     "uuid": "10.0.0"
   },
   "devDependencies": {

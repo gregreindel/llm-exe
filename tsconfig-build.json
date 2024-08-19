@@ -23,7 +23,6 @@
       "noImplicitReturns": true,
       "skipLibCheck": true,
       "resolveJsonModule": true,
-      "lib": ["ES2021", "ES2022.Object", "DOM"],
       "paths": {
         "@/*": ["src/*"]
       }
