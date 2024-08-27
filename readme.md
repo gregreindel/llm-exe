@@ -26,7 +26,7 @@ npm i llm-exe
 ```
 
 ```typescript
-import * as llmExe from "llm-exe"
+import llmExe from "llm-exe"
 
 // or 
 

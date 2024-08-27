@@ -102,7 +102,7 @@ export async function useLlm_call(
   }
   // END move me!
 
-  const body = JSON.stringify(input);
+  const body = typeof input === "string" ? input : JSON.stringify(input);
 
   const url = replaceTemplateStringSimple(config.endpoint, state);
 

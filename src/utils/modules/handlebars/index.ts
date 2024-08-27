@@ -106,7 +106,7 @@ export function useHandlebars(
   return hbsInstance;
 }
 
-export const hbsAsync = useHandlebars(__hbsAsync);
+export const hbsAsync = useHandlebars(__hbsAsync, true);
 export const hbs = useHandlebars(__hbs);
 
 export function registerPartials(partials: any[], instance?: typeof Handlebars ) {
