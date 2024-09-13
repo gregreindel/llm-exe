@@ -1,6 +1,9 @@
 import Handlebars from "handlebars";
 import { isPromise } from "@/utils/modules/isPromise";
 
+export type Handlebars2 = typeof Handlebars &  {
+  compile: (...args: Parameters<typeof Handlebars.compile>) => (context: any, execOptions?: any) => Promise<string>;
+}
 /** From: https://github.com/gastonrobledo/handlebars-async-helpers/blob/main/index.js */
 export function makeHandlebarsInstanceAsync(hbs: any) {
   const handlebars: typeof Handlebars = hbs.create()
@@ -113,6 +116,6 @@ export function makeHandlebarsInstanceAsync(hbs: any) {
     };
   };
 
-  return handlebars;
+  return handlebars as Handlebars2
 }
 

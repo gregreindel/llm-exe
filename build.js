@@ -15,7 +15,7 @@ async function buildAll() {
       platform: "neutral",
       external: [
         "jsonschema",
-        "handlebars",
+        // "handlebars",
         "json-schema-to-ts",
         "exponential-backoff",
         "@aws-sdk/credential-providers",
@@ -26,8 +26,18 @@ async function buildAll() {
     }),
     build("cjs", {
       entryPoints: ["src/index.ts"],
-      target: ["node10.4"],
+      target: ["node18"],
       platform: "node",
+      external: [
+        "jsonschema",
+        // "handlebars",
+        "json-schema-to-ts",
+        "exponential-backoff",
+        "@aws-sdk/credential-providers",
+        "@aws-crypto/sha256-js",
+        "@smithy/protocol-http",
+        "@smithy/signature-v4",
+      ],
     }),
   ]);
 }

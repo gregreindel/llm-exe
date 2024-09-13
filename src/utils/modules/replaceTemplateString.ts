@@ -1,6 +1,5 @@
 import { PromptTemplateOptions } from "@/types";
-import { hbs } from "./handlebars";
-import { registerHelpers, registerPartials } from "./handlebars";
+import { hbs, registerHelpers, registerPartials } from "./handlebars/hbs";
 
 export function replaceTemplateString(
   templateString?: string,
