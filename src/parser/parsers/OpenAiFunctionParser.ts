@@ -18,7 +18,7 @@ export class OpenAiFunctionParser<T extends BaseParser<any>> extends BaseParser<
     this.parser = options.parser;
   }
   parse(text: OutputResultContent[], _options?: Record<string, any>) {
-    const functionUse = text.find((a) => a.type === "function_use");
+    const functionUse = text?.find((a) => a.type === "function_use");
     if (functionUse && "name" in functionUse && "input" in functionUse) {
       return {
         name: functionUse.name,

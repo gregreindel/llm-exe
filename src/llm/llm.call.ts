@@ -16,13 +16,13 @@ import {
 import { normalizeFunctionCall } from "./output/_util";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 
-
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
   messages: string | IChatMessages,
   _options?: OpenAiLlmExecutorOptions<GenericFunctionCall>
 ) {
   const config = getLlmConfig(state.key);
+  const { functionCallStrictInput = false } = _options || {};
 
   const input = mapBody(
     config.mapBody,
@@ -35,22 +35,17 @@ export async function useLlm_call(
   // this needs to be improved
   if (_options && _options?.jsonSchema) {
     if (state.provider === "openai.chat") {
-      const curr = input["response_format"] || {};
-      const newObj = Object.assign(curr, {
-        type: "json_schema",
-        json_schema: {
-          name: "output",
-          schema: cleanJsonSchemaFor(_options?.jsonSchema, "openai.chat"),
-        },
-      });
-
-      if (
-        typeof _options?.functionCallStrictInput === "undefined" ||
-        !!_options?.functionCallStrictInput
-      ) {
-        newObj["json_schema"]["strict"] = true;
+      if (!!functionCallStrictInput) {
+        const curr = input["response_format"] || {};
+        input["response_format"] = Object.assign(curr, {
+          type: "json_schema",
+          json_schema: {
+            name: "output",
+            strict: true,
+            schema: cleanJsonSchemaFor(_options?.jsonSchema, "openai.chat"),
+          },
+        });
       }
-      input["response_format"] = newObj;
     }
   }
 
@@ -86,7 +81,7 @@ export async function useLlm_call(
           name: f?.name,
           description: f?.description,
           parameters: f?.parameters,
-        } 
+        };
         return {
           type: "function",
           function: Object.assign(
@@ -94,7 +89,7 @@ export async function useLlm_call(
             {
               parameters: cleanJsonSchemaFor(props.parameters, "openai.chat"),
             },
-            { strict: true }
+            { strict: functionCallStrictInput }
           ),
         };
       });

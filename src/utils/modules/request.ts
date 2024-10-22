@@ -19,9 +19,17 @@ export async function apiRequest<T extends Record<string, any> | null>(
 
   try {
     const response: Response = await fetch(url, finalOptions);
-
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}. Error`);
+      let message = `HTTP error. Status: ${response.status}. Error Message: ${response?.statusText || "Unknown error."}`;
+      if(url.startsWith("https://api.openai.com/")){
+        try {
+          const body = await response.json();
+          message = `HTTP error. Status Code: ${response.status}. Error Message: ${body?.error?.message || 'No further details provided.'}`;
+        } catch (error) {
+          // just use default error messaging
+        }
+      }
+      throw new Error(message);
     }
     const responseData = (await response.json()) as unknown as Record<
       string,
