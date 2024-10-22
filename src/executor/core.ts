@@ -4,7 +4,7 @@ import {
   CoreExecutorExecuteOptions,
 } from "@/types";
 import { BaseExecutor } from "./_base";
-import { inferFunctionName } from "@/utils";
+import { inferFunctionName } from "@/utils/modules/inferFunctionName";
 
 /**
  * Core Function Executor

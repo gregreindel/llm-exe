@@ -1,7 +1,7 @@
 import { createDialogue } from "@/state";
 
 const dialogueWithFunctionCall = () => {
-  // START example
+// #region dialogueWithFunctionCall
 const function_call = {
   name: "get_weather",
   arguments: '{"city": "Cleveland"}',
@@ -15,7 +15,7 @@ const chatHistory = createDialogue("chat")
 
 const history = chatHistory.getHistory()
 
-
+// #endregion dialogueWithFunctionCall
 // exporting for docs
 return {
   display: history

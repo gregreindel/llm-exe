@@ -17,12 +17,12 @@ Describe Context & Attributes. In summary, attributes are meant to be a basic ob
 State has a `saveState()` method that can be customized to save the state to a database.
 
 Initializing a state object is as simple as:
-```typescript:no-line-numbers
+```ts
 const state = createState()
 ```
 
 If you wanted to store a chat conversation dialogue, you could:
-```typescript:no-line-numbers
+```ts
 const state = createState()
 
 // this creates a new dialogue in the state, and returns it
@@ -38,7 +38,7 @@ const chatHistory = state.createDialogue("chatHistory");
 
 
 Saving state
-```typescript:no-line-numbers
+```ts
 // this needs to be implemented by you if you want to save somewhere
 await state.saveState()
 ```

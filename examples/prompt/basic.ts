@@ -1,7 +1,7 @@
 import { createPrompt, createChatPrompt } from "@/prompt"
 
 const exampleOne = () => {
-// START example
+// #region exampleOne
 const instruction = `You are a customer service agent for Some Company.
 
 Your name is {{agentName}}.`
@@ -9,9 +9,7 @@ Your name is {{agentName}}.`
 const prompt = createPrompt("text", instruction)
 
 const formatted = prompt.format({ agentName: "Greg" })
-
-console.log(formatted)
-
+// #endregion exampleOne
 // exporting for docs
 return {
     prompt,
@@ -23,8 +21,7 @@ return {
 
 
 const exampleTwo = () => {
-
-// Example 2
+// #region exampleTwo
 interface SomePromptInput {
     agentName: string;
 }
@@ -38,8 +35,7 @@ prompt.format({name: "Greg" })
 
 // Good: No problem, correct inputs
 prompt.format({agentName: "Greg"})
-
-
+// #endregion exampleTwo
 // exporting for docs
 return {
     prompt,
@@ -52,6 +48,6 @@ return {
 
 // // exporting for docs
 export const examples = {
-    example1: exampleOne,
-    example2: exampleTwo,
+    exampleOne,
+    exampleTwo,
 }

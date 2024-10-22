@@ -7,8 +7,9 @@ import {
   CoreExecutorExecuteOptions,
   BaseExecutorHooks,
 } from "@/types";
-
-import { ensureInputIsObject, pick, uuid } from "@/utils";
+import { pick } from "@/utils/modules/pick";
+import { ensureInputIsObject } from "@/utils/modules/ensureInputIsObject";
+import { uuid } from "@/utils/modules/uuid";
 import { createMetadataState } from "./_metadata";
 import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
 
@@ -58,7 +59,7 @@ export abstract class BaseExecutor<
   constructor(
     name: string,
     type: string,
-    options?: CoreExecutorExecuteOptions<H>,
+    options?: CoreExecutorExecuteOptions<H>
   ) {
     this.id = uuid();
     this.type = type;
@@ -84,11 +85,11 @@ export abstract class BaseExecutor<
    * @param _input
    * @returns original input formatted for handler
    */
-  getHandlerInput(
+  async getHandlerInput(
     _input: I,
     _metadata: ExecutorExecutionMetadata<I, any>,
     _options?: any
-  ): any {
+  ): Promise<any> {
     return ensureInputIsObject(_input);
   }
 
@@ -111,7 +112,7 @@ export abstract class BaseExecutor<
    * @param _input
    * @returns handler output
    */
-  async execute(_input: I, _options?: any ): Promise<O> {
+  async execute(_input: I, _options?: any): Promise<O> {
     this.executions++;
     const _metadata = createMetadataState({
       start: new Date().getTime(),
@@ -119,7 +120,7 @@ export abstract class BaseExecutor<
     });
 
     try {
-      const input = this.getHandlerInput(
+      const input = await this.getHandlerInput(
         _input,
         _metadata.asPlainObject(),
         _options
@@ -174,7 +175,7 @@ export abstract class BaseExecutor<
         try {
           hookFn(_metadata, this.getMetadata());
         } catch (error) {
-          /** We should call an error handler */
+          /** TODO: We should call an error handler */
         }
       }
     }
@@ -231,11 +232,11 @@ export abstract class BaseExecutor<
     this.hooks[eventName].push(onceWrapper);
     return this;
   }
-  withTraceId(traceId : string){
-    this.traceId = traceId
+  withTraceId(traceId: string) {
+    this.traceId = traceId;
     return this;
   }
-  getTraceId(){
-    return this.traceId
+  getTraceId() {
+    return this.traceId;
   }
 }

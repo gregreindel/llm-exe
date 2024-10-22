@@ -13,20 +13,23 @@ Note this is a basic example, and should be improved for error handling, etc.
 To allow our LLM to be able to search the internet, we'll need to define a callable function. You can use whatever search API configuration you'd like.
 
 Note that `searchInternetCallable` is the configuration object that makes `searchGoogleApi` callable. Nothing really fancy going on.
-@[code{0-100} ts:no-line-numbers](../../examples/actions/search.ts)
+
+<<< ../../examples/actions/search.ts
 
 #### Step 2 - Define Calculator Action
 To allow our LLM to be able to perform advanced calculations, we'll need to define a callable function. You can use whatever calculation library you'd like.
-@[code{0-100} ts:no-line-numbers](../../examples/actions/calculator.ts)
+
+<<< ../../examples/actions/calculator.ts
 
 #### Step 3 - Define Final Answer Action
 We need to define a final answer action, but in this example we won't be doing anything with it, so we'll just pass through the input.
-@[code{0-100} ts:no-line-numbers](../../examples/actions/finalAnswer.ts)
+
+<<< ../../examples/actions/finalAnswer.ts
 
 
 #### Step 4 - Configure Thought/Action/Input LLM executor
 Configure a prompt and LLM executor that is directed to think step by step through the question to decide the next action to take.
-@[code{15-67} ts:no-line-numbers](../../examples/_testing/react.ts)
+@[code{15-67} ts](../../examples/_testing/react.ts)
 
 
 #### Step 5 - Write Some Code
@@ -57,10 +60,9 @@ Let's see how it got there:
 
 
 First Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
+::: code-group
 
-```text:no-line-numbers
+```text [Result]
 # LLM Output: 
 {
   action: 'search_internet',
@@ -71,10 +73,8 @@ First Iteration:
 # Action Output: 
 Dallas Stars Roope Hintz's salary is $11,500,000 and his cap hit is $8,450,000 for the 2023-24 season. His salary is comprised of $4,000,000 in signing bonuses and $7,500,000 in base salary. He is a 26 year old centre who was born on Nov. 17, 1996.
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Prompt">
 
-```text
+```text [Prompt]
     [{
       role: 'system',
       content: 'We need to think step by step on how to answer the question outlined below.\n' +
@@ -109,15 +109,12 @@ Dallas Stars Roope Hintz's salary is $11,500,000 and his cap hit is $8,450,000 f
         'Input: <The input for the action. Reference the action input from the list above, and provide valid input for the action>'
     }]
 ```
-  </CodeGroupItem>
 
-</CodeGroup>
+:::
 
 Second Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
-
-```text:no-line-numbers
+::: code-group
+```text [Result]
 # LLM Output: 
 {
   action: 'calculator',
@@ -127,10 +124,8 @@ Second Iteration:
 
 # Action Output: 11500000
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Prompt">
 
-```text:no-line-numbers
+```text [Prompt]
 [
     {
       role: 'system',
@@ -176,15 +171,13 @@ Second Iteration:
   ]
 ```
 
-  </CodeGroupItem>
-</CodeGroup>
+:::
 
 
 Third Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
+::: code-group
 
-```text:no-line-numbers
+```text [Result]
 # LLM Output: 
 {
   action: 'calculator',
@@ -194,10 +187,8 @@ Third Iteration:
 
 # Action Output: 8671000000
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Prompt">
 
-```text:no-line-numbers
+```text [Prompt]
   [
     {
       role: 'system',
@@ -247,15 +238,12 @@ Third Iteration:
     }
   ]
 ```
-
-  </CodeGroupItem>
-</CodeGroup>
+:::
 
 Fourth Iteration: 
-<CodeGroup>
-  <CodeGroupItem title="Result" active>
+::: code-group
 
-```text:no-line-numbers
+```text [Result]
 # LLM Output: 
 {
   action: 'final_answer',
@@ -266,5 +254,4 @@ Fourth Iteration:
 # Action Output: 
 Roope Hintz made $8,671,000,000 in 2023. This was calculated by multiplying his salary of $11,500,000 by 754.
 ```
-  </CodeGroupItem>
-</CodeGroup>
+:::

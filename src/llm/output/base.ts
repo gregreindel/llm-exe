@@ -1,22 +1,39 @@
-import { uuid } from "@/utils";
+import { OutputResult } from "@/interfaces";
+import { uuid } from "@/utils/modules/uuid";
+import { getResultContent } from "./_utils/getResultContent";
+import { getResultText } from "./_utils/getResultText";
 
-export abstract class BaseLlmOutput {
-  protected id: string;
-  protected name: string | undefined;
-  protected created: number | undefined;
-  protected results: any[] = [];
+type BaseLlmOutput2Optional = "id" | "created" | "options";
 
-  protected usage: any = {};
+export function BaseLlmOutput2(
+  result: Omit<OutputResult, BaseLlmOutput2Optional> &
+    Partial<Pick<OutputResult, BaseLlmOutput2Optional>>
+) {
+  const __result = Object.freeze({
+    id: result.id || uuid(),
+    name: result.name,
+    usage: result.usage,
+    stopReason: result.stopReason,
+    options: [...(result?.options || [])],
+    content: [...(result.content)],
+    created: result?.created || new Date().getTime(),
+  });
 
-  constructor(result: any) {
-    this.id = uuid();
-    this.setResult(result);
+  function getResult(): OutputResult {
+    return {
+      id: __result.id,
+      name: __result.name,
+      created: __result.created,
+      usage: __result.usage,
+      options: __result.options,
+      content: __result.content,
+      stopReason: __result.stopReason,
+    };
   }
 
-  getResults() {
-    return [...this.results];
-  }
-  abstract setResult(result: any): void;
-  abstract getResult(resultIndex: number): any;
-  abstract getResultContent(resultIndex?: number): any;
+  return {
+    getResultContent: (index?: number) => getResultContent(__result, index),
+    getResultText: () => getResultText(__result.content),
+    getResult,
+  };
 }

@@ -46,7 +46,7 @@ Combine the prompt, LLM, and parser into a single function.
 ```
 
 
-```typescript:no-line-numbers
+```ts
 import { extractInformation } from "./somewhere"
 
 // a chat history, loaded from somewhere

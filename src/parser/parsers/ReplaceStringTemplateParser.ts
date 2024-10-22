@@ -1,4 +1,4 @@
-import { replaceTemplateString } from "@/utils";
+import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { BaseParser } from "../_base";
 import { BaseParserOptions } from "@/types";
 export interface ReplaceStringTemplateParserOptions extends BaseParserOptions {}

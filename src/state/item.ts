@@ -1,5 +1,5 @@
 import { Serializable } from "@/types";
-import { assert } from "@/utils";
+import { assert } from "@/utils/modules/assert";
 
 export abstract class BaseStateItem<T> implements Serializable {
   protected key: string;

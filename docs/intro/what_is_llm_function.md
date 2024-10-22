@@ -25,8 +25,8 @@ function checkIfDocumentContainsPiiWithLlm(input){
 As you can see , 
 
 Here is how you could implement example above with an LLM executor:
-```typescript:no-line-numbers
-import { createLlmOpenAi, createChatPrompt, createParser } from "llm-exe";
+```ts
+import { useLlm, createChatPrompt, createParser } from "llm-exe";
 
 export function piiDetector(input: string){
   const instruction = `You need to check the text below for any of the PII listed below.
@@ -41,7 +41,7 @@ email addresses: <true or false if this type of PII is included>
 social security number: <true or false if this type of PII is included>
 credit card number: <true or false if this type of PII is included>`;
 
-  const llm = createLlmOpenAi({/* options */});
+  const llm = useLlm("openai.chat.v1", {/* options */});
   const prompt = createChatPrompt(instruction);
   const parser = createParser("listToJson");
 
@@ -54,7 +54,7 @@ credit card number: <true or false if this type of PII is included>`;
   return executor.execute({ input });
 }
 ```
-```typescript:no-line-numbers
+```ts
 /**
  * Example usage
  * Somewhere else in your codebase

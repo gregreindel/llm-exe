@@ -4,19 +4,20 @@ llm-exe aims to be building blocks, allowing you to use the pieces as you wish. 
 ## LLM Executor Function 
 
 All examples below will share this prompt instruction and input interface.
-@[code{9-26} ts:no-line-numbers](../../examples/basicFunctions.ts)
+
+<<< ../../examples/basicFunctions.ts#IntroduceSharedInstructions
 
 ### Return an Executor
 One way to structure the function is to have the function return the executor its self. This is useful in that it returns an instance of LlmExecutor. You can attach hooks, listen for events, etc.
 
-@[code{28-36} ts:no-line-numbers](../../examples/basicFunctions.ts)
+<<< ../../examples/basicFunctions.ts#llmExecutorExample
+
 When using this approach, whenever you import this function to use, you will need to call execute on it. For example: 
 
-```typescript:{5}:no-line-numbers
+```ts{5}
 import { llmExecutorExample } from "example-above"
 
 const executor = llmExecutorExample()
-
 const result = await executor.execute({
     userInput: "",
     timeOfDay: ""
@@ -29,9 +30,10 @@ With this approach, you encapsulate the executor and execution. Note the main di
 2. The function requires an input (what gets passed into `.execute()`)
 3. The LLM executor is executed and the value is returned on every call, rather than the executor.
 
-@[code{39-50} ts:{1,11}:no-line-numbers](../../examples/basicFunctions.ts)
+<<< ../../examples/basicFunctions.ts#llmExecutorExampleExecute
 
-```typescript:no-line-numbers
+
+```ts
 import { llmExecutorExample } from "example-above"
 
 const result = await llmExecutorExample({
@@ -52,7 +54,7 @@ llms
   - types.ts // types
 ```
 index.ts
-```typescript
+```ts
 import { CustomInputType} from "./types"
 import { parser } from "./parser"
 import { prompt } from "./prompt"
@@ -73,4 +75,5 @@ Allowing `prompt` and `parsers` to be imported/exported makes them testable comp
 
 ## Other Notes
 Its reasonable to pass an llm around.
-@[code{52-63} ts:{2}:no-line-numbers](../../examples/basicFunctions.ts)
+
+<<< ../../examples/basicFunctions.ts#llmExecutorExampleNeedsLlm{2}

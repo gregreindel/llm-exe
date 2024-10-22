@@ -1,45 +1,14 @@
-import { PromptPartial, PromptHelper } from "@/types";
 import Handlebars from "handlebars";
+import { useHandlebars } from "@/utils/modules/handlebars/useHandlebars";
+import { makeHandlebarsInstanceAsync } from "@/utils/modules/handlebars/utils/makeHandlebarsInstanceAsync";
 
-export const hbs = Handlebars; 
+const __hbsAsync = makeHandlebarsInstanceAsync(Handlebars);
+const __hbs = Handlebars.create()
 
-export function importPartials(_partials: { [key in string]: string }) {
-  let partials: PromptPartial[] = [];
-  if (_partials) {
-    const externalPartialKeys = Object.keys(
-      _partials
-    ) as (keyof typeof _partials)[];
-    for (const externalPartialKey of externalPartialKeys) {
-      if (typeof externalPartialKey === "string") {
-        partials.push({
-          name: externalPartialKey,
-          template: _partials[externalPartialKey],
-        });
-      }
-    }
-  }
-  return partials;
-}
+export const hbs = useHandlebars(__hbs);
+export const hbsAsync = useHandlebars(__hbsAsync, true);
 
-export function importHelpers(_helpers: { [key in string]: (...args: any[]) => any }) {
-  let helpers: PromptHelper[] = [];
-  if (_helpers) {
-    const externalHelperKeys = Object.keys(
-      _helpers
-    ) as (keyof typeof _helpers)[];
-    for (const externalHelperKey of externalHelperKeys) {
-      if (typeof externalHelperKey === "string") {
-        helpers.push({
-          name: externalHelperKey,
-          handler: _helpers[externalHelperKey],
-        });
-      }
-    }
-  }
-  return helpers;
-}
-
-export function registerPartials(partials: any[]) {
+export function registerPartials(partials: any[], instance?: typeof Handlebars ) {
   if (partials && Array.isArray(partials)) {
     for (const partial of partials) {
       if (
@@ -47,13 +16,18 @@ export function registerPartials(partials: any[]) {
         typeof partial.name === "string" &&
         typeof partial.template === "string"
       ) {
-        hbs.registerPartial(partial.name, partial.template);
+        if(instance){
+          instance.registerPartial(partial.name, partial.template);
+        }else {
+          hbs.registerPartial(partial.name, partial.template);
+          hbsAsync.registerPartial(partial.name, partial.template);
+        }
       }
     }
   }
 }
 
-export function registerHelpers(helpers: any[]) {
+export function registerHelpers(helpers: any[], instance?: typeof Handlebars) {
   if (helpers && Array.isArray(helpers)) {
     for (const helper of helpers) {
       if (
@@ -61,7 +35,12 @@ export function registerHelpers(helpers: any[]) {
         typeof helper.name === "string" &&
         typeof helper.handler === "function"
       ) {
-        hbs.registerHelper(helper.name, helper.handler);
+        if(instance){
+          instance.registerHelper(helper.name, helper.handler);
+        }else {
+          hbs.registerHelper(helper.name, helper.handler);
+          hbsAsync.registerHelper(helper.name, helper.handler);
+        }
       }
     }
   }

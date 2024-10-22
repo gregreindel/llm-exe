@@ -1,14 +1,14 @@
 import { createDialogue } from "@/state";
 
 const exampleOne = () => {
-// START example
+// #region exampleOne
 const chatHistory = createDialogue("chat")
 .setUserMessage("Hey anyone there?")
 .setAssistantMessage("Yep! Whats up?")
 
 const history = chatHistory.getHistory()
     
-console.log(history)
+// #endregion exampleOne
 // exporting for docs
 return {
         display: history

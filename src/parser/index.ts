@@ -1,4 +1,4 @@
-import { OpenAiFunctionParser } from '@/parser/parsers/OpenAiFunctionParser';
+import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser";
 import { BaseParser, BaseParserWithJson } from "./_base";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";

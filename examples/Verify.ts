@@ -1,5 +1,5 @@
+import { BaseLlm } from "@/types";
 import { createLlmExecutor } from "@/executor";
-import { BaseLlm } from "@/llm";
 import { createCustomParser, createParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
 import { defineSchema } from "@/utils";

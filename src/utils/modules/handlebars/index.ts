@@ -1,72 +1,51 @@
-import { hbs, importPartials, registerPartials, importHelpers,
-  registerHelpers } from "./hbs";
-import * as helpers from "./helpers";
-import * as contextPartials from "./templates";
-import { PromptTemplateOptions,  } from "@/types";
-import { getEnvironmentVariable } from "@/utils";
+// import Handlebars from "handlebars";
+// import { makeHandlebarsInstanceAsync } from "@/utils/modules/handlebars/utils/makeHandlebarsInstanceAsync";
 
-export function useHandlebars(
-  configuration: PromptTemplateOptions = {
-    helpers: [],
-    partials: [],
-  }
-) {
-  const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
-  for (const helperKey of helperKeys) {
-    hbs.registerHelper(helperKey, helpers[helperKey]);
-  }
+// // import { asyncCoreOverrideHelpers } from "@/utils/modules/handlebars/helpers/async/async-helpers";
+// import { useHandlebars } from "./useHandlebars";
 
-  if (configuration?.helpers && Array.isArray(configuration.helpers)) {
-    registerHelpers(configuration.helpers)
-  }
+// const __hbsAsync = makeHandlebarsInstanceAsync(Handlebars);
+// export const hbsAsync = useHandlebars(__hbsAsync, true);
 
-  const helperPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH');
-  if (helperPath) {
-    const externalHelpers = require(helperPath);
-    registerHelpers(importHelpers(externalHelpers))
-  }
+// const __hbs = makeHandlebarsInstance()
+// export const hbs = useHandlebars(__hbs);
 
-  const contextPartialKeys = Object.keys(
-    contextPartials.partials
-  ) as (keyof typeof contextPartials.partials)[];
-  for (const contextPartialKey of contextPartialKeys) {
-    hbs.registerPartial(
-      contextPartialKey,
-      contextPartials.partials[contextPartialKey]
-    );
-  }
 
-  if (configuration?.partials && Array.isArray(configuration.partials)) {
-    registerPartials(configuration.partials)
-  }
+// export function registerPartials(partials: any[], instance?: typeof Handlebars ) {
+//   if (partials && Array.isArray(partials)) {
+//     for (const partial of partials) {
+//       if (
+//         partial.name &&
+//         typeof partial.name === "string" &&
+//         typeof partial.template === "string"
+//       ) {
+//         if(instance){
+//           instance.registerPartial(partial.name, partial.template);
+//         }else {
+//           hbs.registerPartial(partial.name, partial.template);
+//           // hbsAsync.registerPartial(partial.name, partial.template);
+//         }
+//       }
+//     }
+//   }
+// }
 
-  const partialsPath = getEnvironmentVariable('CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH');
-  if (typeof process === "object" && partialsPath) {
-    const externalPartials = require(partialsPath);
-    registerPartials(importPartials(externalPartials));
-  }
+// export function registerHelpers(helpers: any[], instance?: typeof Handlebars) {
+//   if (helpers && Array.isArray(helpers)) {
+//     for (const helper of helpers) {
+//       if (
+//         helper.name &&
+//         typeof helper.name === "string" &&
+//         typeof helper.handler === "function"
+//       ) {
+//         if(instance){
+//           instance.registerHelper(helper.name, helper.handler);
+//         }else {
+//           hbs.registerHelper(helper.name, helper.handler);
+//           // hbsAsync.registerHelper(helper.name, helper.handler);
+//         }
 
-  /* istanbul ignore next */
-  hbs.registerHelper("with", function (context: any, options: any) {
-    return options.fn(context);
-  });
-
-  /* istanbul ignore next */
-  hbs.registerHelper("cut", function (str: string, arg2: string | RegExp) {
-    return str.toString().replace(new RegExp(arg2, "g"), "");
-  });
-
-  /* istanbul ignore next */
-  hbs.registerHelper(
-    "substring",
-    function (str: string, start: number, end: number) {
-      if (str.length > end) {
-        return str.substring(start, end);
-      } else {
-        return str;
-      }
-    }
-  );
-
-  return hbs;
-}
+//       }
+//     }
+//   }
+// }

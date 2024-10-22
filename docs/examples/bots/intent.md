@@ -25,7 +25,7 @@ Combine the prompt, LLM, and parser into a single function.
 #### Step 4 - Use it!
 
 
-```typescript:no-line-numbers
+```ts
 import { identifyIntent } from "./somewhere"
 
 // a chat history, loaded from somewhere

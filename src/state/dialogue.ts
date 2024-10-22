@@ -1,4 +1,8 @@
-import { IChatMessages, IChatUserMessage } from "@/types";
+import {
+  IChatMessageContentDetailed,
+  IChatMessages,
+  IChatUserMessage,
+} from "@/types";
 import { BaseStateItem } from "./item";
 import { maybeStringifyJSON } from "@/utils";
 
@@ -10,7 +14,10 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     this.name = name;
   }
 
-  setUserMessage(content: string, name?: string) {
+  setUserMessage(
+    content: string | IChatMessageContentDetailed[],
+    name?: string
+  ) {
     if (content) {
       const msg: IChatUserMessage = {
         role: "user",
@@ -54,7 +61,9 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     }
     return this;
   }
-  setFunctionCallMessage(input: {function_call: { name: string; arguments: string }}) {
+  setFunctionCallMessage(input: {
+    function_call: { name: string; arguments: string };
+  }) {
     this.value.push({
       role: "assistant",
       function_call: {
@@ -83,9 +92,11 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
           this.setUserMessage(message?.content, message?.name);
           break;
         case "assistant":
-          if(message.function_call){
-            this.setFunctionCallMessage({ function_call: message.function_call });
-          }else if(message?.content){
+          if (message.function_call) {
+            this.setFunctionCallMessage({
+              function_call: message.function_call,
+            });
+          } else if (message?.content) {
             this.setAssistantMessage(message?.content);
           }
           break;
@@ -101,7 +112,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
   }
 
   getHistory() {
-    return this.getValue()
+    return this.getValue();
   }
 
   serialize() {

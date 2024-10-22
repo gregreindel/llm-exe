@@ -19,8 +19,8 @@ export function createCallableExecutor<
 }
 
 export class UseExecutors<
-I extends PlainObject | { input: string },
-O extends any
+  I extends PlainObject | { input: string },
+  O extends any
 > extends UseExecutorsBase<I, O> {
   constructor(handlers: CallableExecutor<I, O>[]) {
     super(handlers);
@@ -35,7 +35,7 @@ export function useExecutors<
     ...(CallableExecutor<any, any> | CallableExecutorInput<any, any>)[]
   ]
 ) {
-  return new UseExecutors<I,O>(
+  return new UseExecutors<I, O>(
     executors.map((e) => {
       if (e instanceof CallableExecutor) return e;
       return createCallableExecutor(e);

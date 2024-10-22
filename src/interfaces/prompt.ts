@@ -12,6 +12,7 @@ export interface PromptTemplateOptions {
 export interface PromptOptions extends PromptTemplateOptions {
   preFilters?: ((prompt: string) => string)[];
   postFilters?: ((prompt: string) => string)[];
+  replaceTemplateString?: (...args: any[]) => string;
 }
 
 export interface ChatPromptOptions extends PromptOptions {

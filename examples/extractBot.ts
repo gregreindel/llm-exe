@@ -1,5 +1,5 @@
 import { createLlmExecutor } from "@/executor";
-import { BaseLlm } from "@/llm";
+import { BaseLlm } from "@/types";
 import { createParser } from "@/parser";
 import { createPrompt } from "@/prompt";
 import { IChatMessages } from "@/types";
