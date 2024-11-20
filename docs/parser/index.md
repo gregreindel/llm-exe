@@ -7,7 +7,7 @@ There are various default parsers included, and the parser class is easily exten
 
 When combined with an LLM executor, the parser is responsible for providing type hints to the Typescript compiler on the expected output for the LLM executor.
 
-**Note**: You can use and call methods on parsers directly, but they are usually passed to an [LLM executor](/executor) and then called internally. 
+**Note**: You can use and call methods on parsers directly, but they are usually passed to an [LLM executor](/executor/index.html) and then called internally. 
 ## Getting Started
 
 ### Working with Parsers

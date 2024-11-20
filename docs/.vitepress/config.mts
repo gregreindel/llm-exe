@@ -303,18 +303,18 @@ export default defineConfig({
           // },
         ],
       },
-      {
-        text: "Other",
-        link: "",
-        collapsed: true,
-        items: [
-          // SidebarItem
-          {
-            text: "Comparing to Langchain",
-            link: "/misc/comparing-langchain.html",
-          },
-        ],
-      },
+      // {
+      //   text: "Other",
+      //   link: "",
+      //   collapsed: true,
+      //   items: [
+      //     // SidebarItem
+      //     {
+      //       text: "Comparing to Langchain",
+      //       link: "/misc/comparing-langchain.html",
+      //     },
+      //   ],
+      // },
     ],
 
     socialLinks: [

@@ -12,10 +12,10 @@ hero:
   actions:
     - theme: brand
       text: Documentation
-      link: /markdown-examples
+      link: /intro/install.html
     - theme: alt
       text: See Examples
-      link: /api-examples
+      link: /examples
     - theme: text
       text: Github
       link: https://github.com/gregreindel/llm-exe
@@ -30,11 +30,11 @@ features:
     details: Supercharge your prompts by using handlebars within prompt template.
   - title: Control
     details: Not very opinionated. You have control on how you use it.
-  - title: Feature A
+  - title: Chat or Text Prompts
     details: Support for text-based and chat-based prompts (gpt-3.5-turbo and gpt-4).
   - title: Function Calling
     details: Allow LLM's to call functions (or call other LLM executors).
-  - title: Feature C
+  - title: Use {{variables}}
     details: Supercharge your prompts by using handlebars within prompt template.
   - title: Test Coverage
     details: 100% test coverage

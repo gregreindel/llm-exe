@@ -18,7 +18,7 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 > Different vendors will allow (and may require) additional options.
 > - [OpenAi Chat Model Options](/llm/openai#openai-specific-options).
 > - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options).
-> - [Bedrock Chat Model Options](/llm/bedrock).
+> - [Bedrock Chat Model Options](/llm/bedrock/index.html).
 
 <!-- 
 | Option           | Type            | Default       | Description                                                                                                                             |
