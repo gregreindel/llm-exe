@@ -1,6 +1,6 @@
 # Introduction
 
-When writing llm-powered functions, you'll end up repeating a lot of code, and will end up needing some structure. A prompt may seem simple, but as your instructions grow, you may end up needing to add some more advanced abstractions. Likewise, if you're calling an llm if various functions in your code, you'll end up writing some wrapper around the llm so that you can share some functionality. like logging, collecting metrics, handling failures/timeouts/retry. Furthermore, the LLM will be returning a string that you may need to validate or parse into a usable data type. Will you be duplicating code? Or creating sharable output parsers.
+When writing llm-powered functions, you'll end up repeating a lot of code, and will end up needing some structure. A prompt may seem simple, but as your instructions grow, you may end up needing to add some more advanced abstractions. Likewise, if you're calling an llm in various functions in your code, you'll end up writing some wrapper around the llm so that you can share functionality like logging, collecting metrics, handling failures/timeouts/retry/etc. Furthermore, the LLM will be returning a string that you may need to validate or parse into a usable data type. Will you be duplicating code? Or creating sharable output parsers.
 
 This package aims to be those lightweight abstractions.
 
@@ -68,21 +68,17 @@ This example does use llm-exe!
 :::
 This example uses llm-exe to accomplish the same task.
 ```ts
-export const instruction = `You are not an assistant, I need you to reply with only 
-  'yes' or 'no' as an answer to the question below. Do not explain yourself 
-  or ask questions. Answer with only yes or no.`;
 
-export const prompt = createChatPrompt(instruction)
+export const prompt = createChatPrompt(`You are not an assistant, I need you to reply with only 
+  'yes' or 'no' as an answer to the question below. Do not explain yourself 
+  or ask questions. Answer with only yes or no.`)
     .addUserMessage(input)
     .addSystemMessage(`yes or no:`);
 
 export async function YesOrNoBot<I extends string>(
   input: I
 ): Promise<{ response: string }> {
-  const llm = useLlm("openai.chat.v1", {
-    model: "gpt-4o-mini",
-  });
-
+  const llm = useLlm("gpt-4o-mini");
   const parser = createParser("stringExtract", { enum: ["yes", "no"]});
   return createLlmExecutor({ llm, prompt, parser }).execute({
     body,

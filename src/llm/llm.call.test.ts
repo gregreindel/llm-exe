@@ -271,7 +271,7 @@ describe("useLlm_call", () => {
             name: a.name,
             description: a.description,
             parameters: a.parameters,
-            strict: true,
+            strict: false,
           },
         })),
       }),
@@ -303,8 +303,8 @@ describe("useLlm_call", () => {
           type: "json_schema",
           json_schema: {
             name: "output",
+            strict: false,
             schema: mock_options.jsonSchema,
-            strict: true,
           },
         },
       }),
@@ -336,8 +336,8 @@ describe("useLlm_call", () => {
           type: "json_schema",
           json_schema: {
             name: "output",
-            schema: mock_options.jsonSchema,
             strict: true,
+            schema: mock_options.jsonSchema,
           },
         },
       }),
@@ -360,7 +360,7 @@ describe("useLlm_call", () => {
         additionalProperties: false,
       },
     };
-    await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
+    await useLlm_call(mockStateOpenAi, mockMessages, mock_options);
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -369,8 +369,8 @@ describe("useLlm_call", () => {
           type: "json_schema",
           json_schema: {
             name: "output",
-            schema: mock_options.jsonSchema,
             strict: true,
+            schema: mock_options.jsonSchema,
           },
         },
       }),
@@ -402,8 +402,8 @@ describe("useLlm_call", () => {
           type: "json_schema",
           json_schema: {
             name: "output",
+            strict: false,
             schema: mock_options.jsonSchema,
-            strict: true,
           },
         },
       }),
@@ -426,7 +426,7 @@ describe("useLlm_call", () => {
         additionalProperties: false,
       },
     };
-    await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
+    await useLlm_call(mockStateOpenAi, mockMessages, mock_options);
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -435,6 +435,7 @@ describe("useLlm_call", () => {
           type: "json_schema",
           json_schema: {
             name: "output",
+            strict: false,
             schema: mock_options.jsonSchema,
           },
         },

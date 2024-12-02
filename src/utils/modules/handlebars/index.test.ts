@@ -1,5 +1,4 @@
-import { hbs as hbsInstance } from "@/utils/modules/handlebars";
-import { registerPartials, registerHelpers } from "@/utils";
+import { hbs as hbsInstance, registerHelpers, registerPartials } from "@/utils/modules/handlebars";
 
 
 jest.mock('@/utils/modules/handlebars/helpers/async/async-helpers', () => ({

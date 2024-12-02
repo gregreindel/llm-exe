@@ -18,28 +18,18 @@ Below is simple example:
 ```js
 import {
   useLlm,
-  createChatPrompt,
-  createParser
+  createChatPrompt
 } from "llm-exe";
 
-const instruction = `<some prompt>
-
-Your response must be formatted like:
-<subtask>
-<subtask>
-<subtask>`;
-
-const llm = useLlm("openai.chat.v1",{ /* options */ });
-const prompt = createChatPrompt(instruction).addUserMessage()
-const parser = createParser("listToArray");
+const llm = useLlm("openai.gpt-4o-mini");
+const prompt = createChatPrompt("Talk like a pirate.")
 
 const executor = createLlmExecutor({
   llm,
-  prompt,
-  parser
+  prompt
 })
 
-const input = "Hello! When was my last appointment?";
+const input = "Hello!";
 const response = await executor.execute({ input })
 /**
  * 
@@ -48,15 +38,11 @@ const response = await executor.execute({ input })
  * 
  * [{ 
  *   role: 'system', 
- *   content: '<some prompt>
- *             Your response must be formatted like:
- *             - <subtask>
- *             - <subtask>
- *             - <subtask>' 
+ *   content: 'Talk like a pirate.' 
  * },
  * { 
  *   role: 'user',
- *   content: 'Hello! When was my last appointment?'
+ *   content: 'Hello!'
  * }]
  * 
  */
@@ -64,40 +50,7 @@ const response = await executor.execute({ input })
 /**
  * 
  * Output from LLM executor:
- * [
- *  "a subtask the llm generated",
- *  "a subtask the llm generated",
- *  "a subtask the llm generated",
- * ]
+ * Arrr, matey! Speak up, fer me ears be as keen as a sea serpent's! 
+ * Avast ye, what be your query?
  * /
-```
-
-Below is the above example with types added:
-
-```ts
-import {
-  useLlm,
-  createChatPrompt,
-  createParser
-} from "llm-exe";
-
-interface ChatInput {
-  input: string;
-  anything: string[]
-}
-
-const instruction = `You are a customer support agent. Reply below.`;
-
-const llm = useLlm("openai.chat.v1", {/* options */});
-const prompt = createChatPrompt<ChatInput>(instruction);
-const parser = createParser("json");
-
-const executor = createLlmExecutor({
-  llm,
-  prompt,
-  parser
-})
-
-const input = "Hello! When was my last appointment?";
-const response = await executor.execute({ input })
 ```

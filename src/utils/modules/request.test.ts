@@ -33,7 +33,7 @@ describe("apiRequest", () => {
       json: jest.fn(),
     } as unknown as Response);
 
-    await expect(apiRequest(url)).rejects.toThrow(`Request to ${url} failed: HTTP error! Status: 404. Error`);
+    await expect(apiRequest(url)).rejects.toThrow(`Request to ${url} failed: HTTP error. Status: 404. Error Message: Unknown error.`);
     expect(global.fetch).toHaveBeenCalledWith(url,  {})
   });
 

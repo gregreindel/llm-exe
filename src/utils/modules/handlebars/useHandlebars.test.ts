@@ -1,5 +1,4 @@
 import { hbs as hbsInstance, useHandlebars } from "@/utils/modules/handlebars";
-
 import * as path from "path";
 
 jest.mock("@/utils/modules/handlebars/helpers/async/async-helpers", () => ({

@@ -35,17 +35,15 @@ export async function useLlm_call(
   // this needs to be improved
   if (_options && _options?.jsonSchema) {
     if (state.provider === "openai.chat") {
-      if (!!functionCallStrictInput) {
-        const curr = input["response_format"] || {};
-        input["response_format"] = Object.assign(curr, {
-          type: "json_schema",
-          json_schema: {
-            name: "output",
-            strict: true,
-            schema: cleanJsonSchemaFor(_options?.jsonSchema, "openai.chat"),
-          },
-        });
-      }
+      const curr = input["response_format"] || {};
+      input["response_format"] = Object.assign(curr, {
+        type: "json_schema",
+        json_schema: {
+          name: "output",
+          strict: !!functionCallStrictInput,
+          schema: cleanJsonSchemaFor(_options?.jsonSchema, "openai.chat"),
+        },
+      });
     }
   }
 

@@ -31,17 +31,17 @@ import { useLlm, createChatPrompt, createParser } from "llm-exe";
 export function piiDetector(input: string){
   const instruction = `You need to check the text below for any of the PII listed below.
   
-PII you are looking for:
+## PII you are looking for:
 email addresses: anything that matches an email address
 social security number: a personal social security number or business EIN
 credit card number: a credit card number
 
-You should respond with the template below:
+## You should respond with the template below:
 email addresses: <true or false if this type of PII is included>
 social security number: <true or false if this type of PII is included>
 credit card number: <true or false if this type of PII is included>`;
 
-  const llm = useLlm("openai.chat.v1", {/* options */});
+  const llm = useLlm("gpt-4o-mini");
   const prompt = createChatPrompt(instruction);
   const parser = createParser("listToJson");
 

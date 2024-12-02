@@ -49,7 +49,7 @@ Your response must be formatted like:
 <subtask>
 <subtask>`;
 
-const llm = useLlm("openai.chat.v1",{ /* options */ });
+const llm = useLlm("openai.gpt-4o-mini");
 const prompt = createChatPrompt(instruction).addUserMessage()
 const parser = createParser("listToArray");
 
