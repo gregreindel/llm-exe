@@ -2,7 +2,7 @@
 
 When calling an LLM from your code, the LLM only knows the history you provide it.
 
-When using llm-exe, the state is something you need to manage. To help provide a memory to your LLM's, we provide a simple state module. 
+When using llm-exe, the state is something you need to manage. To help provide a concept of memory to your LLM's, we provide a simple state module. 
 
 The state module consists of 3 concepts:
 - Dialogues

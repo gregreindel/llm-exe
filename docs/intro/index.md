@@ -68,26 +68,27 @@ This example does use llm-exe!
 :::
 This example uses llm-exe to accomplish the same task.
 ```ts
+import * as llmExe from "llm-exe";
 
-export const prompt = createChatPrompt(`You are not an assistant, I need you to reply with only 
+export async function YesOrNoBot<I extends string>(input: I) {
+  const llm = llmExe.useLlm("openai.gpt-4o-mini");
+
+  const instruction = `You are not an assistant, I need you to reply with only 
   'yes' or 'no' as an answer to the question below. Do not explain yourself 
-  or ask questions. Answer with only yes or no.`)
+  or ask questions. Answer with only yes or no.`;
+
+  const prompt = llmExe
+    .createChatPrompt(instruction)
     .addUserMessage(input)
     .addSystemMessage(`yes or no:`);
 
-export async function YesOrNoBot<I extends string>(
-  input: I
-): Promise<{ response: string }> {
-  const llm = useLlm("gpt-4o-mini");
-  const parser = createParser("stringExtract", { enum: ["yes", "no"]});
-  return createLlmExecutor({ llm, prompt, parser }).execute({
-    body,
-  });
+  const parser = llmExe.createParser("stringExtract", { enum: ["yes", "no"] });
+  return llmExe.createLlmExecutor({ llm, prompt, parser }).execute({ input });
 }
 ```
 
 This is a simple example, but to highlight some key differences:
-- The example uses openai, but you could use a different model from a different vendor.
+- The example uses OpenAI, but you could use a different model from a different vendor.
 - The llm-exe version is structured in a way that each component could be testable. 
 - Extra configuration details are hidden away.
 - Parsing the output - the llm-exe version enforces the output we desire, and makes sure it is well-typed, without needing to deal with the response.

@@ -26,9 +26,14 @@ As you can see ,
 
 Here is how you could implement example above with an LLM executor:
 ```ts
-import { useLlm, createChatPrompt, createParser } from "llm-exe";
+import {
+  useLlm,
+  createChatPrompt,
+  createParser,
+  createLlmExecutor,
+} from "llm-exe";
 
-export function piiDetector(input: string){
+export function piiDetector(input: string) {
   const instruction = `You need to check the text below for any of the PII listed below.
   
 ## PII you are looking for:
@@ -41,15 +46,15 @@ email addresses: <true or false if this type of PII is included>
 social security number: <true or false if this type of PII is included>
 credit card number: <true or false if this type of PII is included>`;
 
-  const llm = useLlm("gpt-4o-mini");
-  const prompt = createChatPrompt(instruction);
+  const llm = useLlm("openai.gpt-4o-mini");
+  const prompt = createChatPrompt(instruction).addUserMessage(input);
   const parser = createParser("listToJson");
 
   const executor = createLlmExecutor({
     llm,
     prompt,
-    parser
-  })
+    parser,
+  });
 
   return executor.execute({ input });
 }

@@ -46,26 +46,33 @@ features:
 
 # Quick Example
 ```ts
-export const instruction = `You are not an assistant, I need you to reply with only 
+import * as llmExe from "llm-exe";
+
+/**
+ * Define a yes/no llm-powered function
+ */
+export async function YesOrNoBot<I extends string>(input: I) {
+  const llm = llmExe.useLlm("openai.gpt-4o-mini");
+
+  const instruction = `You are not an assistant, I need you to reply with only 
   'yes' or 'no' as an answer to the question below. Do not explain yourself 
   or ask questions. Answer with only yes or no.`;
 
-export const prompt = createChatPrompt(instruction)
+  const prompt = llmExe
+    .createChatPrompt(instruction)
     .addUserMessage(input)
     .addSystemMessage(`yes or no:`);
 
-export async function YesOrNoBot<I extends string>(
-  input: I
-): Promise<{ response: string }> {
-  const llm = useLlm("openai.chat.v1", {
-    model: "gpt-4o-mini",
-  });
-
-  const parser = createParser("stringExtract", { enum: ["yes", "no"]});
-  return createLlmExecutor({ llm, prompt, parser }).execute({
-    body,
-  });
+  const parser = llmExe.createParser("stringExtract", { enum: ["yes", "no"] });
+  return llmExe.createLlmExecutor({ llm, prompt, parser }).execute({ input });
 }
 ```
+```ts
+const isTheSkyBlue = await YesOrNoBot(`Can the sky be blue?`)
+// yes
 
+const isGrassRed = await YesOrNoBot(`Is grass usually red?`)
+// no
+
+```
 </div>

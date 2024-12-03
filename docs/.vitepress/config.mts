@@ -150,10 +150,14 @@ export default defineConfig({
       },
       {
         text: "Prompt",
-        link: "/prompt/index.html",
         collapsed: true,
         items: [
           {
+            text: "Getting Started",
+            link: "/prompt/index.html",
+
+            items: [],
+          },          {
             text: "Chat Prompt",
             link: "/prompt/chat.html",
             items: [],
@@ -180,9 +184,11 @@ export default defineConfig({
         text: "Parser",
         link: "/parser/index.html",
         collapsed: true,
-
         items: [
           {
+            text: "Getting Started",
+            link: "/parser/index.html",
+          },{
             text: "Included Parsers",
             link: "/parser/included-parsers.html",
           },
@@ -205,9 +211,12 @@ export default defineConfig({
       },
       {
         text: "LLM Executor",
-        link: "/executor/index.html",
         collapsed: true,
         items: [
+          {
+            text: "Getting Started",
+            link: "/executor/index.html",
+          },
           {
             text: "Functions (tools)",
             link: "/executor/openai-functions.html",
@@ -220,9 +229,12 @@ export default defineConfig({
       },
       {
         text: "Embeddings",
-        link: "/embeddings/index.html",
         collapsed: true,
         items: [
+          {
+            text: "Getting Started",
+            link: "/embeddings/index.html",
+          },
           {
             text: "OpenAi",
             link: "/embeddings/openai.html",
