@@ -1,52 +1,56 @@
 import Handlebars from "handlebars";
 import { isPromise } from "@/utils/modules/isPromise";
+import { asyncCoreOverrideHelpers } from "../helpers/async/async-helpers";
+import { registerHelpers } from "./registerHelpers";
 
-export type HandlebarsAsync = typeof Handlebars &  {
-  compile: (...args: Parameters<typeof Handlebars.compile>) => (context: any, execOptions?: any) => Promise<string>;
-}
+export type HandlebarsAsync = typeof Handlebars & {
+  compile: (
+    ...args: Parameters<typeof Handlebars.compile>
+  ) => (context: any, execOptions?: any) => Promise<string>;
+};
 
 /** From: https://github.com/gastonrobledo/handlebars-async-helpers/blob/main/index.js */
 export function makeHandlebarsInstanceAsync(hbs: any) {
-  const handlebars: typeof Handlebars = hbs.create()
+  const handlebars: typeof Handlebars = hbs.create();
   const asyncCompiler = class extends hbs.JavaScriptCompiler {
-      constructor() {
-        super();
-        this.compiler = asyncCompiler;
-      }
+    constructor() {
+      super();
+      this.compiler = asyncCompiler;
+    }
 
-      mergeSource(varDeclarations: any) {
-        const sources = super.mergeSource(varDeclarations);
-        sources.prepend("return (async () => {");
-        sources.add(" })()");
-        return sources;
-      }
+    mergeSource(varDeclarations: any) {
+      const sources = super.mergeSource(varDeclarations);
+      sources.prepend("return (async () => {");
+      sources.add(" })()");
+      return sources;
+    }
 
-      appendToBuffer(
-        source: Record<string, any>,
-        location: any,
-        explicit: boolean
-      ) {
-        // Force a source as this simplifies the merge logic.
-        if (!Array.isArray(source)) {
-          source = [source];
-        }
-        source = this.source.wrap(source, location);
-
-        if (this.environment.isSimple) {
-          return ["return await ", source, ";"];
-        }
-        /* istanbul ignore next */
-        if (explicit) {
-          // This is a case where the buffer operation occurs as a child of another
-          // construct, generally braces. We have to explicitly output these buffer
-          // operations to ensure that the emitted code goes in the correct location.
-          return ["buffer += await ", source, ";"];
-        }
-        source.appendToBuffer = true;
-        source.prepend("await ");
-        return source;
+    appendToBuffer(
+      source: Record<string, any>,
+      location: any,
+      explicit: boolean
+    ) {
+      // Force a source as this simplifies the merge logic.
+      if (!Array.isArray(source)) {
+        source = [source];
       }
-    };
+      source = this.source.wrap(source, location);
+
+      if (this.environment.isSimple) {
+        return ["return await ", source, ";"];
+      }
+      /* istanbul ignore next */
+      if (explicit) {
+        // This is a case where the buffer operation occurs as a child of another
+        // construct, generally braces. We have to explicitly output these buffer
+        // operations to ensure that the emitted code goes in the correct location.
+        return ["buffer += await ", source, ";"];
+      }
+      source.appendToBuffer = true;
+      source.prepend("await ");
+      return source;
+    }
+  };
   (handlebars as any).JavaScriptCompiler = asyncCompiler;
 
   const _compile = handlebars.compile;
@@ -54,16 +58,16 @@ export function makeHandlebarsInstanceAsync(hbs: any) {
   const _escapeExpression = handlebars.escapeExpression;
 
   function escapeExpression(value: any) {
-      if (isPromise(value)) {
-        return value.then((v: any) => _escapeExpression(v));
-      }
-      return _escapeExpression(value);
-    };
+    if (isPromise(value)) {
+      return value.then((v: any) => _escapeExpression(v));
+    }
+    return _escapeExpression(value);
+  }
 
   function lookupProperty(containerLookupProperty: any) {
     return function (parent: any, propertyName: any) {
       if (isPromise(parent)) {
-        if(typeof parent?.then === "function"){
+        if (typeof parent?.then === "function") {
           return parent.then((p: any) =>
             containerLookupProperty(p, propertyName)
           );
@@ -117,6 +121,16 @@ export function makeHandlebarsInstanceAsync(hbs: any) {
     };
   };
 
-  return handlebars as HandlebarsAsync
-}
+  const asyncHelperKeys = Object.keys(
+    asyncCoreOverrideHelpers
+  ) as (keyof typeof asyncCoreOverrideHelpers)[];
+  registerHelpers(
+    asyncHelperKeys.map((a) => ({
+      handler: asyncCoreOverrideHelpers[a],
+      name: a,
+    })),
+    handlebars
+  );
 
+  return handlebars as HandlebarsAsync;
+}

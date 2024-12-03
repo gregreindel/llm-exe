@@ -1,14 +1,14 @@
 import {
   maybeParseJSON,
   maybeStringifyJSON,
-} from "@/utils";
+} from "@/utils/modules/json";
 import { indentJson } from "./indentJson";
-import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
+import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 
-jest.mock("@/utils/modules/replaceTemplateString", () => ({
-  replaceTemplateString: jest.fn(),
+jest.mock("@/utils/modules/replaceTemplateStringSimple", () => ({
+  replaceTemplateStringSimple: jest.fn(),
 }));
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/json", () => ({
   maybeParseJSON: jest.fn(),
   maybeStringifyJSON: jest.fn(),
 }));
@@ -16,7 +16,7 @@ jest.mock("@/utils", () => ({
 describe("indentJson", () => {
   const maybeParseJSONMock = maybeParseJSON as jest.Mock;
   const maybeStringifyJSONMock = maybeStringifyJSON as jest.Mock;
-  const replaceTemplateStringMock = replaceTemplateString as jest.Mock;
+  const replaceTemplateStringMock = replaceTemplateStringSimple as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();

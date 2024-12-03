@@ -31,8 +31,8 @@ export async function useLlm_call(
     })
   );
 
-  // move me!
-  // this needs to be improved
+  // this is where we'll handle provider-specific formatting
+  // move into a separate function and have better tests
   if (_options && _options?.jsonSchema) {
     if (state.provider === "openai.chat") {
       const curr = input["response_format"] || {};
@@ -93,9 +93,9 @@ export async function useLlm_call(
       });
     }
   }
-  // END move me!
+  // END: provider-specific format handling
 
-  const body = typeof input === "string" ? input : JSON.stringify(input);
+  const body = JSON.stringify(input);
 
   const url = replaceTemplateStringSimple(config.endpoint, state);
 

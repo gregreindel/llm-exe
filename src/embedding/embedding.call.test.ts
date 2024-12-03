@@ -133,6 +133,37 @@ describe("createEmbedding_call", () => {
     });
   });
 
+  it("should handle stringified input correctly", async () => {
+    const input = JSON.stringify({ test: "input" });
+    mapBodyMock.mockReturnValueOnce({})
+
+    const result = await createEmbedding_call(mockState, input);
+
+    expect(getEmbeddingConfigMock).toHaveBeenCalledWith(mockState.key);
+    expect(mapBodyMock).toHaveBeenCalledWith(mockConfig.mapBody, {
+      ...mockState,
+      input
+    });
+    expect(replaceTemplateStringSimpleMock).toHaveBeenCalledWith(mockConfig.endpoint, mockState);
+    expect(parseHeadersMock).toHaveBeenCalledWith(mockConfig, mockState, {
+      url: mockConfig.endpoint,
+      headers: expect.any(Object),
+      body: JSON.stringify({})
+    });
+    expect(apiRequestMock).toHaveBeenCalledWith(mockConfig.endpoint, {
+      method: mockConfig.method,
+      body: JSON.stringify({}),
+      headers: mockParsedHeaders,
+    });
+    expect(getEmbeddingOutputParserMock).toHaveBeenCalledWith(mockState, {
+      data: "mockResponse"
+    });
+    expect(result).toEqual({
+      embeddedData: "parsedData"
+    });
+  });
+
+
   it("should handle options parameter correctly", async () => {
     const input = "test input";
     const options: any = {

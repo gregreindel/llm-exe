@@ -314,6 +314,20 @@ describe("useLlm_call", () => {
     });
   });
 
+  it("should openai and response_format with no options passed", async () => {
+    await useLlm_call(mockStateOpenAi, mockMessages, undefined as any);
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        response_format: undefined,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
   it("should openai and response_format with functionCallStrictInput", async () => {
     const mock_options = {
       functionCallStrictInput: true,

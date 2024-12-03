@@ -1,10 +1,10 @@
 import {
   maybeParseJSON,
   maybeStringifyJSON,
-} from "@/utils";
+} from "@/utils/modules/json";
 import { get } from "@/utils/modules/get";
 import { schemaExampleWith } from "@/utils/modules/schemaExampleWith";
-import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
+import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 
 export function jsonSchemaExample(
   this: any,
@@ -19,7 +19,7 @@ export function jsonSchemaExample(
       return "";
     }
     const replaced = maybeParseJSON(
-      replaceTemplateString(maybeStringifyJSON(result), this)
+      replaceTemplateStringSimple(maybeStringifyJSON(result), this)
     );
 
     if (collapse == "true") {

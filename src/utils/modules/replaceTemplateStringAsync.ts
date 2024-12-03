@@ -1,6 +1,7 @@
 import { PromptTemplateOptions } from "@/types";
+import { registerHelpers } from "./handlebars/utils/registerHelpers";
+import { registerPartials } from "./handlebars/utils/registerPartials";
 import { hbsAsync } from "./handlebars";
-import { registerHelpers, registerPartials } from "@/utils/modules/handlebars";
 
 export async function replaceTemplateStringAsync(
   templateString?: string,

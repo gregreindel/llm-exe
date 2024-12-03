@@ -29,7 +29,7 @@ export async function createEmbedding_call(
     })
   );
 
-  const body = typeof input === "string" ? input : JSON.stringify(input);
+  const body = JSON.stringify(input);
 
   const url = replaceTemplateStringSimple(config.endpoint, state);
 

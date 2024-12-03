@@ -3,7 +3,7 @@ import { schemaExampleWith } from "@/utils/modules/schemaExampleWith";
 import {
   maybeParseJSON,
   maybeStringifyJSON,
-} from "@/utils";
+} from "@/utils/modules/json";
 import { jsonSchemaExample } from "./jsonSchemaExample";
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
@@ -15,7 +15,7 @@ jest.mock("@/utils/modules/replaceTemplateString", () => ({
   replaceTemplateString: jest.fn(),
 }));
 
-jest.mock("@/utils", () => ({
+jest.mock("@/utils/modules/json", () => ({
   maybeParseJSON: jest.fn(),
   maybeStringifyJSON: jest.fn(),
 }));

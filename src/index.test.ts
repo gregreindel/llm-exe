@@ -25,13 +25,14 @@ describe("llmExe", () => {
     expect(llmExe).toHaveProperty("CustomParser");
     expect(llmExe).toHaveProperty("createParser");
     expect(llmExe).toHaveProperty("createCustomParser");
+    expect(llmExe).toHaveProperty("OpenAiFunctionParser");
     /**
      * Core Functions
      */
     expect(llmExe).toHaveProperty("BaseExecutor");
     expect(llmExe).toHaveProperty("createCoreExecutor");
     expect(llmExe).toHaveProperty("createLlmExecutor");
-
+    expect(llmExe).toHaveProperty("LlmExecutorOpenAiFunctions");
     /**
      * Callable
      */
@@ -48,6 +49,9 @@ describe("llmExe", () => {
     expect(llmExe).toHaveProperty("BaseStateItem");
     expect(llmExe).toHaveProperty("DefaultStateItem");
     expect(llmExe).toHaveProperty("createState");
+    expect(llmExe).toHaveProperty("createDialogue");
     expect(llmExe).toHaveProperty("createStateItem");
+
+    
   });
 });

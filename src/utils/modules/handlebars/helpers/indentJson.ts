@@ -1,5 +1,5 @@
-import { maybeParseJSON, maybeStringifyJSON } from "@/utils";
-import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
+import { maybeParseJSON, maybeStringifyJSON } from "@/utils/modules/json";
+import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 
 export function indentJson(
   this: any,
@@ -7,10 +7,10 @@ export function indentJson(
   collapse = "false"
 ) {
   if (typeof arg1 !== "object") {
-    return replaceTemplateString(arg1 || "", this);
+    return replaceTemplateStringSimple(arg1 || "", this);
   }
   const replaced = maybeParseJSON(
-    replaceTemplateString(maybeStringifyJSON(arg1), this)
+    replaceTemplateStringSimple(maybeStringifyJSON(arg1), this)
   );
 
   if (collapse == "true") {
