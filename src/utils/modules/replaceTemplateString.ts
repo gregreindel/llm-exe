@@ -1,7 +1,5 @@
 import { PromptTemplateOptions } from "@/types";
 import { hbs } from "@/utils/modules/handlebars";
-import { registerHelpers } from "./handlebars/utils/registerHelpers";
-import { registerPartials } from "./handlebars/utils/registerPartials";
 
 export function replaceTemplateString(
   templateString?: string,
@@ -17,16 +15,16 @@ export function replaceTemplateString(
   const tempPartials = [];
 
   if (Array.isArray(configuration.helpers)) {
-    registerHelpers(configuration.helpers, hbs);
+    hbs.registerHelpers(configuration.helpers);
     tempHelpers.push(...configuration.helpers.map((a) => a.name));
   }
 
   if (Array.isArray(configuration.partials)) {
-    registerPartials(configuration.partials, hbs);
+    hbs.registerPartials(configuration.partials);
     tempPartials.push(...configuration.partials.map((a) => a.name));
   }
 
-  const template = hbs.compile(templateString);
+  const template = hbs.handlebars.compile(templateString);
   const res = template(substitutions, {
     allowedProtoMethods: {
       substring: true,
@@ -34,11 +32,11 @@ export function replaceTemplateString(
   });
 
   tempHelpers.forEach(function (n) {
-    hbs.unregisterHelper(n);
+    hbs.handlebars.unregisterHelper(n);
   });
 
   tempPartials.forEach(function (n) {
-    hbs.unregisterPartial(n);
+    hbs.handlebars.unregisterPartial(n);
   });
 
   return res;

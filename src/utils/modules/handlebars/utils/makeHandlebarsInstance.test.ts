@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 import { makeHandlebarsInstance } from "./makeHandlebarsInstance";
-import { registerPartials } from "@/utils/modules/handlebars/utils/registerPartials";
+import { _registerPartials } from "@/utils/modules/handlebars/utils/registerPartials";
 // import { registerHelpers } from "@/utils/modules/handlebars/utils/registerHelpers";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import * as contextPartials from "@/utils/modules/handlebars/templates";
@@ -79,7 +79,7 @@ describe("makeHandlebarsInstance", () => {
 
         handlebarsInstance = makeHandlebarsInstance(Handlebars);
 
-        expect(registerPartials).toHaveBeenCalledWith(
+        expect(_registerPartials).toHaveBeenCalledWith(
             expect.arrayContaining([{ name: "customPartial", template: mockPartials.customPartial }]),
             handlebarsInstance
         );

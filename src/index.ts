@@ -16,9 +16,9 @@ export {
 export {
   BaseParser,
   CustomParser,
+  OpenAiFunctionParser,
   createParser,
   createCustomParser,
-  OpenAiFunctionParser,
 } from "./parser";
 
 export {

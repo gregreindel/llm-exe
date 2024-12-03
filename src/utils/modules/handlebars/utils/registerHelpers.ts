@@ -1,4 +1,4 @@
-export function registerHelpers(helpers: any[], instance: typeof Handlebars) {
+export function _registerHelpers(helpers: any[], instance: typeof Handlebars) {
     if (helpers && Array.isArray(helpers)) {
       for (const helper of helpers) {
         if (

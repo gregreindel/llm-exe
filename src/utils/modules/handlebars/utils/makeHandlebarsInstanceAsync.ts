@@ -1,7 +1,12 @@
 import Handlebars from "handlebars";
 import { isPromise } from "@/utils/modules/isPromise";
 import { asyncCoreOverrideHelpers } from "../helpers/async/async-helpers";
-import { registerHelpers } from "./registerHelpers";
+import { _registerHelpers } from "./registerHelpers";
+import * as contextPartials from "@/utils/modules/handlebars/templates";
+import { getEnvironmentVariable } from "../../getEnvironmentVariable";
+import { _registerPartials } from "./registerPartials";
+import { importPartials } from "./importPartials";
+import * as helpers from "@/utils/modules/handlebars/helpers";
 
 export type HandlebarsAsync = typeof Handlebars & {
   compile: (
@@ -121,16 +126,42 @@ export function makeHandlebarsInstanceAsync(hbs: any) {
     };
   };
 
+  const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
+  _registerHelpers(
+    helperKeys.map((a) => ({ handler: helpers[a], name: a })),
+    handlebars,
+  );
+
+
   const asyncHelperKeys = Object.keys(
     asyncCoreOverrideHelpers
   ) as (keyof typeof asyncCoreOverrideHelpers)[];
-  registerHelpers(
+  _registerHelpers(
     asyncHelperKeys.map((a) => ({
       handler: asyncCoreOverrideHelpers[a],
       name: a,
     })),
     handlebars
   );
+
+  const contextPartialKeys = Object.keys(
+    contextPartials.partials
+  ) as (keyof typeof contextPartials.partials)[];
+  for (const contextPartialKey of contextPartialKeys) {
+    handlebars.registerPartial(
+      contextPartialKey,
+      contextPartials.partials[contextPartialKey]
+    );
+  }
+
+  const partialsPath = getEnvironmentVariable(
+    "CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH"
+  );
+  
+  if (typeof process === "object" && partialsPath) {
+    const externalPartials = require(partialsPath);
+    _registerPartials(importPartials(externalPartials), handlebars);
+  }
 
   return handlebars as HandlebarsAsync;
 }

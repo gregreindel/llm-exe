@@ -22,10 +22,10 @@ describe("useHandlebars", () => {
   });
 
   test("hbs", () => {
-    expect(hbsInstance).toHaveProperty("helpers");
-    expect(hbsInstance).toHaveProperty("partials");
-    expect(hbsInstance).toHaveProperty("VERSION");
-    expect(hbsInstance.VERSION).toEqual("4.7.8");
+    expect(hbsInstance.handlebars).toHaveProperty("helpers");
+    expect(hbsInstance.handlebars).toHaveProperty("partials");
+    expect(hbsInstance.handlebars).toHaveProperty("VERSION");
+    expect(hbsInstance.handlebars.VERSION).toEqual("4.7.8");
   });
 
 });

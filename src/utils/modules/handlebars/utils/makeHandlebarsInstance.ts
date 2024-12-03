@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
-import { registerPartials } from "@/utils/modules/handlebars/utils/registerPartials";
-import { registerHelpers } from "@/utils/modules/handlebars/utils/registerHelpers";
+import { _registerPartials } from "@/utils/modules/handlebars/utils/registerPartials";
+import { _registerHelpers } from "@/utils/modules/handlebars/utils/registerHelpers";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { importHelpers } from "./importHelpers";
 import { importPartials } from "./importPartials";
@@ -11,7 +11,7 @@ export function makeHandlebarsInstance(hbs: typeof Handlebars) {
   const handlebars = hbs.create()
 
   const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
-  registerHelpers(
+  _registerHelpers(
     helperKeys.map((a) => ({ handler: helpers[a], name: a })),
     handlebars,
   );
@@ -33,7 +33,7 @@ export function makeHandlebarsInstance(hbs: typeof Handlebars) {
   );
   if (helperPath) {
     const externalHelpers = require(helperPath);
-    registerHelpers(importHelpers(externalHelpers), handlebars);
+    _registerHelpers(importHelpers(externalHelpers), handlebars);
   }
 
   const contextPartialKeys = Object.keys(
@@ -52,7 +52,7 @@ export function makeHandlebarsInstance(hbs: typeof Handlebars) {
   
   if (typeof process === "object" && partialsPath) {
     const externalPartials = require(partialsPath);
-    registerPartials(importPartials(externalPartials), handlebars);
+    _registerPartials(importPartials(externalPartials), handlebars);
   }
 
   return handlebars;

@@ -1,4 +1,4 @@
-export function registerPartials(partials: any[], instance: typeof Handlebars ) {
+export function _registerPartials(partials: any[], instance: typeof Handlebars ) {
     if (partials && Array.isArray(partials)) {
       for (const partial of partials) {
         if (
