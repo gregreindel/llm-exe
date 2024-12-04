@@ -35,6 +35,7 @@ const anthropicChatV1: Config = {
     system: {},
     maxTokens: {
       required: [true, "maxTokens required"],
+      default: 4096,
     },
     anthropicApiKey: {
       default: getEnvironmentVariable("ANTHROPIC_API_KEY"),

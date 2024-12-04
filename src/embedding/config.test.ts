@@ -54,9 +54,13 @@ describe("embeddingConfigs", () => {
       headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
       options: {
         input: {},
-        dimensions: {},
+        dimensions: {
+          default: 1536
+        },
         encodingFormat: {},
-        openAiApiKey: {},
+        openAiApiKey: {
+          
+        },
       },
       mapBody: {
         input: {
@@ -89,7 +93,9 @@ describe("embeddingConfigs", () => {
       headers: `{"Content-Type": "application/json" }`,
       options: {
         input: {},
-        dimensions: {},
+        dimensions: {
+          default: 512
+        },
         awsRegion: expect.objectContaining({
           default: undefined,
           required: [true, "aws region is required"],

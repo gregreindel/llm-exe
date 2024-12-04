@@ -316,6 +316,10 @@ export type AllLlm = {
     input: AmazonBedrockRequest;
     // output: OpenAiRequest;
   };
+  // "amazon:nova.chat.v1": {
+  //   input: AmazonBedrockRequest;
+  //   // output: OpenAiRequest;
+  // };
 };
 
 export type AllUseLlmOptions = AllLlm & {

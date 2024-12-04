@@ -20,6 +20,8 @@ export function getOutputParser(
       return OutputAnthropicClaude3Chat(response, config);
     case "amazon:meta.chat.v1":
       return OutputMetaLlama3Chat(response, config);
+    // case "amazon:nova.chat.v1":
+      // return OutputDefault(response, config);
     default: {
       if ((config?.key as string)?.startsWith("custom:")) {
         return OutputDefault(response, config);

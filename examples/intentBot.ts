@@ -1,4 +1,4 @@
-import { llmExe } from "@/index";
+import * as llmExe from "@/index";
 import { BaseLlm } from "@/types";
 import { createCustomParser } from "@/parser";
 import { ExecutorContext, IChatMessages } from "@/types";

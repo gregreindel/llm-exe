@@ -8,6 +8,7 @@ export type LlmProvider =
   | "anthropic.chat"
   | "amazon:anthropic.chat"
   | "amazon:meta.chat"
+  | "amazon:nova.chat"
   | "amazon.embedding";
 
 export interface Config<Pk = LlmProviderKey> {

@@ -56,9 +56,12 @@ describe("configs", () => {
         prompt: {},
         system: {},
         maxTokens: {
+          default: 4096,
           required: [true, "maxTokens required"],
         },
-        anthropicApiKey: {},
+        anthropicApiKey: {
+          default: undefined,
+        },
       },
       mapBody: {
         model: {

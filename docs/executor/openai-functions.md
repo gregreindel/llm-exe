@@ -5,7 +5,7 @@ To take advantage of Tools Calling with OpenAi and Anthropic, You can use an `Ll
 ## Basic Example
 Highlighted below are the few lines that demonstrate the options for a 
 ```ts{13,14,15,16,17,18,19,20,21,26,27}
-const llm = useLlm("openai.chat.v1", {/* options */});
+const llm = useLlm("openai.gpt-4o-mini");
 const instruction = `You are walking through a maze.
 You must take one step at a time.
 Pick a direction to move.`;

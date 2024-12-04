@@ -2,6 +2,7 @@ import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { anthropicPromptSanitize } from "../anthropic";
 import { Config } from "@/types";
+// import { amazonNovaPromptSanitize } from "./prompt.nova";
 
 const ANTORPIC_BEDROCK_VERSION = "bedrock-2023-05-31";
 
@@ -84,7 +85,34 @@ const amazonMetaChatV1: Config = {
   },
 };
 
+
+// const amazonAmazonNovaChatV1: Config = {
+//   key: "amazon:nova.chat.v1",
+//   provider: "amazon:nova.chat",
+//   method: "POST",
+//   headers: `{"Content-Type": "application/json" }`,
+//   endpoint: `https://bedrock-runtime.{{awsRegion}}.amazonaws.com/model/{{model}}/invoke`,
+//   options: {
+//     prompt: {},
+//     topP: {},
+//     maxTokens: {},
+//     awsRegion: {
+//       default: getEnvironmentVariable("AWS_REGION"),
+//       required: [true, "aws region is required"],
+//     },
+//     awsSecretKey: {},
+//     awsAccessKey: {},
+//   },
+//   mapBody: {
+//     prompt: {
+//       key: "messages",
+//       sanitize: amazonNovaPromptSanitize,
+//     },
+//   },
+// };
+
 export const bedrock = {
   "amazon:anthropic.chat.v1": amazonAnthropicChatV1,
   "amazon:meta.chat.v1": amazonMetaChatV1,
+  // "amazon:nova.chat.v1": amazonAmazonNovaChatV1,
 };

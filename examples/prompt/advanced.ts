@@ -1,7 +1,7 @@
 import { createChatPrompt } from "@/prompt"
 import { IChatMessages } from "@/types"
 
-const withReplacements = () => {
+export const withReplacements = () => {
 // #region withReplacements
 const prompt = createChatPrompt("Your name is {{agentName}}")
 const formatted = prompt.format({agentName: "Greg"})
@@ -16,12 +16,12 @@ return {
 }
 
 
-const withReplacementsTwo = () => {
+export const withReplacementsTwo = () => {
 // #region withReplacementsTwo
 const prompt = createChatPrompt("Your name is {{agentName}}")
 
 const template = `{{#if fruits.length}}
-Ask about one of these fruits: 
+Ask about one of these fruits:
 {{#each fruits as | fruit |}}
 - {{fruit}}
 {{/each}}
@@ -43,7 +43,7 @@ return {
 // END example
 }
 
-const withReplacementsAndTypes = () => {
+export const withReplacementsAndTypes = () => {
 // #region withReplacementsAndTypes
 interface PromptTemplate {
     actions: {
@@ -58,12 +58,12 @@ interface PromptTemplate {
   }
   
 const template = `You are an agent that can only perform the following actions:
-  
+
 # Actions
 {{#each actions as | action |}}
 {{ action.name }} ({{ action.description }})
 {{/each}}
-  
+
 # Previous Steps Taken
 {{#each previousSteps as | previousStep |}}
 Thought: {{previousStep.thought}}

@@ -12,9 +12,13 @@ export const embeddingConfigs: {
     headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
     options: {
       input: {},
-      dimensions: {},
+      dimensions: {
+        default: 1536
+      },
       encodingFormat: {},
-      openAiApiKey: {},
+      openAiApiKey: {
+        default: getEnvironmentVariable("OPENAI_API_KEY")
+      },
     },
     mapBody: {
       input: {
@@ -40,7 +44,9 @@ export const embeddingConfigs: {
     headers: `{"Content-Type": "application/json" }`,
     options: {
       input: {},
-      dimensions: {},
+      dimensions: {
+        default: 512
+      },
       awsRegion: {
         default: getEnvironmentVariable("AWS_REGION"),
         required: [true, "aws region is required"],

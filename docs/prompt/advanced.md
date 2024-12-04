@@ -10,7 +10,7 @@ Below is a simple example showing syntax for replacing simple variables in the t
 </GenericOutput>
 
 
-Here is a slightly more advanced example showing a template that uses the `if` and `each` helpers supplies by Handlebars.
+Here is a more advanced example showing a template that uses the `if` and `each` helpers supplied by Handlebars.
 <GenericOutput example="prompt.advanced.withReplacementsTwo">
 
 <<< ../../examples/prompt/advanced.ts#withReplacementsTwo

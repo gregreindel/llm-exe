@@ -1,14 +1,14 @@
 # Anthropic
 
-When using Anthropic models via AWS Bedrock, llm-exe will make POST requests to `https://api.anthropic.com/v1/messages`.
+When using Anthropic models via AWS Bedrock, llm-exe will make POST requests to `https://bedrock-runtime.us-west-2.amazonaws.com/model/{MODEL_ID}/invoke`.
 
 ## Setup
 
 ### Anthropic Chat
 
 ```ts
-const llm = useLlm("", {
-  model: "claude-3-5-sonnet-20240620", // specify a model
+const llm = useLlm("amazon:anthropic.chat.v1", {
+  model: "anthropic.claude-3-sonnet-20240229-v1:0", // specify a model
 });
 ```
 

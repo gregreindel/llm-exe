@@ -83,8 +83,11 @@ export class LlmExecutor<
 
     if (this.promptFn) {
       const prompt = this.promptFn(_input);
-      const promptFormatted = prompt.format(_input);
-      return promptFormatted;
+      if(isPromise(prompt.formatAsync)){
+        return await prompt.formatAsync(_input);
+      }else {
+        return prompt.format(_input);
+      }
     }
     throw new Error("Missing prompt");
   }
