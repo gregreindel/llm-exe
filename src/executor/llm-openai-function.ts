@@ -1,13 +1,13 @@
 import {
+  BaseLlm,
   PromptInput,
   ParserOutput,
   CoreExecutorExecuteOptions,
   ExecutorWithLlmOptions,
   LlmExecutorHooks,
   OpenAiLlmExecutorOptions,
-  OpenAiFunctionCall,
+  GenericFunctionCall,
 } from "@/types";
-import { OpenAI } from "@/llm";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser";
@@ -18,7 +18,7 @@ import { LlmExecutor } from "./llm";
  * Core Executor With LLM
  */
 export class LlmExecutorOpenAiFunctions<
-  Llm extends OpenAI,
+  Llm extends BaseLlm,
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
   State extends BaseState
@@ -36,14 +36,14 @@ export class LlmExecutorOpenAiFunctions<
       options
     );
   }
-async execute<T extends OpenAiFunctionCall>(
-  _input: PromptInput<Prompt>,
-  _options: OpenAiLlmExecutorOptions<T>
-): Promise<ParserOutput<Parser>>
-  async execute<T extends OpenAiFunctionCall>(
+  async execute<T extends GenericFunctionCall>(
+    _input: PromptInput<Prompt>,
+    _options: OpenAiLlmExecutorOptions<T>
+  ): Promise<ParserOutput<Parser>>;
+  async execute<T extends GenericFunctionCall>(
     _input: PromptInput<Prompt>,
     _options: OpenAiLlmExecutorOptions<T>
   ) {
-    return super.execute(_input, _options) 
+    return super.execute(_input, _options);
   }
 }

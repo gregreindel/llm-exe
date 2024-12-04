@@ -1,12 +1,12 @@
 # Install
 
 Install llm-exe using npm.
-```
+```txt
 npm i llm-exe
 ```
 
-```typescript
-import * as llmExe from "llm-exe"
+```ts
+import llmExe from "llm-exe"
 
 // or 
 
@@ -15,34 +15,21 @@ import { /* specific modules */ } from from "llm-exe"
 
 ## Basic Example
 Below is simple example:
-```javascript
+```js
 import {
-  createLlmOpenAi,
-  createChatPrompt,
-  createParser
+  useLlm,
+  createChatPrompt
 } from "llm-exe";
 
-const instruction = `Based on the user message, I need you to provide a
-list of subtasks that need to be taken to answer their question.
-
-Your response must be formatted like:
-<subtask>
-<subtask>
-<subtask>
-
-Review the user message and reply with a list of subtasks:`;
-
-const llm = createLlmOpenAi({/* options */});
-const prompt = createChatPrompt(instruction).addUserMessage()
-const parser = createParser("listToArray");
+const llm = useLlm("openai.gpt-4o-mini");
+const prompt = createChatPrompt("Talk like a pirate.")
 
 const executor = createLlmExecutor({
   llm,
-  prompt,
-  parser
+  prompt
 })
 
-const input = "Hello! When was my last appointment?";
+const input = "Hello!";
 const response = await executor.execute({ input })
 /**
  * 
@@ -51,57 +38,19 @@ const response = await executor.execute({ input })
  * 
  * [{ 
  *   role: 'system', 
- *    content: 'Based on the user message, I need you to provide a list of 
- *              subtasks that need to be taken to answer their question.\n 
- *              Your response must be formatted like:\n<subtask>\n<subtask>\n 
- *              <subtask>\nReview the user message and reply with a list 
- *              of subtasks:' 
+ *   content: 'Talk like a pirate.' 
  * },
  * { 
  *   role: 'user',
- *   content: 'Hello! When was my last appointment?'
+ *   content: 'Hello!'
  * }]
  * 
  */
 
 /**
  * 
- * console.log(response)
- * [
- *  "a subtask the llm generated",
- *  "a subtask the llm generated",
- *  "a subtask the llm generated",
- * ]
+ * Output from LLM executor:
+ * Arrr, matey! Speak up, fer me ears be as keen as a sea serpent's! 
+ * Avast ye, what be your query?
  * /
-```
-
-Below is the above example with types added:
-
-```typescript
-import {
-  createLlmOpenAi,
-  createChatPrompt,
-  createParser
-} from "llm-exe";
-
-interface ChatInput {
-  input: string;
-  anything: string[]
-}
-
-const instruction = `You are a customer support agent. Reply below.`;
-
-const llm = createLlmOpenAi({/* options */});
-const prompt = createChatPrompt<ChatInput>(instruction);
-const parser = createParser("json");
-
-const executor = createLlmExecutor({
-  llm,
-  prompt,
-  parser
-})
-
-const execute = executor.execute({ input });
-
-const response = await executor.execute({input: "Hello!"})
 ```

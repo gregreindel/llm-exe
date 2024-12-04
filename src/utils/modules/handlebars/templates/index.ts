@@ -1,7 +1,3 @@
-
-export const COMPLETION_END_TOKEN = "<--END";
-export const PROMPT_END_TOKEN = "-->";
-
 const MarkdownCode = `{{#if code}}\`\`\`{{#if language}}{{language}}{{/if}}
 {{{code}}}
 \`\`\`{{/if}}`;
@@ -33,12 +29,12 @@ const ThoughtsAndObservations = `{{~#each thoughts as | step |}}
 {{~/each}}`;
 
 const JsonSchema = `{{#if (getKeyOr key false)}}
-{{{indentJson (getKeyOr key) collapse}}}
+\`\`\`json\n{{{indentJson (getKeyOr key) collapse}}}\n\`\`\`
 {{~/if}}`;
 
 const JsonSchemaExampleJson = `{{#if (getOr key false)}}
-{{{jsonSchemaExample key (getOr property '') collapse}}}
-{{~/if}}`
+\`\`\`json\n{{{jsonSchemaExample key (getOr property '') collapse}}}\n\`\`\`
+{{~/if}}`;
 
 export const partials = {
   JsonSchema,

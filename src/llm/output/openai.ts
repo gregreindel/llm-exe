@@ -1,64 +1,62 @@
-import { OutputOpenAIChatChoice } from "@/types";
-import { BaseLlmOutput } from "./base";
+import {
+  OpenAiResponse,
+  OutputOpenAIChatChoice,
+  OutputResultContent,
+} from "@/types";
+import { BaseLlmOutput2 } from "./base";
+import { formatContent, formatOptions } from "./_util";
 
-
-export interface OutputOpenAIChat {
- results: OutputOpenAIChatChoice[]
+function formatResult(
+  result: OutputOpenAIChatChoice
+): OutputResultContent | undefined {
+  if (typeof result?.message?.content === "string") {
+    return {
+      type: "text",
+      text: result.message.content,
+    };
+  } else if (result?.message && "tool_calls" in result.message) {
+    const tool_calls = result.message.tool_calls;
+    for (const call of tool_calls) {
+      return {
+        type: "function_use",
+        name: call.function.name,
+        input: JSON.parse(call.function.arguments),
+      };
+    }
+  }
+  // error??
+  return {
+    type: "text",
+    text: "",
+  };
 }
 
-export class OutputOpenAIChat extends BaseLlmOutput {
-  constructor(result: any) {
-    super(result);
-  }
+export function OutputOpenAIChat(
+  result: OpenAiResponse,
+  _config?: { model?: string }
+) {
+  const id = result.id;
+  const name = result.model || _config?.model || "openai.unknown";
+  const created = result.created;
 
-  setResult(result: any, _attributes = {}) {
-    this.id = result.id;
-    this.name = result.model;
-    this.created = result.created;
-    this.usage = result.usage;
-    this.results = result.choices;
-  }
+  const [_content, ..._options] = result?.choices || [];
+  const stopReason = _content?.finish_reason;
+  const content = formatContent(_content, formatResult);
+  const options = formatOptions(_options, formatResult);
 
-  getResult(resultIndex = 0) {
-    if (resultIndex > -1 && resultIndex <= this.results.length) {
-      const result = this.results[resultIndex];
-      return result;
-    }
-    return;
-  }
-  getResultContent(resultIndex = 0) {
-    const result = this.getResult(resultIndex);
-    if(result?.message?.content){
-      return result?.message?.content;
-    }
-    if(result?.message?.content === null || result?.message?.function_call){
-      return JSON.stringify({function_call: result?.message?.function_call})
-    }
-    return;
-  }
-}
+  const usage = {
+    output_tokens: result?.usage?.completion_tokens,
+    input_tokens: result?.usage?.prompt_tokens,
+    total_tokens: result?.usage?.total_tokens,
+  };
 
-export class OutputOpenAICompletion extends BaseLlmOutput {
-  constructor(result: any) {
-    super(result);
-  }
-
-  setResult(result: any, _attributes = {}) {
-    this.id = result.id;
-    this.name = result.model;
-    this.created = result.created;
-    this.usage = result.usage;
-    this.results = result.choices;
-  }
-
-  getResult(resultIndex = 0) {
-    if (resultIndex > -1 && resultIndex <= this.results.length) {
-      const result = this.results[resultIndex];
-      return result;
-    }
-  }
-  getResultContent(resultIndex = 0) {
-    const result = this.getResult(resultIndex);
-    return result?.text;
-  }
+  return BaseLlmOutput2({
+    id,
+    name,
+    created,
+    usage,
+    stopReason,
+    content,
+    options,
+  });
 }

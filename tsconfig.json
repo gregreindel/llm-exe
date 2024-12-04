@@ -3,7 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "declaration": false,
-    "module": "es2020",
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "es2021",
     "esModuleInterop": true,
@@ -21,21 +21,17 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
     "lib": ["ES2021", "ES2022.Object", "DOM"],
     "paths": {
-      "@/*": ["src/*"],
-      "@@/*": ["__tests__/*"]
+      "@/*": ["src/*"]
     }
   },
   "exclude": [
-    "node_modules",
-    "coverage",
+    ".github",
     "build",
-    "logs",
-    "events",
-    "nodejs",
+    "coverage",
+    "dist",
     "docs",
-    "dist"
+    "node_modules"
   ]
 }

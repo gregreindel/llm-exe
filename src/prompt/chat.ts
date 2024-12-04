@@ -1,12 +1,5 @@
-import {
-  assert,
-  escape,
-  extractPromptPlaceholderToken,
-  get,
-  maybeStringifyJSON,
-  pick,
-  replaceTemplateString,
-} from "@/utils";
+import { maybeStringifyJSON } from "@/utils";
+import { assert } from "@/utils/modules/assert";
 import { BasePrompt } from "./_base";
 import {
   IChatMessages,
@@ -16,7 +9,12 @@ import {
   ChatPromptOptions,
   IPromptChatMessages,
   IChatMessage,
+  IChatMessageContentDetailed,
 } from "@/types";
+import { extractPromptPlaceholderToken } from "@/utils/modules/extractPromptPlaceholderToken";
+import { pick } from "@/utils/modules/pick";
+import { get } from "@/utils/modules/get";
+import { escape } from "@/utils/modules/escape";
 
 export interface ChatPrompt<I extends Record<string, any>>
   extends BasePrompt<I> {
@@ -25,7 +23,7 @@ export interface ChatPrompt<I extends Record<string, any>>
 
 /**
  * `ChatPrompt` provides a conversation-style prompt enabling various roles.
- * The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4.
+ * The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4+.
  * @extends BasePrompt
  */
 export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
@@ -123,7 +121,10 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param name (optional) The name of the user.
    * @return instance of ChatPrompt.
    */
-  addUserMessage(content: string, name?: string): ChatPrompt<I> {
+  addUserMessage(
+    content: string | IChatMessageContentDetailed[],
+    name?: string
+  ): ChatPrompt<I> {
     const message: IChatUserMessage = {
       role: "user",
       content,
@@ -263,6 +264,62 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     return this;
   }
 
+  private _format_placeholderDialogueHistory(
+    data: ReturnType<typeof extractPromptPlaceholderToken>,
+    replacements: any
+  ) {
+    const messagesOut: IChatMessages = [];
+
+    /* istanbul ignore next */
+    const { key = "", user } = data;
+    const history: IChatMessages = get(replacements, key, []);
+    if (history && Array.isArray(history)) {
+      for (const message of history) {
+        switch (message.role) {
+          case "user": {
+            const m = pick(message, ["role", "content", "name"]);
+            if (user) {
+              m["name"] = user;
+            }
+            messagesOut.push(m);
+            break;
+          }
+
+          case "assistant": {
+            if (message.function_call) {
+              messagesOut.push({
+                role: "assistant",
+                content: null,
+                function_call: message.function_call,
+              });
+            } else if (message?.content) {
+              messagesOut.push({
+                role: "assistant",
+                content: message.content,
+              });
+            }
+            break;
+          }
+          case "function":
+            messagesOut.push({
+              role: "function",
+              name: message.name,
+              content: message.content,
+            });
+            break;
+          case "system":
+            messagesOut.push({
+              role: "system",
+              content: message.content,
+            });
+            break;
+        }
+      }
+    }
+
+    return messagesOut;
+  }
+
   /**
    * format formats the stored prompt based on input values.
    * Uses template engine.
@@ -271,6 +328,190 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @return formatted prompt.
    */
   format(values: I): IChatMessages {
+    const messagesOut: IChatMessages = [];
+    const replacements = this.getReplacements(values);
+    const safeToParseTemplate = ["assistant", "system"];
+
+    if (this.parseUserTemplates) {
+      safeToParseTemplate.push("user");
+    }
+
+    for (const message of this.messages) {
+      if (message.role === "placeholder") {
+        const tokenData = extractPromptPlaceholderToken(message.content);
+        switch (tokenData.token) {
+          case ">DialogueHistory": {
+            messagesOut.push(
+              ...this._format_placeholderDialogueHistory(
+                tokenData,
+                replacements
+              )
+            );
+            /* istanbul ignore next */
+            // const { key = "", user } = data;
+            // const history: IChatMessages = get(replacements, key, []);
+            // if (history && Array.isArray(history)) {
+            //   for (const message of history) {
+            //     switch (message.role) {
+            //       case "user": {
+            //         const m = pick(message, ["role", "content", "name"]);
+            //         if (user) {
+            //           m["name"] = user;
+            //         }
+            //         messagesOut.push(m);
+            //         break;
+            //       }
+
+            //       case "assistant": {
+            //         if (message.function_call) {
+            //           messagesOut.push({
+            //             role: "assistant",
+            //             content: null,
+            //             function_call: message.function_call,
+            //           });
+            //         } else if (message?.content) {
+            //           messagesOut.push({
+            //             role: "assistant",
+            //             content: message.content,
+            //           });
+            //         }
+            //         break;
+            //       }
+            //       case "function":
+            //         messagesOut.push({
+            //           role: "function",
+            //           name: message.name,
+            //           content: message.content,
+            //         });
+            //         break;
+            //       case "system":
+            //         messagesOut.push({
+            //           role: "system",
+            //           content: message.content,
+            //         });
+            //         break;
+            //     }
+            //   }
+            // }
+            break;
+          }
+          case ">SingleChatMessage": {
+            const { name, content, role } = tokenData;
+            if (role && content) {
+              const message = {
+                role,
+                name,
+                content: this.replaceTemplateString(content, replacements, {
+                  partials: this.partials,
+                  helpers: this.helpers,
+                }),
+              };
+
+              if (!name || role !== "user") {
+                delete message.name;
+              }
+              messagesOut.push(message as IChatMessage);
+            }
+            break;
+          }
+        }
+      } else if (message.role === "function") {
+        messagesOut.push(
+          Object.assign({}, message, {
+            content: this.replaceTemplateString(message.content, replacements, {
+              partials: this.partials,
+              helpers: this.helpers,
+            }),
+          })
+        );
+      } else {
+        if (safeToParseTemplate.includes(message.role)) {
+          if (Array.isArray(message.content)) {
+            const content = message.content.map((m) =>
+              m.text
+                ? {
+                    type: "text",
+                    text: this.runPromptFilter(
+                      this.replaceTemplateString(
+                        this.runPromptFilter(m.text, this.filters.pre, values),
+                        replacements,
+                        {
+                          partials: this.partials,
+                          helpers: this.helpers,
+                        }
+                      ),
+                      this.filters.post,
+                      values
+                    ),
+                  }
+                : m
+            );
+            messagesOut.push(Object.assign({}, message, { content }));
+          } else if (message.content) {
+            const content = this.runPromptFilter(
+              this.replaceTemplateString(
+                this.runPromptFilter(message.content, this.filters.pre, values),
+                replacements,
+                {
+                  partials: this.partials,
+                  helpers: this.helpers,
+                }
+              ),
+              this.filters.post,
+              values
+            );
+            messagesOut.push(Object.assign({}, message, { content }));
+          } else {
+            messagesOut.push(Object.assign({}, message, { content: null }));
+          }
+        } else {
+          /* istanbul ignore next */
+          messagesOut.push(
+            Object.assign({}, message, {
+              content: Array.isArray(message.content)
+                ? message.content.map((m) =>
+                    m.text
+                      ? {
+                          type: "text",
+                          text: this.runPromptFilter(
+                            this.runPromptFilter(
+                              m.text,
+                              this.filters.pre,
+                              values
+                            ),
+                            this.filters.post,
+                            values
+                          ),
+                        }
+                      : m
+                  )
+                : message.content && !Array.isArray(message.content)
+                ? this.runPromptFilter(
+                    this.runPromptFilter(
+                      message.content,
+                      this.filters.pre,
+                      values
+                    ),
+                    this.filters.post,
+                    values
+                  )
+                : null,
+            })
+          );
+        }
+      }
+    }
+    return messagesOut;
+  }
+
+  /**
+   * format formats the stored prompt based on input values.
+   * Uses template engine.
+   * Output is intended for LLM.
+   * @param values input values.
+   * @return formatted prompt.
+   */
+  async formatAsync(values: I): Promise<IChatMessages> {
     const messagesOut: IChatMessages = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
@@ -340,10 +581,14 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
               const message = {
                 role,
                 name,
-                content: replaceTemplateString(content, replacements, {
-                  partials: this.partials,
-                  helpers: this.helpers,
-                }),
+                content: await this.replaceTemplateStringAsync(
+                  content,
+                  replacements,
+                  {
+                    partials: this.partials,
+                    helpers: this.helpers,
+                  }
+                ),
               };
 
               if (!name || role !== "user") {
@@ -357,20 +602,29 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
       } else if (message.role === "function") {
         messagesOut.push(
           Object.assign({}, message, {
-            content: replaceTemplateString(message.content, replacements, {
-              partials: this.partials,
-              helpers: this.helpers,
-            }),
+            content: await this.replaceTemplateStringAsync(
+              message.content,
+              replacements,
+              {
+                partials: this.partials,
+                helpers: this.helpers,
+              }
+            ),
           })
         );
       } else {
         if (safeToParseTemplate.includes(message.role)) {
-          messagesOut.push(
-            Object.assign({}, message, {
-              content: message.content
-                ? this.runPromptFilter(
-                    replaceTemplateString(
-                      this.runPromptFilter(message.content, this.filters.pre, values),
+          if (Array.isArray(message.content)) {
+            const content = [];
+
+            for (const m of message.content) {
+              if (m.text) {
+                content.push({
+                  type: "text",
+                  text: this.runPromptFilter(
+                    // HERE
+                    await this.replaceTemplateStringAsync(
+                      this.runPromptFilter(m.text, this.filters.pre, values),
                       replacements,
                       {
                         partials: this.partials,
@@ -379,17 +633,59 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                     ),
                     this.filters.post,
                     values
-                  )
-                : null,
-            })
-          );
+                  ),
+                });
+              } else {
+                content.push(m);
+              }
+            }
+
+            messagesOut.push(Object.assign({}, message, { content }));
+          } else if (message.content) {
+            const content = this.runPromptFilter(
+              await this.replaceTemplateStringAsync(
+                this.runPromptFilter(message.content, this.filters.pre, values),
+                replacements,
+                {
+                  partials: this.partials,
+                  helpers: this.helpers,
+                }
+              ),
+              this.filters.post,
+              values
+            );
+            messagesOut.push(Object.assign({}, message, { content }));
+          } else {
+            messagesOut.push(Object.assign({}, message, { content: null }));
+          }
         } else {
           /* istanbul ignore next */
           messagesOut.push(
             Object.assign({}, message, {
-              content: message.content
+              content: Array.isArray(message.content)
+                ? message.content.map((m) =>
+                    m.text
+                      ? {
+                          type: "text",
+                          text: this.runPromptFilter(
+                            this.runPromptFilter(
+                              m.text,
+                              this.filters.pre,
+                              values
+                            ),
+                            this.filters.post,
+                            values
+                          ),
+                        }
+                      : m
+                  )
+                : message.content && !Array.isArray(message.content)
                 ? this.runPromptFilter(
-                    this.runPromptFilter(message.content, this.filters.pre, values),
+                    this.runPromptFilter(
+                      message.content,
+                      this.filters.pre,
+                      values
+                    ),
                     this.filters.post,
                     values
                   )

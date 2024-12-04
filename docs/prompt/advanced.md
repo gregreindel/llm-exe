@@ -1,29 +1,30 @@
 # Prompts with Templates
+
 Handlebars is used as a template engine when generating the prompt, so you can take advantage of advanced template features in the prompt. See full capabilities [here](https://handlebarsjs.com/guide/).
 
 Below is a simple example showing syntax for replacing simple variables in the template.
 
-<PromptOutput example="prompt.advanced.withReplacements">
+<GenericOutput example="prompt.advanced.withReplacements">
 
-@[code{6-7} ts:no-line-numbers](../../examples/prompt/advanced.ts)
-</PromptOutput>
+<<< ../../examples/prompt/advanced.ts#withReplacements
+</GenericOutput>
 
 
-Here is a slightly more advanced example showing a template that uses the `if` and `each` helpers supplies by Handlebars.
-<PromptOutput example="prompt.advanced.withReplacementsTwo">
+Here is a more advanced example showing a template that uses the `if` and `each` helpers supplied by Handlebars.
+<GenericOutput example="prompt.advanced.withReplacementsTwo">
 
-@[code{21-35} ts:no-line-numbers](../../examples/prompt/advanced.ts)
-</PromptOutput>
+<<< ../../examples/prompt/advanced.ts#withReplacementsTwo
+</GenericOutput>
 
 
 
 
 Below is a robust example showing multiple variables, and defining types.
 
-<PromptOutput example="prompt.advanced.withReplacementsAndTypes">
+<GenericOutput example="prompt.advanced.withReplacementsAndTypes">
 
-@[code{48-99} ts:no-line-numbers](../../examples/prompt/advanced.ts)
-</PromptOutput>
+<<< ../../examples/prompt/advanced.ts#withReplacementsAndTypes
+</GenericOutput>
 
 
 ## Prompt Template Default Helpers
@@ -38,29 +39,22 @@ Prompts are powered by handlebars, and you are able to register your own custom 
 Some core partials are included by default:
 
 ### MarkdownCode
-<CodeGroup>
-  <CodeGroupItem title="Raw Template" active>
-
-```:no-line-numbers
+::: code-group
+``` [Raw Template]
 {{> MarkdownCode code='const name="Greg";' language='typescript' }}
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Parsed">
-
-```:no-line-numbers
+``` [Parsed]
 '''typescript
 const name="Greg";
 '''
 ```
-  </CodeGroupItem>
-</CodeGroup>
+:::
 
 ### DialogueHistory
 
-<CodeGroup>
-  <CodeGroupItem title="Raw Template" active>
+::: code-group
 
-```:no-line-numbers
+```txt [Raw Template]
 // Basic example
 {{> DialogueHistory key='keyOfTheChatHistory' }}
 
@@ -91,10 +85,8 @@ const name="Greg";
   }]
 }
 ```
-  </CodeGroupItem>
-  <CodeGroupItem title="Parsed">
 
-```:no-line-numbers
+```txt [Parsed]
 // Basic example
 User: Hello?
 Assistant: Hi! How can I help you?
@@ -121,8 +113,8 @@ Thought: I was wondering if you were open
 Observation: We sure are!
 
 ```
-  </CodeGroupItem>
-</CodeGroup>
+:::
+
 
 <!-- ### JsonSchema
 ```:no-line-numbers
@@ -138,8 +130,7 @@ You can load custom Handlebars partials and helpers a few different ways:
 
 ### 1. Pass them in when initializing the prompt
 
-```typescript:no-line-numbers
-
+```ts
 // these could be managed elsewhere and imported here
 const helpers = [{
   handler: (date: Date) => "morning", name: "getTimeOfDay"
@@ -158,20 +149,20 @@ const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials })
 
 ### 2. Set environment variable pointing to a file that exports them (optional)
 
-```env:no-line-numbers
+```txt
 # .env
 # Custom helpers: Set this as a path to a file that exports custom helpers.
-CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH=/var/app/build/prompt-template-helpers.js
+CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH=/var/app/prompt-template-helpers.js
 ```
 
-```env:no-line-numbers
+```txt
 # .env
 # Custom partials: Set this as a path to a file that exports custom partials.
-CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH=/var/app/build/prompt-template-partials.js
+CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH=/var/app/prompt-template-partials.js
 ```
 
 Example files
-```typescript:no-line-numbers
+```ts
 // prompt-template-helpers.js
 export function getTimeOfDay(date: Date): string {
   // implementation

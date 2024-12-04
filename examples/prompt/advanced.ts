@@ -1,11 +1,11 @@
 import { createChatPrompt } from "@/prompt"
 import { IChatMessages } from "@/types"
 
-const withReplacements = () => {
-// START example
+export const withReplacements = () => {
+// #region withReplacements
 const prompt = createChatPrompt("Your name is {{agentName}}")
 const formatted = prompt.format({agentName: "Greg"})
-
+// #endregion withReplacements
 // exporting for docs
 return {
     prompt,
@@ -16,12 +16,12 @@ return {
 }
 
 
-const withReplacementsTwo = () => {
-// START example
+export const withReplacementsTwo = () => {
+// #region withReplacementsTwo
 const prompt = createChatPrompt("Your name is {{agentName}}")
 
 const template = `{{#if fruits.length}}
-Ask about one of these fruits: 
+Ask about one of these fruits:
 {{#each fruits as | fruit |}}
 - {{fruit}}
 {{/each}}
@@ -33,7 +33,7 @@ const formatted = prompt.format({
     agentName: "Greg",
     fruits: ["apple", "banana"]
 });
-
+// #endregion withReplacementsTwo
 // exporting for docs
 return {
     prompt,
@@ -43,8 +43,8 @@ return {
 // END example
 }
 
-const withReplacementsAndTypes = () => {
-// START example
+export const withReplacementsAndTypes = () => {
+// #region withReplacementsAndTypes
 interface PromptTemplate {
     actions: {
       name: string;
@@ -58,12 +58,12 @@ interface PromptTemplate {
   }
   
 const template = `You are an agent that can only perform the following actions:
-  
+
 # Actions
 {{#each actions as | action |}}
 {{ action.name }} ({{ action.description }})
 {{/each}}
-  
+
 # Previous Steps Taken
 {{#each previousSteps as | previousStep |}}
 Thought: {{previousStep.thought}}
@@ -96,7 +96,7 @@ const prompt = createChatPrompt<PromptTemplate>(template)
   
 // prompt.format is well-typed based on the generic you passed into createChatPrompt
 const formatted = prompt.format({ actions, previousSteps });
-  
+// #endregion withReplacementsAndTypes
 // exporting for docs
 return {
     prompt,

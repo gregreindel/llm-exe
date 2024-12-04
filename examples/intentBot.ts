@@ -1,9 +1,12 @@
-import { llmExe } from "@/index";
-import { BaseLlm } from "@/llm";
+import * as llmExe from "@/index";
+import { BaseLlm } from "@/types";
 import { createCustomParser } from "@/parser";
 import { ExecutorContext, IChatMessages } from "@/types";
-import { maybeParseJSON, toNumber } from "@/utils";
-import { snakeCase } from "lodash";
+import { maybeParseJSON } from "@/utils";
+// import { snakeCase } from "lodash";
+import { toNumber } from "@/utils/modules/toNumber";
+
+function snakeCase(str: string){ return str}
 
 export const intents = {
   book_hotel: {

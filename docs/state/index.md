@@ -2,7 +2,7 @@
 
 When calling an LLM from your code, the LLM only knows the history you provide it.
 
-When using llm-exe, the state is something you need to manage. To help provide a memory to your LLM's, we provide a simple state module. 
+When using llm-exe, the state is something you need to manage. To help provide a concept of memory to your LLM's, we provide a simple state module. 
 
 The state module consists of 3 concepts:
 - Dialogues
@@ -17,12 +17,12 @@ Describe Context & Attributes. In summary, attributes are meant to be a basic ob
 State has a `saveState()` method that can be customized to save the state to a database.
 
 Initializing a state object is as simple as:
-```typescript:no-line-numbers
+```ts
 const state = createState()
 ```
 
 If you wanted to store a chat conversation dialogue, you could:
-```typescript:no-line-numbers
+```ts
 const state = createState()
 
 // this creates a new dialogue in the state, and returns it
@@ -38,7 +38,7 @@ const chatHistory = state.createDialogue("chatHistory");
 
 
 Saving state
-```typescript:no-line-numbers
+```ts
 // this needs to be implemented by you if you want to save somewhere
 await state.saveState()
 ```

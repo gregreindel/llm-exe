@@ -22,7 +22,7 @@ export interface ExecutorWithLlmOptions<Llm, Prompt, Parser, State> {
 export interface CoreExecutorInput<I, O> {
   name?: string;
   handler: (input: I) => Promise<O> | O;
-  getHandlerInput?(input: I): any;
+  getHandlerInput?(input: I): Promise<any>;
   getHandlerOutput?(out: any): O;
 }
 
@@ -77,7 +77,7 @@ export interface BaseExecutorHooks {
 }
 
 export interface LlmExecutorHooks extends BaseExecutorHooks {
-  /** 
+  /**
    * If needed, can override allowedHooks on llmExecutor
    * and add llm-specific hooks here
    */

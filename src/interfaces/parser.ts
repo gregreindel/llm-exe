@@ -1,4 +1,4 @@
-import { JSONSchema7 } from "json-schema-to-ts";
+import { JSONSchema } from "json-schema-to-ts";
 
 export type CreateParserType =
   | "json"
@@ -13,11 +13,10 @@ export type CreateParserType =
   | "markdownCodeBlocks"
   | "markdownCodeBlock";
 
-
 export interface BaseParserOptions {}
 
 export interface BaseParserOptionsWithSchema<
-  S extends JSONSchema7 | undefined = undefined
+  S extends JSONSchema | undefined = undefined
 > extends BaseParserOptions {
   schema?: S;
   validateSchema?: boolean;

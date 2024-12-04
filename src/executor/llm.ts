@@ -1,4 +1,5 @@
 import {
+  BaseLlm,
   PromptInput,
   ParserOutput,
   CoreExecutorExecuteOptions,
@@ -6,12 +7,13 @@ import {
   ExecutorExecutionMetadata,
   LlmExecutorHooks,
   LlmExecutorExecuteOptions,
+  BaseLlCall,
 } from "@/types";
-import { BaseLlm } from "@/llm";
-import { BaseParser, StringParser } from "@/parser";
+import { BaseParser, JsonParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { BaseExecutor } from "./_base";
+import { isPromise } from "@/utils/modules/isPromise";
 
 /**
  * Core Executor With LLM
@@ -57,36 +59,55 @@ export class LlmExecutor<
     _input: PromptInput<Prompt>,
     _options?: LlmExecutorExecuteOptions
   ): Promise<ParserOutput<Parser>> {
+    if (this?.parser instanceof JsonParser && this.parser.schema) {
+      _options = Object.assign(_options || {}, {
+        jsonSchema: this.parser.schema,
+      });
+    }
     return super.execute(_input, _options);
   }
 
   async handler(_input: PromptInput<Prompt>, ..._args: any[]) {
     const call = await this.llm.call(_input, ..._args);
-    const result = call.getResultContent();
-    return result;
+    return call;
   }
 
-  getHandlerInput(_input: PromptInput<Prompt>): any {
+  async getHandlerInput(_input: PromptInput<Prompt>): Promise<any> {
     if (this.prompt) {
-      return this.prompt.format(_input);
+      if(isPromise(this.prompt.formatAsync)){
+        return await this.prompt.formatAsync(_input);
+      }else {
+        return this.prompt.format(_input);
+      }
     }
 
     if (this.promptFn) {
       const prompt = this.promptFn(_input);
-      const promptFormatted = prompt.format(_input);
-      return promptFormatted;
+      if(isPromise(prompt.formatAsync)){
+        return await prompt.formatAsync(_input);
+      }else {
+        return prompt.format(_input);
+      }
     }
     throw new Error("Missing prompt");
   }
 
   getHandlerOutput(
-    out: any,
+    out: BaseLlCall,
     _metadata: ExecutorExecutionMetadata<
       PromptInput<Prompt>,
       ParserOutput<Parser>
     >
   ): ParserOutput<Parser> {
-    return this.parser.parse(out, _metadata);
+    // depending on out parser type, and result obj (out)
+    // we should use different methods here
+    if (this.parser.target === "function_call") {
+      const outToStr = out.getResultContent();
+      return this.parser.parse(outToStr, _metadata);
+    } else {
+      const outToStr = out.getResultText();
+      return this.parser.parse(outToStr, _metadata);
+    }
   }
 
   metadata() {

@@ -1,6 +1,7 @@
-import { BaseParserOptions, ParserOutput } from "@/types";
+import { BaseParserOptions, OutputResultContent, ParserOutput } from "@/types";
 import { BaseParser } from "../_base";
 import { maybeParseJSON } from "@/utils";
+import { getResultText } from "@/llm/output/_utils/getResultText";
 
 export interface OpenAiFunctionParserOptions<T extends BaseParser<any>>
   extends BaseParserOptions {
@@ -13,23 +14,18 @@ export class OpenAiFunctionParser<T extends BaseParser<any>> extends BaseParser<
   public parser: T;
 
   constructor(options: OpenAiFunctionParserOptions<T>) {
-    super("openAiFunction", options);
+    super("openAiFunction", options, "function_call");
     this.parser = options.parser;
   }
-  parse(text: string) {
-    const isFunctionCall = maybeParseJSON(text);
-    if (
-      typeof isFunctionCall === "object" &&
-      isFunctionCall?.function_call &&
-      "name" in isFunctionCall.function_call &&
-      "arguments" in isFunctionCall.function_call
-    ) {
+  parse(text: OutputResultContent[], _options?: Record<string, any>) {
+    const functionUse = text?.find((a) => a.type === "function_use");
+    if (functionUse && "name" in functionUse && "input" in functionUse) {
       return {
-        name: isFunctionCall.function_call.name,
-        arguments: maybeParseJSON(isFunctionCall.function_call.arguments),
+        name: functionUse.name,
+        arguments: maybeParseJSON(functionUse.input),
       };
     }
 
-    return this.parser.parse(text) as ParserOutput<T>;
+    return this.parser.parse(getResultText(text)) as ParserOutput<T>;
   }
 }
