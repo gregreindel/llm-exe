@@ -26,7 +26,7 @@ npm i llm-exe
 ```
 
 ```typescript
-import llmExe from "llm-exe"
+import * as llmExe from "llm-exe";
 
 // or 
 
@@ -35,32 +35,30 @@ import { /* specific modules */ } from from "llm-exe"
 
 ## Basic Example
 Below is simple example:
-```javascript
-import {
-  useLlm,
-  createChatPrompt,
-  createParser
-} from "llm-exe";
+```typescript
+import * as llmExe from "llm-exe";
 
-const instruction = `<some prompt>
+/**
+ * Define a yes/no llm-powered function
+ */
+export async function YesOrNoBot<I extends string>(input: I) {
+  const llm = llmExe.useLlm("openai.gpt-4o-mini");
 
-Your response must be formatted like:
-<subtask>
-<subtask>
-<subtask>`;
+  const instruction = `You are not an assistant, I need you to reply with only 
+  'yes' or 'no' as an answer to the question below. Do not explain yourself 
+  or ask questions. Answer with only yes or no.`;
 
-const llm = useLlm("openai.gpt-4o-mini");
-const prompt = createChatPrompt(instruction).addUserMessage()
-const parser = createParser("listToArray");
+  const prompt = llmExe
+    .createChatPrompt(instruction)
+    .addUserMessage(input)
+    .addSystemMessage(`yes or no:`);
 
-const executor = createLlmExecutor({
-  llm,
-  prompt,
-  parser
-})
+  const parser = llmExe.createParser("stringExtract", { enum: ["yes", "no"] });
+  return llmExe.createLlmExecutor({ llm, prompt, parser }).execute({ input });
+}
 
-const input = "Hello! When was my last appointment?";
-const response = await executor.execute({ input })
+const isTheSkyBlue = await YesOrNoBot(`Is AI cool?`)
+
 /**
  * 
  * The prompt sent to the LLM would be: 
@@ -68,24 +66,20 @@ const response = await executor.execute({ input })
  * 
  * [{ 
  *   role: 'system', 
- *    content: '<some prompt>\n 
- *              Your response must be formatted like:\n<subtask>\n<subtask>\n 
- *              <subtask>' 
+ *    content: 'You are not an assistant, I need you to reply with only 
+  'yes' or 'no' as an answer to the question asked by the user. Do not explain yourself 
+  or ask questions. Answer only with yes or no.' 
  * },
  * { 
  *   role: 'user',
- *   content: 'Hello! When was my last appointment?'
+ *   content: 'Is AI cool?'
  * }]
  * 
  */
 
 /**
  * 
- * console.log(response)
- * [
- *  "a subtask the llm generated",
- *  "a subtask the llm generated",
- *  "a subtask the llm generated",
- * ]
+ * console.log(isTheSkyBlue)
+ * yes
  * /
 ```
