@@ -4,7 +4,7 @@
 
 ### AWS Bedrock Chat
 ```ts
-const llm = useLlm("bedrock:meta.chat.v1", { //
+const llm = useLlm("amazon:meta.chat.v1", { //
   model: "claude-3-5-sonnet-20240620",
 
   // optional, see `Authentication` below
@@ -17,9 +17,9 @@ const llm = useLlm("bedrock:meta.chat.v1", { //
 ```
 
 #### AWS Bedrock Chat Model Options
-- bedrock:meta.chat.v1
+- amazon:meta.chat.v1
  - llama3.5
-- bedrock:anthropic.chat.v1
+- amazon:anthropic.chat.v1
 
 
 ## Authentication

@@ -18,6 +18,7 @@ import PromptMessage from "../components/Prompt/PromptMessage.vue";
 
 // @ts-ignore
 import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
+import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 
 export default {
   extends: DefaultTheme,
@@ -33,6 +34,7 @@ export default {
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {
+      "nav-bar-content-before":  () => h(SiteTopBanner),
       "home-hero-info-before": () => h(HomeBeforeIntro),
     });
   },

@@ -24,3 +24,5 @@ docs/.vitepress/components/examples
 examples/_testing
 
 testing.ts
+
+llm-exe-**.tgz

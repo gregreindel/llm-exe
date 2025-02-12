@@ -14,9 +14,14 @@ export function anthropicPromptSanitize(
   }
 
   const [first, ...messages] = [..._messages.map((a) => ({ ...a }))];
-  // if its simple - like one system message in messages,
-  // but no system message passed in, then just add the system
-  if (first.role === "system") {
+
+  // if a single message is passed in, and it is a system mesage, set it to user
+  if (first.role === "system" && messages.length === 0) {
+    return [{ role: "user", content: first.content }, ...messages];
+  }
+
+  // if more than one message is passed in, and the first is a system message, set it to system
+  if (first.role === "system" && messages.length > 0) {
     _outputObj.system = first.content;
     return messages;
   }
@@ -64,7 +69,10 @@ export const anthropic = {
     anthropicChatV1,
     "claude-3-5-sonnet-20240620"
   ),
-  "anthropic.claude-3-opus": withDefaultModel(anthropicChatV1, "claude-3-opus-20240229"),
+  "anthropic.claude-3-opus": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-opus-20240229"
+  ),
   "anthropic.claude-3-sonnet": withDefaultModel(
     anthropicChatV1,
     "claude-3-sonnet-20240229"
