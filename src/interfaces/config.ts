@@ -9,7 +9,8 @@ export type LlmProvider =
   | "amazon:anthropic.chat"
   | "amazon:meta.chat"
   | "amazon:nova.chat"
-  | "amazon.embedding";
+  | "amazon.embedding"
+  | "xai.chat";
 
 export interface Config<Pk = LlmProviderKey> {
     key: Pk;
