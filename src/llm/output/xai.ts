@@ -36,7 +36,7 @@ export function OutputXAIChat(
   _config?: { model?: string }
 ) {
   const id = result.id;
-  const name = result.model || _config?.model || "xai.unknown";
+  const name = result?.model
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];

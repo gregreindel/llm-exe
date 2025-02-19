@@ -25,6 +25,12 @@ describe("getOutputParser", () => {
     expect(result).toBeInstanceOf(Object);
   });
 
+  it("should return OutputXAIChat for 'amazon.meta.v3' provider", () => {
+    const response = { data: "exampleData" };
+    const result = getOutputParser({key: "xai.chat.v1" }, response);
+    expect(result).toBeInstanceOf(Object);
+  });
+
   it("should throw an error for unsupported provider", () => {
     const response = { data: "exampleData" };
     expect(() => getOutputParser("unsupported" as any, response)).toThrowError("Unsupported provider");
