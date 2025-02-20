@@ -34,7 +34,7 @@ export function isModelKnownBedrockAnthropic(payload: { model: string }) {
   return false;
 }
 
-export function guessProvidorFromModel(payload: { model: string }) {
+export function guessProviderFromModel(payload: { model: string }) {
   switch (true) {
     case isModelKnownOpenAi(payload):
       return "openai";

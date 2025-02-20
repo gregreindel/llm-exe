@@ -3,8 +3,8 @@ import {
   isModelKnownAnthropic,
   isModelKnownXai,
   isModelKnownBedrockAnthropic,
-  guessProvidorFromModel,
-} from "./guessProvidorFromModel";
+  guessProviderFromModel,
+} from "./guessProviderFromModel";
 
 describe("Model Identification Functions", () => {
   describe("isModelKnownOpenAi", () => {
@@ -86,30 +86,30 @@ describe("Model Identification Functions", () => {
     });
   });
 
-  describe("guessProvidorFromModel", () => {
+  describe("guessProviderFromModel", () => {
     it("should return 'openai' for OpenAI models", () => {
-      expect(guessProvidorFromModel({ model: "gpt-3.5" })).toBe("openai");
+      expect(guessProviderFromModel({ model: "gpt-3.5" })).toBe("openai");
     });
 
     it("should return 'xai' for XAI models", () => {
-      expect(guessProvidorFromModel({ model: "grok-2" })).toBe("xai");
+      expect(guessProviderFromModel({ model: "grok-2" })).toBe("xai");
     });
 
     it("should return 'bedrock:anthropic' for Bedrock Anthropic models", () => {
-      expect(guessProvidorFromModel({ model: "anthropic.claude-v3" })).toBe(
+      expect(guessProviderFromModel({ model: "anthropic.claude-v3" })).toBe(
         "bedrock:anthropic"
       );
     });
 
     it("should return 'anthropic' for Anthropic models", () => {
-      expect(guessProvidorFromModel({ model: "claude-simplified" })).toBe(
+      expect(guessProviderFromModel({ model: "claude-simplified" })).toBe(
         "anthropic"
       );
     });
 
     it("should throw an error for unsupported models", () => {
       expect(() =>
-        guessProvidorFromModel({ model: "unsupported-model" })
+        guessProviderFromModel({ model: "unsupported-model" })
       ).toThrow("Unsupported model");
     });
   });
