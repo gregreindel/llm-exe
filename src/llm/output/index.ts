@@ -3,6 +3,7 @@ import { OutputAnthropicClaude3Chat } from "./claude";
 import { OutputMetaLlama3Chat } from "./llama";
 import { LlmProviderKey } from "@/interfaces";
 import { OutputDefault } from "./default";
+import { OutputXAIChat } from "./xai";
 
 export function getOutputParser(
   config: {
@@ -21,7 +22,9 @@ export function getOutputParser(
     case "amazon:meta.chat.v1":
       return OutputMetaLlama3Chat(response, config);
     // case "amazon:nova.chat.v1":
-      // return OutputDefault(response, config);
+    // return OutputDefault(response, config);
+    case "xai.chat.v1":
+      return OutputXAIChat(response, config);
     default: {
       if ((config?.key as string)?.startsWith("custom:")) {
         return OutputDefault(response, config);

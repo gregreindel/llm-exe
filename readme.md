@@ -14,7 +14,7 @@ A package that provides simplified base components to make building and maintain
 ![llm-exe](https://assets.llm-exe.com/llm-exe-featured.jpg)
 
 
-See full docs [here](https://llm-exe.com)
+See full docs here: [https://llm-exe.com](https://llm-exe.com)
 
 
 ---

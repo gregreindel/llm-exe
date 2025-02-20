@@ -110,9 +110,30 @@ export interface Claude3Response {
 }
 
 /**
+ * x.ai Grok
+ */
+export interface XAiResponse {
+  id: string;
+  object: "chat.completion";
+  created: number;
+  model: string;
+  usage: {
+    prompt_tokens: 28;
+    completion_tokens: 5;
+    total_tokens: 33;
+    prompt_tokens_details: {
+      text_tokens: 28;
+      audio_tokens: 0;
+      image_tokens: 0;
+      cached_tokens: 0;
+    };
+  };
+  choices: OutputOpenAIChatChoice[];
+}
+
+/**
  * Llama
  */
-
 export interface MetaLlama2Request {
   prompt: string;
   temperature: number;
@@ -320,6 +341,10 @@ export type AllLlm = {
   //   input: AmazonBedrockRequest;
   //   // output: OpenAiRequest;
   // };
+  "xai.chat.v1": {
+    input: OpenAiRequest;
+    // output: OpenAiRequest;
+  };
 };
 
 export type AllUseLlmOptions = AllLlm & {
@@ -343,6 +368,9 @@ export type AllUseLlmOptions = AllLlm & {
   };
   "anthropic.claude-3-haiku": {
     input: Omit<AnthropicRequest, "model">;
+  };
+  "xai.grok-2": {
+    input: OpenAiRequest;
   };
 };
 
