@@ -45,7 +45,9 @@
     "docs:build": "vitepress build docs",
     "lint": "eslint",
     "format:check": "prettier --check \"src\"",
-    "format:write": "prettier --write \"src\""
+    "format:write": "prettier --write \"src\"",
+    "publish-main": "npm publish",
+    "publish-beta": "npm publish --tag beta"
   },
   "author": "Greg Reindel",
   "license": "MIT",
