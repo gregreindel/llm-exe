@@ -1,0 +1,9 @@
+name: "Setup Node.js environment"
+description: "Setup Node.js environment"
+runs:
+  using: "composite"
+  steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
