@@ -1,0 +1,20 @@
+name: 'Cache npm dependencies and node modules'
+description: 'Cache npm dependencies and node modules'
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache npm dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ matrix.node-version }}-
+
+    - name: Cache node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-nodeModules-${{ matrix.node-version }}-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nodeModules-${{ matrix.node-version }}-
