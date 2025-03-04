@@ -27,13 +27,13 @@ jobs:
       - name: Build docs
         run: npm run docs:build
 
-      - name: Deploy docs
-        run: |
-          npm run docs:deploy
+    #   - name: Deploy docs
+    #     run: |
+    #       npm run docs:deploy
 
-      - name: Upload docs
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs
-          path: docs/.vitepress/dist
-          retention-days: 30
+    #   - name: Upload docs
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       name: docs
+    #       path: docs/.vitepress/dist
+    #       retention-days: 30
