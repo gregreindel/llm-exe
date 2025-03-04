@@ -1,0 +1,58 @@
+name: Cleanup PR and Branch Caches After Merge
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Install GH Actions Cache Extension
+        run: gh extension install actions/gh-actions-cache
+
+      - name: Cleanup Caches
+        run: |
+          PR_REF="refs/pull/${{ github.event.pull_request.number }}/merge"
+          BRANCH_REF="${{ github.event.pull_request.head.ref }}"
+
+          echo "Fetching list of cache keys for PR ref: $PR_REF"
+          prCacheKeysOutput=$(gh actions-cache list -R $REPO -B $PR_REF -L 100 2>&1)
+          echo "$prCacheKeysOutput"
+
+          if [ "$BRANCH_REF" = "development" ]; then
+            echo "Branch ref is 'development'. Skipping cache key fetch for the branch."
+            branchCacheKeysOutput=""
+          else
+            echo "Fetching list of cache keys for branch ref: $BRANCH_REF"
+            branchCacheKeysOutput=$(gh actions-cache list -R $REPO -B $BRANCH_REF -L 100 2>&1)
+            echo "$branchCacheKeysOutput"
+          fi
+
+          cacheKeys=$(echo "$prCacheKeysOutput" "$branchCacheKeysOutput" | cut -f 1 | sort | uniq)
+
+          if [ -z "$cacheKeys" ]; then
+            echo "No cache keys found. Skipping cache deletion."
+          else
+            echo "Deleting caches..."
+            for cacheKey in $cacheKeys
+            do
+                if gh actions-cache delete $cacheKey -R $REPO --confirm; then
+                  echo "Successfully deleted cache key: $cacheKey"
+                else
+                  echo "Failed to delete cache key: $cacheKey"
+                  exit 1  # Exit with an error status
+                fi
+            done
+            echo "Cache deletion process completed."
+          fi
+        env:
+          REPO: ${{ github.repository }}

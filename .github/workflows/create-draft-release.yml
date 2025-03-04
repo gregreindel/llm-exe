@@ -1,0 +1,74 @@
+name: Create Draft Release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  update-draft-releases:
+    name: "Delete old drafts and create new draft release"
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get all draft releases
+      id: get_drafts
+      run: |
+        gh api repos/${{ github.repository }}/releases \
+          | jq '.[] | select(.draft == true) | .id' > release_ids.txt
+
+    - name: Delete old draft releases
+      run: |
+        while read release_id; do
+          echo "Deleting draft release with ID: $release_id"
+          gh api -X DELETE repos/${{ github.repository }}/releases/$release_id
+        done < release_ids.txt
+
+    - name: Determine next semantic version for release
+      run: |
+        PACKAGE_VERSION=$(jq -r '.version' package.json)
+        if [ -z "$PACKAGE_VERSION" ]; then
+          PACKAGE_VERSION="v0.0.0"
+        fi
+
+        if [[ $PACKAGE_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+          MAJOR=${BASH_REMATCH[1]}
+          MINOR=${BASH_REMATCH[2]}
+          PATCH=${BASH_REMATCH[3]}
+        else
+          echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
+          exit 1
+        fi
+        NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+        echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+
+    - name: Create Draft Release on GitHub
+      id: create_release
+      run: |
+        response=$(curl -s -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases \
+          -d '{
+            "tag_name": "'"${NEW_VERSION}"'",
+            "target_commitish": "main",
+            "draft": true,
+            "generate_release_notes": true
+          }')
+        release_url=$(echo $response | jq -r '.html_url')
+        release_id=$(echo $response | jq -r '.id')
+        release_body=$(echo "$response" | jq -r '.body | tostring' | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+        release_tag_name=$(echo "$response" | jq -r '.tag_name')
+        release_author_avatar=$(echo "$response" | jq -r '.author.avatar_url')

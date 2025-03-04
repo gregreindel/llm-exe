@@ -1,0 +1,208 @@
+name: Draft Dev to Main PR
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - development
+
+  release:
+    types: [published]
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft-dev-to-main-pr:
+    if: github.event.pull_request.merged == true || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get the latest release version
+        id: latest_release
+        run: |
+          git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1
+          LATEST_VERSION=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          if [ -z "$LATEST_VERSION" ]; then
+            LATEST_VERSION="v0.0.0"
+          fi
+          # Remove the "v" prefix if it exists
+          LATEST_VERSION=${LATEST_VERSION#v}
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+
+      - name: Get package.json version
+        id: package_version
+        run: |
+          package_version=$(jq -r '.version' < package.json)
+          echo "Version in package.json: $package_version"
+          echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
+
+      - name: Check version comparison
+        run: |
+          LATEST_VERSION=${{ env.LATEST_VERSION }}
+          PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}
+
+          # Convert versions to comparable numbers
+          convert_version() {
+            echo "$1" | awk -F. '{ printf("%d%03d%03d", $1,$2,$3); }'
+          }
+
+          LATEST_VERSION_NUM=$(convert_version $LATEST_VERSION)
+          PACKAGE_VERSION_NUM=$(convert_version $PACKAGE_VERSION)
+
+          if [ "$PACKAGE_VERSION_NUM" -le "$LATEST_VERSION_NUM" ]; then
+            echo "Version in package.json ($PACKAGE_VERSION) is not greater than the latest release tag ($LATEST_VERSION)."
+            echo "CURRENT_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+            echo "BUMP_VERSION=true" >> $GITHUB_ENV
+          else
+            echo "Version in package.json ($PACKAGE_VERSION) is greater than or equal to the latest release tag ($LATEST_VERSION)"
+            echo "CURRENT_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+            echo "BUMP_VERSION=false" >> $GITHUB_ENV
+          fi
+
+      - name: Determine next semantic version for release
+        run: |
+            LATEST_TAG=${{ env.CURRENT_VERSION }}
+            if [ -z "$LATEST_TAG" ]; then
+                LATEST_TAG="v${{ env.PACKAGE_VERSION }}"
+            fi
+            
+            if [[ $LATEST_TAG =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            else
+            echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
+            exit 1
+            fi
+            # if env.BUMP_VERSION == 'false', dont increase patch by 1 else do
+            if [ "${{ env.BUMP_VERSION }}" == 'false' ]; then
+              PATCH=$PATCH
+            else
+              PATCH=$((PATCH + 1))
+            fi
+            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+            echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV   
+
+      - name: Check if PR already exists
+        id: check_pr
+        run: |
+          PR_URL=$(gh pr list --base main --head development --json url --jq '.[0].url')
+          if [ -z "$PR_URL" ]; then
+            echo "PR_EXISTS=false" >> $GITHUB_ENV
+          else
+            echo "PR_EXISTS=true" >> $GITHUB_ENV
+            echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          fi
+
+      - name: Get the last two merge commits
+        if: env.PR_EXISTS == 'true'
+        id: last_merge
+        run: |
+          MERGE_COMMITS=$(git log --merges -2 --pretty=format:%H)
+          LAST_MERGE_COMMIT=$(echo "$MERGE_COMMITS" | head -n 1)
+          SECOND_LAST_MERGE_COMMIT=$(echo "$MERGE_COMMITS" | tail -n 1)
+          echo "LAST_MERGE_COMMIT=${LAST_MERGE_COMMIT}" >> $GITHUB_ENV
+          echo "SECOND_LAST_MERGE_COMMIT=${SECOND_LAST_MERGE_COMMIT}" >> $GITHUB_ENV
+
+      - name: Get commit messages since the second last merge
+        if: env.PR_EXISTS == 'true' && github.event_name != 'release'
+        id: get_commit_messages
+        run: |
+          COMMIT_MESSAGES=$(git log ${SECOND_LAST_MERGE_COMMIT}..HEAD --pretty=format:"%s" | tr '\n' ', ')
+          echo "COMMIT_MESSAGES=${COMMIT_MESSAGES}" >> $GITHUB_ENV
+
+      - name: Check for new commits between branches
+        id: check_new_commits
+        run: |
+          git fetch origin main development
+          if git rev-list --count origin/main..origin/development | grep -q '^0$'; then
+            echo "No new commits to create a PR."
+            echo "NEW_COMMITS=false" >> $GITHUB_ENV
+          else
+            echo "NEW_COMMITS=true" >> $GITHUB_ENV
+          fi
+
+      - name: Bump version number (patch increment)
+        if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
+        run: |
+            LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+            if [ -z "$LATEST_TAG" ]; then
+                LATEST_TAG="v0.0.0"
+            fi
+            
+            if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            else
+            echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
+            exit 1
+            fi
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          
+            jq --arg NEW_VERSION "$NEW_VERSION" '.version = $NEW_VERSION' package.json > package.tmp && mv package.tmp package.json
+            
+            echo "Updated version in package.json to $NEW_VERSION"
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add package.json
+            git commit -m "chore: bump version number on PR to main"
+
+      - name: Create or update branch
+        if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
+        run: |
+          git checkout -b bump-version-branch || git checkout bump-version-branch
+          git pull origin bump-version-branch || echo "Branch does not exist remotely."
+      
+      - name: Push changes to remote
+        if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
+        run: |
+          git push origin bump-version-branch || (echo "Retrying with force push..." && git push --force origin bump-version-branch)
+
+      - name: Create PR
+        if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
+        run: |
+          gh pr create --title "Bump Version on PR to Main" --body "This PR bumps the version number" --base development --head bump-version-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.VERSION_BUMP_SECRET }}
+
+      - name: Auto merge the pull request
+        if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
+        run: |
+          PR_NUMBER=$(gh pr list --state open --head bump-version-branch --json number --jq '.[0].number')
+          gh pr merge $PR_NUMBER --admin --squash --delete-branch
+          
+      - name: Create or update draft pull request
+        if: env.NEW_COMMITS == 'true'
+        run: |
+          if [ "$PR_EXISTS" = "true" ]; then
+            echo "A PR already exists: $PR_URL"
+            if [ -n "$COMMIT_MESSAGES" ]; then
+              NEW_COMMIT_MESSAGES=$(echo "$COMMIT_MESSAGES" | tr ',' '\n')
+              gh pr comment $PR_URL --body "$NEW_COMMIT_MESSAGES"
+            else
+              echo "No new commits to add as comments."
+            fi
+            if [ "${{ github.event_name }}" = "release" ]; then
+              echo "Updating the PR title to version $NEW_VERSION"
+              gh pr edit $PR_URL --title "Draft PR for release version $NEW_VERSION"
+            fi
+          else
+            echo "Creating a new draft PR..."
+            gh pr create \
+              --base main \
+              --head development \
+              --title "Draft PR for release version $NEW_VERSION" \
+              --draft \
+              --fill-verbose
+          fi
