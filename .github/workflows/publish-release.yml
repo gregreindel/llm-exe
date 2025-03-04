@@ -1,0 +1,58 @@
+name: Publish Main/Beta Package To Npm Registry
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+  release:
+    types:
+      - published
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-npm-package:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
+
+      - name: Install
+        run: npm install
+
+      - name: Build package
+        run: npm run build:package
+
+      - name: Build docs
+        run: npm run docs:build
+
+      - name: Add NPM Token
+        run: |
+          printf "//`node -p \"require('url').parse( 'https://registry.npmjs.org').host\"`/:_authToken=${{secrets.NPM_TOKEN}}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\nalways-auth=true\n" >> .npmrc
+
+      - name: Publish Main/Beta Package version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [[ "$version" == *"beta"* ]]; then
+            echo "Publishing beta version"
+            npm run publish-beta
+          else
+            echo "Publishing main version"
+            npm run publish-main
+          fi
