@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -174,7 +175,7 @@ jobs:
         run: |
           gh pr create --title "Bump Version on PR to Main" --body "This PR bumps the version number" --base development --head bump-version-branch
         env:
-          GITHUB_TOKEN: ${{ secrets.VERSION_BUMP_SECRET }}
+          GH_TOKEN: ${{ secrets.VERSION_BUMP_SECRET }}
 
       - name: Auto merge the pull request
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
