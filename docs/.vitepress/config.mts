@@ -32,7 +32,18 @@ export default defineConfig({
           "A package that provides utilities, wrappers, and base abstractions to help make writing applications with llm-powered functions easier.",
       },
     ],
-
+    [
+      'script',
+      { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-5YTJ8HRXNF' }
+    ],
+    [
+      'script',
+      {},
+      `window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YTJ8HRXNF');`
+    ],
     ["script", { src: "http://assets.llm-exe.com/llm-exe-browser-utils.js" }],
   ],
   themeConfig: {
