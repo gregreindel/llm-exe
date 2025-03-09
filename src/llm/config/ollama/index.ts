@@ -8,7 +8,6 @@ const ollamaChatV1: Config = {
   }/api/chat`,
   options: {
     prompt: {},
-    topP: {},
   },
   method: "POST",
   headers: `{"Content-Type": "application/json" }`,
@@ -24,10 +23,7 @@ const ollamaChatV1: Config = {
     },
     model: {
       key: "model",
-    },
-    topP: {
-      key: "top_p",
-    },
+    }
   },
 };
 

@@ -43,10 +43,7 @@ it("creates class with expected properties", () => {
       total_tokens: 0,
     });
   });
-//   it("uses defaults if values are passed in", () => {
-//     const output = OutputOllamaChat(mock as any, { model: "some-override"}).getResult();
-//     expect((output as any).name).toEqual("some-override");
-//   });
+
   it("creates class with expected methods", () => {
     const output = OutputOllamaChat(mock as any);
     expect(output).toHaveProperty("getResult");
@@ -58,86 +55,4 @@ it("creates class with expected properties", () => {
     expect(output).toHaveProperty("getResultContent");
     expect(typeof output.getResultContent).toEqual("function");
   });
-//   it("getResults gets results", () => {
-//     const output = OutputOllamaChat(mock as any);
-//     expect(output.getResult()).toEqual({
-//       content: [
-//         { text: "This is the assistant message content.", type: "text" },
-//       ],
-//       created: 1685025755,
-//       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
-//       name: "gpt-3.5-turbo-0301",
-//       options: [],
-//       stopReason: "stop",
-//       usage: { input_tokens: 427, output_tokens: 1, total_tokens: 428 },
-//     });
-//   });
-//   it("getResult gets result", () => {
-//     const output = OutputOllamaChat(mock as any);
-//     expect(output.getResult()).toEqual({
-//       content: [
-//         {
-//           text: "This is the assistant message content.",
-//           type: "text",
-//         },
-//       ],
-//       created: mock.created,
-//       id: mock.id,
-//       name: "gpt-3.5-turbo-0301",
-//       options: [],
-//       stopReason: "stop",
-//       usage: {
-//         input_tokens: mock.usage.prompt_tokens,
-//         output_tokens: mock.usage.completion_tokens,
-//         total_tokens: mock.usage.total_tokens,
-//       },
-//     });
-//   });
-//   it("getResultContent gets result", () => {
-//     const output = OutputOllamaChat(mock as any);
-//     expect(output.getResultText()).toEqual(
-//       "This is the assistant message content."
-//     );
-//   });
-
-//   it("getResultContent gets [] if not exists", () => {
-//     const output = OutputOllamaChat(mock as any);
-//     expect(output.getResultContent(8)).toEqual([]);
-//   });
-
-//   it("getResultContent gets tool_calls if content is null", () => {
-//     const output = OutputOllamaChat({
-//       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
-//       object: "chat.completion",
-//       created: 1685025755,
-//       model: "gpt-3.5-turbo-0301",
-//       usage: {
-//         prompt_tokens: 427,
-//         completion_tokens: 1,
-//         total_tokens: 428,
-//       },
-//       choices: [
-//         {
-//           message: {
-//             role: "assistant",
-//             content: null,
-//             tool_calls: [
-//               {
-//                 type: "function",
-//                 function: {
-//                   name: "test_fn",
-//                   arguments: "{}",
-//                 },
-//               },
-//             ],
-//           },
-//           finish_reason: "stop",
-//           index: 0,
-//         },
-//       ],
-//     } as unknown as XAiResponse);
-//     expect(output.getResultContent()).toEqual(
-//       [{"input": {}, "name": "test_fn", "type": "function_use"}]
-//     );
-//   });
 });
