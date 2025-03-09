@@ -6,7 +6,9 @@ export function isModelKnownOpenAi(payload: { model: string }) {
   if (model === "o1" || model.startsWith("o1-")) {
     return true;
   }
-
+  if (model === "o3-mini") {
+    return true;
+  }
   return false;
 }
 

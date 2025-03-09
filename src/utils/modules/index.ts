@@ -6,6 +6,8 @@ export { filterObjectOnSchema } from "./filterObjectOnSchema";
 export { replaceTemplateString } from "./replaceTemplateString";
 export { replaceTemplateStringAsync } from "./replaceTemplateStringAsync";
 export { asyncCallWithTimeout } from "./asyncCallWithTimeout";
+export { guessProviderFromModel } from "./guessProviderFromModel";
+
 export {
   maybeStringifyJSON,
   maybeParseJSON,
