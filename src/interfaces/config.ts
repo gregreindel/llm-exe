@@ -10,30 +10,31 @@ export type LlmProvider =
   | "amazon:meta.chat"
   | "amazon:nova.chat"
   | "amazon.embedding"
-  | "xai.chat";
+  | "xai.chat"
+  | "ollama.chat";
 
 export interface Config<Pk = LlmProviderKey> {
-    key: Pk;
-    provider: LlmProvider;
-    method: string;
-    endpoint: string;
-    options: {
-      [key in string]: {
-        default?: number | string;
-        required?: [boolean, string] | [boolean];
-      };
+  key: Pk;
+  provider: LlmProvider;
+  method: string;
+  endpoint: string;
+  options: {
+    [key in string]: {
+      default?: number | string;
+      required?: [boolean, string] | [boolean];
     };
-    mapBody: {
-      [key in string]: {
-        key: string;
-        default?: number | string;
-        sanitize?: (
-          i: any,
-          arg: Record<string, any>,
-          arg2: Record<string, any>
-        ) => any;
-      };
+  };
+  mapBody: {
+    [key in string]: {
+      key: string;
+      default?: number | string;
+      sanitize?: (
+        i: any,
+        arg: Record<string, any>,
+        arg2: Record<string, any>
+      ) => any;
     };
-    headers: string;
-    prompt?: (messages: IChatMessages) => any;
-  }
+  };
+  headers: string;
+  prompt?: (messages: IChatMessages) => any;
+}

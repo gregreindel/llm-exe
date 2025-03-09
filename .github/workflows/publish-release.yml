@@ -1,0 +1,60 @@
+name: Publish Main/Beta Package To Npm Registry
+
+on:
+  workflow_dispatch:
+
+  release:
+    types:
+      - published
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  check-release-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if release is from main branch
+        if: github.event_name == 'release' && github.event.action == 'published'
+        run: |
+          BRANCH=$(jq -r .release.target_commitish "$GITHUB_EVENT_PATH")
+          if [ "$BRANCH" != "main" ]; then
+            echo "Releases should only be created from the main branch. This release is from $BRANCH."
+            exit 1
+          fi
+
+  publish-npm-package:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
+    needs: check-release-branch
+    name: Publish Main/Beta Package version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: ./.github/actions/setup-node
+
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
+
+      - name: Install
+        run: npm install
+
+      - name: Build package
+        run: npm run build:package
+
+      - name: Add NPM Token
+        run: |
+          printf "//`node -p \"require('url').parse( 'https://registry.npmjs.org').host\"`/:_authToken=${{secrets.NPM_TOKEN}}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\nalways-auth=true\n" >> .npmrc
+
+      - name: Publish Main/Beta Package version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [[ "$version" == *"beta"* ]]; then
+            echo "Publishing beta version"
+            npm run publish-beta
+          else
+            echo "Publishing main version"
+            npm run publish-main
+          fi
