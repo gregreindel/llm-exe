@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: ["main", "development"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Run Tests
@@ -32,4 +36,5 @@ jobs:
         run: npm run test
 
       - name: Coverage
+        if: ${{ matrix.node-version == '20.x' }}
         uses: coverallsapp/github-action@v1

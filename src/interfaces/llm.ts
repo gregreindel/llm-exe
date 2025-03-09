@@ -148,6 +148,23 @@ export interface MetaLlama2Response {
   stop_reason: string;
 }
 
+export interface OllamaResponse {
+  model: string;
+  created_at: string;
+  message?: {
+    role?: string;
+    content?: string;
+  };
+  done?: boolean;
+  done_reason?: string;
+  total_duration?: number;
+  load_duration?: number;
+  prompt_eval_count?: number;
+  prompt_eval_duration?: number;
+  eval_count?: number;
+  eval_duration?: number;
+}
+
 /**
  * Amazon Titan
  */
@@ -342,9 +359,13 @@ export type AllLlm = {
   //   // output: OpenAiRequest;
   // };
   "xai.chat.v1": {
-    input: OpenAiRequest;
+    input: GenericLLm;
     // output: OpenAiRequest;
   };
+   "ollama.chat.v1": {
+    input: GenericLLm;
+    // output: OpenAiRequest;
+   }
 };
 
 export type AllUseLlmOptions = AllLlm & {
@@ -400,3 +421,9 @@ export interface BaseLlm<_T extends BaseLlCall = BaseLlCall>
   extends BaseRequest<_T> {}
 export interface BaseEmbedding<_T extends BaseEmbeddingCall = BaseEmbeddingCall>
   extends BaseRequest<_T> {}
+
+export interface CombinedJsonLResult<T extends Record<string, any> = any> {
+    result: T; // All "message.content" values concatenated;
+    content: OutputResultContent; // The object containing the response metadata
+    lines: T[]; // Full JSON objects from each line
+}

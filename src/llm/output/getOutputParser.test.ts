@@ -31,6 +31,12 @@ describe("getOutputParser", () => {
     expect(result).toBeInstanceOf(Object);
   });
 
+  it("should return OutputOllamaChat for 'ollama.chat.v1' provider", () => {
+    const response = `${JSON.stringify({ data: "exampleData" })}\n${JSON.stringify({ data: "exampleData", done: true })}`;
+    const result = getOutputParser({key: "ollama.chat.v1" }, response);
+    expect(result).toBeInstanceOf(Object);
+  });
+
   it("should throw an error for unsupported provider", () => {
     const response = { data: "exampleData" };
     expect(() => getOutputParser("unsupported" as any, response)).toThrowError("Unsupported provider");
