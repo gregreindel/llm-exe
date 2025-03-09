@@ -20,8 +20,8 @@ jobs:
     if: github.event.pull_request.merged == true || github.event_name == 'release'
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-      GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -103,6 +103,8 @@ jobs:
             echo "PR_EXISTS=true" >> $GITHUB_ENV
             echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get the last two merge commits
         if: env.PR_EXISTS == 'true'
@@ -182,6 +184,8 @@ jobs:
         run: |
           PR_NUMBER=$(gh pr list --state open --head bump-version-branch --json number --jq '.[0].number')
           gh pr merge $PR_NUMBER --admin --squash --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           
       - name: Create or update draft pull request
         if: env.NEW_COMMITS == 'true'
@@ -207,3 +211,5 @@ jobs:
               --draft \
               --fill-verbose
           fi
+        env:
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
