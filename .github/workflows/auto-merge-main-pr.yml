@@ -1,0 +1,83 @@
+name: Auto Merge PR from Development to Main
+
+on:
+  workflow_run:
+    workflows: 
+      - "Enforce release semantic version"
+    types:
+      - completed
+  pull_request:
+    types:
+      - ready_for_review
+      - synchronize
+    branches: 
+      - main
+
+permissions:
+    id-token: write
+    checks: write
+    contents: write
+    pull-requests: write
+    actions: write
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development' || github.event_name == 'pull_request' }}
+    env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get PR number for development to main
+        id: get-pr
+        run: |
+          PR_INFO=$(gh pr list --base main --head development --state open --json number,isDraft --jq '.[] | select(.isDraft == false) | .number')
+          echo "PR_NUMBER=$PR_INFO" >> $GITHUB_ENV
+
+      - name: Wait for all checks to complete (excluding this workflow)
+        if: env.PR_NUMBER != ''
+        id: wait-checks
+        run: |
+          MAX_ATTEMPTS=10
+          ATTEMPT=0
+          while [[ $ATTEMPT -lt $MAX_ATTEMPTS ]]; do
+            CHECKS_IN_PROGRESS=$(gh pr checks ${{ env.PR_NUMBER }} --json name,state --jq '[.[] | select(.name != "auto-merge") | select(.state == "IN_PROGRESS")] | length')
+            if [[ "$CHECKS_IN_PROGRESS" -eq "0" ]]; then
+              echo "All checks are complete"
+              break
+            fi
+            echo "Checks are still in progress... waiting number $ATTEMPT/$MAX_ATTEMPTS"
+            ATTEMPT=$((ATTEMPT + 1))
+            sleep 30
+          done
+
+      - name: Check all PR checks state
+        id: pr-checks
+        if: env.PR_NUMBER != ''
+        run: |
+          FAILED_CHECKS=$(gh pr checks ${{ env.PR_NUMBER }} --json name,state --jq '[.[] | select(.name != "auto-merge") | select(.state == "FAILURE")] | length')
+          ALL_PASSED=$(gh pr checks ${{ env.PR_NUMBER }} --json name,state --jq '[.[] | select(.name != "auto-merge") | select(.state == "SUCCESS")] | length')
+          TOTAL_CHECKS=$(gh pr checks ${{ env.PR_NUMBER }} --json name,state --jq '[.[] | select(.name != "auto-merge")] | length')
+          echo "Total checks: $TOTAL_CHECKS"
+          echo "All passed: $ALL_PASSED"
+          echo "Failed checks: $FAILED_CHECKS"
+
+          if [[ "$FAILED_CHECKS" -gt "0" ]]; then
+            echo "Some checks failed"
+            exit 1
+          else
+            echo "Checks passed"
+          fi
+        continue-on-error: false
+
+      - name: Merge PR to Main
+        if: env.PR_NUMBER != ''
+        run: |
+          gh pr merge ${{ env.PR_NUMBER }} --merge --admin --repo ${{ github.repository }}
