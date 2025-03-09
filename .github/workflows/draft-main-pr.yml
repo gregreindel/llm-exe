@@ -171,6 +171,9 @@ jobs:
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
         run: |
           git push origin bump-version-branch || (echo "Retrying with force push..." && git push --force origin bump-version-branch)
+        env:
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Create PR
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
@@ -178,6 +181,7 @@ jobs:
           gh pr create --title "Bump Version on PR to Main" --body "This PR bumps the version number" --base development --head bump-version-branch
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Auto merge the pull request
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
@@ -186,7 +190,8 @@ jobs:
           gh pr merge $PR_NUMBER --admin --squash --delete-branch
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}  
+
       - name: Create or update draft pull request
         if: env.NEW_COMMITS == 'true'
         run: |
@@ -213,3 +218,4 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
