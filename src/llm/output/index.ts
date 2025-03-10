@@ -4,6 +4,7 @@ import { OutputMetaLlama3Chat } from "./llama";
 import { LlmProviderKey } from "@/interfaces";
 import { OutputDefault } from "./default";
 import { OutputXAIChat } from "./xai";
+import { OutputOllamaChat } from "./ollama";
 
 export function getOutputParser(
   config: {
@@ -25,6 +26,8 @@ export function getOutputParser(
     // return OutputDefault(response, config);
     case "xai.chat.v1":
       return OutputXAIChat(response, config);
+    case "ollama.chat.v1":
+      return OutputOllamaChat(response, config);
     default: {
       if ((config?.key as string)?.startsWith("custom:")) {
         return OutputDefault(response, config);

@@ -15,15 +15,39 @@ describe("apiRequest", () => {
     jsonMock.mockResolvedValue(dummyData);
     textMock.mockResolvedValue("Some error message");
   });
-
+  it("should make error early without a url", async () => {
+    await expect(apiRequest("")).rejects.toThrow(`Invalid URL`);
+  });
+  it("should make error early without a valid url", async () => {
+    await expect(apiRequest("not-a-url")).rejects.toThrow(`Invalid URL`);
+  });
   it("should make a request and return the data", async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: jsonMock
+      json: jsonMock,
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
     } as unknown as Response);
 
     const data = await apiRequest<typeof dummyData>(url);
     expect(data).toEqual(dummyData);
+    expect(global.fetch).toHaveBeenCalledWith(url, {});
+  });
+
+  it("should make a request and return the data as text according to headers ", async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: jsonMock,
+      text: textMock,
+      headers: new Headers({
+        "content-type": "application/x-ndjson", // not json
+      }),
+    } as unknown as Response);
+    const mockJsonl =  JSON.stringify({testing: "jsonl"})
+    textMock.mockResolvedValue(mockJsonl);
+    const data = await apiRequest<typeof dummyData>(url);
+    expect(data).toEqual(mockJsonl);
     expect(global.fetch).toHaveBeenCalledWith(url, {});
   });
 
@@ -33,6 +57,9 @@ describe("apiRequest", () => {
       status: 404,
       text: textMock,
       json: jest.fn(),
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
     } as unknown as Response);
 
     await expect(apiRequest(url)).rejects.toThrow(`Request to ${url} failed: HTTP error. Status: 404. Error Message: Unknown error.`);
@@ -47,18 +74,15 @@ describe("apiRequest", () => {
   });
 
 
-  // it("should throw a useful error if the request is openai and it fails", async () => {
-  //   (global.fetch as jest.Mock).mockRejectedValue(new Error("Fetch failed"));
-  //   const iaiUrl = `https://api.openai.com/something`
-  //   await expect(apiRequest(iaiUrl)).rejects.toThrow("Request to "+iaiUrl+" failed: Fetch failed");
-  //   expect(global.fetch).toHaveBeenCalledWith(url, {});
-  // });
   it("should handle HTTP errors correctly", async () => {
     (globalFetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 404,
       text: textMock,
       json: jest.fn().mockResolvedValue(JSON.stringify({error: {message: 'No further details provided.'}})),
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
     } as unknown as Response);
 
      const oaiUrl = `https://api.openai.com/something`
@@ -71,6 +95,9 @@ describe("apiRequest", () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(null),
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
     } as unknown as Response);
 
     const data = await apiRequest<null>(url);
@@ -88,7 +115,10 @@ describe("apiRequest", () => {
 
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: jsonMock
+      json: jsonMock,
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
     } as unknown as Response);
 
     await apiRequest(url, customOptions);

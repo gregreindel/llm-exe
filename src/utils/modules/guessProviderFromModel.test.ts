@@ -15,6 +15,7 @@ describe("Model Identification Functions", () => {
       "gpt-3.5-turbo",
       "o1",
       "o1-advanced",
+      "o3-mini"
     ];
 
     for (const model of models) {
