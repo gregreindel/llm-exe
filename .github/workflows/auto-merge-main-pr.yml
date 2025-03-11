@@ -88,12 +88,5 @@ jobs:
         if: steps.merge-pr.outputs.merge_success == 'true'
         run: |
           gh api repos/${{ github.repository }}/dispatches \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -f event_type='pr-merged-to-main' \
-            -f client_payload='{
-              "ref": "${{ github.ref }}",
-              "sha": "${{ github.sha }}",
-              "pr_number": "${{ env.PR_NUMBER }}"
-            }'
+            --method POST \
+            --raw-field '{"event_type":"pr-merged-to-main","client_payload":{"ref":"${{ github.ref }}","sha":"${{ github.sha }}","pr_number":"${{ env.PR_NUMBER }}"}}'
