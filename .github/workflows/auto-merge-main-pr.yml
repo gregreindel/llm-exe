@@ -79,5 +79,21 @@ jobs:
 
       - name: Merge PR to Main
         if: env.PR_NUMBER != ''
+        id: merge-pr
         run: |
           gh pr merge ${{ env.PR_NUMBER }} --merge --admin --repo ${{ github.repository }}
+          echo "merge_success=true" >> $GITHUB_OUTPUT
+          
+      - name: Trigger Release Workflow
+        if: steps.merge-pr.outputs.merge_success == 'true'
+        run: |
+          gh api repos/${{ github.repository }}/dispatches \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -f event_type='pr-merged-to-main' \
+            -f client_payload='{
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "pr_number": "${{ env.PR_NUMBER }}"
+            }'

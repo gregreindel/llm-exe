@@ -2,6 +2,8 @@ name: Create Draft Release
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [pr-merged-to-main]
   pull_request:
     types: [closed]
     branches: [main]
@@ -16,7 +18,11 @@ jobs:
   update-draft-releases:
     name: "Delete old drafts and create new draft release"
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event.pull_request.merged == true || 
+      github.event_name == 'workflow_dispatch' || 
+      github.event_name == 'push' || 
+      (github.event_name == 'repository_dispatch' && github.event.action == 'pr-merged-to-main')
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
