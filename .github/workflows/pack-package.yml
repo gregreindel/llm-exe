@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   pack-package:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true || (github.event_name == 'repository_dispatch' && github.event.action == 'pr-merged-to-main') || github.event.pull_request.head.ref != 'bump-version-branch'
+    if: github.event_name == 'workflow_dispatch' || ${{ !(github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') }} || (github.event_name == 'repository_dispatch' && github.event.action == 'pr-merged-to-main')
     name: Pack Package
     runs-on: ubuntu-latest
     steps:
