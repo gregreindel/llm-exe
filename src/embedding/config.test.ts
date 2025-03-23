@@ -18,7 +18,7 @@ describe("getEmbeddingConfig", () => {
 
   it("should return the correct configuration for 'amazon.embedding.v1'", () => {
     const provider: EmbeddingProviderKey = "amazon.embedding.v1";
-    
+
     (getEnvironmentVariable as jest.Mock).mockReturnValue("us-west-2");
 
     const config = getEmbeddingConfig(provider);
@@ -36,8 +36,16 @@ describe("getEmbeddingConfig", () => {
 
   it("should throw an error for an invalid provider", () => {
     const invalidProvider = "invalid.provider" as EmbeddingProviderKey;
+    expect(() => getEmbeddingConfig(invalidProvider)).toThrowError(
+      `Invalid provider: ${invalidProvider}`
+    );
+  });
 
-    expect(() => getEmbeddingConfig(invalidProvider)).toThrowError("Invalid provider");
+  it("should throw an error for a missing provider", () => {
+    const invalidProvider = "" as EmbeddingProviderKey;
+    expect(() => getEmbeddingConfig(invalidProvider)).toThrowError(
+      `Missing provider`
+    );
   });
 });
 
@@ -55,12 +63,10 @@ describe("embeddingConfigs", () => {
       options: {
         input: {},
         dimensions: {
-          default: 1536
+          default: 1536,
         },
         encodingFormat: {},
-        openAiApiKey: {
-          
-        },
+        openAiApiKey: {},
       },
       mapBody: {
         input: {
@@ -94,7 +100,7 @@ describe("embeddingConfigs", () => {
       options: {
         input: {},
         dimensions: {
-          default: 512
+          default: 512,
         },
         awsRegion: expect.objectContaining({
           default: undefined,
