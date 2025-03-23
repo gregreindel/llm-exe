@@ -1,3 +1,4 @@
+import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 const ollamaChatV1: Config = {
@@ -23,10 +24,15 @@ const ollamaChatV1: Config = {
     },
     model: {
       key: "model",
-    }
+    },
   },
 };
 
 export const ollama = {
   "ollama.chat.v1": ollamaChatV1,
+  "ollama.deepseek-r1": withDefaultModel(ollamaChatV1, "deepseek-r1"),
+  "ollama.llama3.3": withDefaultModel(ollamaChatV1, "llama3.3"),
+  "ollama.llama3.2": withDefaultModel(ollamaChatV1, "llama3.2"),
+  "ollama.llama3.1": withDefaultModel(ollamaChatV1, "llama3.1"),
+  "ollama.qwq": withDefaultModel(ollamaChatV1, "qwq"),
 };
