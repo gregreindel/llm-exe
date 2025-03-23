@@ -82,11 +82,40 @@ jobs:
           package_version=$(jq -r '.version' < package.json)
           echo "Version in package.json: $package_version"
           echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
-          
-      - name: Copy dist directory to S3 Bucket in versioned folder using package.json version and timestamp
+
+      - name: Set timestamp
+        id: timestamp
         run: |
           TIMESTAMP=$(date +%s)
-          aws s3 cp dist s3://${{ vars.AWS_S3_BUCKET }}/docs/${{ env.PACKAGE_VERSION }}-${TIMESTAMP}/ --recursive
+          PACKAGE_ID=${{ env.PACKAGE_VERSION }}-${TIMESTAMP}
+          echo "PACKAGE_ID=$PACKAGE_ID" >> $GITHUB_ENV
+
+      - name: Copy dist directory to S3 Bucket in versioned folder using package.json version and timestamp
+        run: |
+          aws s3 cp dist s3://${{ vars.AWS_S3_BUCKET }}/docs/${{ env.PACKAGE_ID }}/ --recursive
+
+      - name: Retrieve current CloudFront distribution config
+        id: get-config
+        run: |
+          aws cloudfront get-distribution-config --id ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }} > dist-config.json
+
+      - name: Extract distribution config and etag
+        id: extract-config
+        run: |
+          # Extract etag and config
+          etag=$(jq -r '.ETag' dist-config.json)
+          jq '.DistributionConfig' dist-config.json > distribution-config.json
+          echo "ETAG=$etag" >> $GITHUB_ENV
+
+      - name: Modify CloudFront config with new OriginPath
+        run: |
+          jq '.Origins.Items[0].OriginPath = "/docs/${{ env.PACKAGE_ID }}"' distribution-config.json > new-distribution-config.json
+
+      - name: Update CloudFront distribution
+        run: |
+          aws cloudfront update-distribution --id ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-config file://new-distribution-config.json \
+            --if-match ${{ env.ETAG }}
 
       - name: Invalidate CloudFront Cache
         run: aws cloudfront create-invalidation --paths "/*" --distribution-id ${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
