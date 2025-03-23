@@ -8,7 +8,7 @@ import replace from '@rollup/plugin-replace';
 
 
 export default {
-  input: 'dist/index.js', // replace with your entry file
+  input: 'dist/index.js',
   output: {
     file: 'build/bundle.js', // the output bundled file
     format: 'cjs', // commonjs format, you can choose other formats like 'esm', 'iife', etc.
