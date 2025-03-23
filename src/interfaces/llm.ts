@@ -378,9 +378,12 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.gpt-4o-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
+  "anthropic.claude-3-7-sonnet": {
+    input: Omit<AnthropicRequest, "model">;
+  }; 
   "anthropic.claude-3-5-sonnet": {
     input: Omit<AnthropicRequest, "model">;
-  };
+  }; 
   "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -393,6 +396,23 @@ export type AllUseLlmOptions = AllLlm & {
   "xai.grok-2": {
     input: OpenAiRequest;
   };
+  "ollama.deepseek-r1": {
+    input: GenericLLm;
+  }
+  "ollama.llama3.3": {
+    input: GenericLLm;
+  }
+  "ollama.llama3.2": {
+    input: GenericLLm;
+  }
+  "ollama.llama3.1": {
+    input: GenericLLm;
+  }
+  "ollama.qwq": {
+    input: GenericLLm;
+  }
+
+
 };
 
 export type LlmProviderKey = keyof AllLlm;
