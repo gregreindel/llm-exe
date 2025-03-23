@@ -1,6 +1,6 @@
 # llm-exe
 
-[![node.js](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml/badge.svg)](https://github.com/gregreindel/llm-exe/actions/workflows/node.js.yml) [![Coverage Status](https://coveralls.io/repos/github/gregreindel/llm-exe/badge.svg?branch=main)](https://coveralls.io/github/gregreindel/llm-exe?branch=main) [![npm version](https://badge.fury.io/js/llm-exe.svg)](https://badge.fury.io/js/llm-exe)
+[![tests](https://github.com/gregreindel/llm-exe/actions/workflows/tests.yml/badge.svg)](https://github.com/gregreindel/llm-exe/actions/workflows/tests.yml) [![Coverage Status](https://coveralls.io/repos/github/gregreindel/llm-exe/badge.svg?branch=main)](https://coveralls.io/github/gregreindel/llm-exe?branch=main) [![npm version](https://badge.fury.io/js/llm-exe.svg)](https://badge.fury.io/js/llm-exe)
 
 A package that provides simplified base components to make building and maintaining LLM-powered applications easier.
 
