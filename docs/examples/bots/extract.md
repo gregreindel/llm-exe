@@ -8,14 +8,19 @@ This can be useful as:
 This takes advantage of a custom output parser to not only ensure formatting, but slightly transform the output.
 
 #### Step 1 - Prepare Types & Intents
-@[code{8-11} ts:no-line-numbers](../../../examples/extractBot.ts)
+
+<<< ../../../examples/extractBot.ts#types
 
 #### Step 2 - Prepare Prompt
-@[code{13-23} ts:no-line-numbers](../../../examples/extractBot.ts)
+
+<<< ../../../examples/extractBot.ts#prompt
+
 
 #### Step 3 - Create LLM Executor
 Combine the prompt, LLM, and parser into a single function.
-@[code{25-50} ts:no-line-numbers](../../../examples/extractBot.ts)
+
+<<< ../../../examples/extractBot.ts#function
+
 
 
 #### Step 4 - Use it!
@@ -91,4 +96,5 @@ const response2 = await identifyIntent().execute({
 ```
 
 ### Complete File
-@[code{8-127} ts](../../../examples/extractBot.ts)
+
+<<< ../../../examples/extractBot.ts#file

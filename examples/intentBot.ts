@@ -3,11 +3,13 @@ import { BaseLlm } from "@/types";
 import { createCustomParser } from "@/parser";
 import { ExecutorContext, IChatMessages } from "@/types";
 import { maybeParseJSON } from "@/utils";
-// import { snakeCase } from "lodash";
 import { toNumber } from "@/utils/modules/toNumber";
 
-function snakeCase(str: string){ return str}
-
+function snakeCase(str: string) {
+  return str;
+}
+// #region file
+// #region prepare
 export const intents = {
   book_hotel: {
     description: "when the user is asking about to booking a hotel",
@@ -36,7 +38,9 @@ export interface IdentifyIntentOutput {
     intent: keyof typeof intents;
   }[];
 }
+// #endregion prepare
 
+// #region prompt
 export const PROMPT = `You are a classifier, not an assistant. You need to identify the intent of the current state of the conversation.
 
 Read through each intent option, step by step.
@@ -76,7 +80,9 @@ const prompt = (_values: IdentifyIntentInput) =>
     .addChatHistoryPlaceholder("chatHistory")
     .addUserMessage(_values.input)
     .addSystemMessage(INSTRUCTION);
+// #endregion prompt
 
+// #region parser
 export const parser = createCustomParser<IdentifyIntentOutput>(
   "IntentParser",
   (
@@ -119,23 +125,18 @@ export const parser = createCustomParser<IdentifyIntentOutput>(
     return { intent: "unknown", intents: [] };
   }
 );
+// #endregion parser
 
+// #region function
 export async function identifyIntent(llm: BaseLlm, input: IdentifyIntentInput) {
-  return llmExe.createLlmExecutor({
+  return llmExe
+    .createLlmExecutor({
       name: "identify-intent",
       llm,
       prompt,
       parser,
-    }).execute(input);
+    })
+    .execute(input);
 }
-
-async () => {
-
-  const response = await identifyIntent({} as any, {
-    input: "",
-    chatHistory: [],
-    intents,
-  });
-
-  console.log(response.intent);
-};
+// #endregion function
+// #endregion file

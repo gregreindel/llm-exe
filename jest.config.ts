@@ -13,6 +13,7 @@ module.exports = {
     "/node_modules/",
     "/__mocks__/",
     "/__data__/",
+    "/examples/",
     "/build/",
     "/dist/",
   ],
