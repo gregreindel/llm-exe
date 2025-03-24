@@ -2,7 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config, IChatMessages } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
-const ANTORPIC_VERSION = "2023-06-01";
+const ANTHROPIC_VERSION = "2023-06-01";
 
 export function anthropicPromptSanitize(
   _messages: string | IChatMessages,
@@ -33,7 +33,7 @@ const anthropicChatV1: Config = {
   key: "anthropic.chat.v1",
   provider: "anthropic.chat",
   endpoint: `https://api.anthropic.com/v1/messages`,
-  headers: `{"x-api-key":"{{anthropicApiKey}}", "Content-Type": "application/json", "anthropic-version": "${ANTORPIC_VERSION}" }`,
+  headers: `{"x-api-key":"{{anthropicApiKey}}", "Content-Type": "application/json", "anthropic-version": "${ANTHROPIC_VERSION}" }`,
   method: "POST",
   options: {
     prompt: {},
@@ -65,20 +65,24 @@ const anthropicChatV1: Config = {
 
 export const anthropic = {
   "anthropic.chat.v1": anthropicChatV1,
+  "anthropic.claude-3-7-sonnet": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-7-sonnet-latest"
+  ),
   "anthropic.claude-3-5-sonnet": withDefaultModel(
     anthropicChatV1,
-    "claude-3-5-sonnet-20240620"
+    "claude-3-5-sonnet-latest"
   ),
   "anthropic.claude-3-opus": withDefaultModel(
     anthropicChatV1,
-    "claude-3-opus-20240229"
+    "claude-3-opus-latest"
   ),
   "anthropic.claude-3-sonnet": withDefaultModel(
     anthropicChatV1,
-    "claude-3-sonnet-20240229"
+    "claude-3-sonnet-latest"
   ),
   "anthropic.claude-3-haiku": withDefaultModel(
     anthropicChatV1,
-    "claude-3-haiku-20240307"
+    "claude-3-haiku-latest"
   ),
 };

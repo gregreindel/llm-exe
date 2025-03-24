@@ -13,9 +13,14 @@ export const configs = {
 };
 
 export function getLlmConfig(provider: keyof typeof configs) {
+  if(!provider){
+    throw new Error(`Missing provider`);
+  }
+
   const pick = configs[provider];
   if (pick) {
     return pick;
   }
-  throw new Error("Invalid provider");
+
+  throw new Error(`Invalid provider: ${provider}`);
 }

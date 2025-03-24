@@ -4,6 +4,8 @@ import { createCustomParser, createParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
 import { defineSchema } from "@/utils";
 
+// #region file
+// #region prompt
 const PROMPT = `You need to work through the list below step-by-step and
 identify if each statement is true or false. Use the conversation and context
 below to help make a decision. Do not explain your answer, and do not use 
@@ -30,7 +32,9 @@ const INSTRUCTION = `Your response should be valid JSON in the following format:
     },
   ]
 )}`;
+// #endregion prompt
 
+// #region parser
 export const VerifyParser = createCustomParser(
   "VerifyParser",
   (input, _context) => {
@@ -60,7 +64,9 @@ export const VerifyParser = createCustomParser(
     };
   }
 );
+// #endregion parser
 
+// #region function
 export async function checkPolicy(llm: BaseLlm) {
   const prompt = createChatPrompt(PROMPT).addSystemMessage(INSTRUCTION);
   return createLlmExecutor({
@@ -69,3 +75,6 @@ export async function checkPolicy(llm: BaseLlm) {
     parser: VerifyParser
   });
 }
+
+// #endregion function
+// #endregion file

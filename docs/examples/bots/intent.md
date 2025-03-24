@@ -7,19 +7,24 @@ This can be useful as:
 
 This takes advantage of a custom output parser to not only ensure formatting, but slightly transform the output.
 
+
 #### Step 1 - Prepare Types & Intents
-@[code{8-35} ts:no-line-numbers](../../../examples/intentBot.ts)
+
+<<< ../../../examples/intentBot.ts#prepare
 
 #### Step 2 - Prepare Prompt
-@[code{37-76} ts:no-line-numbers](../../../examples/intentBot.ts)
+
+<<< ../../../examples/intentBot.ts#prompt
 
 #### Step 3 - Create Custom Output Parser
 While we tell the LLM to format its response as JSON, it's a string. We still need to parse and validate the response so it can be used in our code. A custom output parser will reformat the output from the LLM, and provide typings for our LLM executor.
-@[code{77-118} ts:no-line-numbers](../../../examples/intentBot.ts)
+
+<<< ../../../examples/intentBot.ts#parser
 
 #### Step 4 - Create LLM Executor
 Combine the prompt, LLM, and parser into a single function.
-@[code{120-127} ts:no-line-numbers](../../../examples/intentBot.ts)
+
+<<< ../../../examples/intentBot.ts#function
 
 
 #### Step 4 - Use it!
@@ -70,4 +75,4 @@ const response2 = await identifyIntent().execute({
 ```
 
 ### Complete File
-@[code{8-127} ts](../../../examples/intentBot.ts)
+<<< ../../../examples/intentBot.ts#file

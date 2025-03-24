@@ -157,6 +157,16 @@ export default defineConfig({
               },
             ],
           },
+          {
+            text: "xAI",
+            link: "/llm/xai.html",
+            items: [],
+          },
+          {
+            text: "Ollama",
+            link: "/llm/ollama.html",
+            items: [],
+          },
         ],
       },
       {
