@@ -34,7 +34,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.ts --detectOpenHandles --coverage --forceExit",
+    "test-examples": "eval $(cat .env) NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.examples.ts --detectOpenHandles --coverage --forceExit",
+    "test-one": "eval $(cat .env) NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit --config jest.config.examples.ts examples/intentBot.test.ts",
     "build": "(concurrently \"tsc --p ./tsconfig.json -w\" \"tsc-alias -p tsconfig.json -w\")",
     "build:ci": "tsup src/index.ts --format cjs,esm --dts --clean",
     "build:package": "tsup src/index.ts --format cjs,esm --dts --clean",
