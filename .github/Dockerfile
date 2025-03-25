@@ -1,9 +1,16 @@
-# Start with Ollama base image
-FROM ollama/ollama:latest
+# Use Ubuntu as the base
+FROM ubuntu:22.04
 
-# Install Node.js (adjust as needed)
-RUN apt-get update && apt-get install -y curl \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl git unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Ollama
+RUN curl -fsSL https://ollama.ai/install.sh | sh
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
 # Set working directory
@@ -23,14 +30,8 @@ RUN npm pack
 # Find the packed package and install it
 RUN npm install $(find . -maxdepth 1 -type f -name '*.tgz')
 
-# Ensure Ollama is ready before testing
-RUN for i in {1..10}; do curl -s http://localhost:11434/api/tags && exit 0 || sleep 3; done
+# Expose Ollama API port
+EXPOSE 11434
 
-# Pull multiple models
-RUN for model in mistral deepseek gpt-3.5-turbo claude-3; do \
-    echo "Pulling model: $model"; \
-    ollama pull $model || echo "Skipping unavailable model: $model"; \
-    done
-
-# Run tests
-CMD ["npm", "run", "test-examples"]
+# Start Ollama and keep the container running
+CMD ["bash", "-c", "ollama serve & sleep 2 && npm run test-examples"]
