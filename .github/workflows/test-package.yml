@@ -24,4 +24,4 @@ jobs:
 
       - name: Run tests inside the container
         run: |
-          docker run --rm my-ollama-env
+          docker run --rm --entrypoint /bin/bash my-ollama-env -c "npm run test-examples"
