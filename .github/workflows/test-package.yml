@@ -24,4 +24,11 @@ jobs:
 
       - name: Run tests inside the container
         run: |
-          docker run --rm --entrypoint /bin/bash my-ollama-env -c "npm run test-examples"
+          docker run --rm --entrypoint /bin/bash my-ollama-env -c "
+            ollama serve & sleep 3
+            for model in mistral deepseek gpt-3.5-turbo claude-3; do
+              echo Pulling model: $model
+              ollama pull $model || echo Skipping unavailable model: $model
+            done
+            npm run test-examples
+          "
