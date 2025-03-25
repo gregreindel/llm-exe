@@ -26,7 +26,7 @@ jobs:
         run: |
           docker run --rm --entrypoint /bin/bash my-ollama-env -c "
             ollama serve & sleep 3
-            for model in mistral deepseek gpt-3.5-turbo claude-3; do
+            for model in llama3.1 deepseek-r1; do
               echo Pulling model: $model
               ollama pull $model || echo Skipping unavailable model: $model
             done
