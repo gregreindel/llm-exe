@@ -25,10 +25,10 @@ jobs:
       - name: Run tests inside the container
         run: |
           docker run --rm --entrypoint /bin/bash my-ollama-env -c "
-            ollama serve & sleep 3
-            for model in llama3.1 deepseek-r1; do
-              echo Pulling model: $model
-              ollama pull $model || echo Skipping unavailable model: $model
-            done
+            ollama serve & sleep 3;
+            for model in 'deepseek-r1' 'llama3.1'; do
+              echo Pulling model: \$model;
+              ollama pull \$model || echo Skipping unavailable model: \$model;
+            done;
             npm run test-examples
           "
