@@ -13,64 +13,15 @@ permissions:
 jobs:
   test-package:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Start Ollama container
+      - name: Build Docker container with Ollama & Node.js
         run: |
-          docker run -d --name ollama -p 11434:11434 ollama/ollama:latest
+          docker build -t my-ollama-env -f .github/Dockerfile .
 
-      - name: Wait for Ollama to start
+      - name: Run tests inside the container
         run: |
-          for i in {1..10}; do
-            curl -s http://localhost:11434/api/tags && exit 0
-            echo "Waiting for Ollama to be ready..."
-            sleep 3
-          done
-          echo "Ollama failed to start" && exit 1
-
-      - name: Pull supported models
-        run: |
-          MODELS=("mistral" "deepseek" "gpt-3.5-turbo" "claude-3")
-          for model in "${MODELS[@]}"; do
-            echo "Pulling model: $model"
-            curl -X POST http://localhost:11434/api/pull -d "{\"name\": \"$model\"}" || echo "Skipping unavailable model: $model"
-          done
-
-      - name: Test inference on each model
-        run: |
-          for model in "mistral" "deepseek" "gpt-3.5-turbo" "claude-3"; do
-            echo "Testing inference on $model"
-            RESPONSE=$(curl -s -X POST http://localhost:11434/api/generate -d "{\"model\": \"$model\", \"prompt\": \"Hello, world!\"}")
-            echo "Response from $model: $RESPONSE"
-          done
-
-      - name: Setup Node.js environment
-        uses: ./.github/actions/setup-node
-
-      - name: Cache npm dependencies
-        uses: ./.github/actions/cache
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build package
-        run: npm run build:package
-
-      - name: Pack package
-        run: npm pack
-
-      - name: List files
-        run: ls -la
-
-      - name: Copy path of packed package
-        id: packed_package_path
-        run: |
-          echo "PACKED_PACKAGE_PATH=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz')" >> $GITHUB_ENV
-
-      - name: Install package
-        run: npm install $PACKED_PACKAGE_PATH
-
-      - name: Run test
-        run: npm run test-examples
+          docker run --rm my-ollama-env
