@@ -40,7 +40,7 @@ const chatHistory = [{ role: "user", content: "Hi I'm Greg" }];
 // a list of statements we'd like to check
 const statements = [
     "The user has told us their age.",
-     "The user has told us their name."
+    "The user has told us their name."
 ]
 
 const response = await checkPolicy().execute({

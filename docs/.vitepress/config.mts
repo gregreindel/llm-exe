@@ -303,6 +303,10 @@ export default defineConfig({
             link: "",
             items: [
               {
+                text: "Hello World",
+                link: "/examples/bots/hello.html",
+              },
+              {
                 text: "Validator",
                 link: "/examples/bots/validator.html",
               },
