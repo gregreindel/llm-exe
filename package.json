@@ -13,6 +13,7 @@
     "gpt-4",
     "claude",
     "grok",
+    "gemini",
     "chain",
     "prompt",
     "agent"

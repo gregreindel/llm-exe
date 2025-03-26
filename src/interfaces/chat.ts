@@ -1,5 +1,6 @@
 export type IChatMessageRole =
   | "system"
+  | "model"
   | "assistant"
   | "user"
   | "function"
