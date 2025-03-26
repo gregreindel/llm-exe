@@ -1,0 +1,14 @@
+{
+    "name": "llm-exe-examples",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {},
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+      "llm-exe": ".."
+    },
+    "devDependencies": {}
+  }
+  
