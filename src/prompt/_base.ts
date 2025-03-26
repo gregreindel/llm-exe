@@ -6,7 +6,6 @@ import {
   PromptType,
   PromptPartial,
   PromptHelper,
-  IPromptMessages,
   IPromptChatMessages,
 } from "@/types";
 
@@ -16,7 +15,7 @@ import {
 export abstract class BasePrompt<I extends Record<string, any>> {
   readonly type: PromptType = "text";
 
-  public messages: IPromptMessages | IPromptChatMessages = [];
+  public messages: IPromptChatMessages = [];
 
   public partials: PromptPartial[] = [];
   public helpers: PromptHelper[] = [];
@@ -90,7 +89,18 @@ export abstract class BasePrompt<I extends Record<string, any>> {
     });
     return this;
   }
-
+  /**
+   * addSystemMessage description
+   * @param content The message content
+   * @return returns BasePrompt so it can be chained.
+   */
+  addDeveloperMessage(content: string) {
+    this.messages.push({
+      role: "developer",
+      content,
+    });
+    return this;
+  }
   /**
    * registerPartial description
    * @param partialOrPartials Additional partials that can be made available to the template parser.

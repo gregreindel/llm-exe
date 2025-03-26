@@ -73,6 +73,11 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   ): ChatPrompt<I>;
   addToPrompt(
     content: string,
+    role: Extract<IChatMessageRole, "developer">,
+    name?: undefined
+  ): ChatPrompt<I>;
+  addToPrompt(
+    content: string,
     role: Extract<IChatMessageRole, "user">,
     name?: string
   ): ChatPrompt<I>;
@@ -94,6 +99,9 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     if (content) {
       switch (role) {
         case "system":
+          this.addSystemMessage(content);
+          break;
+        case "developer":
           this.addSystemMessage(content);
           break;
         case "user":

@@ -1,4 +1,5 @@
 import { CallableExecutorCore } from "./index";
+import { IChatMessageRole } from "./chat";
 
 export type OpenAIChatModelName =
   | "gpt-3.5-turbo"
@@ -31,6 +32,66 @@ export type OpenAiFunctionCall =
   | "none"
   | "required"
   | { name: string };
+
+  interface OutputOpenAIChatChoiceBase {
+    message: {
+      role: Extract<IChatMessageRole, "assistant">;
+      content: string | null;
+      tool_calls:
+        | null
+        | {
+            type: "function";
+            function: {
+              name: string;
+              arguments: string;
+            };
+          }[];
+    };
+    finish_reason: "tool_calls" | "stop";
+  }
+  
+  export interface OutputOpenAIChatChoiceFunction
+    extends OutputOpenAIChatChoiceBase {
+    message: {
+      role: Extract<IChatMessageRole, "assistant">;
+      content: null;
+      tool_calls: {
+        type: "function";
+        function: {
+          name: string;
+          arguments: string;
+        };
+      }[];
+    };
+    finish_reason: Extract<"tool_calls" | "stop", "tool_calls">;
+  }
+  
+  export interface OutputOpenAIChatChoiceMessage
+    extends OutputOpenAIChatChoiceBase {
+    message: {
+      role: Extract<IChatMessageRole, "assistant">;
+      content: string;
+      tool_calls: null;
+    };
+    finish_reason: Exclude<"tool_calls" | "stop", "tool_calls">;
+  }
+  
+  export type OutputOpenAIChatChoice =
+    | OutputOpenAIChatChoiceFunction
+    | OutputOpenAIChatChoiceMessage;
+  
+  export interface OpenAiResponse {
+    id: string;
+    object: "chat.completion";
+    created: number;
+    model: string;
+    usage: {
+      prompt_tokens: number;
+      completion_tokens: number;
+      total_tokens: number;
+    };
+    choices: OutputOpenAIChatChoice[];
+  }
 
 export interface LlmExecutorExecuteOptions {
   functions?: CallableExecutorCore[];

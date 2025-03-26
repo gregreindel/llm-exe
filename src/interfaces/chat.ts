@@ -1,9 +1,11 @@
 export type IChatMessageRole =
   | "system"
   | "assistant"
+  | "developer"
   | "user"
   | "function"
   | "function_call";
+  
 export type FinishReasons = "function_call" | "stop";
 
 export interface IChatMessageContentDetailed {
@@ -48,6 +50,11 @@ export interface IChatSystemMessage extends IChatMessageBase {
   content: string;
 }
 
+export interface IChatDeveloperMessage extends IChatMessageBase {
+  role: Extract<IChatMessageRole, "developer">;
+  content: string;
+}
+
 export interface IChatMessagesPlaceholder {
   role: "placeholder";
   content: string;
@@ -60,6 +67,7 @@ export type IPromptChatMessages = (
   | IChatAssistantMessage
   | IChatAssistantFunctionCallMessage
   | IChatSystemMessage
+  | IChatDeveloperMessage
   | IChatMessagesPlaceholder
   | IChatFunctionMessage
 )[];
@@ -69,6 +77,7 @@ export type IChatMessage =
   | IChatAssistantMessage
   | IChatAssistantFunctionCallMessage
   | IChatSystemMessage
+  | IChatDeveloperMessage
   | IChatFunctionMessage;
 
 export type IChatMessages = IChatMessage[];
