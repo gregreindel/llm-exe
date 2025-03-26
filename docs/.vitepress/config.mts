@@ -142,6 +142,11 @@ export default defineConfig({
             items: [],
           },
           {
+            text: "Google Gemini",
+            link: "/llm/google.html",
+            items: [],
+          },
+          {
             text: "AWS Bedrock",
             link: "/llm/bedrock/index.html",
             items: [

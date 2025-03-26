@@ -5,6 +5,7 @@ import { LlmProviderKey } from "@/interfaces";
 import { OutputDefault } from "./default";
 import { OutputXAIChat } from "./xai";
 import { OutputOllamaChat } from "./ollama";
+import { OutputGoogleGeminiChat } from "./google.gemini";
 
 export function getOutputParser(
   config: {
@@ -28,6 +29,8 @@ export function getOutputParser(
       return OutputXAIChat(response, config);
     case "ollama.chat.v1":
       return OutputOllamaChat(response, config);
+    case "google.chat.v1":
+      return OutputGoogleGeminiChat(response, config);
     default: {
       if ((config?.key as string)?.startsWith("custom:")) {
         return OutputDefault(response, config);

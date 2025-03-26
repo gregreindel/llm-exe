@@ -3,6 +3,7 @@ import { bedrock } from "./config/bedrock";
 import { anthropic } from "./config/anthropic";
 import { xai } from "./config/x";
 import { ollama } from "./config/ollama";
+import { google } from "./config/google";
 
 export const configs = {
   ...openai,
@@ -10,6 +11,7 @@ export const configs = {
   ...bedrock,
   ...xai,
   ...ollama,
+  ...google
 };
 
 export function getLlmConfig(provider: keyof typeof configs) {
