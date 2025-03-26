@@ -143,7 +143,7 @@ export default defineConfig({
           },
           {
             text: "Google Gemini",
-            link: "/llm/google.html",
+            link: "/llm/gemini.html",
             items: [],
           },
           {
