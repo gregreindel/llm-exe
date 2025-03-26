@@ -1,14 +1,12 @@
-import * as llmExe from "@/index";
-import { BaseLlm } from "@/types";
-import { createCustomParser } from "@/parser";
-import { ExecutorContext, IChatMessages } from "@/types";
+// #region file
+import { createPrompt, createCustomParser, createLlmExecutor } from "llm-exe";
+import type { BaseLlm, IChatMessages, ExecutorContext } from "llm-exe";
 import { maybeParseJSON } from "@/utils";
 import { toNumber } from "@/utils/modules/toNumber";
 
 function snakeCase(str: string) {
   return str;
 }
-// #region file
 // #region prepare
 export const intents = {
   book_hotel: {
@@ -75,8 +73,7 @@ You must follow the rules, and respond with valid JSON like the example.`;
 export const INSTRUCTION = `Based on the current state of the conversation, respond with the top intent as valid JSON:`;
 
 const prompt = (_values: IdentifyIntentInput) =>
-  llmExe
-    .createPrompt<IdentifyIntentInput>("chat", PROMPT)
+  createPrompt<IdentifyIntentInput>("chat", PROMPT)
     .addChatHistoryPlaceholder("chatHistory")
     .addUserMessage(_values.input)
     .addSystemMessage(INSTRUCTION);
@@ -129,14 +126,12 @@ export const parser = createCustomParser<IdentifyIntentOutput>(
 
 // #region function
 export async function identifyIntent(llm: BaseLlm, input: IdentifyIntentInput) {
-  return llmExe
-    .createLlmExecutor({
-      name: "identify-intent",
-      llm,
-      prompt,
-      parser,
-    })
-    .execute(input);
+  return createLlmExecutor({
+    name: "identify-intent",
+    llm,
+    prompt,
+    parser,
+  }).execute(input);
 }
 // #endregion function
 // #endregion file

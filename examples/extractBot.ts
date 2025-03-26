@@ -1,11 +1,8 @@
-import { createLlmExecutor } from "@/executor";
-import { BaseLlm } from "@/types";
-import { createParser } from "@/parser";
-import { createPrompt } from "@/prompt";
-import { IChatMessages } from "@/types";
+// #region file
+import { createPrompt, createParser, createLlmExecutor } from "llm-exe";
+import type { BaseLlm, IChatMessages } from "llm-exe";
 import { JSONSchema } from "json-schema-to-ts";
 
-// #region file
 // #region types
 interface ExtractInformationInput {
   chatHistory: IChatMessages;
