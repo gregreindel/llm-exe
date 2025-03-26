@@ -16,12 +16,12 @@ export interface IChatMessageContentDetailed {
 }
 
 export interface IChatMessageBase {
-  role: IChatMessageRole;
+  role: IChatMessageRole | string;
   content: string | null | IChatMessageContentDetailed[];
 }
 
 export interface IChatUserMessage extends IChatMessageBase {
-  role: Extract<IChatMessageRole, "user">;
+  role: Extract<IChatMessageRole, "user"> | string;
   content: string | IChatMessageContentDetailed[];
   name?: string;
 }
@@ -29,7 +29,7 @@ export interface IChatUserMessage extends IChatMessageBase {
 export interface IChatFunctionMessage extends IChatMessageBase {
   role: Extract<IChatMessageRole, "function">;
   content: string;
-  name: string;
+  name?: string;
 }
 
 export interface IChatAssistantMessage extends IChatMessageBase {
