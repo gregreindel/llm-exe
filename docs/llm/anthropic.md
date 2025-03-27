@@ -15,7 +15,7 @@ const llm = useLlm("anthropic.chat.v1", {
 ### Anthropic Chat By Model
 
 ```ts
-const llm = useLlm("anthropic.claude-3-5-sonnet", {
+const llm = useLlm("anthropic.claude-3-5-sonnet-latest", {
   // other options,
   // no model needed, using claude-3-5-sonnet
 });
@@ -24,10 +24,10 @@ const llm = useLlm("anthropic.claude-3-5-sonnet", {
 > [!NOTE]
 > You can use the following models using this shorthand:
 >
-> - anthropic.claude-3-5-sonnet
-> - anthropic.claude-3-opus
-> - anthropic.claude-3-sonnet
-> - anthropic.claude-3-haiku
+> - anthropic.claude-3-5-sonnet-latest
+> - anthropic.claude-3-opus-latest
+> - anthropic.claude-3-sonnet-latest
+> - anthropic.claude-3-haiku-latest
 
 ## Authentication
 

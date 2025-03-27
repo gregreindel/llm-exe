@@ -66,9 +66,12 @@ export const embeddingConfigs: {
 };
 
 export function getEmbeddingConfig(provider: EmbeddingProviderKey) {
+  if(!provider){
+    throw new Error(`Missing provider`);
+  }
   const pick = embeddingConfigs[provider];
   if (pick) {
     return pick;
   }
-  throw new Error("Invalid provider");
+  throw new Error(`Invalid provider: ${provider}`);
 }

@@ -178,22 +178,22 @@ describe("getLlmConfig", () => {
 
   it("should throw an error for an invalid provider", () => {
     const provider: any = "invalid";
-    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
+    expect(() => getLlmConfig(provider)).toThrow(`Invalid provider: ${provider}`);
   });
 
   it("should throw an error when provider is undefined", () => {
     const provider: any = undefined;
-    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
+    expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
   });
 
   it("should throw an error when provider is empty string", () => {
     const provider: any = "";
-    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
+    expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
   });
 
   it("should throw an error when provider is null", () => {
     const provider: any = null;
-    expect(() => getLlmConfig(provider)).toThrow("Invalid provider");
+    expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
   });
 
   it("should return the correct config for 'amazon:meta.chat.v1'", () => {

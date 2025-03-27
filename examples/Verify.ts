@@ -1,9 +1,14 @@
-import { BaseLlm } from "@/types";
-import { createLlmExecutor } from "@/executor";
-import { createCustomParser, createParser } from "@/parser";
-import { createChatPrompt } from "@/prompt";
+// #region file
+import {
+  createChatPrompt,
+  createParser,
+  createLlmExecutor,
+  createCustomParser,
+} from "llm-exe";
+import type { BaseLlm, IChatMessages } from "llm-exe";
 import { defineSchema } from "@/utils";
 
+// #region prompt
 const PROMPT = `You need to work through the list below step-by-step and
 identify if each statement is true or false. Use the conversation and context
 below to help make a decision. Do not explain your answer, and do not use 
@@ -30,7 +35,9 @@ const INSTRUCTION = `Your response should be valid JSON in the following format:
     },
   ]
 )}`;
+// #endregion prompt
 
+// #region parser
 export const VerifyParser = createCustomParser(
   "VerifyParser",
   (input, _context) => {
@@ -60,12 +67,24 @@ export const VerifyParser = createCustomParser(
     };
   }
 );
+// #endregion parser
 
-export async function checkPolicy(llm: BaseLlm) {
+// #region function
+
+export async function checkPolicy(
+  llm: BaseLlm,
+  input: {
+    statements: string[]; // the list of statements to check
+    chatHistory: IChatMessages; // the chat history
+    input: string; // the most recent user message
+  }
+) {
   const prompt = createChatPrompt(PROMPT).addSystemMessage(INSTRUCTION);
   return createLlmExecutor({
     llm,
     prompt,
-    parser: VerifyParser
-  });
+    parser: VerifyParser,
+  }).execute(input);
 }
+// #endregion function
+// #endregion file

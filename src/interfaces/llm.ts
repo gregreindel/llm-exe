@@ -190,6 +190,84 @@ export interface AmazonTitalResponse {
   ];
 }
 
+/**
+ * Gemini
+ */
+interface OutputGoogleGeminiChatChoiceBase {
+  content: {
+    role?: Extract<IChatMessageRole, "model">;
+    parts: {
+      text?: string
+      functionCall?:
+      | null
+      | {
+        name: string;
+        args: string;
+      }
+    }[]
+
+  };
+  finishReason: "STOP";
+  avgLogprobs?: number;
+}
+
+export interface OutputGoogleGeminiChatChoiceFunction
+  extends OutputGoogleGeminiChatChoiceBase {
+  content: {
+    role?: Extract<IChatMessageRole, "model">;
+    parts: {
+      text: undefined
+      functionCall?: {
+        name: string;
+        args: string;
+      }
+    }[]
+  };
+  finishReason: "STOP";
+  avgLogprobs?: number;
+}
+
+export interface OutputGoogleGeminiChatChoiceMessage
+  extends OutputGoogleGeminiChatChoiceBase {
+  content: {
+    role?: Extract<IChatMessageRole, "model">;
+    parts: {
+      text: string;
+      functionCall?: null;
+    }[]
+  };
+  finishReason: "STOP";
+  avgLogprobs?: number;
+}
+
+export type OutputGoogleGeminiChatChoice =
+  | OutputGoogleGeminiChatChoiceFunction
+  | OutputGoogleGeminiChatChoiceMessage;
+
+export interface GoogleGeminiResponse {
+  modelVersion: string;
+  usageMetadata: {
+    promptTokenCount: number;
+    candidatesTokenCount: number;
+    totalTokenCount: number;
+    promptTokensDetails: [
+      {
+        modality: "TEXT";
+        tokenCount: number;
+      }
+    ];
+    candidatesTokensDetails: [
+      {
+        modality: "TEXT";
+        tokenCount: number;
+      }
+    ];
+  };
+  candidates: OutputGoogleGeminiChatChoice[];
+}
+
+
+
 export interface OutputResultsBase {
   type: "text" | "function_use";
   text?: string;
@@ -323,6 +401,11 @@ export interface AnthropicRequest extends GenericLLm {
   anthropicApiKey?: string;
 }
 
+export interface GeminiRequest extends GenericLLm {
+  model: string;
+  geminiApiKey?: string;
+}
+
 export type AllEmbedding = {
   "openai.embedding.v1": {
     input: OpenAiEmbeddingOptions;
@@ -362,10 +445,14 @@ export type AllLlm = {
     input: GenericLLm;
     // output: OpenAiRequest;
   };
-   "ollama.chat.v1": {
+  "ollama.chat.v1": {
     input: GenericLLm;
     // output: OpenAiRequest;
-   }
+  };
+  "google.chat.v1": {
+    input: GeminiRequest;
+    // output: OpenAiRequest;
+  };
 };
 
 export type AllUseLlmOptions = AllLlm & {
@@ -377,6 +464,9 @@ export type AllUseLlmOptions = AllLlm & {
   };
   "openai.gpt-4o-mini": {
     input: Omit<OpenAiRequest, "model">;
+  };
+  "anthropic.claude-3-7-sonnet": {
+    input: Omit<AnthropicRequest, "model">;
   };
   "anthropic.claude-3-5-sonnet": {
     input: Omit<AnthropicRequest, "model">;
@@ -390,8 +480,44 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-haiku": {
     input: Omit<AnthropicRequest, "model">;
   };
+
+
+  "google.gemini-2.5-pro-exp-03-25": {
+    input: Omit<GeminiRequest, "model">;
+    // output: OpenAiRequest;
+  };
+
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+    // output: OpenAiRequest;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+    // output: OpenAiRequest;
+  };
+
+  "google.gemini-1.5-pro": {
+    input: Omit<GeminiRequest, "model">;
+    // output: OpenAiRequest;
+  };
+  
   "xai.grok-2": {
     input: OpenAiRequest;
+  };
+  "ollama.deepseek-r1": {
+    input: GenericLLm;
+  };
+  "ollama.llama3.3": {
+    input: GenericLLm;
+  };
+  "ollama.llama3.2": {
+    input: GenericLLm;
+  };
+  "ollama.llama3.1": {
+    input: GenericLLm;
+  };
+  "ollama.qwq": {
+    input: GenericLLm;
   };
 };
 
@@ -423,7 +549,7 @@ export interface BaseEmbedding<_T extends BaseEmbeddingCall = BaseEmbeddingCall>
   extends BaseRequest<_T> {}
 
 export interface CombinedJsonLResult<T extends Record<string, any> = any> {
-    result: T; // All "message.content" values concatenated;
-    content: OutputResultContent; // The object containing the response metadata
-    lines: T[]; // Full JSON objects from each line
+  result: T; // All "message.content" values concatenated;
+  content: OutputResultContent; // The object containing the response metadata
+  lines: T[]; // Full JSON objects from each line
 }
