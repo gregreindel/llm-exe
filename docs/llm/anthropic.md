@@ -21,13 +21,8 @@ const llm = useLlm("anthropic.claude-3-5-sonnet-latest", {
 });
 ```
 
-> [!NOTE]
-> You can use the following models using this shorthand:
->
-> - anthropic.claude-3-5-sonnet-latest
-> - anthropic.claude-3-opus-latest
-> - anthropic.claude-3-sonnet-latest
-> - anthropic.claude-3-haiku-latest
+<ImportModelNames provider="anthropic" />
+
 
 ## Authentication
 

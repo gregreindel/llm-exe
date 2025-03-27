@@ -21,12 +21,7 @@ const llm = useLlm("google.gemini-2.0-flash", {
 });
 ```
 
-> [!NOTE]
-> You can use the following models using this shorthand:
->
-> - google.gemini-2.0-flash
-> - google.gemini-2.0-flash-lite
-> - google.gemini-1.5-pro
+<ImportModelNames provider="google" />
 
 ## Authentication
 
