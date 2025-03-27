@@ -53,7 +53,7 @@ In addition to the generic options, the following options are OpenAi-specific an
 | Option       | Type   | Default          | Description                                                          |
 | ------------ | ------ | ---------------- | -------------------------------------------------------------------- |
 | model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See OpenAI Docs       |
-| geminiApiKey | string | undefined        | API key for Google. See [authentication](/llm/google#authentication) |
+| geminiApiKey | string | undefined        | API key for Google. See [authentication](/llm/gemini#authentication) |
 | temperature  | number | undefined        | Maps to temperature.\*                                               |
 | maxTokens    | number | undefined        | Maps to max_tokens. See OpenAI Docs                                  |
 | topP         | number | undefined        | Maps to top_p. See OpenAI Docs                                       |

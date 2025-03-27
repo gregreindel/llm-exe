@@ -25,7 +25,6 @@ describe("googleGeminiPromptMessageCallback", () => {
     const result = googleGeminiPromptMessageCallback(message);
     expect(modifyPromptRoleChange).toHaveBeenCalledWith(message, [
       { from: "assistant", to: "model" },
-      { from: "system", to: "model" },
     ]);
     expect(result).toEqual({
       role: "model",
@@ -47,7 +46,6 @@ describe("googleGeminiPromptMessageCallback", () => {
     const result = googleGeminiPromptMessageCallback(message);
     expect(modifyPromptRoleChange).toHaveBeenCalledWith(message, [
       { from: "assistant", to: "model" },
-      { from: "system", to: "model" },
     ]);
     expect(result).toEqual({
       role: "model",
@@ -69,7 +67,6 @@ describe("googleGeminiPromptMessageCallback", () => {
     const result = googleGeminiPromptMessageCallback(message);
     expect(modifyPromptRoleChange).toHaveBeenCalledWith(message, [
       { from: "assistant", to: "model" },
-      { from: "system", to: "model" },
     ]);
     expect(result).toEqual({
       role: "user",
@@ -91,7 +88,6 @@ describe("googleGeminiPromptMessageCallback", () => {
     const result = googleGeminiPromptMessageCallback(message);
     expect(modifyPromptRoleChange).toHaveBeenCalledWith(message, [
       { from: "assistant", to: "model" },
-      { from: "system", to: "model" },
     ]);
     expect(result).toEqual({
       role: "model",
@@ -113,7 +109,6 @@ describe("googleGeminiPromptMessageCallback", () => {
     const result = googleGeminiPromptMessageCallback(message);
     expect(modifyPromptRoleChange).toHaveBeenCalledWith(message, [
       { from: "assistant", to: "model" },
-      { from: "system", to: "model" },
     ]);
     expect(result).toEqual({
       role: "assistant",

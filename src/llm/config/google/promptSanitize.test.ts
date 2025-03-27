@@ -10,6 +10,15 @@ describe("googleGeminiPromptSanitize", () => {
     jest.clearAllMocks();
   });
 
+  it("should throw error if input is not a string or array", () => {
+    expect(() => googleGeminiPromptSanitize(
+      { someWrongObject: "value" } as any,
+      { someInput: "value" },
+      { someOutput: "value" }
+    )).toThrowError("Invalid messages format");
+  });
+
+
   it("should return the string directly if _messages is a string", () => {
     const result = googleGeminiPromptSanitize(
       "Hello world",
@@ -25,6 +34,32 @@ describe("googleGeminiPromptSanitize", () => {
       googleGeminiPromptSanitize([], {}, {})
     ).toThrowError("Empty messages array");
     expect(googleGeminiPromptMessageCallback).not.toHaveBeenCalled();
+  });
+
+  it("should return the single user message if provided a single system message", () => {
+    const result = googleGeminiPromptSanitize(
+      [{ role: "system", content: "Hello World" }],
+      { someInput: "value" },
+      { someOutput: "value" }
+    );
+    expect(result).toEqual([
+      { role: "user", parts: [{ text: "Hello World" }] }
+    ]);
+    expect(googleGeminiPromptMessageCallback).not.toHaveBeenCalled();
+  });
+
+  it("should return the single user message and system message moved to system message input", () => {
+    const out = {};
+    googleGeminiPromptSanitize(
+      [{ role: "system", content: "Hello World", }, { role: "user", content: "User message" }],
+      { someInput: "value" },
+      out
+    );
+
+    expect((out as any).system_instruction).toEqual([
+      { parts: [{ text: "Hello World" }] }
+    ]);
+    expect(googleGeminiPromptMessageCallback).toHaveBeenCalledTimes(1);
   });
 
   it("should map the array of messages using googleGeminiPromptMessageCallback if _messages is a non-empty array", () => {
