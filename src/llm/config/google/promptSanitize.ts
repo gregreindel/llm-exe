@@ -10,7 +10,7 @@ export function googleGeminiPromptSanitize(
    * If _messages is a string, return it as is.
    */
   if (typeof _messages === "string") {
-    return _messages;
+    return [{ role: "user", parts: [{ text: _messages }] }];
   }
   if (Array.isArray(_messages)) {
     if (_messages.length === 0) {
