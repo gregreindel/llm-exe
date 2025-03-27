@@ -1,6 +1,5 @@
-import { IChatMessages } from "dist";
 import { modifyPromptRoleChange } from "./modifyPromptRoleChange";
-import { IChatMessage } from "@/interfaces";
+import { IChatMessages, IChatMessage } from "@/interfaces";
 
 describe("modifyPromptRoleChange", () => {
   it("should return an empty array if given an empty array of messages", () => {

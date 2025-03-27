@@ -1,4 +1,4 @@
-import { IChatMessages } from "dist";
+import { IChatMessages } from "@/interfaces";
 import { anthropicPromptSanitize } from "./promptSanitize";
 
 describe("anthropicPromptSanitize", () => {
