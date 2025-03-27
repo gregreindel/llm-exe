@@ -16,6 +16,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Set working directory
 WORKDIR /app
 
+# Accept the secret as a build argument
+ARG OPEN_AI_API_KEY
+ENV OPEN_AI_API_KEY=$OPEN_AI_API_KEY
+
 # Copy package files
 COPY package.json package-lock.json ./
 RUN npm ci  # Install dependencies efficiently
