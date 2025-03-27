@@ -4,8 +4,8 @@
 
 ### AWS Bedrock Chat
 ```ts
-const llm = useLlm("amazon:meta.chat.v1", { //
-  model: "claude-3-5-sonnet-20240620",
+const llm = useLlm("amazon:anthropic.chat.v1", { //
+  model: "claude-3-5-sonnet-20240620", // a valid model from bedrock
 
   // optional, see `Authentication` below
   awsRegion: "<Your aws Region>",
@@ -18,8 +18,8 @@ const llm = useLlm("amazon:meta.chat.v1", { //
 
 #### AWS Bedrock Chat Model Options
 - amazon:meta.chat.v1
- - llama3.5
 - amazon:anthropic.chat.v1
+
 
 
 ## Authentication
@@ -30,7 +30,7 @@ To authenticate, you need to provide a way to authenticate with AWS. You can pro
 
 
 ::: tip
-If you are in AWS envirnment, the above envirnment variables could be set automatically. 
+If you are in AWS environment, the above environment variables could be set automatically. 
 :::
 
 ::: warning

@@ -14,6 +14,7 @@ import GenericOutput from "../components/GenericOutput.vue";
 import PromptPlayground from "../components/PromptPlayground.vue";
 // @ts-ignore
 import PromptMessage from "../components/Prompt/PromptMessage.vue";
+import ImportModelNames from "../components/ImportModelNames.vue";
 
 
 // @ts-ignore
@@ -27,6 +28,7 @@ export default {
     app.component("GenericOutput", GenericOutput);
     app.component("PromptPlayground", PromptPlayground);
     app.component("PromptMessage", PromptMessage);
+    app.component("ImportModelNames", ImportModelNames);
 
     if(import.meta.env.DEV){
       new EventSource('/esbuild').addEventListener('change', () => location.reload())

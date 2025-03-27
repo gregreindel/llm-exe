@@ -3,6 +3,7 @@ import { BaseParserOptionsWithSchema, ParserOutput } from "@/types";
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
 import { enforceParserSchema, validateParserSchema } from "../_utils";
+import { LlmExeError } from "@/utils/modules/errors";
 
 export class ListToJsonParser<
   S extends JSONSchema | undefined = undefined
@@ -24,7 +25,11 @@ export class ListToJsonParser<
       if (this?.validateSchema) {
         const valid = validateParserSchema(this.schema, parsed);
         if (valid && valid.length) {
-          throw new Error(valid[0].message);
+          throw new LlmExeError(valid[0].message, "parser", {
+            parser: "json",
+            output: parsed,
+            error: valid[0].message,
+          });
         }
       }
       return parsed;
