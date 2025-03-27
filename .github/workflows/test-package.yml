@@ -20,7 +20,7 @@ jobs:
 
       - name: Build Docker container with Ollama & Node.js
         run: |
-          docker build -t my-ollama-env -f .github/Dockerfile .
+          docker build --build-arg OPEN_AI_API_KEY=${{ secrets.OPEN_AI_API_KEY }} -t my-ollama-env -f .github/Dockerfile .
 
       - name: Run tests inside the container
         run: |
