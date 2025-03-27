@@ -15,6 +15,7 @@ describe("exports correct utils", () => {
     expect(typeof utils.registerHelpers).toBe("function");
     expect(typeof utils.registerPartials).toBe("function");
     expect(typeof utils.isObjectStringified).toBe("function");
+    expect(typeof utils.guessProviderFromModel).toBe("function");
   });
 
 })

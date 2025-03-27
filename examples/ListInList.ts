@@ -1,8 +1,10 @@
-import { createLlmExecutor } from "@/executor";
-import { BaseLlm } from "@/types";
-import { createParser } from "@/parser";
-import { createChatPrompt } from "@/prompt";
-import { useLlm } from "@/llm";
+import {
+  createChatPrompt,
+  createParser,
+  createLlmExecutor,
+  useLlm,
+} from "llm-exe";
+import type { BaseLlm } from "llm-exe";
 
 const llm = useLlm("openai.chat-mock.v1", { model: "something" });
 

@@ -4,6 +4,7 @@ import { LlmProviderKey } from "./llm";
 export type LlmProvider =
   | "openai.chat"
   | "openai.embedding"
+  | "google.embedding"
   | "openai.chat-mock"
   | "anthropic.chat"
   | "amazon:anthropic.chat"
@@ -11,6 +12,7 @@ export type LlmProvider =
   | "amazon:nova.chat"
   | "amazon.embedding"
   | "xai.chat"
+  | "google.chat"
   | "ollama.chat";
 
 export interface Config<Pk = LlmProviderKey> {

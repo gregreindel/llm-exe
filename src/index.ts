@@ -32,4 +32,4 @@ export {
 
 export { LlmExecutorOpenAiFunctions } from "@/executor/llm-openai-function";
 
-export type { LlmProvider, BaseLlm, OpenAIModelName, IChatMessages } from "./interfaces";
+export type { LlmProvider, BaseLlm, OpenAIModelName, IChatMessages, ExecutorContext } from "./interfaces";
