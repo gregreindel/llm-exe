@@ -25,7 +25,7 @@ describe("googleGeminiPromptSanitize", () => {
       { someInput: "value" },
       { someOutput: "value" }
     );
-    expect(result).toBe("Hello world");
+    expect(result).toEqual( [{ role: "user", parts: [{ text: "Hello world" }] }]);
     expect(googleGeminiPromptMessageCallback).not.toHaveBeenCalled();
   });
 
@@ -56,9 +56,9 @@ describe("googleGeminiPromptSanitize", () => {
       out
     );
 
-    expect((out as any).system_instruction).toEqual([
+    expect((out as any).system_instruction).toEqual(
       { parts: [{ text: "Hello World" }] }
-    ]);
+    );
     expect(googleGeminiPromptMessageCallback).toHaveBeenCalledTimes(1);
   });
 
