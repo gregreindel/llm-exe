@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    curl git unzip \
+    curl git unzip jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ollama
@@ -27,8 +27,14 @@ COPY . .
 RUN npm run build:package
 RUN npm pack
 
-# Find the packed package and install it
-RUN npm install $(find . -maxdepth 1 -type f -name '*.tgz')
+# Find the packed package
+RUN export PACKED_PACKAGE=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz') && \
+    echo "Packed package: $PACKED_PACKAGE" && \
+    jq --arg pkg "$PACKED_PACKAGE" '.dependencies["llm-exe"] = $pkg' examples/package.json > examples/package.json.tmp && \
+    mv examples/package.json.tmp examples/package.json
+
+# Install dependencies in examples directory
+RUN cd examples && npm install
 
 # Expose Ollama API port
 EXPOSE 11434
