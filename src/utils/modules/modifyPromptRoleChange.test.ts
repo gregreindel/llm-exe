@@ -1,5 +1,6 @@
 import { IChatMessages } from "dist";
 import { modifyPromptRoleChange } from "./modifyPromptRoleChange";
+import { IChatMessage } from "@/interfaces";
 
 describe("modifyPromptRoleChange", () => {
   it("should return an empty array if given an empty array of messages", () => {
@@ -27,7 +28,7 @@ describe("modifyPromptRoleChange", () => {
       { role: "assistant", content: "How can I help you?" },
     ];
     const roleChanges = [{ from: "assistant", to: "bot" }];
-    const result = modifyPromptRoleChange(messages, roleChanges);
+    const result = modifyPromptRoleChange(messages as IChatMessages, roleChanges);
     expect(result).toEqual([
       { role: "user", content: "Hello" },
       { role: "bot", content: "Hi there" },
@@ -45,7 +46,7 @@ describe("modifyPromptRoleChange", () => {
       { from: "assistant", to: "bot" },
       { from: "system", to: "machine" },
     ];
-    const result = modifyPromptRoleChange(messages, roleChanges);
+    const result = modifyPromptRoleChange(messages as IChatMessages, roleChanges);
     expect(result).toEqual([
       { role: "bot", content: "I'm an assistant" },
       { role: "user", content: "Hello" },
@@ -62,21 +63,21 @@ describe("modifyPromptRoleChange", () => {
       { from: "system", to: "machine" },
       { from: "manager", to: "director" },
     ];
-    const result = modifyPromptRoleChange(messages, roleChanges);
+    const result = modifyPromptRoleChange(messages as IChatMessages, roleChanges);
     expect(result).toEqual(messages);
   });
 
   it("should handle a single message object and change the role if matched", () => {
     const message = { role: "assistant", content: "Hello" };
     const roleChanges = [{ from: "assistant", to: "bot" }];
-    const result = modifyPromptRoleChange(message, roleChanges);
+    const result = modifyPromptRoleChange(message as IChatMessage, roleChanges);
     expect(result).toEqual({ role: "bot", content: "Hello" });
   });
 
   it("should handle a single message object and not change the role if no match", () => {
     const message = { role: "assistant", content: "Hello" };
     const roleChanges = [{ from: "system", to: "bot" }];
-    const result = modifyPromptRoleChange(message, roleChanges);
+    const result = modifyPromptRoleChange(message as IChatMessage, roleChanges);
     expect(result).toEqual(message);
   });
 
@@ -90,15 +91,15 @@ describe("modifyPromptRoleChange", () => {
     // The last definition in the array wins if 'assistant' is overwritten.
     // However, because we use 'new Map(...)', the final entry for a key overwrites earlier ones.
     // So "assistant" => "somethingElse" will be in the map, not "assistant" => "bot".
-    const result = modifyPromptRoleChange(message, roleChanges);
+    const result = modifyPromptRoleChange(message as IChatMessage, roleChanges);
     expect(result).toEqual({ role: "somethingElse", content: "Hello" });
   });
 
   it("should handle multiple 'from' entries in roleChanges for an array of messages", () => {
     const messages = [
-      { role: "assistant", content: "I'm an assistant" },
-      { role: "user", content: "Hello" },
-      { role: "assistant", content: "Another assistant message" },
+      { role: "assistant", content: "I'm an assistant", name: "" },
+      { role: "user", content: "Hello", name: "" },
+      { role: "assistant", content: "Another assistant message", name: "" },
     ];
     const roleChanges = [
       { from: "assistant", to: "newAssistant" },
@@ -106,7 +107,7 @@ describe("modifyPromptRoleChange", () => {
       { from: "user", to: "client" },
     ];
     // The last valid mapping for 'assistant' is "latestAssistant"
-    const result = modifyPromptRoleChange(messages, roleChanges);
+    const result = modifyPromptRoleChange(messages as IChatMessages, roleChanges);
     expect(result).toEqual([
       { role: "latestAssistant", content: "I'm an assistant" },
       { role: "client", content: "Hello" },
