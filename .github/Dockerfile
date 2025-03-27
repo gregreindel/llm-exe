@@ -28,13 +28,10 @@ RUN npm run build:package
 RUN npm pack
 
 # Find the packed package
-RUN export PACKED_PACKAGE=$(find /app -maxdepth 1 -type f -name 'llm-exe-*.tgz') && \
+RUN export PACKED_PACKAGE=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz') && \
     echo "Packed package: $PACKED_PACKAGE" && \
-    jq --arg pkg "./$(basename $PACKED_PACKAGE)" '.dependencies["llm-exe"] = $pkg' examples/package.json > examples/package.json.tmp && \
+    jq --arg pkg "$PACKED_PACKAGE" '.dependencies["llm-exe"] = "./" + $pkg' examples/package.json > examples/package.json.tmp && \
     mv examples/package.json.tmp examples/package.json
-
-# Move the package into examples directory to avoid relative path issues
-RUN mv $PACKED_PACKAGE examples/
 
 # Install dependencies in examples directory
 RUN cd examples && npm install
