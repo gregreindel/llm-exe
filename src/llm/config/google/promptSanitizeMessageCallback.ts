@@ -6,7 +6,6 @@ export function googleGeminiPromptMessageCallback(_message: IChatMessage) {
 
   message = modifyPromptRoleChange(_message, [
     { from: "assistant", to: "model" },
-    { from: "system", to: "model" },
   ]);
 
   // do gemini-specific transformations
