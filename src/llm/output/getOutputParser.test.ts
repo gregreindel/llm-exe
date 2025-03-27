@@ -37,6 +37,12 @@ describe("getOutputParser", () => {
     expect(result).toBeInstanceOf(Object);
   });
 
+  it("should return OutputGoogleGeminiChat for 'google' provider", () => {
+    const response = { data: "exampleData" };
+    const result = getOutputParser({ key: "google.chat.v1" }, response);
+    expect(result).toBeInstanceOf(Object);
+  });
+
   it("should throw an error for unsupported provider", () => {
     const response = { data: "exampleData" };
     expect(() => getOutputParser("unsupported" as any, response)).toThrowError("Unsupported provider");

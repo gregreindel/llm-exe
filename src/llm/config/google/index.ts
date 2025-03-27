@@ -1,53 +1,7 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
-import { Config, IChatMessages, IChatMessage } from "@/types";
+import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
-import { modifyPromptRoleChange } from "@/utils/modules/modifyPromptRoleChange";
-
-function googleGeminiPromptMessageCallback(_message: IChatMessage) {
-  let message = { ..._message };
-
-  message = modifyPromptRoleChange(_message, [
-    { from: "assistant", to: "model" },
-    { from: "system", to: "model" },
-  ]);
-
-  // do gemini-specific transformations
-  const { role, ...payload } = message;
-  const parts = [];
-  if (typeof payload.content === "string") {
-    parts.push({ text: message.content });
-  }
-
-  return {
-    role,
-    parts,
-  };
-}
-
-export function googleGeminiPromptSanitize(
-  _messages: string | IChatMessages,
-  _inputBodyObj: Record<string, any>,
-  _outputObj: Record<string, any>
-) {
-  if (typeof _messages === "string") {
-    return _messages;
-  }
-  if (Array.isArray(_messages)) {
-    if (_messages.length === 0) {
-      // throw?
-    }
-    if (_messages.length === 1) {
-      return _messages[0].content;
-    }
-  }
-
-  /**
-   * system messages can go into `systemInstruction`
-   *   - remains same shape as text input ({text})
-   */
-
-  return _messages.map(googleGeminiPromptMessageCallback);
-}
+import { googleGeminiPromptSanitize } from "./promptSanitize";
 
 const googleGeminiChatV1: Config = {
   key: "google.chat.v1",

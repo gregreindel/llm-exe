@@ -198,7 +198,7 @@ interface OutputGoogleGeminiChatChoiceBase {
     role?: Extract<IChatMessageRole, "model">;
     parts: {
       text?: string
-      functionCall:
+      functionCall?:
       | null
       | {
         name: string;
@@ -208,6 +208,7 @@ interface OutputGoogleGeminiChatChoiceBase {
 
   };
   finishReason: "STOP";
+  avgLogprobs?: number;
 }
 
 export interface OutputGoogleGeminiChatChoiceFunction
@@ -216,13 +217,14 @@ export interface OutputGoogleGeminiChatChoiceFunction
     role?: Extract<IChatMessageRole, "model">;
     parts: {
       text: undefined
-      functionCall: {
+      functionCall?: {
         name: string;
         args: string;
       }
     }[]
   };
   finishReason: "STOP";
+  avgLogprobs?: number;
 }
 
 export interface OutputGoogleGeminiChatChoiceMessage
@@ -231,10 +233,11 @@ export interface OutputGoogleGeminiChatChoiceMessage
     role?: Extract<IChatMessageRole, "model">;
     parts: {
       text: string;
-      functionCall: null;
+      functionCall?: null;
     }[]
   };
   finishReason: "STOP";
+  avgLogprobs?: number;
 }
 
 export type OutputGoogleGeminiChatChoice =
