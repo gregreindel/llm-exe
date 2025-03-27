@@ -1,4 +1,4 @@
-import { anthropicPromptSanitize } from "@/llm/config/anthropic";
+import { anthropicPromptSanitize } from "@/llm/config/anthropic/promptSanitize";
 import { bedrock } from "@/llm/config/bedrock";
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 
@@ -7,7 +7,7 @@ jest.mock("@/utils/modules/replaceTemplateString", () => ({
   replaceTemplateString: jest.fn(),
 }));
 
-jest.mock("@/llm/config/anthropic", () => ({
+jest.mock("@/llm/config/anthropic/promptSanitize", () => ({
   anthropicPromptSanitize: jest.fn(),
 }));
 

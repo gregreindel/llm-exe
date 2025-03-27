@@ -1,36 +1,5 @@
-import { anthropic, anthropicPromptSanitize } from "@/llm/config/anthropic";
-import { IChatMessages } from "@/types";
-
-describe("anthropicPromptSanitize", () => {
-  it("should handle string messages", () => {
-    const result = anthropicPromptSanitize("Hello, World!", {}, {});
-    expect(result).toEqual([{ role: "user", content: "Hello, World!" }]);
-  });
-
-  it("should handle IChatMessages with system message first", () => {
-    const messages: IChatMessages = [
-      { role: "system", content: "This is a system message" },
-      { role: "user", content: "Hello, World!" },
-    ];
-    const outputObj: Record<string, any> = {};
-    const result = anthropicPromptSanitize(messages, {}, outputObj);
-
-    expect(outputObj).toEqual({ system: "This is a system message" });
-    expect(result).toEqual([{ role: "user", content: "Hello, World!" }]);
-  });
-
-  it("should handle IChatMessages without system message first", () => {
-    const messages: IChatMessages = [
-      { role: "user", content: "Hello, World!" },
-      { role: "assistant", content: "Hi there!" },
-    ];
-    const outputObj: Record<string, any> = {};
-    const result = anthropicPromptSanitize(messages, {}, outputObj);
-
-    expect(outputObj).toEqual({});
-    expect(result).toEqual(messages);
-  });
-});
+import { anthropic } from "@/llm/config/anthropic";
+import { anthropicPromptSanitize } from "./promptSanitize";
 
 describe("anthropic config", () => {
   const config = anthropic["anthropic.chat.v1"];
@@ -74,6 +43,8 @@ describe("anthropic config", () => {
   });
 
   it("should have correct options required properties", () => {
-    expect(config.options.maxTokens.required).toEqual(expect.arrayContaining([true, "maxTokens required"]));
+    expect(config.options.maxTokens.required).toEqual(
+      expect.arrayContaining([true, "maxTokens required"])
+    );
   });
 });
