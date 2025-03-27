@@ -96,9 +96,9 @@ describe("modifyPromptRoleChange", () => {
 
   it("should handle multiple 'from' entries in roleChanges for an array of messages", () => {
     const messages = [
-      { role: "assistant", content: "I'm an assistant", name: "" },
-      { role: "user", content: "Hello", name: "" },
-      { role: "assistant", content: "Another assistant message", name: "" },
+      { role: "assistant", content: "I'm an assistant" },
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Another assistant message" },
     ];
     const roleChanges = [
       { from: "assistant", to: "newAssistant" },
