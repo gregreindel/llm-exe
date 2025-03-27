@@ -477,16 +477,13 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-3-haiku": {
+  "anthropic.claude-3-5-haiku": {
     input: Omit<AnthropicRequest, "model">;
   };
-
-
   "google.gemini-2.5-pro-exp-03-25": {
     input: Omit<GeminiRequest, "model">;
     // output: OpenAiRequest;
   };
-
   "google.gemini-2.0-flash": {
     input: Omit<GeminiRequest, "model">;
     // output: OpenAiRequest;
@@ -495,12 +492,10 @@ export type AllUseLlmOptions = AllLlm & {
     input: Omit<GeminiRequest, "model">;
     // output: OpenAiRequest;
   };
-
   "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
     // output: OpenAiRequest;
   };
-  
   "xai.grok-2": {
     input: OpenAiRequest;
   };
