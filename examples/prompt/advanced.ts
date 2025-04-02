@@ -1,5 +1,4 @@
-import { createChatPrompt } from "@/prompt"
-import { IChatMessages } from "@/types"
+import { type IChatMessages, createChatPrompt } from "llm-exe"
 
 export const withReplacements = () => {
 // #region withReplacements

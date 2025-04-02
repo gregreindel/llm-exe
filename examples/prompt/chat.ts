@@ -1,4 +1,4 @@
-import { createPrompt, createChatPrompt } from "@/prompt";
+import { createPrompt, createChatPrompt } from "llm-exe"
 
 const exampleCreateChatPrompt = () => {
 // #region exampleCreateChatPrompt
