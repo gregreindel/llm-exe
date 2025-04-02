@@ -2,29 +2,56 @@ name: Test Package
 
 on:
   workflow_dispatch:
-
-  repository_dispatch:
-    types: [pr-merged-to-main]
+  workflow_run:
+    workflows: "Run Tests"
+    types: [completed]
+  # repository_dispatch:
+  #   types: [pr-merged-to-main]
 
 permissions:
   id-token: write
   contents: write
 
 jobs:
-  ollama_job:
+  test-package:
     runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.triggering_actor.login == 'devfrankduah') || (github.event_name == 'workflow_dispatch' && github.event.sender.login == 'devfrankduah') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Ollama
-        run: |
-          docker run -d --name ollama -p 11434:11434 ollama/ollama:latest
+      - name: Use Latest Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
 
-      - name: Pull a model (e.g., Mistral)
-        run: |
-          curl -X POST http://localhost:11434/api/pull -d '{"name": "mistral"}'
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
 
-      - name: Run inference
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build package
+        run: npm run build:package
+
+      - name: Pack package
+        run: npm pack
+
+      - name: List files
+        run: ls -la
+
+      - name: Copy path of packed package
+        id: packed_package_path
         run: |
-          curl -X POST http://localhost:11434/api/generate -d '{"model": "mistral", "prompt": "Hello, world!"}'
+          echo "PACKED_PACKAGE_PATH=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz')" >> $GITHUB_ENV
+
+      # - name: Install dependencies in examples directory
+      #   run: |
+      #     jq --arg pkg "${{ env.PACKED_PACKAGE_PATH }}" '.dependencies["llm-exe"] = "file:" + $pkg' examples/package.json > examples/package.json.tmp && \
+      #     mv examples/package.json.tmp examples/package.json && \
+      #     cd examples && npm install
+
+      - name: Run tests
+        run: npm run test-examples
+

@@ -1,7 +1,4 @@
-import { createLlmExecutor } from "@/executor";
-import { createParser } from "@/parser";
-import { createChatPrompt } from "@/prompt";
-import { useLlm } from "@/llm";
+import { useLlm, createChatPrompt, createParser, createLlmExecutor } from "llm-exe"
 
 export function basicExampleUsingPrompt(){
     const prompt = createChatPrompt();

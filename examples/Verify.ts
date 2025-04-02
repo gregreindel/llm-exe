@@ -1,12 +1,12 @@
 // #region file
 import {
+  utils,
   createChatPrompt,
   createParser,
   createLlmExecutor,
   createCustomParser,
 } from "llm-exe";
 import type { BaseLlm, IChatMessages } from "llm-exe";
-import { defineSchema } from "@/utils";
 
 // #region prompt
 const PROMPT = `You need to work through the list below step-by-step and
@@ -41,7 +41,7 @@ const INSTRUCTION = `Your response should be valid JSON in the following format:
 export const VerifyParser = createCustomParser(
   "VerifyParser",
   (input, _context) => {
-    const schema = defineSchema({
+    const schema = utils.defineSchema({
       type: "array",
       items: {
         type: "object",
