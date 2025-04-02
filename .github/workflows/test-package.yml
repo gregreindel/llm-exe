@@ -15,7 +15,7 @@ permissions:
 jobs:
   test-package:
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.triggering_actor.login == 'devfrankduah') || (github.event_name == 'workflow_dispatch' && github.event.sender.login == 'devfrankduah') }}
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development' && github.event.workflow_run.triggering_actor.login == 'devfrankduah') || (github.event_name == 'workflow_dispatch' && github.event.sender.login == 'gregreindel') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
