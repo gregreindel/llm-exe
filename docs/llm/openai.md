@@ -21,10 +21,7 @@ const llm = useLlm("openai.gpt-4o", {
 });
 ```
 
-> [!NOTE]
-> You can use the following models using this shorthand:
-> - openai.gpt-4o
-> - openai.gpt-4o-mini
+<ImportModelNames provider="openai" />
 
 ## Authentication
 

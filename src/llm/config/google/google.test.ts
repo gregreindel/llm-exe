@@ -25,8 +25,12 @@ describe("google configuration", () => {
       const sanitizePrompt = googleChatV1.mapBody.prompt.sanitize as (
         v: any
       ) => any;
-      expect(sanitizePrompt("Hello")).toEqual("Hello");
-      expect(sanitizePrompt([{ role: "user", content: "Hello" }])).toEqual([{"parts": [{"text": "Hello"}], "role": "user"}]);
+      expect(sanitizePrompt("Hello")).toEqual([
+        { role: "user", parts: [{ text: "Hello" }] },
+      ]);
+      expect(sanitizePrompt([{ role: "user", content: "Hello" }])).toEqual([
+        { parts: [{ text: "Hello" }], role: "user" },
+      ]);
     });
   });
 
@@ -42,7 +46,9 @@ describe("google configuration", () => {
         default: "gemini-2.0-flash",
         key: "model",
       });
-      expect(googleGemini2Flash.options.model).toEqual({ default: "gemini-2.0-flash" });
+      expect(googleGemini2Flash.options.model).toEqual({
+        default: "gemini-2.0-flash",
+      });
     });
   });
 });

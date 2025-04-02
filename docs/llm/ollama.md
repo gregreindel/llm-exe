@@ -21,14 +21,7 @@ const llm = useLlm("ollama.deepseek-r1", {
 });
 ```
 
-> [!NOTE]
-> You can use the following models using this shorthand:
-> - deepseek-r1
-> - llama3.3
-> - llama3.2
-> - llama3.1
-> - qwq
-
+<ImportModelNames provider="ollama" />
 
 
 

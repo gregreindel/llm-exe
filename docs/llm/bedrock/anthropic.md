@@ -8,7 +8,7 @@ When using Anthropic models via AWS Bedrock, llm-exe will make POST requests to 
 
 ```ts
 const llm = useLlm("amazon:anthropic.chat.v1", {
-  model: "anthropic.claude-3-sonnet-20240229-v1:0", // specify a model
+  model: "claude-3-sonnet-20240229-v1:0",  // This is the model id from Bedrock
 });
 ```
 
