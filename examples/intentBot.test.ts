@@ -1,4 +1,4 @@
-import { useLlm } from "@/llm";
+import { useLlm } from "llm-exe";
 import { identifyIntent, intents } from "./intentBot";
 
 describe("extractBot", () => {
