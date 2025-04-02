@@ -49,16 +49,12 @@ export const anthropic = {
     anthropicChatV1,
     "claude-3-5-sonnet-latest"
   ),
+  "anthropic.claude-3-5-haiku": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-5-haiku-latest"
+  ),
   "anthropic.claude-3-opus": withDefaultModel(
     anthropicChatV1,
     "claude-3-opus-latest"
-  ),
-  "anthropic.claude-3-sonnet": withDefaultModel(
-    anthropicChatV1,
-    "claude-3-sonnet-latest"
-  ),
-  "anthropic.claude-3-haiku": withDefaultModel(
-    anthropicChatV1,
-    "claude-3-haiku-latest"
   ),
 };

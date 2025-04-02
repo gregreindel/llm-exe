@@ -2,6 +2,7 @@
 module.exports = {
     preset: "ts-jest/presets/default",
     testEnvironment: "node",
+    testTimeout: 60000,
     moduleNameMapper: {
       "^@/(.*)$": "<rootDir>/src/$1",
     },

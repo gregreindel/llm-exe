@@ -21,9 +21,8 @@ const llm = useLlm("xai.grok-2", {
 });
 ```
 
-> [!NOTE]
-> You can use the following models using this shorthand:
-> - grok-2
+<ImportModelNames provider="xai" />
+
 
 ## Authentication
 

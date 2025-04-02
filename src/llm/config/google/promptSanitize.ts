@@ -10,7 +10,7 @@ export function googleGeminiPromptSanitize(
    * If _messages is a string, return it as is.
    */
   if (typeof _messages === "string") {
-    return _messages;
+    return [{ role: "user", parts: [{ text: _messages }] }];
   }
   if (Array.isArray(_messages)) {
     if (_messages.length === 0) {
@@ -37,9 +37,9 @@ export function googleGeminiPromptSanitize(
       );
 
       // add the system instructions from the messages on request.system_instruction
-      _outputObj.system_instruction = theSystemInstructions.map((message) => ({
-        parts: [{ text: message.content }],
-      }));
+      _outputObj.system_instruction = {
+        parts: theSystemInstructions.map((message) => ({ text: message.content }))
+      }
 
       return withoutSystemInstructions.map(googleGeminiPromptMessageCallback);
     }

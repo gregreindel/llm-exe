@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watchEffect } from "vue";
+import { ref, computed, onMounted } from "vue";
 
 const ready = ref(false);
 
