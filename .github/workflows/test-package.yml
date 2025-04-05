@@ -32,14 +32,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build package
-        run: npm run build:package
-
-      - name: Pack package
-        run: npm pack
-
-      - name: List files
-        run: ls -la
+      - name: Build package and pack package
+        run: npm run build:package && npm pack
 
       - name: Copy path of packed package
         id: packed_package_path
@@ -53,6 +47,13 @@ jobs:
           rm -rf dist
           cp -r temp_extract/package/dist .
           rm -rf temp_extract
+      - name: Install dependencies in examples directory
+        run: |
+          cd examples && npm install
+          cd ..
+
+      - name: List files
+        run: ls -la
 
       # - name: Install dependencies in examples directory
       #   run: |
@@ -61,4 +62,6 @@ jobs:
       #     cd examples && npm install
 
       - name: Run tests
-        run: npm run test-examples
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096 --experimental-vm-modules"
+          npm run test-examples
