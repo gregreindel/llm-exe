@@ -3,7 +3,7 @@ module.exports = {
     preset: "ts-jest/presets/default",
     testEnvironment: "node",
     testTimeout: 60000,
-    bail: 1,
+    // bail: 1,
     moduleNameMapper: {
       "^@/(.*)$": "<rootDir>/src/$1",
     },
