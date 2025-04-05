@@ -5,7 +5,7 @@ module.exports = {
   testTimeout: 60000,
   maxWorkers: 2,
   workerIdleMemoryLimit: "512MB",
-  // bail: 1,
+  bail: 1,
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
