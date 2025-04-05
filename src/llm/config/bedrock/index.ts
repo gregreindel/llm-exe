@@ -1,6 +1,6 @@
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
-import { anthropicPromptSanitize } from "../anthropic";
+import { anthropicPromptSanitize } from "../anthropic/promptSanitize";
 import { Config } from "@/types";
 // import { amazonNovaPromptSanitize } from "./prompt.nova";
 
