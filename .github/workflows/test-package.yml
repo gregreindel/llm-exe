@@ -58,3 +58,5 @@ jobs:
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096 --experimental-vm-modules"
           npm run test-examples
+        env:
+          OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
