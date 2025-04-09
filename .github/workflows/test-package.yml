@@ -1,0 +1,65 @@
+name: Test Package
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: "Run Tests"
+    types: [completed]
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  test-package:
+    runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development' && github.event.workflow_run.triggering_actor.login == 'gregreindel') || (github.event_name == 'workflow_dispatch' && github.event.sender.login == 'gregreindel') }}
+    env:
+      OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Latest Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
+
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build package and pack package
+        run: npm run build:package && npm pack
+
+      - name: Copy path of packed package
+        id: packed_package_path
+        run: |
+          echo "PACKED_PACKAGE_PATH=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz')" >> $GITHUB_ENV
+
+      - name: Extract tarball and replace dist folder
+        run: |
+          mkdir -p temp_extract
+          tar -xzf ${{ env.PACKED_PACKAGE_PATH }} -C temp_extract
+          rm -rf dist
+          cp -r temp_extract/package/dist .
+          rm -rf temp_extract
+
+      - name: Install dependencies in examples directory
+        run: |
+          cd examples && npm install
+          cd ..
+
+      - name: List files
+        run: ls -la
+
+      - name: Run tests
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096 --experimental-vm-modules"
+          npm run test-examples
