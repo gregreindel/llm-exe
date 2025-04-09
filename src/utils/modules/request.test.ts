@@ -1,13 +1,23 @@
 import { apiRequest } from "@/utils/modules/request";
 
 const fetchMock = jest.fn();
-beforeAll(() => {
-  global.fetch = fetchMock;
+
+jest.mock('node:fetch', () => ({
+  __esModule: true,
+  default: fetchMock
+}));
+
+const originalFetch = global.fetch;
+Object.defineProperty(global, 'fetch', {
+  configurable: true,
+  get: () => fetchMock
 });
 
 afterAll(() => {
-  // @ts-ignore
-  global.fetch = undefined;
+  Object.defineProperty(global, "fetch", {
+    configurable: true,
+    get: () => originalFetch,
+  });
 });
 
 describe("apiRequest", () => {
