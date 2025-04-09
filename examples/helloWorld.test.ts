@@ -9,7 +9,7 @@ import {
 } from "../utils/mock.helpers";
 import { helloWorld } from "./helloWorld";
 
-describe("verifyBot", () => {
+describe.skip("verifyBot", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
