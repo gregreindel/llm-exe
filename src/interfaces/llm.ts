@@ -406,6 +406,13 @@ export interface GeminiRequest extends GenericLLm {
   geminiApiKey?: string;
 }
 
+export interface DeepseekRequest extends GenericLLm {
+  model: string;
+  responseFormat?: Record<string, any>;
+  deepseekApiKey?: string;
+  useJson?: boolean;
+}
+
 export type AllEmbedding = {
   "openai.embedding.v1": {
     input: OpenAiEmbeddingOptions;
@@ -451,6 +458,10 @@ export type AllLlm = {
   };
   "google.chat.v1": {
     input: GeminiRequest;
+    // output: OpenAiRequest;
+  };
+  "deepseek.chat.v1": {
+    input: DeepseekRequest;  
     // output: OpenAiRequest;
   };
 };
