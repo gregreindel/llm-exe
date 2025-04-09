@@ -172,6 +172,11 @@ export default defineConfig({
             link: "/llm/ollama.html",
             items: [],
           },
+          {
+            text: "Deepseek",
+            link: "/llm/deepseek.html",
+            items: [],
+          },
         ],
       },
       {
