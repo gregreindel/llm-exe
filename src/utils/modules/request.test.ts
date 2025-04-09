@@ -1,7 +1,14 @@
 import { apiRequest } from "@/utils/modules/request";
 
 const fetchMock = jest.fn();
-jest.spyOn(global, 'fetch').mockImplementation(fetchMock);
+beforeAll(() => {
+  global.fetch = fetchMock;
+});
+
+afterAll(() => {
+  // @ts-ignore
+  global.fetch = undefined;
+});
 
 describe("apiRequest", () => {
   const url = "https://api.example.com/data";
