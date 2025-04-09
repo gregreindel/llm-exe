@@ -7,8 +7,6 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
-      "llm-exe": ".."
-    },
-    "devDependencies": {}
-  }
-  
+        "llm-exe": ".."
+    }
+}

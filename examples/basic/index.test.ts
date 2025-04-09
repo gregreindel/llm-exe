@@ -1,6 +1,5 @@
-import { createChatPrompt } from "@/prompt";
-import { useLlm } from "@/llm";
-import { createParser } from "@/parser";
+import { useLlm, createChatPrompt, createParser } from "llm-exe"
+
 import { basicExampleUsingPrompt, basicExampleUsingLlm, basicExamplePromptAndLlm, basicExamplePromptAndLlmAndParser,  } from "./index";
 
 jest.mock("@/prompt");

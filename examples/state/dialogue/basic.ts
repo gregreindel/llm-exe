@@ -1,4 +1,4 @@
-import { createDialogue } from "@/state";
+import { createDialogue } from "llm-exe";
 
 const exampleOne = () => {
 // #region exampleOne
