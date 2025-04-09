@@ -1,4 +1,4 @@
-// import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
+import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
@@ -42,4 +42,5 @@ const deepseekChatV1: Config = {
 
 export const deepseek = {
   "deepseek.chat.v1": deepseekChatV1,
+  "deepseek.chat": withDefaultModel(deepseekChatV1, "deepseek-chat"),
 };

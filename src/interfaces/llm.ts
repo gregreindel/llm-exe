@@ -525,6 +525,9 @@ export type AllUseLlmOptions = AllLlm & {
   "ollama.qwq": {
     input: GenericLLm;
   };
+  "deepseek.chat": {
+    input: DeepseekRequest;
+  }
 };
 
 export type LlmProviderKey = keyof AllLlm;
