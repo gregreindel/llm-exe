@@ -9,7 +9,7 @@ describe("extractBot", () => {
   it("should identify simple intent given content", async () => {
     const llm = useLlm("openai.chat.v1", {
       model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPEN_AI_API_KEY,
+      openAiApiKey: process.env.OPENAI_API_KEY,
     });
 
     const response = await identifyIntent(llm, {
