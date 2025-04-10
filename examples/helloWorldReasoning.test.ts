@@ -8,9 +8,10 @@ describe("verifyBot", () => {
   });
 
   it("should verify (false) based on the questions/content", async () => {
-    const llm = useLlm("deepseek.chat.v1", {
-      model: "deepseek-chat",
-      deepseekApiKey: process.env.DEEPSEEK_API_KEY,
+
+    const llm = useLlm("openai.chat.v1", {
+      model: "o3-mini",
+      openAiApiKey: process.env.OPENAI_API_KEY,
     });
 
     // the input you get from somewhere
