@@ -4,7 +4,7 @@ import {
   createParser,
   createLlmExecutor,
 } from "llm-exe";
-import type { BaseLlm, IChatMessages } from "llm-exe";
+import type { BaseLlm } from "llm-exe";
 /**
  *
  */

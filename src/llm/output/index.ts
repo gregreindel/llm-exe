@@ -31,6 +31,8 @@ export function getOutputParser(
       return OutputOllamaChat(response, config);
     case "google.chat.v1":
       return OutputGoogleGeminiChat(response, config);
+    case "deepseek.chat.v1":
+      return OutputOpenAIChat(response, config); // use oai for now
     default: {
       if ((config?.key as string)?.startsWith("custom:")) {
         return OutputDefault(response, config);

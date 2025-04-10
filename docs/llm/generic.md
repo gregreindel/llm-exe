@@ -23,7 +23,7 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 <!-- 
 | Option           | Type            | Default       | Description                                                                                                                             |
 | ---------------- | --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| openAIApiKey     | string          | undefined     | API key for OpenAI. Optionally can be set using process.env.OPEN_AI_API_KEY                                                             |
+| openAIApiKey     | string          | undefined     | API key for OpenAI. Optionally can be set using process.env.OPENAI_API_KEY                                                             |
 | model            | string          | gpt-3.5-turbo | The model to use. Can be any one of: gpt-4o, gpt-4o-mini, gpt-4, gpt-3.5-turbo, davinci, text-curie-001, text-babbage-001, text-ada-001 |
 | temperature      | number          | 0             | See OpenAI Docs                                                                                                                         |
 | maxTokens        | number          | 500           | See OpenAI Docs                                                                                                                         |

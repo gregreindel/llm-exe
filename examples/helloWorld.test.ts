@@ -28,6 +28,7 @@ describe("verifyBot", () => {
         "openai.gpt-4o-mini",
         "google.gemini-2.0-flash",
         "xai.grok-2",
+        "deepseek.chat"
       ]),
     ],
     async (props: any) => {
