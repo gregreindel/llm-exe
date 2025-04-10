@@ -29,7 +29,7 @@ To authenticate, you need to provide an OpenAi API Key. You can provide the API 
 
 1. Pass in as execute options using `openAIApiKey`
 2. Pass in as setup options using `openAIApiKey`
-3. Use a default key by setting an environment variable of `OPEN_AI_API_KEY`
+3. Use a default key by setting an environment variable of `OPENAI_API_KEY`
 
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 

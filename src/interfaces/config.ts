@@ -13,7 +13,8 @@ export type LlmProvider =
   | "amazon.embedding"
   | "xai.chat"
   | "google.chat"
-  | "ollama.chat";
+  | "ollama.chat"
+  | "deepseek.chat";
 
 export interface Config<Pk = LlmProviderKey> {
   key: Pk;

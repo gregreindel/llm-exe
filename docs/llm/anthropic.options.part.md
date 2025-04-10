@@ -1,6 +1,6 @@
 | Option          | Type    | Default           | Description                                                                    |
 | --------------- | ------- | ----------------- | ------------------------------------------------------------------------------ |
-| anthropicApiKey | string  | undefined         | API key for Anthropic. Optionally can be set using process.env.OPEN_AI_API_KEY |
+| anthropicApiKey | string  | undefined         | API key for Anthropic. Optionally can be set using process.env.OPENAI_API_KEY |
 | model           | string  | claude-3-5-sonnet | The model to use. Can be any one of: claude-3-5-sonnet, etc.                   |
 | temperature     | number  | 0                 | Maps to temperature. See Anthropic Docs                                        |
 | maxTokens       | number  | 500               | Maps to max_tokens. See Anthropic Docs                                         |
