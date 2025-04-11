@@ -1,6 +1,6 @@
-import { useLlm } from "@/llm";
+import { useLlm } from "llm-exe";
+import type { IChatMessages } from "llm-exe";
 import { checkPolicy } from "./Verify";
-import { IChatMessages } from "@/interfaces";
 
 export const expected = {
   passed: false,
@@ -26,7 +26,7 @@ describe("verifyBot", () => {
   it("should verify (false) based on the questions/content", async () => {
     const llm = useLlm("openai.chat.v1", {
       model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPEN_AI_API_KEY,
+      openAiApiKey: process.env.OPENAI_API_KEY,
     });
 
     // the input you get from somewhere
@@ -58,7 +58,7 @@ describe("verifyBot", () => {
   it("should verify (true) based on the questions/content", async () => {
     const llm = useLlm("openai.chat.v1", {
       model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPEN_AI_API_KEY,
+      openAiApiKey: process.env.OPENAI_API_KEY,
     });
 
     // the input you get from somewhere

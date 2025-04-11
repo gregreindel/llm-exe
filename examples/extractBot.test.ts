@@ -1,6 +1,5 @@
-import { useLlm } from "@/llm";
+import { useLlm, utils } from "llm-exe";
 import { extractInformation } from "./extractBot";
-import { defineSchema } from "@/utils";
 
 describe("extractBot", () => {
   beforeEach(() => {
@@ -11,7 +10,7 @@ describe("extractBot", () => {
     
     const llm = useLlm("openai.chat.v1", {
       model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPEN_AI_API_KEY,
+      openAiApiKey: process.env.OPENAI_API_KEY,
     });
 
     const input = {
@@ -29,7 +28,7 @@ describe("extractBot", () => {
     };
 
 
-    const schema = defineSchema({
+    const schema = utils.defineSchema({
       type: "object",
       properties: {
         firstName: {

@@ -1,14 +1,19 @@
-import { createChatPrompt } from "@/prompt";
-import { useLlm } from "@/llm";
-import { createParser } from "@/parser";
+import { useLlm, createChatPrompt, createParser } from "llm-exe"
+
 import { basicExampleUsingPrompt, basicExampleUsingLlm, basicExamplePromptAndLlm, basicExamplePromptAndLlmAndParser,  } from "./index";
 
-jest.mock("@/prompt");
-jest.mock("@/llm");
-jest.mock("@/parser");
-jest.mock("@/executor");
+jest.mock("llm-exe", () => ({
+  ...jest.requireActual("llm-exe"),
+  useLlm: jest.fn(),
+  createChatPrompt: jest.fn(),
+  createParser: jest.fn(),
+}));
 
 describe("basicExampleUsingPrompt", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it("should create a chat prompt and add user and assistant messages", () => {
         const addUserMessageMock = jest.fn();
         const addAssistantMessageMock = jest.fn();

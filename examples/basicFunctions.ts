@@ -1,8 +1,10 @@
-import { createLlmExecutor } from "@/executor";
-import { useLlm } from "@/llm";
-import { createParser } from "@/parser";
-import { createChatPrompt } from "@/prompt";
-import { BaseLlm } from "@/types";
+import {
+  useLlm,
+  createChatPrompt,
+  createParser,
+  createLlmExecutor,
+} from "llm-exe";
+import type { BaseLlm } from "llm-exe";
 /**
  *
  */

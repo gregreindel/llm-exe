@@ -1,4 +1,4 @@
-import { createPrompt } from "@/prompt";
+import { createPrompt } from "llm-exe"
 
 const exampleCreateTextPrompt = () => {
   // #region exampleCreateTextPrompt

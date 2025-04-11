@@ -4,6 +4,7 @@ import { anthropic } from "./config/anthropic";
 import { xai } from "./config/x";
 import { ollama } from "./config/ollama";
 import { google } from "./config/google";
+import { deepseek } from "./config/deepseek";
 import { LlmExeError } from "@/utils/modules/errors";
 
 export const configs = {
@@ -13,6 +14,7 @@ export const configs = {
   ...xai,
   ...ollama,
   ...google,
+  ...deepseek
 };
 
 export function getLlmConfig(provider: keyof typeof configs) {
