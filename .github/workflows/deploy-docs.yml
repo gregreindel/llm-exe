@@ -50,6 +50,27 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build package and pack package
+        run: npm run build:package && npm pack
+
+      - name: Copy path of packed package
+        id: packed_package_path
+        run: |
+          echo "PACKED_PACKAGE_PATH=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz')" >> $GITHUB_ENV
+
+      - name: Extract tarball and replace dist folder
+        run: |
+          mkdir -p temp_extract
+          tar -xzf ${{ env.PACKED_PACKAGE_PATH }} -C temp_extract
+          rm -rf dist
+          cp -r temp_extract/package/dist .
+          rm -rf temp_extract
+
+      - name: Install dependencies in examples directory
+        run: |
+          cd examples && npm install
+          cd ..
+
       - name: Build docs
         run: npm run docs:build
 
@@ -71,10 +92,10 @@ jobs:
         run: aws sts get-caller-identity
 
       - name: Copy files to dist directory and zip
-        run: |  
-            mkdir -p dist
-            cp -r docs/.vitepress/dist/* dist/
-            cp package.json dist/package.json
+        run: |
+          mkdir -p dist
+          cp -r docs/.vitepress/dist/* dist/
+          cp package.json dist/package.json
 
       - name: Get package.json version
         id: package_version
