@@ -1,4 +1,4 @@
-import { createDialogue } from "llm-exe";
+import { createDialogue } from "../../../src/state"; // this needs to be here for examples to build
 
 const exampleOne = () => {
 // #region exampleOne
