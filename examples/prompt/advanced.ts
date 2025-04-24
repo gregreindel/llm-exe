@@ -1,4 +1,5 @@
-import { type IChatMessages, createChatPrompt } from "llm-exe"
+import { IChatMessages } from "../../dist";
+import { createChatPrompt } from "../../src/prompt"; // this needs to be here for examples to build
 
 export const withReplacements = () => {
 // #region withReplacements
