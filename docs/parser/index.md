@@ -22,7 +22,7 @@ When working with output parsers, you have two options:
 const parser = createParser("listToArray"); // see list of included parsers
 
 // example output string from LLM
-const exampleOutputFromLlm: `First, hover the services menu
+const exampleOutputFromLlm = `First, hover the services menu
 Wait for the dropdown menu to appear
 Click on the development link`;
 
@@ -60,7 +60,7 @@ const schema = utils.defineSchema({
 
 const parser = createParser("listToJson", schema);
 
-const exampleOutputFromLlm: `Statement: The included document contains PII\nAnswer: No\nConfidence: 90`;
+const exampleOutputFromLlm = `Statement: The included document contains PII\nAnswer: No\nConfidence: 90`;
 
 const parsed = parser.parse(exampleOutputFromLlm);
 /**
