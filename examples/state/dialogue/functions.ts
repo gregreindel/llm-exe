@@ -1,4 +1,4 @@
-import { createDialogue } from "@/state";
+import { createDialogue } from "../../../src/state"; // this needs to be here for examples to build
 
 const dialogueWithFunctionCall = () => {
 // #region dialogueWithFunctionCall

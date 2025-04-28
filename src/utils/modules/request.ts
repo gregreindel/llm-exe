@@ -1,3 +1,4 @@
+import { debug } from "./debug";
 import { isValidUrl } from "./isValidUrl";
 
 /**
@@ -19,6 +20,8 @@ export async function apiRequest<T extends Record<string, any> | null>(
   };
 
   try {
+    debug(url, finalOptions);
+    
     if(!url || !isValidUrl(url)) {
       throw new Error("Invalid URL");
     }

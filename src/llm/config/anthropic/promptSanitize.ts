@@ -1,6 +1,5 @@
 import { IChatMessages } from "@/types";
 
-
 export function anthropicPromptSanitize(
   _messages: string | IChatMessages,
   _inputBodyObj: Record<string, any>,
@@ -23,9 +22,22 @@ export function anthropicPromptSanitize(
   //   - and return the rest of the messages
   if (first.role === "system" && messages.length > 0) {
     _outputObj.system = first.content;
-    return messages;
+    return messages.map((m) => {
+      if (m.role === "system") {
+        return { ...m, role: "user" };
+      }
+      return m;
+    });
   }
 
   // otherwise, don't make assumptions?
-  return [first, ...messages];
+  return [
+    first,
+    ...messages.map((m) => {
+      if (m.role === "system") {
+        return { ...m, role: "user" };
+      }
+      return m;
+    }),
+  ];
 }

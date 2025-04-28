@@ -3,15 +3,11 @@ import DefaultTheme from "vitepress/theme";
 import { h } from "vue";
 import './styles.css';
 
-// import TwoslashFloatingVue from "@shikijs/vitepress-twoslash/client";
-// import "@shikijs/twoslash/style-rich.css";
-// import "floating-vue/dist/style.css";
-// import "@shikijs/vitepress-twoslash/style-core.css";
-
 // @ts-ignore
 import GenericOutput from "../components/GenericOutput.vue";
 // @ts-ignore
 import PromptPlayground from "../components/PromptPlayground.vue";
+import PromptPlayground2 from "../components/PromptPlayground2.vue";
 // @ts-ignore
 import PromptMessage from "../components/Prompt/PromptMessage.vue";
 import ImportModelNames from "../components/ImportModelNames.vue";
@@ -24,13 +20,13 @@ import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
-    // app.use(TwoslashFloatingVue);
     app.component("GenericOutput", GenericOutput);
     app.component("PromptPlayground", PromptPlayground);
+    app.component("PromptPlayground2", PromptPlayground2);
     app.component("PromptMessage", PromptMessage);
     app.component("ImportModelNames", ImportModelNames);
 
-    if(import.meta.env.DEV){
+    if((import.meta as any).env.DEV){
       new EventSource('/esbuild').addEventListener('change', () => location.reload())
     }
   },

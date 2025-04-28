@@ -22,5 +22,15 @@ describe("llm-exe:parser/ListToArrayParser", () => {
     const input = `Name: Greg\nOccupation: developer`
     expect(parser.parse(input)).toEqual(["Name: Greg", "Occupation: developer"])
   });
+  it('trims extra spaces', () => {
+    const parser = new ListToArrayParser()
+    const input = `- Greg  \n- Developer  `
+    expect(parser.parse(input)).toEqual(["Greg", "Developer"])
+  });
+  it('doesn\'t remove hyphens in the that aren\'t first', () => {
+    const parser = new ListToArrayParser()
+    const input = `- Greg\n- Occupation: software - developer`
+    expect(parser.parse(input)).toEqual(["Greg", "Occupation: software - developer"])
+  });
 });
 
