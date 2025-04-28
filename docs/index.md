@@ -61,7 +61,7 @@ export async function YesOrNoBot<I extends string>(input: I) {
   const prompt = llmExe
     .createChatPrompt(instruction)
     .addUserMessage(input)
-    .addSystemMessage(`yes or no:`);
+    .addUserMessage(`yes or no:`);
 
   const parser = llmExe.createParser("stringExtract", { enum: ["yes", "no"] });
   return llmExe.createLlmExecutor({ llm, prompt, parser }).execute({ input });
@@ -103,7 +103,7 @@ export async function YesOrNoBot<I extends string>(input: I) {
   const prompt = llmExe
     .createChatPrompt(instruction)
     .addUserMessage(input)
-    .addSystemMessage(`yes or no:`);
+    .addUserMessage(`yes or no:`);
 
   const parser = llmExe.createParser("stringExtract", { enum: ["yes", "no"] });
   return llmExe.createLlmExecutor({ llm, prompt, parser }).execute({ input });
