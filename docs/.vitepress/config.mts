@@ -38,6 +38,10 @@ export default defineConfig({
     ],
     [
       'script',
+      { async: '', defer: '', src: 'https://buttons.github.io/buttons.js' }
+    ],
+    [
+      'script',
       {},
       `window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}

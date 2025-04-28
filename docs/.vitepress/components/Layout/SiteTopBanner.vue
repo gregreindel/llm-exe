@@ -28,4 +28,11 @@
     background-color: #000000;
     color: #fff;
 }
+
+@media screen and (max-width: 768px) {
+    .site-top-banner {
+        display:none;
+    }
+    
+}
 </style>
