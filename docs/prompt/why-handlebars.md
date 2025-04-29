@@ -2,48 +2,11 @@
 
 When preparing your prompts, it may seem easier to use native Javascript template literals within your prompts instead of utilizing Handlebars. It is suggested you embrace the Handlebars approach.
 
-### 1. Logic Helpers
-
-Handlebars supports built-in helpers like `if`, `each`, and even custom helpers, all directly inside the template. This lets you use loops, conditions, and transformations which are not possible with vanilla template literals.
-
-✅ **Using Handlebars the llm-exe way**
-
-The prompt is just a string. So clean!
-
-```
-{{#if user.isResearcher}}
-Summarize the following studies in a formal tone.
-{{else}}
-Summarize the following studies in simple language.
-{{/if}}
-
-Studies to summarize:
-{{#each studies}}
-- {{this}}
-{{/each}}
-```
-
-❌ **The template literal way**
-
-🤮
-
-```js
-const output = `
-${user.isResearcher
-  ? "Summarize the following studies in a formal tone."
-  : "Summarize the following studies in simple language."
-}
-
-Studies to summarize:
-${studies.map((study) => `- ${study}`).join("\n")}
-`;
-```
-
-### 2. Separation of Logic and Data
+### 1. Separation of Logic and Data
 
 Handlebars templates keep presentation (template) separate from code and data, promoting clearer separation of concerns. With template literals, you often end up mixing logic and string construction in your JavaScript.
 
-✅ **\*Using Handlebars the llm-exe way**
+✅ **Using Handlebars the llm-exe way**
 
 ```ts
 // the prompt is just a string!
@@ -86,13 +49,48 @@ ${
 }
 
 Question:
-${question}
-`;
+${question}`;
 ```
 
 ::: tip
 Since your template is disconnected from your data, you can even store your prompts in separate files - for example import them from text files - like from an s3 bucket.
 :::
+
+### 2. Logic Helpers
+
+Handlebars supports built-in helpers like `if`, `each`, and even custom helpers, all directly inside the template. This lets you use loops, conditions, and transformations which are not possible with vanilla template literals.
+
+✅ **Using Handlebars the llm-exe way**
+
+The prompt is just a string. So clean!
+
+```
+{{#if user.isResearcher}}
+Summarize the following studies in a formal tone.
+{{else}}
+Summarize the following studies in simple language.
+{{/if}}
+
+Studies to summarize:
+{{#each studies}}
+- {{this}}
+{{/each}}
+```
+
+❌ **The template literal way**
+
+🤮
+
+```js
+const output = `
+${user.isResearcher
+  ? "Summarize the following studies in a formal tone."
+  : "Summarize the following studies in simple language."
+}
+
+Studies to summarize:
+${studies.map((study) => `- ${study}`).join("\n")}`;
+```
 
 
 ### 3. Reusability via Partials
@@ -100,7 +98,6 @@ Since your template is disconnected from your data, you can even store your prom
 Handlebars allows you to define **partials** reusable chunks of template. This is great for shared layouts or repeated sections, and is not natively supported by template literals.
 
 ```ts
-
 utils.registerPartials([name: 'greeting', template: `Hello {{name}}!`])
 
 const instruction = `
@@ -108,8 +105,7 @@ const instruction = `
 
 Please answer the following questions:
 - What are your goals for the next 6 months?
-- How can we support you best?
-`
+- How can we support you best?`
 ```
 
 With template literals - have to manually build and call functions with js/ts:
@@ -124,8 +120,7 @@ const output = `
 
 Please answer the following questions:
   - What are your goals for the next 6 months?
-  - How can we support you best?
-`;
+  - How can we support you best?`;
 ```
 
 ### 4. Harness llm-exe prompt types
