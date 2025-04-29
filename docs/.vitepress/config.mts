@@ -209,6 +209,11 @@ export default defineConfig({
             items: [],
           },
           {
+            text: "Why Handlebars?",
+            link: "/prompt/why-handlebars.html",
+            items: [],
+          },
+          {
             text: "Playground",
             link: "/prompt/playground.html",
             items: [],
