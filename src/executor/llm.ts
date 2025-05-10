@@ -56,7 +56,7 @@ export class LlmExecutor<
   }
 
   async execute(
-    _input: PromptInput<Prompt>,
+    _input: PromptInput<Prompt> = {} as PromptInput<Prompt>,
     _options?: LlmExecutorExecuteOptions
   ): Promise<ParserOutput<Parser>> {
     if (this?.parser instanceof JsonParser && this.parser.schema) {
