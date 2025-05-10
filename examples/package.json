@@ -7,6 +7,6 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
-        "llm-exe": ".."
+        "llm-exe": "2.1.8"
     }
 }

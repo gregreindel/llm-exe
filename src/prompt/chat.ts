@@ -37,7 +37,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * user messages with the template engine. This could be a risk,
    * so we only parse user messages if explicitly set.
    */
-  private parseUserTemplates = false;
+  private parseUserTemplates = true;
 
   /**
    * new `ChatPrompt`
@@ -49,8 +49,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     options?: ChatPromptOptions
   ) {
     super(initialSystemPromptMessage, options);
-    if (options?.allowUnsafeUserTemplate) {
-      this.parseUserTemplates = true;
+    if (typeof options?.allowUnsafeUserTemplate === "boolean") {
+      this.parseUserTemplates = options?.allowUnsafeUserTemplate;
     }
   }
 
@@ -327,7 +327,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param values input values.
    * @return formatted prompt.
    */
-  format(values: I): IChatMessages {
+  format(values: I = {} as I): IChatMessages {
     const messagesOut: IChatMessages = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
@@ -511,7 +511,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param values input values.
    * @return formatted prompt.
    */
-  async formatAsync(values: I): Promise<IChatMessages> {
+  async formatAsync(values: I = {} as I): Promise<IChatMessages> {
     const messagesOut: IChatMessages = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];

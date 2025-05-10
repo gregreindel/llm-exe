@@ -117,9 +117,18 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     expect(format).toEqual([{ content: "Hello World", role: "system" }]);
   });
 
-
-  it("does not allow template rendering in user messages", () => {
+  it("does allow template rendering in user messages by default", () => {
     const prompt = new ChatPrompt();
+    prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
+    const format = prompt.format({ replaceWithWorld: "World" });
+    expect(format).toEqual([
+      { content: "Hello World", role: "user" },
+    ]);
+  });
+
+
+  it("does not allow template rendering in user messages if set", () => {
+    const prompt = new ChatPrompt(undefined, { allowUnsafeUserTemplate: false });
     prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
     const format = prompt.format({ replaceWithWorld: "World" });
     expect(format).toEqual([
@@ -129,7 +138,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
 
 
   it("does not allow template rendering in user messages (async)", async () => {
-    const prompt = new ChatPrompt();
+    const prompt = new ChatPrompt(undefined, { allowUnsafeUserTemplate: false });
     async function replaceWithWorld() {
       return new Promise((resolve) => {
         setTimeout(() => {
