@@ -1,6 +1,5 @@
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 
-
 export function debug(...args: any[]) {
   const debugValue = getEnvironmentVariable("LLM_EXE_DEBUG");
 
@@ -9,6 +8,7 @@ export function debug(...args: any[]) {
   for (const arg of args) {
     if (arg && typeof arg === "object") {
       if (arg instanceof Error) {
+        // nothing
       } else if (arg instanceof Array) {
         logs.push(arg.map((item) => JSON.stringify(item, null, 2)));
       } else if (arg instanceof Map) {

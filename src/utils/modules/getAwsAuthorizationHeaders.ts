@@ -1,7 +1,6 @@
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import { SignatureV4 } from "@smithy/signature-v4";
 import { HttpRequest } from "@smithy/protocol-http";
-//@ts-ignore
 import { Sha256 } from "@aws-crypto/sha256-js";
 import { runWithTemporaryEnv } from "@/utils/modules/runWithTemporaryEnv";
 
