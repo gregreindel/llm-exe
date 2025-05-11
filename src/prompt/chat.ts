@@ -327,7 +327,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param values input values.
    * @return formatted prompt.
    */
-  format(values: I = {} as I): IChatMessages {
+  format(values: I): IChatMessages {
     const messagesOut: IChatMessages = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
@@ -486,16 +486,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                       : m
                   )
                 : message.content && !Array.isArray(message.content)
-                ? this.runPromptFilter(
-                    this.runPromptFilter(
-                      message.content,
-                      this.filters.pre,
+                  ? this.runPromptFilter(
+                      this.runPromptFilter(
+                        message.content,
+                        this.filters.pre,
+                        values
+                      ),
+                      this.filters.post,
                       values
-                    ),
-                    this.filters.post,
-                    values
-                  )
-                : null,
+                    )
+                  : null,
             })
           );
         }
@@ -511,7 +511,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param values input values.
    * @return formatted prompt.
    */
-  async formatAsync(values: I = {} as I): Promise<IChatMessages> {
+  async formatAsync(values: I): Promise<IChatMessages> {
     const messagesOut: IChatMessages = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
@@ -680,16 +680,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                       : m
                   )
                 : message.content && !Array.isArray(message.content)
-                ? this.runPromptFilter(
-                    this.runPromptFilter(
-                      message.content,
-                      this.filters.pre,
+                  ? this.runPromptFilter(
+                      this.runPromptFilter(
+                        message.content,
+                        this.filters.pre,
+                        values
+                      ),
+                      this.filters.post,
                       values
-                    ),
-                    this.filters.post,
-                    values
-                  )
-                : null,
+                    )
+                  : null,
             })
           );
         }
