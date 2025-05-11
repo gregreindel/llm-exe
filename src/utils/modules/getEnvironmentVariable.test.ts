@@ -10,7 +10,7 @@ describe("getEnvironmentVariable in environment that does not have process", () 
   const OLD_ENV = process.env;
   beforeEach(() => {
     jest.resetModules(); // Most important - it clears the cache
-    // @ts-ignore
+    // @ts-expect-error process is not defined
     process.env = undefined;
   });
   afterAll(() => {

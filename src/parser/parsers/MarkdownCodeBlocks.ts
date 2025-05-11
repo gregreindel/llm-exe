@@ -1,5 +1,7 @@
 import { BaseParserOptions } from "@/types";
 import { BaseParser } from "../_base";
+import { isObjectStringified } from "@/utils";
+import { singleKeyObjectToString } from "../singleKeyObjectToString";
 
 export interface MarkdownCodeBlocksParserOptions extends BaseParserOptions {}
 
@@ -11,9 +13,15 @@ export class MarkdownCodeBlocksParser extends BaseParser<
   }
   parse(input: string) {
     const out: { code: string; language: string }[] = [];
-    const regex = input.matchAll(
-      new RegExp(/`{3}([\w]*)\n([\S\s]+?)\n`{3}/, "g")
-    );
+
+    // If input is JSON, decode it first
+    // grok seems to want to return JSON code blocks
+    // if others do, this can't hurt
+    if (isObjectStringified(input)) {
+      input = singleKeyObjectToString(input);
+    }
+
+    const regex = input.matchAll(new RegExp(/```(\w*)\n([\s\S]*?)```/, "g"));
     for (const iterator of regex) {
       if (iterator) {
         const [_input, language, code] = iterator;

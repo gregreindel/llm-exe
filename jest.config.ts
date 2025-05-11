@@ -22,6 +22,7 @@ module.exports = {
   collectCoverageFrom: [
     "<rootDir>/index.ts",
     "<rootDir>/src/**/*.ts",
+    "!<rootDir>/src/script.ts",
     "!<rootDir>/src/types/**/*.ts",
     "!<rootDir>/src/interfaces/**/*.ts",
   ],

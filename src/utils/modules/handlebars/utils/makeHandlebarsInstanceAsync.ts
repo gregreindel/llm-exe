@@ -3,9 +3,7 @@ import { isPromise } from "@/utils/modules/isPromise";
 import { asyncCoreOverrideHelpers } from "../helpers/async/async-helpers";
 import { _registerHelpers } from "./registerHelpers";
 import * as contextPartials from "@/utils/modules/handlebars/templates";
-import { getEnvironmentVariable } from "../../getEnvironmentVariable";
 import { _registerPartials } from "./registerPartials";
-import { importPartials } from "./importPartials";
 import * as helpers from "@/utils/modules/handlebars/helpers";
 
 export type HandlebarsAsync = typeof Handlebars & {
@@ -129,9 +127,8 @@ export function makeHandlebarsInstanceAsync(hbs: any) {
   const helperKeys = Object.keys(helpers) as (keyof typeof helpers)[];
   _registerHelpers(
     helperKeys.map((a) => ({ handler: helpers[a], name: a })),
-    handlebars,
+    handlebars
   );
-
 
   const asyncHelperKeys = Object.keys(
     asyncCoreOverrideHelpers
@@ -152,15 +149,6 @@ export function makeHandlebarsInstanceAsync(hbs: any) {
       contextPartialKey,
       contextPartials.partials[contextPartialKey]
     );
-  }
-
-  const partialsPath = getEnvironmentVariable(
-    "CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH"
-  );
-  
-  if (typeof process === "object" && partialsPath) {
-    const externalPartials = require(partialsPath);
-    _registerPartials(importPartials(externalPartials), handlebars);
   }
 
   return handlebars as HandlebarsAsync;

@@ -37,7 +37,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * user messages with the template engine. This could be a risk,
    * so we only parse user messages if explicitly set.
    */
-  private parseUserTemplates = false;
+  private parseUserTemplates = true;
 
   /**
    * new `ChatPrompt`
@@ -49,8 +49,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     options?: ChatPromptOptions
   ) {
     super(initialSystemPromptMessage, options);
-    if (options?.allowUnsafeUserTemplate) {
-      this.parseUserTemplates = true;
+    if (typeof options?.allowUnsafeUserTemplate === "boolean") {
+      this.parseUserTemplates = options?.allowUnsafeUserTemplate;
     }
   }
 
@@ -486,16 +486,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                       : m
                   )
                 : message.content && !Array.isArray(message.content)
-                ? this.runPromptFilter(
-                    this.runPromptFilter(
-                      message.content,
-                      this.filters.pre,
+                  ? this.runPromptFilter(
+                      this.runPromptFilter(
+                        message.content,
+                        this.filters.pre,
+                        values
+                      ),
+                      this.filters.post,
                       values
-                    ),
-                    this.filters.post,
-                    values
-                  )
-                : null,
+                    )
+                  : null,
             })
           );
         }
@@ -680,16 +680,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                       : m
                   )
                 : message.content && !Array.isArray(message.content)
-                ? this.runPromptFilter(
-                    this.runPromptFilter(
-                      message.content,
-                      this.filters.pre,
+                  ? this.runPromptFilter(
+                      this.runPromptFilter(
+                        message.content,
+                        this.filters.pre,
+                        values
+                      ),
+                      this.filters.post,
                       values
-                    ),
-                    this.filters.post,
-                    values
-                  )
-                : null,
+                    )
+                  : null,
             })
           );
         }
