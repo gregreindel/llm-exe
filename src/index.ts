@@ -27,9 +27,21 @@ export {
   DefaultStateItem,
   createState,
   createStateItem,
-  createDialogue
+  createDialogue,
 } from "./state";
 
 export { LlmExecutorOpenAiFunctions } from "@/executor/llm-openai-function";
 
-export type { LlmProvider, BaseLlm, OpenAIModelName, IChatMessages, ExecutorContext } from "./interfaces";
+export { defineSchema } from "./utils/modules/defineSchema";
+export { registerHelpers, registerPartials } from "./utils";
+
+export type {
+  LlmProvider,
+  BaseLlm,
+  OpenAIModelName,
+  IChatMessages,
+  ExecutorContext,
+  LlmProviderKey,
+  EmbeddingProviderKey,
+  UseLlmKey,
+} from "./interfaces";

@@ -13,6 +13,12 @@ export class MarkdownCodeBlockParser extends BaseParser<{
   }
   parse(input: string) {
     const [block] = new MarkdownCodeBlocksParser().parse(input);
+    if (!block) {
+      return {
+        code: "",
+        language: "",
+      };
+    }
     return block;
   }
 }

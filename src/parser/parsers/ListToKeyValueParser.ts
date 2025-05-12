@@ -12,7 +12,7 @@ export class ListToKeyValueParser extends BaseParser<
   parse(text: string) {
     const lines = text
       .split("\n")
-      .map((s) => s.replace("- ", "").replace(/\'/g, "'"));
+      .map((s) => s.replace("- ", "").replace(/'/g, "'"));
 
     let res: Array<{ key: string; value: string }> = [];
     for (const line of lines) {

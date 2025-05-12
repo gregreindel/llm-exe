@@ -9,15 +9,11 @@ Below is a simple example showing syntax for replacing simple variables in the t
 <<< ../../examples/prompt/advanced.ts#withReplacements
 </GenericOutput>
 
-
 Here is a more advanced example showing a template that uses the `if` and `each` helpers supplied by Handlebars.
 <GenericOutput example="prompt.advanced.withReplacementsTwo">
 
 <<< ../../examples/prompt/advanced.ts#withReplacementsTwo
 </GenericOutput>
-
-
-
 
 Below is a robust example showing multiple variables, and defining types.
 
@@ -26,28 +22,33 @@ Below is a robust example showing multiple variables, and defining types.
 <<< ../../examples/prompt/advanced.ts#withReplacementsAndTypes
 </GenericOutput>
 
-
 ## Prompt Template Default Helpers
+
 Prompts are powered by handlebars, and you are able to register your own custom helpers, adding super powers to your prompt templates. Some core helpers are included by default.
+
 - pluralize
 - eq
 - neq
 - ifCond
 
-
 ## Prompt Template Default Partials
+
 Some core partials are included by default:
 
 ### MarkdownCode
+
 ::: code-group
-``` [Raw Template]
+
+```[Raw Template]
 {{> MarkdownCode code='const name="Greg";' language='typescript' }}
 ```
-``` [Parsed]
+
+```[Parsed]
 '''typescript
 const name="Greg";
 '''
 ```
+
 :::
 
 ### DialogueHistory
@@ -113,8 +114,8 @@ Thought: I was wondering if you were open
 Observation: We sure are!
 
 ```
-:::
 
+:::
 
 <!-- ### JsonSchema
 ```:no-line-numbers
@@ -123,83 +124,30 @@ Observation: We sure are!
 ```:no-line-numbers
 ``` -->
 
-
 ## Template Custom Partials & Helpers
-You can load custom Handlebars partials and helpers a few different ways:
 
+You can load custom Handlebars partials and helpers a few different ways:
 
 ### 1. Pass them in when initializing the prompt
 
 ```ts
 // these could be managed elsewhere and imported here
-const helpers = [{
-  handler: (date: Date) => "morning", name: "getTimeOfDay"
-}]
+const helpers = [
+  {
+    handler: (date: Date) => "morning",
+    name: "getTimeOfDay",
+  },
+];
 
-
-const partials = [{
-  template: `Phone: 1-800-000-0000
+const partials = [
+  {
+    template: `Phone: 1-800-000-0000
 Support Email: support@example.com
-Website: www.example.com`, name: "partialContactInformation"
-}]
+Website: www.example.com`,
+    name: "partialContactInformation",
+  },
+];
 
 // pass in `{ helpers, partials }` when creating prompt.
-const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials })
+const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials });
 ```
-
-### 2. Set environment variable pointing to a file that exports them (optional)
-
-```txt
-# .env
-# Custom helpers: Set this as a path to a file that exports custom helpers.
-CUSTOM_PROMPT_TEMPLATE_HELPERS_PATH=/var/app/prompt-template-helpers.js
-```
-
-```txt
-# .env
-# Custom partials: Set this as a path to a file that exports custom partials.
-CUSTOM_PROMPT_TEMPLATE_PARTIALS_PATH=/var/app/prompt-template-partials.js
-```
-
-Example files
-```ts
-// prompt-template-helpers.js
-export function getTimeOfDay(date: Date): string {
-  // implementation
-  return "morning"
-}
-
-// prompt-template-helpers.js
-export const partialContactInformation = `Phone: 1-800-000-0000
-Support Email: support@example.com
-Website: www.example.com`;
-
-
-// some other file
-// Then can be used in prompts anywhere like:
-const prompt = createPrompt("chat", "Your name is {{agentName}}.\n\nBelow is our contact information: \n{{> partialContactInformation}}\n\nThe time of day is {{getTimeOfDay}}")
-
-const format = prompt.format({ agentName: "Greg" })
-
-/**
- * 
- * console.log(format) 
- * (line breaks for readability)
- * 
- * [{ 
- *   role: 'system', 
- *    content: 'Your name is Greg.
- * 
- *              Below is our contact information:
- *              Phone: 1-800-000-0000
- *              Support Email: support@example.com
- *              Website: www.example.com
- * 
- *              The time of day is morning' 
- * }
- * 
- * /
-```
-
-## Extending `BasePrompt`
-// TODO: elaborate. Until then check the source, it should have comments.

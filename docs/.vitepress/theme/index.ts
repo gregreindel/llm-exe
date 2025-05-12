@@ -1,19 +1,16 @@
 import type { Theme } from "vitepress";
 import DefaultTheme from "vitepress/theme";
 import { h } from "vue";
-import './styles.css';
+import "./styles.css";
 
-// @ts-ignore
 import GenericOutput from "../components/GenericOutput.vue";
-// @ts-ignore
+
 import PromptPlayground from "../components/PromptPlayground.vue";
 import PromptPlayground2 from "../components/PromptPlayground2.vue";
-// @ts-ignore
+
 import PromptMessage from "../components/Prompt/PromptMessage.vue";
 import ImportModelNames from "../components/ImportModelNames.vue";
 
-
-// @ts-ignore
 import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
 import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 
@@ -26,13 +23,15 @@ export default {
     app.component("PromptMessage", PromptMessage);
     app.component("ImportModelNames", ImportModelNames);
 
-    if((import.meta as any).env.DEV){
-      new EventSource('/esbuild').addEventListener('change', () => location.reload())
+    if ((import.meta as any).env.DEV) {
+      new EventSource("/esbuild").addEventListener("change", () =>
+        location.reload()
+      );
     }
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      "nav-bar-content-before":  () => h(SiteTopBanner),
+      "nav-bar-content-before": () => h(SiteTopBanner),
       "home-hero-info-before": () => h(HomeBeforeIntro),
     });
   },

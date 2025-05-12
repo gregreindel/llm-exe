@@ -22,7 +22,7 @@ export class LlmExecutor<
   Llm extends BaseLlm<any>,
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
-  State extends BaseState
+  State extends BaseState,
 > extends BaseExecutor<
   PromptInput<Prompt>,
   ParserOutput<Parser>,
@@ -59,12 +59,13 @@ export class LlmExecutor<
     _input: PromptInput<Prompt>,
     _options?: LlmExecutorExecuteOptions
   ): Promise<ParserOutput<Parser>> {
+    const input = _input ?? {};
     if (this?.parser instanceof JsonParser && this.parser.schema) {
       _options = Object.assign(_options || {}, {
         jsonSchema: this.parser.schema,
       });
     }
-    return super.execute(_input, _options);
+    return super.execute(input, _options);
   }
 
   async handler(_input: PromptInput<Prompt>, ..._args: any[]) {
@@ -74,18 +75,18 @@ export class LlmExecutor<
 
   async getHandlerInput(_input: PromptInput<Prompt>): Promise<any> {
     if (this.prompt) {
-      if(isPromise(this.prompt.formatAsync)){
+      if (isPromise(this.prompt.formatAsync)) {
         return await this.prompt.formatAsync(_input);
-      }else {
+      } else {
         return this.prompt.format(_input);
       }
     }
 
     if (this.promptFn) {
       const prompt = this.promptFn(_input);
-      if(isPromise(prompt.formatAsync)){
+      if (isPromise(prompt.formatAsync)) {
         return await prompt.formatAsync(_input);
-      }else {
+      } else {
         return prompt.format(_input);
       }
     }
