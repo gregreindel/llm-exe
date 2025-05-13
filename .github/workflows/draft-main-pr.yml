@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   draft-dev-to-main-pr:
-    if: github.event.pull_request.merged == true || github.event_name == 'release'
+    if: ${{ !(github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') || github.event_name == 'release' }}
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
@@ -70,27 +70,27 @@ jobs:
 
       - name: Determine next semantic version for release
         run: |
-          LATEST_TAG=${{ env.CURRENT_VERSION }}
-          if [ -z "$LATEST_TAG" ]; then
-              LATEST_TAG="v${{ env.PACKAGE_VERSION }}"
-          fi
-
-          if [[ $LATEST_TAG =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
-          MAJOR=${BASH_REMATCH[1]}
-          MINOR=${BASH_REMATCH[2]}
-          PATCH=${BASH_REMATCH[3]}
-          else
-          echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
-          exit 1
-          fi
-          # if env.BUMP_VERSION == 'false', dont increase patch by 1 else do
-          if [ "${{ env.BUMP_VERSION }}" == 'false' ]; then
-            PATCH=$PATCH
-          else
-            PATCH=$((PATCH + 1))
-          fi
-          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
-          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+            LATEST_TAG=${{ env.CURRENT_VERSION }}
+            if [ -z "$LATEST_TAG" ]; then
+                LATEST_TAG="v${{ env.PACKAGE_VERSION }}"
+            fi
+            
+            if [[ $LATEST_TAG =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            else
+            echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
+            exit 1
+            fi
+            # if env.BUMP_VERSION == 'false', dont increase patch by 1 else do
+            if [ "${{ env.BUMP_VERSION }}" == 'false' ]; then
+              PATCH=$PATCH
+            else
+              PATCH=$((PATCH + 1))
+            fi
+            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+            echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV   
 
       - name: Check if PR already exists
         id: check_pr
@@ -136,29 +136,29 @@ jobs:
       - name: Bump version number (patch increment)
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
         run: |
-          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
-          if [ -z "$LATEST_TAG" ]; then
-              LATEST_TAG="v0.0.0"
-          fi
-
-          if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
-          MAJOR=${BASH_REMATCH[1]}
-          MINOR=${BASH_REMATCH[2]}
-          PATCH=${BASH_REMATCH[3]}
-          else
-          echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
-          exit 1
-          fi
-          PATCH=$((PATCH + 1))
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-
-          jq --arg NEW_VERSION "$NEW_VERSION" '.version = $NEW_VERSION' package.json > package.tmp && mv package.tmp package.json
-
-          echo "Updated version in package.json to $NEW_VERSION"
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add package.json
-          git commit -m "chore: bump version number on PR to main"
+            LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+            if [ -z "$LATEST_TAG" ]; then
+                LATEST_TAG="v0.0.0"
+            fi
+            
+            if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            else
+            echo "Invalid version format. Expected format: MAJOR.MINOR.PATCH"
+            exit 1
+            fi
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          
+            jq --arg NEW_VERSION "$NEW_VERSION" '.version = $NEW_VERSION' package.json > package.tmp && mv package.tmp package.json
+            
+            echo "Updated version in package.json to $NEW_VERSION"
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add package.json
+            git commit -m "chore: bump version number on PR to main"
 
       - name: Create or update branch
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
@@ -190,7 +190,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
+          
       - name: Create or update draft pull request
         if: env.NEW_COMMITS == 'true'
         run: |
@@ -202,10 +202,8 @@ jobs:
             else
               echo "No new commits to add as comments."
             fi
-            if [ "${{ github.event_name }}" = "release" ]; then
-              echo "Updating the PR title to version $NEW_VERSION"
-              gh pr edit $PR_URL --title "Draft PR for release version $NEW_VERSION"
-            fi
+            echo "Updating the PR title to version $NEW_VERSION"
+            gh pr edit $PR_URL --title "Draft PR for release version $NEW_VERSION"
           else
             echo "Creating a new draft PR..."
             gh pr create \
