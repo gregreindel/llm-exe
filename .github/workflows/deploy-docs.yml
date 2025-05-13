@@ -68,7 +68,7 @@ jobs:
         run: |
           echo "VITE_PACKAGE_ID=${{ env.PACKAGE_ID }}" > docs/.env
           cat docs/.env
-          cat docs
+          ls -la docs
         env:
           PACKAGE_ID: ${{ env.PACKAGE_ID }}
 
