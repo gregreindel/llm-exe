@@ -21,10 +21,13 @@ export function stateFromOptions(options: Partial<GenericLLm>, config: Config) {
       }
     }
 
-    if (thisConfig?.required && typeof get(state, key) === "undefined") {
+    const value = get(state, key);
+
+    if (Array.isArray(thisConfig?.required)) {
       const [required, message = `Error: [${key}] is required`] =
-        thisConfig?.required;
-      if (required) {
+        thisConfig.required;
+
+      if (required && typeof value === "undefined") {
         throw new Error(message);
       }
     }
