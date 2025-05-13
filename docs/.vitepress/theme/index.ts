@@ -14,6 +14,8 @@ import ImportModelNames from "../components/ImportModelNames.vue";
 import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
 import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 
+const packageId = (import.meta as any).env.VITE_PACKAGE_ID || '';
+
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
@@ -31,7 +33,7 @@ export default {
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      "nav-bar-content-before": () => h(SiteTopBanner),
+      "nav-bar-content-before": () => h(SiteTopBanner, { packageId }),
       "home-hero-info-before": () => h(HomeBeforeIntro),
     });
   },
