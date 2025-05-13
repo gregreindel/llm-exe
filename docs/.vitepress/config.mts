@@ -38,6 +38,10 @@ export default defineConfig({
     ],
     [
       'script',
+      { async: '', defer: '', src: 'https://buttons.github.io/buttons.js' }
+    ],
+    [
+      'script',
       {},
       `window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -202,6 +206,11 @@ export default defineConfig({
           {
             text: "Advanced Templates",
             link: "/prompt/advanced.html",
+            items: [],
+          },
+          {
+            text: "Why Handlebars?",
+            link: "/prompt/why-handlebars.html",
             items: [],
           },
           {

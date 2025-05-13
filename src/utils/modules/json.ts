@@ -36,26 +36,20 @@ export const maybeParseJSON = <Expected = any>(
 export function isObjectStringified(maybeObject: string) {
   if (typeof maybeObject !== "string") return false;
 
-  const isMaybeObject =
-    maybeObject.substring(0, 1) === "{" &&
-    maybeObject.substring(maybeObject.length - 1, maybeObject.length) === "}";
+  const trimmed = maybeObject.trim();
 
-  const isMaybeArray =
-    maybeObject.substring(0, 1) === "[" &&
-    maybeObject.substring(maybeObject.length - 1, maybeObject.length) === "]";
+  const isWrapped =
+    (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+    (trimmed.startsWith("[") && trimmed.endsWith("]"));
 
-  if (!isMaybeObject && !isMaybeArray) {
+  if (!isWrapped) return false;
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    return typeof parsed === "object" && parsed !== null;
+  } catch {
     return false;
   }
-
-  let canDecode = false;
-  try {
-    JSON.parse(maybeObject);
-    canDecode = true;
-  } catch (error) {
-    canDecode = false;
-  }
-  return canDecode;
 }
 
 export function helpJsonMarkup(str: string) {

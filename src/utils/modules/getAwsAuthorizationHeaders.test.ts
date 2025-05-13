@@ -1,6 +1,6 @@
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import { SignatureV4 } from "@smithy/signature-v4";
-//@ts-ignore
+// @ts-expect-error - this needs to be imported or the test fails
 import { Sha256 } from "@aws-crypto/sha256-js";
 import { runWithTemporaryEnv } from "@/utils/modules/runWithTemporaryEnv";
 import { getAwsAuthorizationHeaders } from "@/utils/modules/getAwsAuthorizationHeaders";
