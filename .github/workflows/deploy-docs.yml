@@ -28,7 +28,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
-          if [ "$BRANCH" != "development" ] && [ "$BRANCH" != "main" ]; then
+          if [ "$BRANCH" != "development" ] && [ "$BRANCH" != "main" ] && [ "$BRANCH" != "workflow-updates" ]; then
             echo "Deploy should only be created from the development or main branch. This deploy is from $BRANCH."
             exit 1
           fi
