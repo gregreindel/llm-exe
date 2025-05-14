@@ -4,9 +4,14 @@
         <a href="https://github.com/gregreindel/llm-exe-lambda" target="_blank">Invoke llm-exe as a AWS lambda function. Deploy using CDK. View on Github</a>
     </div>
 </div> -->
+  <span v-if="packageId" class="package-id">v{{ packageId }}</span>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+defineProps<{
+  packageId: string;
+}>();
+</script>
 <style scoped>
 .site-top-banner {
   color: #333;
@@ -29,5 +34,16 @@
   .site-top-banner {
     display: none;
   }
+}
+
+.package-id {
+  font-size: 12px;
+  font-weight: 400;
+  color: #666;
+  margin-left: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
 }
 </style>

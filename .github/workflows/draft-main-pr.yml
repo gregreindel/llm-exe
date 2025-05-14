@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   draft-dev-to-main-pr:
-    if: github.event.pull_request.merged == true || github.event_name == 'release'
+    if: ${{ !(github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') || github.event_name == 'release' }}
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
@@ -202,10 +202,8 @@ jobs:
             else
               echo "No new commits to add as comments."
             fi
-            if [ "${{ github.event_name }}" = "release" ]; then
-              echo "Updating the PR title to version $NEW_VERSION"
-              gh pr edit $PR_URL --title "Draft PR for release version $NEW_VERSION"
-            fi
+            echo "Updating the PR title to version $NEW_VERSION"
+            gh pr edit $PR_URL --title "Draft PR for release version $NEW_VERSION"
           else
             echo "Creating a new draft PR..."
             gh pr create \
