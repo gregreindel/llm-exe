@@ -10,7 +10,7 @@ We define the LLM instructions using a templated string. The prompt tells the LL
 
 <<< ../../../examples/writeCodeFromSpec.ts#prompt
 
-**Tip:** Using markdown code block formatting in the prompt improves the reliability of code extraction with the parser.
+**Tip:** You want to instruct the llm to respond with the markdown code block - this improves the reliability of code extraction with the parser.
 
 ---
 
