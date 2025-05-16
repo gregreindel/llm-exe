@@ -1,7 +1,6 @@
 // #region file
-import { createPrompt, createParser, createLlmExecutor } from "llm-exe";
-import type { BaseLlm, IChatMessages } from "llm-exe";
-import { JSONSchema } from "json-schema-to-ts";
+import { useLlm, createPrompt, createParser, createLlmExecutor } from "llm-exe";
+import type { IChatMessages } from "llm-exe";
 
 // #region types
 interface ExtractInformationInput {
@@ -28,15 +27,20 @@ export const INSTRUCT = `Respond with:
 
 // #region function
 export async function extractInformation<
-  S extends JSONSchema,
-  I extends ExtractInformationInput
->(llm: BaseLlm, input: I, schema: S) {
+  S extends Record<string, any>,
+  I extends ExtractInformationInput,
+>(input: I, schema: S) {
   const prompt = createPrompt<I>("chat", PROMPT)
     .addChatHistoryPlaceholder("chatHistory")
     .addMessagePlaceholder(`{{mostRecentMessage}}`)
     .addSystemMessage(INSTRUCT);
 
   const parser = createParser("json", { schema });
+
+  const llm = useLlm("openai.chat.v1", {
+    model: "gpt-4o-mini",
+    openAiApiKey: process.env.OPENAI_API_KEY,
+  });
 
   return createLlmExecutor({
     name: "extract",
