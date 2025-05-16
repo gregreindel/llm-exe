@@ -10,14 +10,6 @@
         {{ tag }}
       </div>
     </div>
-    <!-- <div
-      style="display: flex; column-gap: 4px; margin-top: 8px"
-      v-if="example.tags && example.tags.length"
-    >
-      <div v-for="tag in example.tags" :key="tag" class="example-tag">
-        {{ tag }}
-      </div>
-    </div> -->
   </a>
 </template>
 

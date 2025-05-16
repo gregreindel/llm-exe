@@ -1,8 +1,9 @@
-
 # What is an LLM function?
+
 As the usefulness of LLMs grows, you have the ability to replace (at least consider replacing) complex functionality in your application with simple calls to an LLM.
 
 Consider the following pseudo-code for a function that detects Personal Identifiable Information (PII) within the provided input:
+
 ```javascript:no-line-numbers
 // The existing way to write a function to detect PII. Not using LLM.
 function checkIfDocumentContainsPii(input){
@@ -20,11 +21,10 @@ function checkIfDocumentContainsPiiWithLlm(input){
 }
 ```
 
-
-
-As you can see , 
+As you can see, the LLM-powered version allows us to abstract away complex, brittle logic like regex patterns and instead rely on the reasoning abilities of the model—dramatically reducing the amount of code, improving flexibility, and often increasing accuracy.
 
 Here is how you could implement example above with an LLM executor:
+
 ```ts
 import {
   useLlm,
@@ -59,6 +59,7 @@ credit card number: <true or false if this type of PII is included>`;
   return executor.execute({ input });
 }
 ```
+
 ```ts
 /**
  * Example usage
@@ -67,9 +68,9 @@ credit card number: <true or false if this type of PII is included>`;
 const input = "Hello! can you bill me? my cc is 4242-4242-4242-4242!!"
 const response = await piiDetector({ input })
 /**
- * 
+ *
  * Output:
- * 
+ *
  * {
  *   emailAddress: false,
  *   socialSecurityNumber: false,
@@ -77,4 +78,5 @@ const response = await piiDetector({ input })
  * }
  * /
 ```
-The best part is the input and output of the example `piiDetector` function are well-typed based on the llm executor.
+
+The input and output of the `piiDetector` function are strongly typed, providing reliable structure and safety when integrating with the rest of your application
