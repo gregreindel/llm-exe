@@ -1,6 +1,11 @@
 // #region file
-import { createPrompt, createCustomParser, createLlmExecutor } from "llm-exe";
-import type { BaseLlm, IChatMessages, ExecutorContext } from "llm-exe";
+import {
+  useLlm,
+  createPrompt,
+  createCustomParser,
+  createLlmExecutor,
+} from "llm-exe";
+import type { IChatMessages, ExecutorContext } from "llm-exe";
 import { maybeParseJSON } from "@/utils";
 import { toNumber } from "@/utils/modules/toNumber";
 
@@ -125,7 +130,12 @@ export const parser = createCustomParser<IdentifyIntentOutput>(
 // #endregion parser
 
 // #region function
-export async function identifyIntent(llm: BaseLlm, input: IdentifyIntentInput) {
+export async function identifyIntent(input: IdentifyIntentInput) {
+  const llm = useLlm("openai.chat.v1", {
+    model: "gpt-4o-mini",
+    openAiApiKey: process.env.OPENAI_API_KEY,
+  });
+
   return createLlmExecutor({
     name: "identify-intent",
     llm,

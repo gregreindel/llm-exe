@@ -55,3 +55,21 @@ export function debug(...args: any[]) {
     console.log(...args);
   }
 }
+
+export function itWithUseLlmMocked(
+  instruction: string,
+  _models: keyof typeof configs | (keyof typeof configs)[],
+  cb: (...args: any[]) => any
+) {
+  const models = useModels(Array.isArray(_models) ? _models : [_models]);
+
+  for (let index = 0; index < models.length; index++) {
+    const _scenario = models[index];
+    const { provider, key, ...defaultOptions } = _scenario;
+    const modelName = defaultOptions.options.model?.default;
+
+    it(`${instruction} (${modelName})`, async () => {
+      return cb(Object.assign(defaultOptions, { key, model: modelName }));
+    });
+  }
+}

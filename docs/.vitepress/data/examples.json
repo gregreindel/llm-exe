@@ -62,6 +62,25 @@
       "level": "simple",
       "group": "llm-function",
       "tags": ["parser"]
+    },
+
+    {
+      "title": "Write Code from Spec",
+      "description": "A function that generates code from a specification.",
+      "path": "/examples/bots/write-code-from-spec.html",
+      "code": "",
+      "level": "simple",
+      "group": "llm-function",
+      "tags": ["markdownCodeBlock"]
+    },
+    {
+      "title": "Write Tests from Code",
+      "description": "A function that generates code from a specification.",
+      "path": "/examples/bots/write-tests-from-code.html",
+      "code": "",
+      "level": "simple",
+      "group": "llm-function",
+      "tags": ["markdownCodeBlock"]
     }
   ]
 }

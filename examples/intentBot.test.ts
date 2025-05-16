@@ -1,18 +1,12 @@
-import { useLlm } from "llm-exe";
 import { identifyIntent, intents } from "./intentBot";
 
-describe("extractBot", () => {
+describe("identifyIntent", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("should identify simple intent given content", async () => {
-    const llm = useLlm("openai.chat.v1", {
-      model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPENAI_API_KEY,
-    });
-
-    const response = await identifyIntent(llm, {
+    const response = await identifyIntent({
       input: "I'm Greg",
       chatHistory: [
         {
