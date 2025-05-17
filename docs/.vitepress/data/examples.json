@@ -1,7 +1,16 @@
 {
   "groups": {
     "llm-function": {
-      "title": "LLM Functions"
+      "title": "LLM Functions",
+      "key": "llm-function"
+    },
+    "chain": {
+      "title": "Chain",
+      "key": "chain"
+    },
+    "prompt": {
+      "title": "Prompt",
+      "key": "prompt"
     }
   },
   "examples": [
@@ -13,7 +22,8 @@
       "code": "",
       "group": "llm-function",
       "level": "basic",
-      "tags": ["string"]
+      "tags": ["string"],
+      "priority": 1
     },
     {
       "title": "Validator",
@@ -45,17 +55,9 @@
       "group": "llm-function",
       "tags": ["parser"]
     },
+
     {
-      "title": "re-act + search",
-      "description": "A series of LLM executor functions which will work together to think step-by-step.",
-      "path": "/examples/react.html",
-      "code": "",
-      "level": "advanced",
-      "group": "llm-function",
-      "tags": ["parser"]
-    },
-    {
-      "title": "Combine 2 Executors",
+      "title": "Combine Two Executors",
       "description": "A single function that wraps 2 executor functions",
       "path": "/examples/combining.html",
       "code": "",
@@ -81,6 +83,39 @@
       "level": "simple",
       "group": "llm-function",
       "tags": ["markdownCodeBlock"]
+    },
+    {
+      "title": "Loading Prompts Remotely",
+      "description": "A function that generates code from a specification.",
+      "path": "/examples/prompt/load-remote.html",
+      "code": "",
+      "level": "simple",
+      "group": "prompt",
+      "tags": []
+    },
+    {
+      "title": "Basic Self-Refinement Loop",
+      "description": "An orchestration function that retries generating an answer until it includes a required word and is concise.",
+      "path": "/examples/chains/self-refinement.html",
+      "level": "simple",
+      "group": "chain",
+      "tags": []
+    },
+    {
+      "title": "Conditional Logic and Branching",
+      "description": "Use LLM outputs to control branching and route to specialized executors based on intent.",
+      "path": "/examples/chains/conditional-logic-with-llms.html",
+      "level": "simple",
+      "group": "chain",
+      "tags": []
+    },
+    {
+      "title": "Story Writing with Sequential Composition",
+      "description": "Takes an idea through outline to story using chained LLM calls.",
+      "path": "/examples/chains/sequential-composition.html",
+      "level": "simple",
+      "group": "chain",
+      "tags": []
     }
   ]
 }

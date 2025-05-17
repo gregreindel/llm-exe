@@ -38,7 +38,7 @@ import { useLlm, createChatPrompt, createParser } from "llm-exe";
 const llmExe = require("llm-exe");
 ```
 
-## Basic Usage
+## Overview
 
 ```ts
 // Prompt
@@ -73,6 +73,7 @@ Welcome back!
 ```ts
 createParser("stringExtract", { enum: ["yes", "no"] });
 createParser("listToJson");
+createParser("listToArray");
 createParser("markdownCodeBlock");
 ```
 
@@ -80,7 +81,7 @@ createParser("markdownCodeBlock");
 
 ```ts
 const parser = createCustomParser("MyUppercaseParser", (output, input) => {
-  return { result: output.toUpperCase() };
+  return output.toUpperCase();
 });
 ```
 
@@ -115,7 +116,7 @@ import {
 // 1. Use the model you want
 const llm = useLlm("openai.gpt-4o");
 
-// 2. Create a parameterized prompt using Handlebars
+// 2. Create a parameterized prompt
 const instruction = `
 You are a classifier. Given a user message, reply with the category it belongs to.
 Pick from only the following options:
@@ -140,8 +141,7 @@ const classifyMessage = createLlmExecutor({
 });
 
 // 5. Pass in options and a message — like a real function!
-// classifyMessage.execute is typed based on the prompt/parser
-// This means you get type safety and autocompletion in your IDE
+// classifyMessage.execute is typed based on the prompt/parser!
 const result = await classifyMessage.execute({
   input: "Hi, I'm moving and no longer need this service.",
   options: ["billing", "support", "cancel", "unknown"],

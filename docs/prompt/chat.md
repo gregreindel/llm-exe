@@ -1,4 +1,5 @@
 # Chat Prompt
+
 The other type of prompt is a chat prompt. The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4(+).
 
 You create a chat prompt using `createPrompt("chat")` or `createChatPrompt()`.
@@ -22,8 +23,6 @@ To use the prompt as input to an LLM, you can call the `format()` method on the 
 <<< ../../examples/prompt/chat.ts#exampleCreateChatPromptUseFormat
 </GenericOutput>
 
-
-
 Chat prompts support more than just a basic text-based message. You can also add assistant and user content.
 
 <GenericOutput example="prompt.chat.exampleCreateChatPromptWithAssistant">
@@ -31,10 +30,10 @@ Chat prompts support more than just a basic text-based message. You can also add
 <<< ../../examples/prompt/chat.ts#exampleCreateChatPromptWithAssistant
 </GenericOutput>
 
-
 See [prompt templates](/prompt/advanced.html) for more advanced prompt usage.
 
 ## Chat Prompt Methods
+
 `addUserMessage`
 Appends a user message to the prompt.
 
@@ -50,5 +49,5 @@ Appends an array of existing chat history messages to the prompt.
 `format`
 Format the prompt for LLM. This processes the template as a handlebars template.
 
-`validate`
-Validate the prompt. Makes sure there are no unresolved tokens.
+<!-- `validate`
+Validate the prompt. Makes sure there are no unresolved tokens. -->
