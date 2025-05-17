@@ -14,73 +14,138 @@ A package that provides simplified base components to make building and maintain
 
 ![llm-exe](https://assets.llm-exe.com/llm-exe-featured.jpg)
 
-
 See full docs here: [https://llm-exe.com](https://llm-exe.com)
 
-
 ---
+
 # Install
 
 Install llm-exe using npm.
+
 ```
 npm i llm-exe
 ```
 
+ESM-first. CommonJS works too.
+
 ```typescript
+// ESM
 import * as llmExe from "llm-exe";
+// or specific modules
+import { useLlm, createChatPrompt, createParser } from "llm-exe";
 
-// or 
+// CommonJS
+const llmExe = require("llm-exe");
+```
 
-import { /* specific modules */ } from from "llm-exe"
+## Basic Usage
+
+```ts
+// Prompt
+const prompt = createChatPrompt("You are a support agent. Help the user.");
+prompt.addUserMessage("I need help with my order.");
+
+// LLM
+const llm = useLlm("openai.gpt-4o");
+
+// Parser
+const parser = createParser("json", { schema: mySchema });
+
+// Executor
+const executor = createLlmExecutor({ llm, prompt, parser });
+await executor.execute({ input: "..." });
+```
+
+#### Prompt Helpers
+
+```ts
+const prompt = createChatPrompt(`
+{{#if user.isFirstTime}}
+Welcome!
+{{else}}
+Welcome back!
+{{/if}}
+`);
+```
+
+#### Built-In Parsers
+
+```ts
+createParser("stringExtract", { enum: ["yes", "no"] });
+createParser("listToJson");
+createParser("markdownCodeBlock");
+```
+
+#### Custom Parsers
+
+```ts
+const parser = createCustomParser("MyUppercaseParser", (output, input) => {
+  return { result: output.toUpperCase() };
+});
+```
+
+#### State
+
+```ts
+const dialogue = createDialogue("chat");
+dialogue.setUserMessage("Hi");
+dialogue.setAssistantMessage("Hello!");
+dialogue.getHistory(); // returns chat array
+```
+
+#### Hooks
+
+```ts
+executor.on("onComplete", console.log);
+executor.on("onError", console.error);
 ```
 
 ## Basic Example
+
 Below is simple example:
+
 ```typescript
-import * as llmExe from "llm-exe";
+import {
+  useLlm,
+  createChatPrompt,
+  createParser,
+  createLlmExecutor,
+} from "llm-exe";
 
-/**
- * Define a yes/no llm-powered function
- */
-export async function YesOrNoBot<I extends string>(input: I) {
-  const llm = llmExe.useLlm("openai.gpt-4o-mini");
+// 1. Use the model you want
+const llm = useLlm("openai.gpt-4o");
 
-  const instruction = `You are not an assistant, I need you to reply with only 
-  'yes' or 'no' as an answer to the question below. Do not explain yourself 
-  or ask questions. Answer with only yes or no.`;
+// 2. Create a parameterized prompt using Handlebars
+const instruction = `
+You are a classifier. Given a user message, reply with the category it belongs to.
+Pick from only the following options:
 
-  const prompt = llmExe
-    .createChatPrompt(instruction)
-    .addUserMessage(input)
-    .addUserMessage(`yes or no:`);
+{{#each options}}- {{this}}
+{{/each}}
 
-  const parser = llmExe.createParser("stringExtract", { enum: ["yes", "no"] });
-  return llmExe.createLlmExecutor({ llm, prompt, parser }).execute({ input });
-}
+Respond with only one of the options.`;
 
-const isTheSkyBlue = await YesOrNoBot(`Is AI cool?`)
+const prompt = createChatPrompt(instruction).addUserMessage("{{input}}"); // placeholder for message content
 
-/**
- * 
- * The prompt sent to the LLM would be: 
- * (line breaks added for readability)
- * 
- * [{ 
- *   role: 'system', 
- *    content: 'You are not an assistant, I need you to reply with only 
-  'yes' or 'no' as an answer to the question asked by the user. Do not explain yourself 
-  or ask questions. Answer only with yes or no.' 
- * },
- * { 
- *   role: 'user',
- *   content: 'Is AI cool?'
- * }]
- * 
- */
+// 3. Create a parser that ensures a clean match
+const parser = createParser("stringExtract", {
+  enum: ["billing", "support", "cancel", "unknown"],
+});
 
-/**
- * 
- * console.log(isTheSkyBlue)
- * yes
- * /
+// 4. Create the executor
+const classifyMessage = createLlmExecutor({
+  llm,
+  prompt,
+  parser,
+});
+
+// 5. Pass in options and a message — like a real function!
+// classifyMessage.execute is typed based on the prompt/parser
+// This means you get type safety and autocompletion in your IDE
+const result = await classifyMessage.execute({
+  input: "Hi, I'm moving and no longer need this service.",
+  options: ["billing", "support", "cancel", "unknown"],
+});
+
+console.log(result); // => "cancel"
 ```

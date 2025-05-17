@@ -50,8 +50,32 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Get package.json version
+        id: package_version
+        run: |
+          package_version=$(jq -r '.version' < package.json)
+          echo "Version in package.json: $package_version"
+          echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
+
+      - name: Set timestamp
+        id: timestamp
+        run: |
+          TIMESTAMP=$(date +%s)
+          PACKAGE_ID=${{ env.PACKAGE_VERSION }}-${TIMESTAMP}
+          echo "PACKAGE_ID=$PACKAGE_ID" >> $GITHUB_ENV
+
+      - name: Create .env file in docs dir
+        run: |
+          echo "VITE_PACKAGE_ID=${{ env.PACKAGE_ID }}" > docs/.env
+          cat docs/.env
+          ls -la docs
+        env:
+          PACKAGE_ID: ${{ env.PACKAGE_ID }}
+
       - name: Build docs
         run: npm run docs:build
+        env:
+          VITE_PACKAGE_ID: ${{ env.PACKAGE_ID }}
 
       - name: Upload docs
         uses: actions/upload-artifact@v4
@@ -71,24 +95,10 @@ jobs:
         run: aws sts get-caller-identity
 
       - name: Copy files to dist directory and zip
-        run: |  
-            mkdir -p dist
-            cp -r docs/.vitepress/dist/* dist/
-            cp package.json dist/package.json
-
-      - name: Get package.json version
-        id: package_version
         run: |
-          package_version=$(jq -r '.version' < package.json)
-          echo "Version in package.json: $package_version"
-          echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
-
-      - name: Set timestamp
-        id: timestamp
-        run: |
-          TIMESTAMP=$(date +%s)
-          PACKAGE_ID=${{ env.PACKAGE_VERSION }}-${TIMESTAMP}
-          echo "PACKAGE_ID=$PACKAGE_ID" >> $GITHUB_ENV
+          mkdir -p dist
+          cp -r docs/.vitepress/dist/* dist/
+          cp package.json dist/package.json
 
       - name: Copy dist directory to S3 Bucket in versioned folder using package.json version and timestamp
         run: |

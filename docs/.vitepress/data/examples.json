@@ -1,0 +1,86 @@
+{
+  "groups": {
+    "llm-function": {
+      "title": "LLM Functions"
+    }
+  },
+  "examples": [
+    {
+      "title": "Hello World",
+      "description": "A basic function that introduces the library.",
+      "prompt": "This prompt instructs the model to echo the user’s input in a fixed format without deviation, questions, or conversation.",
+      "path": "/examples/bots/hello.html",
+      "code": "",
+      "group": "llm-function",
+      "level": "basic",
+      "tags": ["string"]
+    },
+    {
+      "title": "Validator",
+      "description": "A function that is able to validate whether or not a series of statements is correct.",
+      "prompt": "This prompt instructs tto review the context and conversation and validate a list of sentences.",
+      "path": "/examples/bots/validator.html",
+      "code": "",
+      "group": "llm-function",
+      "level": "basic",
+      "tags": ["json"]
+    },
+    {
+      "title": "Intent",
+      "description": "A function that identifies the intent of a user’s input.",
+      "prompt": "This prompt instructs the model to identify the intent of the user’s input.",
+      "path": "/examples/bots/intent.html",
+      "code": "",
+      "level": "basic",
+      "group": "llm-function",
+      "tags": ["json"]
+    },
+    {
+      "title": "Extractor",
+      "description": "A function that extracts information from an input and returns it in a structured format.",
+      "prompt": "This prompt instructs the model to extract information from an input and return it in a structured format.",
+      "path": "/examples/bots/extract.html",
+      "code": "",
+      "level": "basic",
+      "group": "llm-function",
+      "tags": ["parser"]
+    },
+    {
+      "title": "re-act + search",
+      "description": "A series of LLM executor functions which will work together to think step-by-step.",
+      "path": "/examples/react.html",
+      "code": "",
+      "level": "advanced",
+      "group": "llm-function",
+      "tags": ["parser"]
+    },
+    {
+      "title": "Combine 2 Executors",
+      "description": "A single function that wraps 2 executor functions",
+      "path": "/examples/combining.html",
+      "code": "",
+      "level": "simple",
+      "group": "llm-function",
+      "tags": ["parser"]
+    },
+
+    {
+      "title": "Write Code from Spec",
+      "description": "A function that generates code from a specification.",
+      "path": "/examples/bots/write-code-from-spec.html",
+      "code": "",
+      "level": "simple",
+      "group": "llm-function",
+      "tags": ["markdownCodeBlock"]
+    },
+    {
+      "title": "Write Tests from Code",
+      "description": "A function that generates code from a specification.",
+      "path": "/examples/bots/write-tests-from-code.html",
+      "code": "",
+      "level": "simple",
+      "group": "llm-function",
+      "tags": ["markdownCodeBlock"]
+    }
+  ]
+}

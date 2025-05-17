@@ -1,8 +1,9 @@
-## Validator 
+## Validator
 
 In this example, we will create a function that is able to validate whether or not a series of statements is true.
 
 This can be useful as:
+
 - Moderation layer
 - Policy checker
 
@@ -13,20 +14,18 @@ This takes advantage of a custom output parser to not only ensure formatting, bu
 <<< ../../../examples/Verify.ts#prompt
 
 #### Step 2 - Create Custom Output Parser
+
 While we tell the LLM to format its response as JSON, it's a string. We still need to parse and validate the response so it can be used in our code. A custom output parser will reformat the output from the LLM, and provide typings for our LLM executor.
 
 <<< ../../../examples/Verify.ts#parser
 
-
 #### Step 3 - Create LLM Executor
+
 Combine the prompt, LLM, and parser into a single function.
 
 <<< ../../../examples/Verify.ts#function
 
-
-
 #### Step 4 - Use it!
-
 
 ```ts
 import { checkPolicy } from "./somewhere"
@@ -43,15 +42,14 @@ const statements = [
     "The user has told us their name."
 ]
 
-const response = await checkPolicy().execute({
+const response = await checkPolicy({
     mostRecentMessage: input,
     chatHistory,
     statements
-});
+})
 
+console.log(response)
 /**
- * 
- * console.log(response)
  * {
  *   "passed": false,
  *   "results": [{
@@ -64,9 +62,8 @@ const response = await checkPolicy().execute({
  *      "confidence":"80"
  *    }]
  * }
- ** 
+ **
 ```
-
 
 ### Complete File
 

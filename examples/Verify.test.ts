@@ -24,11 +24,6 @@ describe("verifyBot", () => {
   });
 
   it("should verify (false) based on the questions/content", async () => {
-    const llm = useLlm("openai.chat.v1", {
-      model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPENAI_API_KEY,
-    });
-
     // the input you get from somewhere
     const input = "";
 
@@ -43,7 +38,7 @@ describe("verifyBot", () => {
       "The user has told us their name.",
     ];
 
-    const response = await checkPolicy(llm, { input, chatHistory, statements });
+    const response = await checkPolicy({ input, chatHistory, statements });
     //   console.log("here", response)
     // make sure we got correct shape back
     expect(typeof response).toBe("object");
@@ -56,11 +51,6 @@ describe("verifyBot", () => {
   });
 
   it("should verify (true) based on the questions/content", async () => {
-    const llm = useLlm("openai.chat.v1", {
-      model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPENAI_API_KEY,
-    });
-
     // the input you get from somewhere
     const input = "";
 
@@ -80,7 +70,7 @@ describe("verifyBot", () => {
       "The user has told us their name.",
     ];
 
-    const response = await checkPolicy(llm, { input, chatHistory, statements });
+    const response = await checkPolicy({ input, chatHistory, statements });
     //   console.log("here", response)
     // make sure we got correct shape back
     expect(typeof response).toBe("object");
