@@ -51,7 +51,7 @@ export default defineConfig({
       gtag('js', new Date());
       gtag('config', 'G-5YTJ8HRXNF');`,
     ],
-    ["script", { src: "http://assets.llm-exe.com/llm-exe-browser-utils.js" }],
+    ["script", { src: "https://assets.llm-exe.com/llm-exe-browser-utils.js" }],
   ],
   themeConfig: {
     logo: "https://assets.llm-exe.com/logo.png",
