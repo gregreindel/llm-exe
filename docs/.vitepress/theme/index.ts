@@ -15,8 +15,8 @@ import ExamplesBlocks from "../components/ExamplesBlocks.vue";
 import ExamplesFilters from "../components/ExamplesFilters.vue";
 
 // import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
-import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
-import ExampleSingleBefore from "../components/ExampleSingleBefore.vue";
+// import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
+// import ExampleSingleBefore from "../components/ExampleSingleBefore.vue";
 import HomeAfterIntro from "../components/Layout/HomeAfterIntro.vue";
 
 const packageId = (import.meta as any).env.VITE_PACKAGE_ID || "";
@@ -42,9 +42,9 @@ export default {
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      "nav-bar-content-before": () => h(SiteTopBanner, { packageId }),
+      // "nav-bar-content-before": () => h(SiteTopBanner, { packageId }),
       // "home-hero-info-before": () => h(HomeBeforeIntro),
-      "doc-before": () => h(ExampleSingleBefore),
+      // "doc-before": () => h(ExampleSingleBefore),
     });
   },
 } satisfies Theme;
