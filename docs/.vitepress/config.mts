@@ -6,7 +6,7 @@ export default defineConfig({
   title: "llm-exe",
   description: "",
   lang: "en-US",
-  cleanUrls: true,
+  cleanUrls: false,
   head: [
     [
       "link",
