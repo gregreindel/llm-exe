@@ -6,6 +6,7 @@ export default defineConfig({
   title: "llm-exe",
   description: "",
   lang: "en-US",
+  cleanUrls: true,
   head: [
     [
       "link",
@@ -197,7 +198,6 @@ export default defineConfig({
           {
             text: "Getting Started",
             link: "/prompt/index.html",
-
             items: [],
           },
           {
