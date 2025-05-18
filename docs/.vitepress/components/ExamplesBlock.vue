@@ -5,6 +5,7 @@
     </div>
     <div style="">{{ example.description }}</div>
     <div style="display: flex; column-gap: 4px; margin-top: 8px">
+      <div class="example-tag">{{ example.group }}</div>
       <div class="example-tag">{{ example.level }}</div>
       <div v-for="tag in example.tags" :key="tag" class="example-tag">
         {{ tag }}

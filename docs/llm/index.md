@@ -13,5 +13,20 @@ Note: llm-exe utilizes the underlying API's from the various providers. This mea
 
 Note: You can use and call methods on LLM's directly, but they are usually passed to an LLM executor and then called internally.
 
+## Currently Supported Providers
+
+Currently, llm-exe supports calling LLM's from:
+
+- [OpenAi](/llm/openai.html)
+- [Anthropic](/llm/anthropic.html)
+- [xAI](/llm/xai.html)
+- [Google](/llm/gemini.html)
+- [AWS Bedrock](/llm/bedrock.html)
+- [Ollama](/llm/ollama.html)
+- [Deepseek](/llm/deepseek.html)
+
 ## Adding Custom LLM's
-If you need to register additional LLM's to be used, you can, once I add documentation.
+
+Coming soon: documentation on how to register a custom LLM.
+
+<!-- If you need to register additional LLM's to be used, you can, once I add documentation. -->

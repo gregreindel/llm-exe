@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="examples && examples.length"
-    style="display: flex; flex-wrap: wrap; gap: 8px"
-  >
+  <div v-if="examples && examples.length" class="examples-blocks">
     <ExamplesBlock
       v-for="example in examples"
       :key="example.path"
@@ -13,19 +10,33 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import allExamples from "../data/examples.json";
-const prompts = defineProps({
-  category: {
-    type: String,
+const props = defineProps({
+  filterGroup: {
+    type: Array,
     required: true,
   },
 });
-const examples = allExamples.examples.filter(
-  (example) => example.group === prompts.category
-);
+const examples = computed(() => {
+  let filtered = [...allExamples.examples];
+  if (props?.filterGroup && props.filterGroup.length > 0) {
+    filtered = filtered.filter((example) => {
+      return props.filterGroup.includes(example.group);
+    });
+  }
+  return filtered;
+});
 </script>
 
 <style>
+.examples-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
 .custom-block.example-link {
   width: 100%;
   max-width: 48%;
@@ -37,5 +48,15 @@ const examples = allExamples.examples.filter(
 .custom-block.example-link:hover {
   border-color: yellow;
   background: #111113;
+}
+
+@media screen and (max-width: 768px) {
+  .custom-block.example-link {
+    max-width: 100%;
+  }
+  .examples-blocks {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 </style>
