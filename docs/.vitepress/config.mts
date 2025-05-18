@@ -221,11 +221,11 @@ export default defineConfig({
             link: "/prompt/why-handlebars.html",
             items: [],
           },
-          {
-            text: "Playground",
-            link: "/prompt/playground.html",
-            items: [],
-          },
+          // {
+          //   text: "Playground",
+          //   link: "/prompt/playground.html",
+          //   items: [],
+          // },
         ],
       },
       {

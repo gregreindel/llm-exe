@@ -5,8 +5,8 @@ import "./styles.css";
 
 import GenericOutput from "../components/GenericOutput.vue";
 
-import PromptPlayground from "../components/PromptPlayground.vue";
-import PromptPlayground2 from "../components/PromptPlayground2.vue";
+// import PromptPlayground from "../components/PromptPlayground.vue";
+// import PromptPlayground2 from "../components/PromptPlayground2.vue";
 
 import PromptMessage from "../components/Prompt/PromptMessage.vue";
 import ImportModelNames from "../components/ImportModelNames.vue";
@@ -37,8 +37,8 @@ export default {
   enhanceApp({ app }) {
     app.component("HomeAfterIntro", HomeAfterIntro);
     app.component("GenericOutput", GenericOutput);
-    app.component("PromptPlayground", PromptPlayground);
-    app.component("PromptPlayground2", PromptPlayground2);
+    // app.component("PromptPlayground", PromptPlayground);
+    // app.component("PromptPlayground2", PromptPlayground2);
     app.component("PromptMessage", PromptMessage);
     app.component("ImportModelNames", ImportModelNames);
     app.component("ExamplesBlock", ExamplesBlock);
