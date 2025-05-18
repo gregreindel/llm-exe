@@ -33,22 +33,25 @@ export default defineConfig({
       },
     ],
     [
-      'script',
-      { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-5YTJ8HRXNF' }
+      "script",
+      {
+        async: "",
+        src: "https://www.googletagmanager.com/gtag/js?id=G-5YTJ8HRXNF",
+      },
     ],
     [
-      'script',
-      { async: '', defer: '', src: 'https://buttons.github.io/buttons.js' }
+      "script",
+      { async: "", defer: "", src: "https://buttons.github.io/buttons.js" },
     ],
     [
-      'script',
+      "script",
       {},
       `window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-5YTJ8HRXNF');`
+      gtag('config', 'G-5YTJ8HRXNF');`,
     ],
-    ["script", { src: "http://assets.llm-exe.com/llm-exe-browser-utils.js" }],
+    ["script", { src: "https://assets.llm-exe.com/llm-exe-browser-utils.js" }],
   ],
   themeConfig: {
     logo: "https://assets.llm-exe.com/logo.png",
@@ -123,6 +126,10 @@ export default defineConfig({
             link: "/intro/what_is_llm_function.html",
             items: [],
           },
+          {
+            text: "Executor Function Syntax",
+            link: "/examples/FunctionSyntax.html",
+          },
         ],
       },
       {
@@ -192,7 +199,8 @@ export default defineConfig({
             link: "/prompt/index.html",
 
             items: [],
-          },          {
+          },
+          {
             text: "Chat Prompt",
             link: "/prompt/chat.html",
             items: [],
@@ -228,7 +236,8 @@ export default defineConfig({
           {
             text: "Getting Started",
             link: "/parser/index.html",
-          },{
+          },
+          {
             text: "Included Parsers",
             link: "/parser/included-parsers.html",
           },
@@ -283,32 +292,32 @@ export default defineConfig({
             text: "Amazon",
             link: "/embeddings/amazon.html",
           },
-        ]
+        ],
       },
       {
         text: "Examples",
         link: "/examples",
         collapsed: true,
         items: [
-          {
-            text: "Concepts",
-            link: "",
-            items: [
-              {
-                text: "Executor Function Syntax",
-                link: "/examples/FunctionSyntax.html",
-              },
-              {
-                text: "Simple Combining",
-                link: "/examples/combining.html",
-              },
-              {
-                text: "ReAct: Search + Calculator",
-                link: "/examples/react.html",
-              },
-              {},
-            ],
-          },
+          // {
+          //   text: "Concepts",
+          //   link: "",
+          //   items: [
+          // {
+          //   text: "Executor Function Syntax",
+          //   link: "/examples/FunctionSyntax.html",
+          // },
+          // {
+          //   text: "Simple Combining",
+          //   link: "/examples/combining.html",
+          // },
+          // {
+          //   text: "ReAct: Search + Calculator",
+          //   link: "/examples/react.html",
+          // },
+          // {},
+          //   ],
+          // },
           // {
           //   text: "LLM Functions",
           //   link: "/examples/FunctionSyntax",
@@ -317,63 +326,78 @@ export default defineConfig({
           //   text: "Executor Function Syntax",
           //   link: "/examples/FunctionSyntax",
           // },
-          {
-            text: "LLM Functions",
-            link: "",
-            items: [
-              {
-                text: "Hello World",
-                link: "/examples/bots/hello.html",
-              },
-              {
-                text: "Validator",
-                link: "/examples/bots/validator.html",
-              },
-              {
-                text: "Intent",
-                link: "/examples/bots/intent.html",
-              },
-              {
-                text: "Extractor",
-                link: "/examples/bots/extract.html",
-              },
-            ],
-          },
-          {
-            text: "Misc",
-            link: "",
-            items: [
-              {
-                text: "Working With JSON",
-                link: "/examples/concepts/working-with-json.html",
-              },
-              {
-                text: "Replicating Lex",
-                link: "/examples/concepts/replicating-lex.html",
-              },
-            ],
-          },
+          // {
+          //   text: "LLM Functions",
+          //   link: "",
+          //   items: [
+          //     {
+          //       text: "Hello World",
+          //       link: "/examples/bots/hello.html",
+          //     },
+          //     {
+          //       text: "Validator",
+          //       link: "/examples/bots/validator.html",
+          //     },
+          //     {
+          //       text: "Intent",
+          //       link: "/examples/bots/intent.html",
+          //     },
+          //     {
+          //       text: "Extractor",
+          //       link: "/examples/bots/extract.html",
+          //     },
+          //   ],
+          // },
+          // {
+          //   text: "Misc",
+          //   link: "",
+          //   items: [
+          //     {
+          //       text: "Working With JSON",
+          //       link: "/examples/concepts/working-with-json.html",
+          //     },
+          //     {
+          //       text: "Replicating Lex",
+          //       link: "/examples/concepts/replicating-lex.html",
+          //     },
+          //   ],
+          // },
           // {
           //   text: "ReAct: Search + Calculator",
           //   link: "/examples/react",
           // },
         ],
       },
-      // {
-      //   text: "Other",
-      //   link: "",
-      //   collapsed: true,
-      //   items: [
-      //     // SidebarItem
-      //     {
-      //       text: "Comparing to Langchain",
-      //       link: "/misc/comparing-langchain.html",
-      //     },
-      //   ],
-      // },
+      {
+        text: "Other",
+        link: "",
+        collapsed: true,
+        items: [
+          // SidebarItem
+          // {
+          //   text: "Comparing to Langchain",
+          //   link: "/misc/comparing-langchain.html",
+          // },
+          {
+            text: "Working With JSON",
+            link: "/examples/concepts/working-with-json.html",
+          },
+          {
+            text: "Replicating Lex",
+            link: "/examples/concepts/replicating-lex.html",
+          },
+        ],
+      },
     ],
 
     socialLinks: [
+      {
+        ariaLabel: "Medium",
+        link: "https://medium.com/llm-exe",
+        icon: {
+          svg: `<svg viewBox="0 -55 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" fill="currentColor"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M72.2009141,1.42108547e-14 C112.076502,1.42108547e-14 144.399375,32.5485469 144.399375,72.6964154 C144.399375,112.844284 112.074049,145.390378 72.2009141,145.390378 C32.327779,145.390378 0,112.844284 0,72.6964154 C0,32.5485469 32.325326,1.42108547e-14 72.2009141,1.42108547e-14 Z M187.500628,4.25836743 C207.438422,4.25836743 223.601085,34.8960455 223.601085,72.6964154 L223.603538,72.6964154 C223.603538,110.486973 207.440875,141.134463 187.503081,141.134463 C167.565287,141.134463 151.402624,110.486973 151.402624,72.6964154 C151.402624,34.9058574 167.562834,4.25836743 187.500628,4.25836743 Z M243.303393,11.3867175 C250.314,11.3867175 256,38.835526 256,72.6964154 C256,106.547493 250.316453,134.006113 243.303393,134.006113 C236.290333,134.006113 230.609239,106.554852 230.609239,72.6964154 C230.609239,38.837979 236.292786,11.3867175 243.303393,11.3867175 Z" fill="currentColor"> </path> </g> </g></svg>`,
+        },
+      },
       { icon: "github", link: "https://github.com/gregreindel/llm-exe" },
       { icon: "npm", link: "https://www.npmjs.com/package/llm-exe" },
     ],
@@ -389,6 +413,6 @@ export default defineConfig({
           additionalData: `@import "./theme/style.css";`,
         },
       },
-    }
-  }
+    },
+  },
 });

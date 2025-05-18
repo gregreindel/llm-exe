@@ -1,15 +1,7 @@
-// import { useOpenAiModels } from "../utils/mock.openai";
-// import { useAnthropicModel } from "../utils/mock.anthropic";
-// import { useGoogleGeminiModels } from "../utils/mock.google";
-import {
-  testUsingModels,
-  getLlmForScenario,
-  debug,
-  useModels,
-} from "../utils/mock.helpers";
+import { itWithUseLlmMocked } from "../utils/mock.helpers";
 import { helloWorld } from "./helloWorld";
 
-describe("verifyBot", () => {
+describe("helloWorld", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -20,21 +12,44 @@ describe("verifyBot", () => {
    *
    * So we check the response for this
    */
-  testUsingModels(
+
+  /**
+   * This simple test will check if the function as-is is working as expected
+   */
+  it("Simple test - should extract variables from the content", async () => {
+    const hello = await helloWorld("Hello");
+    expect(
+      hello.toLowerCase().indexOf("Hello World, you said Hello".toLowerCase())
+    ).toBeGreaterThan(-1);
+  });
+
+  /**
+   * Let's run it with different LLMs
+   */
+  itWithUseLlmMocked(
     "handle this simple instruction",
     [
-      useModels([
-        "anthropic.claude-3-5-sonnet",
-        "openai.gpt-4o-mini",
-        "google.gemini-2.0-flash",
-        "xai.grok-2",
-        "deepseek.chat"
-      ]),
+      "anthropic.claude-3-5-sonnet",
+      // "openai.gpt-4o-mini",
+      // "google.gemini-2.0-flash",
+      // "xai.grok-2",
+      // "deepseek.chat",
     ],
-    async (props: any) => {
-      const llm = getLlmForScenario(props, {});
-      const hello = await helloWorld(llm, "Hello");
-      debug(`${props.shorthand} ${hello}`);
+    async (config: any) => {
+      jest.resetModules();
+
+      // clone exe and mock useLlm
+      jest.doMock("llm-exe", () => {
+        const real = jest.requireActual("llm-exe");
+        return {
+          ...real,
+          useLlm: (_orig: string) => real.useLlm(config.key, config),
+        };
+      });
+
+      const { helloWorld } = await import("./helloWorld");
+      const hello = await helloWorld("Hello");
+      console.log(`${config.key}:`, hello);
       expect(
         hello.toLowerCase().indexOf("Hello World, you said Hello".toLowerCase())
       ).toBeGreaterThan(-1);

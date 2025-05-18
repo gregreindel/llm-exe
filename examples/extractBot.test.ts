@@ -1,4 +1,4 @@
-import { useLlm, utils } from "llm-exe";
+import { type IChatMessages, utils } from "llm-exe";
 import { extractInformation } from "./extractBot";
 
 describe("extractBot", () => {
@@ -6,13 +6,7 @@ describe("extractBot", () => {
     jest.clearAllMocks();
   });
 
-  it("should extract variables from the content", async () => {
-    
-    const llm = useLlm("openai.chat.v1", {
-      model: "gpt-4o-mini",
-      openAiApiKey: process.env.OPENAI_API_KEY,
-    });
-
+  it("Simple test - should extract variables from the content", async () => {
     const input = {
       chatHistory: [
         {
@@ -23,10 +17,9 @@ describe("extractBot", () => {
           role: "assistant",
           content: "Hi what is your name?",
         },
-      ] as any,
+      ] as IChatMessages,
       mostRecentMessage: "I'm Greg",
     };
-
 
     const schema = utils.defineSchema({
       type: "object",
@@ -37,9 +30,10 @@ describe("extractBot", () => {
         },
       },
       required: ["firstName"],
-    })
+      additionalProperties: false,
+    });
 
-    const execute = await extractInformation(llm, input, schema);
+    const execute = await extractInformation(input, schema);
 
     expect(execute.firstName).toBe("Greg");
   });

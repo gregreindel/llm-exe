@@ -1,7 +1,6 @@
 // #region file
 // #region imports
-import { createPrompt, createParser, createLlmExecutor } from "llm-exe"
-import type { BaseLlm } from "llm-exe"
+import { useLlm, createPrompt, createParser, createLlmExecutor } from "llm-exe";
 // #endregion imports
 
 // #region prompt
@@ -19,12 +18,12 @@ Hello World, you said Hello.`;
 // #endregion prompt
 
 // #region function
-export async function helloWorld(llm: BaseLlm, input: string) {
-  const prompt = createPrompt("chat", PROMPT)
-
-  prompt.addUserMessage(input)
-
+export async function helloWorld(input: string) {
+  const llm = useLlm("openai.gpt-4o-mini");
+  const prompt = createPrompt("chat", PROMPT);
   const parser = createParser("string");
+
+  prompt.addUserMessage(input);
 
   return createLlmExecutor({
     name: "extract",

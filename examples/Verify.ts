@@ -1,12 +1,13 @@
 // #region file
 import {
   utils,
+  useLlm,
   createChatPrompt,
   createParser,
   createLlmExecutor,
   createCustomParser,
 } from "llm-exe";
-import type { BaseLlm, IChatMessages } from "llm-exe";
+import type { IChatMessages } from "llm-exe";
 
 // #region prompt
 const PROMPT = `You need to work through the list below step-by-step and
@@ -71,14 +72,16 @@ export const VerifyParser = createCustomParser(
 
 // #region function
 
-export async function checkPolicy(
-  llm: BaseLlm,
-  input: {
-    statements: string[]; // the list of statements to check
-    chatHistory: IChatMessages; // the chat history
-    input: string; // the most recent user message
-  }
-) {
+export async function checkPolicy(input: {
+  statements: string[]; // the list of statements to check
+  chatHistory: IChatMessages; // the chat history
+  input: string; // the most recent user message
+}) {
+  const llm = useLlm("openai.chat.v1", {
+    model: "gpt-4o-mini",
+    openAiApiKey: process.env.OPENAI_API_KEY,
+  });
+
   const prompt = createChatPrompt(PROMPT).addSystemMessage(INSTRUCTION);
   return createLlmExecutor({
     llm,

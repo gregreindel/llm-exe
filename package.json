@@ -1,6 +1,6 @@
 {
   "name": "llm-exe",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Simplify building LLM-powered apps with easy-to-use base components, supporting text and chat-based prompts with handlebars template engine, output parsers, and flexible function calling capabilities.",
   "keywords": [
     "ai",
@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.ts --detectOpenHandles --coverage --forceExit",
     "test-examples": "eval $(cat .env) NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.examples.ts --detectOpenHandles --coverage --forceExit",
-    "test-one": "eval $(cat .env) NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit --config jest.config.examples.ts examples/helloWorldReasoning.test.ts",
+    "test-one": "eval $(cat .env) NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --coverage --forceExit --config jest.config.examples.ts examples/intentBot.test.ts",
     "build": "(concurrently \"tsc --p ./tsconfig.json -w\" \"tsc-alias -p tsconfig.json -w\")",
     "build:ci": "tsup src/index.ts --format cjs,esm --dts --clean",
     "build:browser": "tsup src/script.ts --format iife --platform browser --target es6 --sourcemap --clean --external '**'",
@@ -46,8 +46,8 @@
     "build:docs-examples": "./node_modules/.bin/esbuild examples/prompt/index.ts examples/state/index.ts --bundle --outdir=docs/.vitepress/components/examples  --platform=node --target=es6 --format=esm",
     "build:watch:docs-examples": "./node_modules/.bin/esbuild  examples/prompt/index.ts examples/state/index.ts  --watch --bundle --outdir=docs/.vitepress/components/examples  --platform=node --target=es6 --format=esm",
     "predocs:build": "npm run build:docs-examples",
-    "docs:dev": "(concurrently \"vitepress dev docs\" \"npm run build:watch:docs-examples\")",
-    "docs:build": "vitepress build docs",
+    "docs:dev": "eval $(cat docs/.env) && concurrently \"vitepress dev docs\" \"npm run build:watch:docs-examples\"",
+    "docs:build": "eval $(cat docs/.env) && vitepress build docs",
     "lint": "eslint .",
     "format:check": "prettier --check \"src\"",
     "format:write": "prettier --write \"src\"",
