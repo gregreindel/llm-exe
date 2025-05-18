@@ -98,7 +98,7 @@ dialogue.getHistory(); // returns chat array
 #### Hooks
 
 ```ts
-executor.on("onComplete", console.log);
+executor.on("onSuccess", console.log);
 executor.on("onError", console.error);
 ```
 

@@ -1,4 +1,6 @@
 ---
+title: "llm-exe | Build Composable LLM Functions"
+description: "LLM-EXE is a Typescript package for building structured, reliable AI applications. Define typed LLM functions, compose reusable executors, and integrate seamlessly with prompts, parsers, and dialogue state."
 layout: home
 hero:
   name: llm-exe
@@ -21,8 +23,8 @@ hero:
 features:
   - title: Modular
     details: Write functions powered by LLM's with easy to use building blocks.
-  - title: Few Dependencies
-    details: Pure Javascript and Typescript. Allows you to pass and infer types.
+  - title: TypeScript First
+    details: Pure Javascript and TypeScript. Allows you to pass and infer types.
   - title: Use {{variables}}
     details: Supercharge your prompts by using handlebars expressions and functions.
   - title: Control
@@ -30,11 +32,11 @@ features:
   - title: Chat or Text Prompts
     details: Support for text-based and chat-based prompts.
   - title: Function Calling
-    details: Allow LLM's to call functions (or call other LLM executors).
+    details: Allow LLM's to call functions - or other LLM executors.
   - title: Prompt Templates
     details: Build reusable prompt template parts.
   - title: Test Coverage
-    details: 100% test coverage
+    details: 100% test coverage.
 ---
 
 <HomeAfterIntro>

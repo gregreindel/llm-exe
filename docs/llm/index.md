@@ -1,3 +1,8 @@
+---
+title: LLMs | Connect and Configure Models in llm-exe
+description: "Use any LLM with a consistent, composable API. llm-exe supports OpenAI, Anthropic, Amazon, and more—giving you full control over model config, retries, and usage patterns with minimal setup."
+---
+
 # LLM
 
 LLM is a wrapper around various LLM providers, making your function implementations LLM-agnostic.
