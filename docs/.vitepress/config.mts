@@ -69,7 +69,7 @@ export default defineConfig({
             link: "/intro/install.html",
           },
           {
-            text: "What's a LLM Function",
+            text: "What's a LLM Function?",
             link: "/intro/what_is_llm_function.html",
           },
         ],
@@ -123,7 +123,7 @@ export default defineConfig({
             items: [],
           },
           {
-            text: "What's a LLM Function",
+            text: "What's a LLM Function?",
             link: "/intro/what_is_llm_function.html",
             items: [],
           },
