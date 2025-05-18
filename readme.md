@@ -75,6 +75,7 @@ createParser("stringExtract", { enum: ["yes", "no"] });
 createParser("listToJson");
 createParser("listToArray");
 createParser("markdownCodeBlock");
+// ...etc
 ```
 
 #### Custom Parsers
@@ -106,13 +107,6 @@ executor.on("onError", console.error);
 Below is simple example:
 
 ```typescript
-import {
-  useLlm,
-  createChatPrompt,
-  createParser,
-  createLlmExecutor,
-} from "llm-exe";
-
 // 1. Use the model you want
 const llm = useLlm("openai.gpt-4o");
 

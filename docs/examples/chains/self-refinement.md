@@ -26,7 +26,7 @@ Let’s illustrate a simplified self-refinement loop. Suppose we want an LLM to 
 
 #### Generate and Refine Function
 
-Combine them!
+Combine them! We call the functions, and put them in a standard js loop.
 
 <<< ../../../examples/chains/self-refinement/getRefinedAnswer.ts#file
 
