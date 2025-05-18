@@ -17,6 +17,7 @@ import ExamplesFilters from "../components/ExamplesFilters.vue";
 import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
 import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 import ExampleSingleBefore from "../components/ExampleSingleBefore.vue";
+import HomeAfterIntro from "../components/Layout/HomeAfterIntro.vue";
 
 const packageId = (import.meta as any).env.VITE_PACKAGE_ID || "";
 
@@ -34,6 +35,7 @@ const ForceLayoutResize = {
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
+    app.component("HomeAfterIntro", HomeAfterIntro);
     app.component("GenericOutput", GenericOutput);
     app.component("PromptPlayground", PromptPlayground);
     app.component("PromptPlayground2", PromptPlayground2);

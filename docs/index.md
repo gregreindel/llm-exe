@@ -1,7 +1,5 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
-
 hero:
   name: llm-exe
   text: ""
@@ -39,7 +37,7 @@ features:
     details: 100% test coverage
 ---
 
-<div style="margin-top:60px; margin-left:auto;margin-right:auto; max-width:960px">
+<HomeAfterIntro>
 
 # Quick Example
 
@@ -50,4 +48,4 @@ const code = await writeCodeFromSpec("add two numbers together");
 console.log(code.code); // => function add(a: number, b: number) { ... }
 ```
 
-</div>
+</HomeAfterIntro>
