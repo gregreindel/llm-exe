@@ -1,7 +1,3 @@
----
-layout: default
----
-
 # Parser
 
 When calling LLM's the response is ultimately a string. While you can (and will) instruct the LLM to respond with a number, or formatted as JSON... the response will still be a string.
