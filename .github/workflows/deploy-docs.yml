@@ -104,6 +104,15 @@ jobs:
         run: |
           aws s3 cp dist s3://${{ vars.AWS_S3_BUCKET }}/docs/${{ env.PACKAGE_ID }}/ --recursive
 
+      - name: Fix MIME types for .js files
+        run: |
+          find dist -type f -name "*.js" | while read filepath; do
+            relative_path=${filepath#dist/}
+            aws s3 cp "$filepath" "s3://${{ vars.AWS_S3_BUCKET }}/docs/${{ env.PACKAGE_ID }}/$relative_path" \
+              --content-type application/javascript \
+              --metadata-directive REPLACE
+          done
+
       - name: Retrieve current CloudFront distribution config
         id: get-config
         run: |
