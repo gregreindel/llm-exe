@@ -26,7 +26,7 @@ Currently, llm-exe supports calling LLM's from:
 - [Anthropic](/llm/anthropic.html)
 - [xAI](/llm/xai.html)
 - [Google](/llm/gemini.html)
-- [AWS Bedrock](/llm/bedrock.html)
+- [AWS Bedrock](/llm/bedrock/index.html)
 - [Ollama](/llm/ollama.html)
 - [Deepseek](/llm/deepseek.html)
 
