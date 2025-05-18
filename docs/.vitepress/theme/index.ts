@@ -1,6 +1,6 @@
 import type { Theme } from "vitepress";
 import DefaultTheme from "vitepress/theme";
-import { h } from "vue";
+import { h, onMounted } from "vue";
 import "./styles.css";
 
 import GenericOutput from "../components/GenericOutput.vue";
@@ -19,6 +19,17 @@ import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 import ExampleSingleBefore from "../components/ExampleSingleBefore.vue";
 
 const packageId = (import.meta as any).env.VITE_PACKAGE_ID || "";
+
+const ForceLayoutResize = {
+  setup() {
+    onMounted(() => {
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event("resize"));
+      });
+    });
+    return () => null;
+  },
+};
 
 export default {
   extends: DefaultTheme,
@@ -43,6 +54,7 @@ export default {
       "nav-bar-content-before": () => h(SiteTopBanner, { packageId }),
       "home-hero-info-before": () => h(HomeBeforeIntro),
       "doc-before": () => h(ExampleSingleBefore),
+      "layout-bottom": () => h(ForceLayoutResize),
     });
   },
 } satisfies Theme;
