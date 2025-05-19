@@ -145,3 +145,12 @@ const result = await classifyMessage.execute({
 
 console.log(result); // => "cancel"
 ```
+
+### Further Reading
+
+[Find llm-exe on Medium](https://medium.com/llm-exe)
+
+- [Prompt: Create Typed, Modular Prompt Templates in TypeScript](https://medium.com/llm-exe/llm-exe-intro-prompt-3d9d40dc923d)
+- [LLM: Keep Your Code Clean While Switching Models](https://medium.com/llm-exe/llm-exe-intro-llm-2f5f35e60caf)
+- [Parser: Parse, Validate, and Structure AI Responses](https://medium.com/llm-exe/llm-exe-intro-parser-aed787f81082)
+- [Executor: Prompt, Parse, and Execute with Type Safety](https://medium.com/llm-exe/llm-exe-intro-llm-executor-52bb95c76c84)

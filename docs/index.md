@@ -46,8 +46,8 @@ features:
 <<< ../examples/writeCodeFromSpec.ts#inner
 
 ```ts
-const code = await writeCodeFromSpec("add two numbers together");
-console.log(code.code); // => function add(a: number, b: number) { ... }
+const response = await writeCodeFromSpec("add two numbers together");
+console.log(response.code); // => function add(a: number, b: number) { ... }
 ```
 
 </HomeAfterIntro>
