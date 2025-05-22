@@ -1,3 +1,8 @@
+---
+title: Prompts | Dynamic, Typed Prompt Templates in llm-exe
+description: "Design powerful prompts with Handlebars templates, full type safety, and reusable partials. llm-exe lets you separate logic from content—so your LLM apps stay readable, testable, and maintainable."
+---
+
 # Prompt
 
 The prompt is the instruction for the LLM, usually sent in plain-text or an array of chat-style messages. When working with certain models, the prompt is formatted like chat messages, allowing you to control a system message, user message, and assistant message.
@@ -13,10 +18,12 @@ Note: You can use and call methods on prompts directly, but they are usually pas
 There are 2 types of prompts included, along with a `BasePrompt` class that can be extended, if needed.
 
 See:
+
 - [Text Prompt](/prompt/text.html)
 - [Chat Prompt](/prompt/chat.html)
 
 ## Basic Replacements
+
 The object that you pass to `prompt.format` (or `.execute` when a prompt is part of an LLM executor) gets passed to the template engine, making all those variables available to you in your prompt template.
 
 <GenericOutput example="prompt.basic.exampleOne">
