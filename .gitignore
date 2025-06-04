@@ -26,3 +26,5 @@ examples/_testing
 testing.ts
 
 llm-exe-**.tgz
+
+development.ts
