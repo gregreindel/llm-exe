@@ -5,7 +5,7 @@ import {
   CoreExecutorExecuteOptions,
   ExecutorWithLlmOptions,
   LlmExecutorHooks,
-  OpenAiLlmExecutorOptions,
+  LlmExecutorWithFunctionsOptions,
   GenericFunctionCall,
 } from "@/types";
 import { BasePrompt } from "@/prompt";
@@ -17,11 +17,11 @@ import { LlmExecutor } from "./llm";
 /**
  * Core Executor With LLM
  */
-export class LlmExecutorOpenAiFunctions<
+export class LlmExecutorWithFunctions<
   Llm extends BaseLlm,
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
-  State extends BaseState
+  State extends BaseState,
 > extends LlmExecutor<Llm, Prompt, Parser, State> {
   constructor(
     llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
@@ -38,12 +38,22 @@ export class LlmExecutorOpenAiFunctions<
   }
   async execute<T extends GenericFunctionCall>(
     _input: PromptInput<Prompt>,
-    _options: OpenAiLlmExecutorOptions<T>
+    _options: LlmExecutorWithFunctionsOptions<T>
   ): Promise<ParserOutput<Parser>>;
   async execute<T extends GenericFunctionCall>(
     _input: PromptInput<Prompt>,
-    _options: OpenAiLlmExecutorOptions<T>
+    _options: LlmExecutorWithFunctionsOptions<T>
   ) {
     return super.execute(_input, _options);
   }
 }
+
+/**
+ * @deprecated Use `LlmExecutorWithFunctions` instead.
+ */
+export class LlmExecutorOpenAiFunctions<
+  Llm extends BaseLlm,
+  Prompt extends BasePrompt<Record<string, any>>,
+  Parser extends BaseParser,
+  State extends BaseState,
+> extends LlmExecutorWithFunctions<Llm, Prompt, Parser, State> {}

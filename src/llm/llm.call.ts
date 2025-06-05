@@ -11,7 +11,7 @@ import {
   IChatMessages,
   LlmProvider,
   LlmProviderKey,
-  OpenAiLlmExecutorOptions,
+  LlmExecutorWithFunctionsOptions,
 } from "@/types";
 import { normalizeFunctionCall } from "./output/_util";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
@@ -19,7 +19,7 @@ import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
   messages: string | IChatMessages,
-  _options?: OpenAiLlmExecutorOptions<GenericFunctionCall>
+  _options?: LlmExecutorWithFunctionsOptions<GenericFunctionCall>
 ) {
   const config = getLlmConfig(state.key);
   const { functionCallStrictInput = false } = _options || {};

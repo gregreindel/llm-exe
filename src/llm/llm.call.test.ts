@@ -6,7 +6,7 @@ import {
   IChatMessages,
   LlmProvider,
   LlmProviderKey,
-  OpenAiLlmExecutorOptions,
+  LlmExecutorWithFunctionsOptions,
 } from "@/types";
 import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
@@ -84,7 +84,7 @@ describe("useLlm_call", () => {
       content: "Hello",
     },
   ] as IChatMessages;
-  const mockOptions = {} as OpenAiLlmExecutorOptions;
+  const mockOptions = {} as LlmExecutorWithFunctionsOptions;
   const mockConfig = {
     endpoint: "http://api.test/endpoint",
     mapBody: jest.fn(),
