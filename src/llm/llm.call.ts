@@ -71,7 +71,7 @@ export async function useLlm_call(
       input["tools"] = _options.functions.map((f) => ({
         name: f.name,
         description: f.description,
-        input_schema: f.parameters,
+        input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
       }));
     } else if (state.provider === "openai.chat") {
       input["tools"] = _options.functions.map((f) => {
