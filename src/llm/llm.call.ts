@@ -67,13 +67,13 @@ export async function useLlm_call(
     }
   }
   if (_options && _options?.functions?.length) {
-    if (state.provider === "anthropic.chat") {
+    if (state.provider.startsWith("anthropic")) {
       input["tools"] = _options.functions.map((f) => ({
         name: f.name,
         description: f.description,
         input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
       }));
-    } else if (state.provider === "openai.chat") {
+    } else if (state.provider.startsWith("openai")) {
       input["tools"] = _options.functions.map((f) => {
         const props = {
           name: f?.name,
