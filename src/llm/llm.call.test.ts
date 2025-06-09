@@ -7,12 +7,13 @@ import {
   LlmProvider,
   LlmProviderKey,
   LlmExecutorWithFunctionsOptions,
+  GenericFunctionCall,
 } from "@/types";
 import { getLlmConfig } from "@/llm/config";
 import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
 import { useLlm_call } from "@/llm/llm.call";
-// import { normalizeFunctionCall } from "@/llm/output/_util";
+import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -34,15 +35,9 @@ jest.mock("@/llm/output", () => ({
   getOutputParser: jest.fn(),
 }));
 
-// jest.mock("@/llm/output/_util", () => ({
-//   normalizeFunctionCall: jest.fn(),
-// }));
-
 jest.mock("@/llm/config", () => ({
   getLlmConfig: jest.fn(),
 }));
-
-// jest.mock("@/llm/config");
 
 describe("useLlm_call", () => {
   const getLlmConfigMock = getLlmConfig as jest.Mock;
@@ -52,7 +47,6 @@ describe("useLlm_call", () => {
   const parseHeadersMock = parseHeaders as jest.Mock;
   const apiRequestMock = apiRequest as jest.Mock;
   const getOutputParserMock = getOutputParser as jest.Mock;
-  // const normalizeFunctionCallMock = normalizeFunctionCall as jest.Mock;
 
   const mockState = {
     key: "openai.chat-mock.v1",
@@ -187,10 +181,10 @@ describe("useLlm_call", () => {
 
   it("should anthropic and functionCall is none, remove functions", async () => {
     const mock_options = {
-      functionCall: "auto",
+      functionCall: "auto" as GenericFunctionCall,
       functions: [{ name: "something", description: "", parameters: {} }],
     };
-    await useLlm_call(mockStateAnthropic, mockMessages, mock_options as any);
+    await useLlm_call(mockStateAnthropic, mockMessages, mock_options);
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -199,7 +193,10 @@ describe("useLlm_call", () => {
         tools: mock_options.functions.map((a) => ({
           name: a.name,
           description: a.description,
-          input_schema: a.parameters,
+          input_schema: cleanJsonSchemaFor(
+            a.parameters,
+            mockStateAnthropic.provider
+          ),
         })),
       }),
       headers: {
@@ -210,10 +207,10 @@ describe("useLlm_call", () => {
 
   it("should anthropic and functionCall is none, remove functions", async () => {
     const mock_options = {
-      functionCall: "any",
+      functionCall: "any" as GenericFunctionCall,
       functions: [{ name: "something", description: "", parameters: {} }],
     };
-    await useLlm_call(mockStateAnthropic, mockMessages, mock_options as any);
+    await useLlm_call(mockStateAnthropic, mockMessages, mock_options);
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -222,7 +219,10 @@ describe("useLlm_call", () => {
         tools: mock_options.functions.map((a) => ({
           name: a.name,
           description: a.description,
-          input_schema: a.parameters,
+          input_schema: cleanJsonSchemaFor(
+            a.parameters,
+            mockStateAnthropic.provider
+          ),
         })),
       }),
       headers: {
@@ -245,7 +245,10 @@ describe("useLlm_call", () => {
         tools: mock_options.functions.map((a) => ({
           name: a.name,
           description: a.description,
-          input_schema: a.parameters,
+          input_schema: cleanJsonSchemaFor(
+            a.parameters,
+            mockStateAnthropic.provider
+          ),
         })),
       }),
       headers: {
@@ -256,10 +259,10 @@ describe("useLlm_call", () => {
 
   it("should openai and functionCall is none, remove functions", async () => {
     const mock_options = {
-      functionCall: "any",
+      functionCall: "any" as GenericFunctionCall,
       functions: [{ name: "something", description: "", parameters: {} }],
     };
-    await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
+    await useLlm_call(mockStateOpenAi, mockMessages, mock_options);
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -270,7 +273,10 @@ describe("useLlm_call", () => {
           function: {
             name: a.name,
             description: a.description,
-            parameters: a.parameters,
+            parameters: cleanJsonSchemaFor(
+              a.parameters,
+              mockStateOpenAi.provider
+            ),
             strict: false,
           },
         })),
