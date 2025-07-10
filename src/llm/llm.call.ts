@@ -34,7 +34,7 @@ export async function useLlm_call(
   // this is where we'll handle provider-specific formatting
   // move into a separate function and have better tests
   if (_options && _options?.jsonSchema) {
-    if (state.provider === "openai.chat") {
+    if (state.provider.startsWith("openai")) {
       const curr = input["response_format"] || {};
       input["response_format"] = Object.assign(curr, {
         type: "json_schema",
@@ -48,7 +48,7 @@ export async function useLlm_call(
   }
 
   if (_options && _options?.functionCall) {
-    if (state.provider === "anthropic.chat") {
+    if (state.provider.startsWith("anthropic")) {
       if (_options?.functionCall === "none") {
         _options.functions = [];
       } else if (
@@ -59,7 +59,7 @@ export async function useLlm_call(
       } else {
         input["tool_choice"] = _options?.functionCall;
       }
-    } else if (state.provider === "openai.chat") {
+    } else if (state.provider.startsWith("openai")) {
       input["tool_choice"] = normalizeFunctionCall(
         _options?.functionCall,
         "openai"
