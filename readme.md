@@ -6,13 +6,13 @@ A package that provides simplified base components to make building and maintain
 
 - Write functions powered by LLM's with easy to use building blocks.
 - Pure Javascript and Typescript. Allows you to pass and infer types.
+- Supercharge your prompts by using handlebars within prompt template.
 - Support for text-based (llama-3) and chat-based prompts. (gpt-4o, claude-3.5, grok-3, Gemini, Bedrock, Ollama, etc)
 - Call LLM's from different providers without changing your code. (OpenAi/Anthropic/xAI/Google/AWS Bedrock/Ollama/Deepseek)
-- Supercharge your prompts by using handlebars within prompt template.
 - Allow LLM's to call functions (or call other LLM executors).
 - Not very opinionated. You have control on how you use it.
 
-![llm-exe](https://assets.llm-exe.com/llm-exe-featured.jpg)
+![llm-exe](https://assets.llm-exe.com/llm-exe-featured-2025.png)
 
 See full docs here: [https://llm-exe.com](https://llm-exe.com)
 
@@ -38,7 +38,7 @@ import { useLlm, createChatPrompt, createParser } from "llm-exe";
 const llmExe = require("llm-exe");
 ```
 
-## Basic Usage
+## Overview
 
 ```ts
 // Prompt
@@ -73,14 +73,16 @@ Welcome back!
 ```ts
 createParser("stringExtract", { enum: ["yes", "no"] });
 createParser("listToJson");
+createParser("listToArray");
 createParser("markdownCodeBlock");
+// ...etc
 ```
 
 #### Custom Parsers
 
 ```ts
 const parser = createCustomParser("MyUppercaseParser", (output, input) => {
-  return { result: output.toUpperCase() };
+  return output.toUpperCase();
 });
 ```
 
@@ -96,7 +98,7 @@ dialogue.getHistory(); // returns chat array
 #### Hooks
 
 ```ts
-executor.on("onComplete", console.log);
+executor.on("onSuccess", console.log);
 executor.on("onError", console.error);
 ```
 
@@ -105,17 +107,10 @@ executor.on("onError", console.error);
 Below is simple example:
 
 ```typescript
-import {
-  useLlm,
-  createChatPrompt,
-  createParser,
-  createLlmExecutor,
-} from "llm-exe";
-
 // 1. Use the model you want
 const llm = useLlm("openai.gpt-4o");
 
-// 2. Create a parameterized prompt using Handlebars
+// 2. Create a parameterized prompt
 const instruction = `
 You are a classifier. Given a user message, reply with the category it belongs to.
 Pick from only the following options:
@@ -125,7 +120,9 @@ Pick from only the following options:
 
 Respond with only one of the options.`;
 
-const prompt = createChatPrompt(instruction).addUserMessage("{{input}}"); // placeholder for message content
+const prompt = createChatPrompt<{ options: string[]; input: string }>(
+  instruction
+).addUserMessage("{{input}}"); // placeholder for message content
 
 // 3. Create a parser that ensures a clean match
 const parser = createParser("stringExtract", {
@@ -140,8 +137,7 @@ const classifyMessage = createLlmExecutor({
 });
 
 // 5. Pass in options and a message — like a real function!
-// classifyMessage.execute is typed based on the prompt/parser
-// This means you get type safety and autocompletion in your IDE
+// classifyMessage.execute is typed based on the prompt/parser!
 const result = await classifyMessage.execute({
   input: "Hi, I'm moving and no longer need this service.",
   options: ["billing", "support", "cancel", "unknown"],
@@ -149,3 +145,12 @@ const result = await classifyMessage.execute({
 
 console.log(result); // => "cancel"
 ```
+
+### Further Reading
+
+[Find llm-exe on Medium](https://medium.com/llm-exe)
+
+- [Prompt: Create Typed, Modular Prompt Templates in TypeScript](https://medium.com/llm-exe/llm-exe-intro-prompt-3d9d40dc923d)
+- [LLM: Keep Your Code Clean While Switching Models](https://medium.com/llm-exe/llm-exe-intro-llm-2f5f35e60caf)
+- [Parser: Parse, Validate, and Structure AI Responses](https://medium.com/llm-exe/llm-exe-intro-parser-aed787f81082)
+- [Executor: Prompt, Parse, and Execute with Type Safety](https://medium.com/llm-exe/llm-exe-intro-llm-executor-52bb95c76c84)

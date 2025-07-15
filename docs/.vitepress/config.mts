@@ -6,6 +6,7 @@ export default defineConfig({
   title: "llm-exe",
   description: "",
   lang: "en-US",
+  cleanUrls: false,
   head: [
     [
       "link",
@@ -68,7 +69,7 @@ export default defineConfig({
             link: "/intro/install.html",
           },
           {
-            text: "What's a LLM Function",
+            text: "What's a LLM Function?",
             link: "/intro/what_is_llm_function.html",
           },
         ],
@@ -122,7 +123,7 @@ export default defineConfig({
             items: [],
           },
           {
-            text: "What's a LLM Function",
+            text: "What's a LLM Function?",
             link: "/intro/what_is_llm_function.html",
             items: [],
           },
@@ -197,7 +198,6 @@ export default defineConfig({
           {
             text: "Getting Started",
             link: "/prompt/index.html",
-
             items: [],
           },
           {
@@ -221,11 +221,11 @@ export default defineConfig({
             link: "/prompt/why-handlebars.html",
             items: [],
           },
-          {
-            text: "Playground",
-            link: "/prompt/playground.html",
-            items: [],
-          },
+          // {
+          //   text: "Playground",
+          //   link: "/prompt/playground.html",
+          //   items: [],
+          // },
         ],
       },
       {

@@ -5,7 +5,7 @@
 ## String Parser
 
 `string`
-The default parser. Doesn't really parse, just passes through the string response with no modification.
+The default parser. Doesn't really parse, it passes through the string response with no modification.
 Returns: string
 
 ::: code-group
@@ -23,7 +23,7 @@ This is an example input message.
 ## String Extractor Parser
 
 `stringExtract`
-USe this parser to ensure the response is one of many specific strings you define. This parser doe not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
+Use this parser to ensure the response is one of many specific strings you define. This parser doe not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
 
 Returns: string
 
@@ -31,13 +31,8 @@ Returns: string
 
 ```ts
 const parser = createParser("stringExtract", {
-    enum: [
-        "stop",
-        "go forward",
-        "turn left",
-        "turn right"
-    ]
-})
+  enum: ["stop", "go forward", "turn left", "turn right"],
+});
 ```
 
 ::: code-group
@@ -61,7 +56,7 @@ Returns: string[]
 > **Example Prompt:** <br>You need to reply with a list of test cases that should be written for the code I included below. You must reply in an unordered list.
 
 ```ts
-const parser = createParser("listToArray")
+const parser = createParser("listToArray");
 ```
 
 ::: code-group
@@ -235,4 +230,10 @@ or
 { \"name\": \"Greg\", \"age\": \"89\" }
 ```
 
+:::
+
+---
+
+::: tip
+You still need to instruct the LLM to respond with a certain format, and the parser will turn that response into a data-type useful to your application.
 :::
