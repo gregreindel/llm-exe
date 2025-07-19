@@ -1,6 +1,7 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { promptSanitize, useJsonSanitize } from "../openai/promptSanitize";
 
 const xaiChatV1: Config = {
   key: "xai.chat.v1",
@@ -19,12 +20,7 @@ const xaiChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: (v) => {
-        if (typeof v === "string") {
-          return [{ role: "user", content: v }];
-        }
-        return v;
-      },
+      sanitize: promptSanitize, // Reuse OpenAI sanitizer
     },
     model: {
       key: "model",
@@ -34,7 +30,7 @@ const xaiChatV1: Config = {
     },
     useJson: {
       key: "response_format.type",
-      sanitize: (v) => (v ? "json_object" : "text"),
+      sanitize: useJsonSanitize, // Reuse OpenAI sanitizer
     },
   },
 };

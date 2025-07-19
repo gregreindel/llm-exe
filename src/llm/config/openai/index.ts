@@ -1,6 +1,7 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { promptSanitize, useJsonSanitize } from "./promptSanitize";
 
 const openAiChatV1: Config = {
   key: "openai.chat.v1",
@@ -19,12 +20,7 @@ const openAiChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: (v) => {
-        if (typeof v === "string") {
-          return [{ role: "user", content: v }];
-        }
-        return v;
-      },
+      sanitize: promptSanitize, // Reference extracted function
     },
     model: {
       key: "model",
@@ -34,7 +30,7 @@ const openAiChatV1: Config = {
     },
     useJson: {
       key: "response_format.type",
-      sanitize: (v) => (v ? "json_object" : "text"),
+      sanitize: useJsonSanitize, // Reference extracted function
     },
   },
 };
@@ -65,7 +61,7 @@ const openAiChatMockV1: Config = {
     },
     useJson: {
       key: "response_format.type",
-      sanitize: (v) => (v ? "json_object" : "text"),
+      sanitize: useJsonSanitize, // Reference extracted function
     },
   },
 };

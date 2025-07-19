@@ -1,6 +1,6 @@
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
-import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { anthropicPromptSanitize } from "../anthropic/promptSanitize";
+import { metaPromptSanitize } from "./metaPromptSanitize";
 import { Config } from "@/types";
 // import { amazonNovaPromptSanitize } from "./prompt.nova";
 
@@ -62,15 +62,7 @@ const amazonMetaChatV1: Config = {
   mapBody: {
     prompt: {
       key: "prompt",
-      sanitize: (messages: any) => {
-        if (typeof messages === "string") {
-          return messages;
-        } else {
-          return replaceTemplateString(`{{>DialogueHistory key='messages'}}`, {
-            messages,
-          });
-        }
-      },
+      sanitize: metaPromptSanitize, // Reference extracted function
     },
     topP: {
       key: "top_p",

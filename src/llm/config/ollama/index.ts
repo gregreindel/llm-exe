@@ -1,6 +1,7 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { promptSanitize } from "./promptSanitize";
 const ollamaChatV1: Config = {
   key: "ollama.chat.v1",
   provider: "ollama.chat",
@@ -15,12 +16,7 @@ const ollamaChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: (v) => {
-        if (typeof v === "string") {
-          return [{ role: "user", content: v }];
-        }
-        return v;
-      },
+      sanitize: promptSanitize, // Reference extracted function
     },
     model: {
       key: "model",
