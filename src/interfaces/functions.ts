@@ -96,3 +96,20 @@ export interface CallableExecutorCore {
   description: string;
   parameters?: Record<string, any>;
 }
+
+export interface LlmExecutorExecuteOptions {
+  functions?: CallableExecutorCore[];
+  functionCall?: any;
+  jsonSchema?: Record<string, any>;
+}
+
+export type GenericFunctionCall = "auto" | "none" | "any" | { name: string };
+
+export interface LlmExecutorWithFunctionsOptions<
+  T extends GenericFunctionCall = "auto",
+> extends LlmExecutorExecuteOptions {
+  functions?: CallableExecutorCore[];
+  functionCall?: T;
+  functionCallStrictInput?: boolean;
+  jsonSchema?: Record<string, any>;
+}

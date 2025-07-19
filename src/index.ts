@@ -30,7 +30,10 @@ export {
   createDialogue,
 } from "./state";
 
-export { LlmExecutorOpenAiFunctions } from "@/executor/llm-openai-function";
+export {
+  LlmExecutorWithFunctions,
+  LlmExecutorOpenAiFunctions,
+} from "@/executor/llm-openai-function";
 
 export { defineSchema } from "./utils/modules/defineSchema";
 export { registerHelpers, registerPartials } from "./utils";

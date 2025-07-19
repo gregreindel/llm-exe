@@ -1,4 +1,4 @@
-import { CallableExecutorCore } from "./index";
+import { GenericFunctionCall } from "./index";
 
 export type OpenAIChatModelName =
   | "gpt-3.5-turbo"
@@ -26,24 +26,5 @@ export type OpenAIModelName =
   | OpenAIConversationModelName
   | OpenAIEmbeddingModelName;
 
-export type OpenAiFunctionCall =
-  | "auto"
-  | "none"
-  | "required"
-  | { name: string };
-
-export interface LlmExecutorExecuteOptions {
-  functions?: CallableExecutorCore[];
-  functionCall?: any;
-  jsonSchema?: Record<string, any>
-}
-
-export type GenericFunctionCall = "auto" | "none" | "any" | { name: string };
-export interface OpenAiLlmExecutorOptions<
-  T extends GenericFunctionCall = "auto"
-> extends LlmExecutorExecuteOptions {
-  functions?: CallableExecutorCore[];
-  functionCall?: T;
-  functionCallStrictInput?: boolean;
-  jsonSchema?: Record<string, any>
-}
+//** @deprecated Use `GenericFunctionCall` instead */
+export type OpenAiFunctionCall = GenericFunctionCall;

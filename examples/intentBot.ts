@@ -6,8 +6,6 @@ import {
   createLlmExecutor,
 } from "llm-exe";
 import type { IChatMessages, ExecutorContext } from "llm-exe";
-import { maybeParseJSON } from "@/utils";
-import { toNumber } from "@/utils/modules/toNumber";
 
 function snakeCase(str: string) {
   return str;
@@ -97,12 +95,8 @@ export const parser = createCustomParser<IdentifyIntentOutput>(
     const jsonStrArray = cleanResponse.match(regex);
 
     if (jsonStrArray && Array.isArray(jsonStrArray)) {
-      const jsonObjArray = jsonStrArray.map((jsonStr: string) =>
-        maybeParseJSON(jsonStr)
-      );
-
-      const intents = jsonObjArray
-        .map((a) => maybeParseJSON(a))
+      const intents = jsonStrArray
+        .map((a) => JSON.parse(a))
         .filter(
           (a: any) =>
             a.confidence &&
@@ -112,10 +106,10 @@ export const parser = createCustomParser<IdentifyIntentOutput>(
               .includes(snakeCase(a.intent))
         )
         .map((v) => ({
-          confidence: toNumber(v?.confidence || 0),
+          confidence: parseInt(v?.confidence || 0),
           intent: snakeCase(v.intent) as IdentifyIntentOutput["intent"],
         }))
-        .sort((a, b) => toNumber(b.confidence) - toNumber(a.confidence));
+        .sort((a, b) => b.confidence - a.confidence);
 
       const [intent] = intents;
       if (intent) {

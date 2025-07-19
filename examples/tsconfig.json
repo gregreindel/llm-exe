@@ -1,8 +1,16 @@
 {
-    "compilerOptions": {
-      "moduleResolution": "Node",
-      "module": "CommonJS",
-      "target": "ES2018",
-      "esModuleInterop": true
-    }
-  }
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "target": "ES2018",
+    "esModuleInterop": true,
+    "typeRoots": ["types", "../node_modules/@types"]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.js"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
