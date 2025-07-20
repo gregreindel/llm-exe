@@ -1,6 +1,22 @@
 import { convertDotNotation } from "@/utils/modules/convertDotNotation";
 import { Config } from "@/types";
 
+// Helper function to get nested values using dot notation
+export function getNestedValue(obj: Record<string, any>, path: string): any {
+  const keys = path.split(".");
+  let current = obj;
+
+  for (const key of keys) {
+    if (current && typeof current === "object" && key in current) {
+      current = current[key];
+    } else {
+      return undefined;
+    }
+  }
+
+  return current;
+}
+
 export function mapBody(
   template: Config["mapBody"],
   body: Record<string, any>
@@ -14,7 +30,10 @@ export function mapBody(
       providerSpecificSettings;
 
     if (providerSpecificKey) {
-      let valueForThisKey = body[genericInputKey];
+      // Handle dot notation in input keys (e.g., "_options.jsonSchema")
+      let valueForThisKey = genericInputKey.includes(".")
+        ? getNestedValue(body, genericInputKey)
+        : body[genericInputKey];
 
       if (
         providerSpecificSettings.sanitize &&

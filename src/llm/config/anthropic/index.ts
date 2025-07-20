@@ -2,6 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { anthropicPromptSanitize } from "./promptSanitize";
+import { functionCallSanitize, functionsSanitize } from "./optionSanitize";
 
 const ANTHROPIC_VERSION = "2023-06-01";
 
@@ -35,6 +36,15 @@ const anthropicChatV1: Config = {
     prompt: {
       key: "messages",
       sanitize: anthropicPromptSanitize,
+    },
+    // NEW: Add option mappings for Phase 2
+    "_options.functionCall": {
+      key: "tool_choice",
+      sanitize: functionCallSanitize,
+    },
+    "_options.functions": {
+      key: "tools",
+      sanitize: functionsSanitize,
     },
   },
 };

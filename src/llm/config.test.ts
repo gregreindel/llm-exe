@@ -28,7 +28,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function)
+          sanitize: expect.any(Function),
         },
         model: {
           key: "model",
@@ -38,6 +38,18 @@ describe("configs", () => {
         },
         useJson: {
           key: "response_format.type",
+          sanitize: expect.any(Function),
+        },
+        "_options.jsonSchema": {
+          key: "response_format",
+          sanitize: expect.any(Function),
+        },
+        "_options.functionCall": {
+          key: "tool_choice",
+          sanitize: expect.any(Function),
+        },
+        "_options.functions": {
+          key: "tools",
           sanitize: expect.any(Function),
         },
       },
@@ -72,10 +84,19 @@ describe("configs", () => {
         },
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function)
+          sanitize: expect.any(Function),
         },
         system: {
           key: "system",
+        },
+        // Phase 2 mappings
+        "_options.functionCall": {
+          key: "tool_choice",
+          sanitize: expect.any(Function),
+        },
+        "_options.functions": {
+          key: "tools",
+          sanitize: expect.any(Function),
         },
       },
     };
@@ -103,7 +124,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function)
+          sanitize: expect.any(Function),
         },
         topP: {
           key: "top_p",
@@ -164,7 +185,11 @@ describe("configs", () => {
     const sanitize = config.mapBody["prompt"].sanitize!;
     expect(typeof sanitize).toEqual("function");
 
-    const sanitized = sanitize([{ role: "assistant", content: "Hello World" }], {}, {});
+    const sanitized = sanitize(
+      [{ role: "assistant", content: "Hello World" }],
+      {},
+      {}
+    );
     expect(sanitized.trim()).toEqual(`Assistant: Hello World`);
   });
 });
@@ -178,7 +203,9 @@ describe("getLlmConfig", () => {
 
   it("should throw an error for an invalid provider", () => {
     const provider: any = "invalid";
-    expect(() => getLlmConfig(provider)).toThrow(`Invalid provider: ${provider}`);
+    expect(() => getLlmConfig(provider)).toThrow(
+      `Invalid provider: ${provider}`
+    );
   });
 
   it("should throw an error when provider is undefined", () => {

@@ -2,6 +2,11 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { promptSanitize, useJsonSanitize } from "./promptSanitize";
+import {
+  jsonSchemaSanitize,
+  functionCallSanitize,
+  functionsSanitize,
+} from "./optionSanitize";
 
 const openAiChatV1: Config = {
   key: "openai.chat.v1",
@@ -12,7 +17,7 @@ const openAiChatV1: Config = {
     topP: {},
     useJson: {},
     openAiApiKey: {
-      default: getEnvironmentVariable("OPENAI_API_KEY")
+      default: getEnvironmentVariable("OPENAI_API_KEY"),
     },
   },
   method: "POST",
@@ -32,6 +37,18 @@ const openAiChatV1: Config = {
       key: "response_format.type",
       sanitize: useJsonSanitize, // Reference extracted function
     },
+    "_options.jsonSchema": {
+      key: "response_format",
+      sanitize: jsonSchemaSanitize,
+    },
+    "_options.functionCall": {
+      key: "tool_choice",
+      sanitize: functionCallSanitize,
+    },
+    "_options.functions": {
+      key: "tools",
+      sanitize: functionsSanitize,
+    },
   },
 };
 
@@ -44,7 +61,7 @@ const openAiChatMockV1: Config = {
     topP: {},
     useJson: {},
     openAiApiKey: {
-      default: getEnvironmentVariable("OPENAI_API_KEY_MOCK")
+      default: getEnvironmentVariable("OPENAI_API_KEY_MOCK"),
     },
   },
   method: "POST",
@@ -52,6 +69,7 @@ const openAiChatMockV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
+      sanitize: promptSanitize,
     },
     model: {
       key: "model",
@@ -61,17 +79,26 @@ const openAiChatMockV1: Config = {
     },
     useJson: {
       key: "response_format.type",
-      sanitize: useJsonSanitize, // Reference extracted function
+      sanitize: useJsonSanitize,
+    },
+    "_options.jsonSchema": {
+      key: "response_format",
+      sanitize: jsonSchemaSanitize,
+    },
+    "_options.functionCall": {
+      key: "tool_choice",
+      sanitize: functionCallSanitize,
+    },
+    "_options.functions": {
+      key: "tools",
+      sanitize: functionsSanitize,
     },
   },
 };
-
-
-
 
 export const openai = {
   "openai.chat.v1": openAiChatV1,
   "openai.chat-mock.v1": openAiChatMockV1,
   "openai.gpt-4o": withDefaultModel(openAiChatV1, "gpt-4o"),
-  "openai.gpt-4o-mini": withDefaultModel(openAiChatV1, "gpt-4o-mini")
+  "openai.gpt-4o-mini": withDefaultModel(openAiChatV1, "gpt-4o-mini"),
 };
