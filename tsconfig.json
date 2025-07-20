@@ -30,5 +30,13 @@
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
-  "exclude": [".github", "build", "coverage", "dist", "docs", "node_modules"]
+  "exclude": [
+    ".github",
+    "build",
+    "coverage",
+    "dist",
+    "docs",
+    "node_modules",
+    "examples"
+  ]
 }
