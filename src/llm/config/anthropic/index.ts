@@ -36,15 +36,46 @@ const anthropicChatV1: Config = {
       key: "messages",
       sanitize: anthropicPromptSanitize,
     },
+    temperature: {
+      key: "temperature",
+    },
+    topP: {
+      key: "top_p",
+    },
+    topK: {
+      key: "top_k",
+    },
+    stopSequences: {
+      key: "stop_sequences",
+    },
+    stream: {
+      key: "stream",
+    },
+    metadata: {
+      key: "metadata",
+    },
+    serviceTier: {
+      key: "service_tier", // Map camelCase to snake_case
+    },
   },
 };
 
 export const anthropic = {
   "anthropic.chat.v1": anthropicChatV1,
+  // Claude 4 models (latest generation)
+  "anthropic.claude-sonnet-4": withDefaultModel(
+    anthropicChatV1,
+    "claude-sonnet-4-0"
+  ),
+  "anthropic.claude-opus-4": withDefaultModel(
+    anthropicChatV1,
+    "claude-opus-4-0"
+  ),
   "anthropic.claude-3-7-sonnet": withDefaultModel(
     anthropicChatV1,
-    "claude-3-7-sonnet-latest"
+    "claude-3-7-sonnet-20250219"
   ),
+  // Claude 3.5 models
   "anthropic.claude-3-5-sonnet": withDefaultModel(
     anthropicChatV1,
     "claude-3-5-sonnet-latest"
@@ -53,8 +84,13 @@ export const anthropic = {
     anthropicChatV1,
     "claude-3-5-haiku-latest"
   ),
+  // Claude 3 models (previous generation)
   "anthropic.claude-3-opus": withDefaultModel(
     anthropicChatV1,
-    "claude-3-opus-latest"
+    "claude-3-opus-20240229"
+  ),
+  "anthropic.claude-3-haiku": withDefaultModel(
+    anthropicChatV1,
+    "claude-3-haiku-20240307"
   ),
 };
