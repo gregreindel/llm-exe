@@ -22,7 +22,7 @@ import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
 export abstract class BaseExecutor<
   I extends PlainObject,
   O = any,
-  H extends BaseExecutorHooks = BaseExecutorHooks
+  H extends BaseExecutorHooks = BaseExecutorHooks,
 > {
   /**
    * @property id - internal id of the executor
@@ -55,6 +55,11 @@ export abstract class BaseExecutor<
    */
   public hooks: any;
   readonly allowedHooks: any[] = [hookOnComplete, hookOnError, hookOnSuccess];
+
+  /**
+   * @property maxHooksPerEvent - Maximum number of hooks allowed per event
+   */
+  readonly maxHooksPerEvent: number = 100;
 
   constructor(
     name: string,
@@ -194,6 +199,13 @@ export abstract class BaseExecutor<
             typeof hook === "function" &&
             !this.hooks[hookKey].find((h: ListenerFunction) => h === hook)
           ) {
+            // Enforce hook limit to prevent unbounded memory growth
+            if (this.hooks[hookKey].length >= this.maxHooksPerEvent) {
+              throw new Error(
+                `Maximum number of hooks (${this.maxHooksPerEvent}) reached for event "${String(hookKey)}". ` +
+                  `Consider removing unused hooks or increasing the limit.`
+              );
+            }
             this.hooks[hookKey].push(hook);
           }
         }
@@ -225,10 +237,27 @@ export abstract class BaseExecutor<
 
   once(eventName: keyof H, fn: ListenerFunction) {
     if (typeof fn !== "function") return this;
+
+    // Enforce hook limit to prevent unbounded memory growth
+    if (
+      this.hooks[eventName] &&
+      this.hooks[eventName].length >= this.maxHooksPerEvent
+    ) {
+      throw new Error(
+        `Maximum number of hooks (${this.maxHooksPerEvent}) reached for event "${String(eventName)}". ` +
+          `Consider removing unused hooks or increasing the limit.`
+      );
+    }
+
+    // Wrapper that removes itself after first execution
     const onceWrapper: ListenerFunction = (...args: any[]) => {
       fn(...args);
       this.off(eventName, onceWrapper);
     };
+
+    if (!this.hooks[eventName]) {
+      this.hooks[eventName] = [];
+    }
     this.hooks[eventName].push(onceWrapper);
     return this;
   }
@@ -238,5 +267,44 @@ export abstract class BaseExecutor<
   }
   getTraceId() {
     return this.traceId;
+  }
+
+  /**
+   * Clear all hooks for a specific event or all events
+   * Useful for preventing memory leaks in long-running processes
+   * @param eventName - The event name to clear hooks for
+   */
+  clearHooks(eventName?: keyof H) {
+    if (eventName) {
+      if (this.hooks[eventName]) {
+        this.hooks[eventName] = [];
+      }
+    } else {
+      // Clear all hooks across all allowed events
+      for (const key of this.allowedHooks) {
+        if (this.hooks[key]) {
+          this.hooks[key] = [];
+        }
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Get the count of hooks for monitoring memory usage
+   * @param eventName - Optional event name to get count for
+   * @returns Hook count for specific event or all events
+   */
+  getHookCount(eventName?: keyof H): number | Record<string, number> {
+    if (eventName) {
+      return this.hooks[eventName]?.length || 0;
+    }
+
+    // Return counts for all events
+    const counts: Record<string, number> = {};
+    for (const key of this.allowedHooks) {
+      counts[key] = this.hooks[key]?.length || 0;
+    }
+    return counts;
   }
 }
