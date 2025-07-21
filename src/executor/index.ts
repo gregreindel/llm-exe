@@ -5,4 +5,8 @@ export {
   LlmExecutorWithFunctions,
   LlmExecutorOpenAiFunctions,
 } from "./llm-openai-function";
-export { createCoreExecutor, createLlmExecutor } from "./_functions";
+export {
+  createCoreExecutor,
+  createLlmExecutor,
+  createLlmFunctionExecutor,
+} from "./_functions";

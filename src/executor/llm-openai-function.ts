@@ -10,9 +10,9 @@ import {
 } from "@/types";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
-import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser";
 import { BaseParser, StringParser } from "@/parser";
 import { LlmExecutor } from "./llm";
+import { LlmNativeFunctionParser } from "@/parser/parsers/LlmNativeFunctionParser";
 
 /**
  * Core Executor With LLM
@@ -29,7 +29,7 @@ export class LlmExecutorWithFunctions<
   ) {
     super(
       Object.assign({}, llmConfiguration, {
-        parser: new OpenAiFunctionParser({
+        parser: new LlmNativeFunctionParser({
           parser: llmConfiguration.parser || new StringParser(),
         }),
       }),
