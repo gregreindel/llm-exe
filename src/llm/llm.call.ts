@@ -11,7 +11,7 @@ import {
   IChatMessages,
   LlmProvider,
   LlmProviderKey,
-  OpenAiLlmExecutorOptions,
+  LlmExecutorWithFunctionsOptions,
 } from "@/types";
 import { normalizeFunctionCall } from "./output/_util";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
@@ -19,7 +19,7 @@ import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
   messages: string | IChatMessages,
-  _options?: OpenAiLlmExecutorOptions<GenericFunctionCall>
+  _options?: LlmExecutorWithFunctionsOptions<GenericFunctionCall>
 ) {
   const config = getLlmConfig(state.key);
   const { functionCallStrictInput = false } = _options || {};
@@ -34,7 +34,7 @@ export async function useLlm_call(
   // this is where we'll handle provider-specific formatting
   // move into a separate function and have better tests
   if (_options && _options?.jsonSchema) {
-    if (state.provider === "openai.chat") {
+    if (state.provider.startsWith("openai")) {
       const curr = input["response_format"] || {};
       input["response_format"] = Object.assign(curr, {
         type: "json_schema",
@@ -48,7 +48,7 @@ export async function useLlm_call(
   }
 
   if (_options && _options?.functionCall) {
-    if (state.provider === "anthropic.chat") {
+    if (state.provider.startsWith("anthropic")) {
       if (_options?.functionCall === "none") {
         _options.functions = [];
       } else if (
@@ -59,7 +59,7 @@ export async function useLlm_call(
       } else {
         input["tool_choice"] = _options?.functionCall;
       }
-    } else if (state.provider === "openai.chat") {
+    } else if (state.provider.startsWith("openai")) {
       input["tool_choice"] = normalizeFunctionCall(
         _options?.functionCall,
         "openai"
@@ -67,13 +67,13 @@ export async function useLlm_call(
     }
   }
   if (_options && _options?.functions?.length) {
-    if (state.provider === "anthropic.chat") {
+    if (state.provider.startsWith("anthropic")) {
       input["tools"] = _options.functions.map((f) => ({
         name: f.name,
         description: f.description,
-        input_schema: f.parameters,
+        input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
       }));
-    } else if (state.provider === "openai.chat") {
+    } else if (state.provider.startsWith("openai")) {
       input["tools"] = _options.functions.map((f) => {
         const props = {
           name: f?.name,

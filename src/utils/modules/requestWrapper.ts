@@ -1,5 +1,5 @@
 import { stateFromOptions } from "@/llm/_utils.stateFromOptions";
-import { OpenAiLlmExecutorOptions, Config } from "@/types";
+import { LlmExecutorWithFunctionsOptions, Config } from "@/types";
 import { deepFreeze } from "@/utils/modules/deepFreeze";
 import { backOff } from "exponential-backoff";
 import { asyncCallWithTimeout } from "@/utils/modules/asyncCallWithTimeout";
@@ -44,7 +44,7 @@ export function apiRequestWrapper<T extends Record<string, any>, I>(
 
   let traceId: null | string = options?.traceId || null;
 
-  async function call(messages: I, options?: OpenAiLlmExecutorOptions) {
+  async function call(messages: I, options?: LlmExecutorWithFunctionsOptions) {
     try {
       metrics.total_calls++;
       const result = await backOff<T>(

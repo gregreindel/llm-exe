@@ -10,6 +10,7 @@ import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { CoreExecutor } from "./core";
 import { LlmExecutor } from "./llm";
+import { LlmExecutorWithFunctions } from "./llm-openai-function";
 
 /**
  * Function to create a core executor.
@@ -38,10 +39,25 @@ export function createLlmExecutor<
   Llm extends BaseLlm<any>,
   Prompt extends BasePrompt<any>,
   Parser extends BaseParser,
-  State extends BaseState
+  State extends BaseState,
 >(
   llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
   options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
 ) {
   return new LlmExecutor<Llm, Prompt, Parser, State>(llmConfiguration, options);
+}
+
+export function createLlmFunctionExecutor<
+  Llm extends BaseLlm,
+  Prompt extends BasePrompt<Record<string, any>>,
+  Parser extends BaseParser,
+  State extends BaseState,
+>(
+  llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
+  options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
+) {
+  return new LlmExecutorWithFunctions<Llm, Prompt, Parser, State>(
+    llmConfiguration,
+    options
+  );
 }

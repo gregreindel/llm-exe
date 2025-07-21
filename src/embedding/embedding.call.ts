@@ -7,7 +7,7 @@ import {
   GenericLLm,
   LlmProvider,
   EmbeddingProviderKey,
-  OpenAiLlmExecutorOptions,
+  LlmExecutorWithFunctionsOptions,
 } from "@/types";
 import { getEmbeddingConfig } from "./config";
 import { getEmbeddingOutputParser } from "./output/getEmbeddingOutputParser";
@@ -18,7 +18,7 @@ export async function createEmbedding_call(
     key: EmbeddingProviderKey;
   },
   _input: string | string[],
-  _options?: OpenAiLlmExecutorOptions
+  _options?: LlmExecutorWithFunctionsOptions
 ) {
   const config = getEmbeddingConfig(state.key);
 

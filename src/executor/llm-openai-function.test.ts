@@ -1,4 +1,4 @@
-import { LlmExecutorOpenAiFunctions } from "@/executor";
+import { LlmExecutorWithFunctions } from "@/executor";
 import { useLlm } from "@/llm";
 import { createChatPrompt } from "@/prompt";
 
@@ -6,11 +6,11 @@ import { createChatPrompt } from "@/prompt";
  * Tests LlmExecutor
  */
 describe("llm-exe:executor/LlmExecutor", () => {
-  const llm = useLlm("openai.chat-mock.v1", { model: "something"});
+  const llm = useLlm("openai.chat-mock.v1", { model: "something" });
 
-    const prompt = createChatPrompt("This is a prompt.");
+  const prompt = createChatPrompt("This is a prompt.");
   it("has basic properties", () => {
-    const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
     expect(executor).toHaveProperty("id");
     expect(executor).toHaveProperty("name");
     expect(executor).toHaveProperty("created");
@@ -32,7 +32,6 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(executor).toHaveProperty("getMetadata");
     expect(typeof executor.getMetadata).toEqual("function");
 
-
     expect(executor).toHaveProperty("runHook");
     expect(typeof executor.runHook).toEqual("function");
 
@@ -41,11 +40,17 @@ describe("llm-exe:executor/LlmExecutor", () => {
   });
 
   it("MockExecutor returns correct result from execute", async () => {
-    const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
-    await executor.execute({ input: "input-value"}, { functionCall: "none", functions: []})
-  })
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
+    await executor.execute(
+      { input: "input-value" },
+      { functionCall: "none", functions: [] }
+    );
+  });
   it("MockExecutor returns correct result from execute", async () => {
-    const executor = new LlmExecutorOpenAiFunctions({ llm, prompt });
-    await executor.execute({ input: "input-value"}, { functionCall: "auto", functions: []})
-  })
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
+    await executor.execute(
+      { input: "input-value" },
+      { functionCall: "auto", functions: [] }
+    );
+  });
 });

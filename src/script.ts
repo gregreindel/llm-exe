@@ -9,7 +9,7 @@ export {
 export {
   BaseParser,
   CustomParser,
-  OpenAiFunctionParser,
+  LlmNativeFunctionParser,
   createParser,
   createCustomParser,
 } from "./parser";
