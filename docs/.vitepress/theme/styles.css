@@ -1,0 +1,107 @@
+.VPHero.has-image .container {
+  column-gap: 5rem;
+}
+
+.VPHero.has-image .main {
+  max-width: 502px !important;
+}
+
+@media (min-width: 960px) {
+  .VPHero.has-image .heading .text {
+    line-height: 58px;
+    font-size: 52px;
+  }
+
+  .VPHero.has-image .tagline {
+    font-size: 22px;
+  }
+}
+
+/* Fix list styling */
+.home-block-description-list,
+.home-block-description-list li {
+  list-style-type: none !important;
+  list-style: none !important;
+}
+
+.home-block-description-list li::marker {
+  content: none !important;
+}
+
+/* Purple marker underline effect */
+.marker-highlight {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.marker-highlight::after {
+  content: '';
+  position: absolute;
+  left: -0.1em;
+  right: -0.1em;
+  bottom: 0;
+  height: 0.3em;
+  background: linear-gradient(to right, #8b5cf6, #a78bfa);
+  opacity: 0.3;
+  z-index: -1;
+  transform: skewY(-1deg);
+  transition: all 0.2s ease;
+}
+
+.marker-highlight:hover::after {
+  height: 0.9em;
+  opacity: 0.25;
+}
+
+/* Alternative with more highlight effect */
+.marker-highlight-full {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.marker-highlight-full::after {
+  content: '';
+  position: absolute;
+  left: -0.15em;
+  right: -0.15em;
+  bottom: -0.05em;
+  height: 0.85em;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  opacity: 0.2;
+  z-index: -1;
+  transform: skewY(-1.5deg);
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.marker-highlight-full:hover::after {
+  opacity: 0.3;
+  transform: skewY(-1.5deg) scaleX(1.05);
+}
+
+/* Accent version with just underline */
+.marker-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.marker-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.1em;
+  height: 3px;
+  background: linear-gradient(to right, #8b5cf6, #a78bfa);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.marker-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
