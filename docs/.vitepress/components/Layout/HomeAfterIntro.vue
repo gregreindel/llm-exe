@@ -4,7 +4,7 @@
       margin-top: 60px;
       margin-left: auto;
       margin-right: auto;
-      max-width: 960px;
+      max-width: 1140px;
     "
   >
     <slot></slot>
