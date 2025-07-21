@@ -22,6 +22,7 @@ export {
   CustomParser,
   FunctionCallParser,
   OpenAiFunctionParser,
+  LlmNativeFunctionParser,
   createParser,
   createCustomParser,
 } from "./parser";

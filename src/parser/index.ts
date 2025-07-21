@@ -1,5 +1,3 @@
-import { FunctionCallParser } from "@/parser/parsers/FunctionCallParser";
-import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser"; // For backward compatibility
 import { BaseParser, BaseParserWithJson } from "./_base";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
@@ -13,6 +11,10 @@ import { ReplaceStringTemplateParser } from "./parsers/ReplaceStringTemplatePars
 import { MarkdownCodeBlockParser } from "./parsers/MarkdownCodeBlock";
 import { MarkdownCodeBlocksParser } from "./parsers/MarkdownCodeBlocks";
 import { createCustomParser, createParser } from "./_functions";
+import {
+  LlmNativeFunctionParser,
+  OpenAiFunctionParser,
+} from "@/parser/parsers/LlmNativeFunctionParser";
 
 export {
   BaseParser,
@@ -25,7 +27,7 @@ export {
   ListToKeyValueParser,
   ListToArrayParser,
   ReplaceStringTemplateParser,
-  FunctionCallParser,
+  LlmNativeFunctionParser,
   OpenAiFunctionParser,
   MarkdownCodeBlockParser,
   MarkdownCodeBlocksParser,
@@ -34,8 +36,11 @@ export {
   createCustomParser,
 };
 
-// Export types from FunctionCallParser
+// Export FunctionCallParser as an alias for LlmNativeFunctionParser
+export { LlmNativeFunctionParser as FunctionCallParser } from "./parsers/LlmNativeFunctionParser";
+
+// Export types 
 export type {
   FunctionCall,
-  FunctionCallParserOptions,
-} from "./parsers/FunctionCallParser";
+  LlmNativeFunctionParserOptions as FunctionCallParserOptions,
+} from "./parsers/LlmNativeFunctionParser";
