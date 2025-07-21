@@ -1,4 +1,3 @@
-import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser";
 import { BaseParser, BaseParserWithJson } from "./_base";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
@@ -12,6 +11,10 @@ import { ReplaceStringTemplateParser } from "./parsers/ReplaceStringTemplatePars
 import { MarkdownCodeBlockParser } from "./parsers/MarkdownCodeBlock";
 import { MarkdownCodeBlocksParser } from "./parsers/MarkdownCodeBlocks";
 import { createCustomParser, createParser } from "./_functions";
+import {
+  LlmNativeFunctionParser,
+  OpenAiFunctionParser,
+} from "@/parser/parsers/LlmNativeFunctionParser";
 
 export {
   BaseParser,
@@ -24,6 +27,7 @@ export {
   ListToKeyValueParser,
   ListToArrayParser,
   ReplaceStringTemplateParser,
+  LlmNativeFunctionParser,
   OpenAiFunctionParser,
   MarkdownCodeBlockParser,
   MarkdownCodeBlocksParser,

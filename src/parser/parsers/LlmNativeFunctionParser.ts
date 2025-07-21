@@ -3,17 +3,17 @@ import { BaseParser } from "../_base";
 import { maybeParseJSON } from "@/utils";
 import { getResultText } from "@/llm/output/_utils/getResultText";
 
-export interface OpenAiFunctionParserOptions<T extends BaseParser<any>>
+export interface LlmNativeFunctionParserOptions<T extends BaseParser<any>>
   extends BaseParserOptions {
   parser: T;
 }
 
-export class OpenAiFunctionParser<T extends BaseParser<any>> extends BaseParser<
-  ParserOutput<T> | { name: any; arguments: any }
-> {
+export class LlmNativeFunctionParser<
+  T extends BaseParser<any>,
+> extends BaseParser<ParserOutput<T> | { name: any; arguments: any }> {
   public parser: T;
 
-  constructor(options: OpenAiFunctionParserOptions<T>) {
+  constructor(options: LlmNativeFunctionParserOptions<T>) {
     super("openAiFunction", options, "function_call");
     this.parser = options.parser;
   }
@@ -29,3 +29,8 @@ export class OpenAiFunctionParser<T extends BaseParser<any>> extends BaseParser<
     return this.parser.parse(getResultText(text)) as ParserOutput<T>;
   }
 }
+
+/**
+ * @deprecated Use `LlmExecutorWithFunctions` instead.
+ */
+export const OpenAiFunctionParser = LlmNativeFunctionParser;
