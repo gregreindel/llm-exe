@@ -5,6 +5,7 @@ import {
 } from "@/types";
 import { BaseStateItem } from "./item";
 import { maybeStringifyJSON } from "@/utils";
+import { LlmExeError } from "@/utils/modules/errors";
 
 export class Dialogue extends BaseStateItem<IChatMessages> {
   public name: string;
@@ -64,6 +65,12 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
   setFunctionCallMessage(input: {
     function_call: { name: string; arguments: string };
   }) {
+    if (!input?.function_call) {
+      throw new LlmExeError(`Invalid arguments`, "state", {
+        error: `Invalid arguments: missing required function_call`,
+        module: "dialogue",
+      });
+    }
     this.value.push({
       role: "assistant",
       function_call: {
