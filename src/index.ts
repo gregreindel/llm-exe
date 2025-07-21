@@ -1,5 +1,9 @@
 export { useExecutors, createCallableExecutor } from "@/plugins/callable";
-export { createCoreExecutor, createLlmExecutor } from "@/executor/_functions";
+export {
+  createCoreExecutor,
+  createLlmExecutor,
+  createLlmFunctionExecutor,
+} from "@/executor/_functions";
 export { BaseExecutor } from "@/executor/_base";
 export * as utils from "./utils";
 export { useLlm } from "./llm";
