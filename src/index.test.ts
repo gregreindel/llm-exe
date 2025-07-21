@@ -25,7 +25,7 @@ describe("llmExe", () => {
     expect(llmExe).toHaveProperty("CustomParser");
     expect(llmExe).toHaveProperty("createParser");
     expect(llmExe).toHaveProperty("createCustomParser");
-    expect(llmExe).toHaveProperty("OpenAiFunctionParser");
+    expect(llmExe).toHaveProperty("LlmNativeFunctionParser");
     /**
      * Core Functions
      */
