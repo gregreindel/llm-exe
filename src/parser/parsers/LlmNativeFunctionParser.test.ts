@@ -1,4 +1,7 @@
-import { LlmNativeFunctionParser, OpenAiFunctionParser } from "./LlmNativeFunctionParser";
+import {
+  LlmNativeFunctionParser,
+  OpenAiFunctionParser,
+} from "./LlmNativeFunctionParser";
 import { StringParser } from "./StringParser";
 
 describe("llm-exe:parser/LlmNativeFunctionParser", () => {
@@ -12,9 +15,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
   });
 
   it("parses simple string correctly when no function", () => {
-    expect(parser.parse([{ type: "text", text: "ok" }])).toEqual(
-      "ok"
-    );
+    expect(parser.parse([{ type: "text", text: "ok" }])).toEqual("ok");
   });
 
   it("parses single function call correctly", () => {
@@ -120,6 +121,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
       {
         type: "function_use",
         name: "test",
+        // @ts-expect-error type
         input: '{"key": "value"}',
       },
     ]);
