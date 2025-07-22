@@ -1,4 +1,5 @@
-import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser";
+import { FunctionCallParser } from "@/parser/parsers/FunctionCallParser";
+import { OpenAiFunctionParser } from "@/parser/parsers/OpenAiFunctionParser"; // For backward compatibility
 import { BaseParser, BaseParserWithJson } from "./_base";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
@@ -24,6 +25,7 @@ export {
   ListToKeyValueParser,
   ListToArrayParser,
   ReplaceStringTemplateParser,
+  FunctionCallParser,
   OpenAiFunctionParser,
   MarkdownCodeBlockParser,
   MarkdownCodeBlocksParser,
@@ -31,3 +33,9 @@ export {
   createParser,
   createCustomParser,
 };
+
+// Export types from FunctionCallParser
+export type {
+  FunctionCall,
+  FunctionCallParserOptions,
+} from "./parsers/FunctionCallParser";

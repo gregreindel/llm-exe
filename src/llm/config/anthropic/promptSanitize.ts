@@ -1,4 +1,5 @@
 import { IChatMessages } from "@/types";
+import { generateToolCallId } from "@/utils/modules/generateToolCallId";
 
 export function anthropicPromptSanitize(
   _messages: string | IChatMessages,
@@ -9,35 +10,109 @@ export function anthropicPromptSanitize(
     return [{ role: "user", content: _messages }];
   }
 
-  const [first, ...messages] = [..._messages.map((a) => ({ ...a }))];
-
-  // if a single system message is passed in:
-  // - we'll treat as a user message
-  if (first.role === "system" && messages.length === 0) {
-    return [{ role: "user", content: first.content }, ...messages];
+  if (!_messages || !Array.isArray(_messages)) {
+    return _messages || [];
   }
 
-  // if more than one message is passed in, and the first is a system message:
-  //   - we'll "delete" the system message and set it to the output object
-  //   - and return the rest of the messages
-  if (first.role === "system" && messages.length > 0) {
+  // Clone messages to avoid mutations
+  const messages = [..._messages.map((a) => ({ ...a }))];
+  
+  // Handle system message extraction (existing logic)
+  const [first, ...rest] = messages;
+  let messagesToProcess = messages;
+  
+  // Extract system message to output object if it's first
+  if (first && first.role === "system" && rest.length > 0) {
     _outputObj.system = first.content;
-    return messages.map((m) => {
-      if (m.role === "system") {
-        return { ...m, role: "user" };
-      }
-      return m;
-    });
+    messagesToProcess = rest;
+  } else if (first && first.role === "system" && rest.length === 0) {
+    // Single system message becomes user message
+    return [{ role: "user", content: first.content }];
   }
 
-  // otherwise, don't make assumptions?
-  return [
-    first,
-    ...messages.map((m) => {
-      if (m.role === "system") {
-        return { ...m, role: "user" };
+  // Now transform messages for tool calling
+  const transformedMessages: any[] = [];
+  const pendingToolCalls = new Map<string, string>(); // name -> id mapping
+  
+  for (let i = 0; i < messagesToProcess.length; i++) {
+    const msg = messagesToProcess[i];
+    
+    // Transform assistant messages with function_call
+    if (msg.role === 'assistant' && (msg as any).function_call) {
+      const toolUseId = generateToolCallId('anthropic');
+      pendingToolCalls.set((msg as any).function_call.name, toolUseId);
+      
+      const content = [];
+      
+      // Add text content if present
+      if (msg.content) {
+        content.push({ type: 'text', text: msg.content });
       }
-      return m;
-    }),
-  ];
+      
+      // Add tool use block
+      content.push({
+        type: 'tool_use',
+        id: toolUseId,
+        name: (msg as any).function_call.name,
+        input: typeof (msg as any).function_call.arguments === 'string'
+          ? JSON.parse((msg as any).function_call.arguments)  // Trust LLM-generated JSON is valid
+          : (msg as any).function_call.arguments
+      });
+      
+      transformedMessages.push({
+        role: 'assistant',
+        content
+      });
+    }
+    
+    // Transform function messages to tool results
+    else if (msg.role === 'function') {
+      const toolResults = [];
+      
+      // Collect this and any consecutive function messages
+      // (Anthropic requires all parallel tool results in one user message)
+      while (i < messagesToProcess.length && messagesToProcess[i].role === 'function') {
+        const funcMsg = messagesToProcess[i] as any;
+        
+        // Try to find matching tool use ID
+        let tool_use_id = funcMsg.tool_call_id;
+        if (!tool_use_id && pendingToolCalls.has(funcMsg.name)) {
+          tool_use_id = pendingToolCalls.get(funcMsg.name);
+        }
+        if (!tool_use_id) {
+          tool_use_id = generateToolCallId('anthropic');
+        }
+        
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id,
+          content: String(funcMsg.content) || "No response"
+        });
+        
+        i++; // Move to next message
+      }
+      i--; // Adjust for loop increment
+      
+      // Add user message with all tool results
+      transformedMessages.push({
+        role: 'user',
+        content: toolResults
+      });
+    }
+    
+    // Transform system messages to user messages (keep existing behavior)
+    else if (msg.role === 'system') {
+      transformedMessages.push({
+        role: 'user',
+        content: msg.content  // Don't transform to content blocks
+      });
+    }
+    
+    // Pass through all other messages unchanged
+    else {
+      transformedMessages.push(msg);
+    }
+  }
+  
+  return transformedMessages;
 }

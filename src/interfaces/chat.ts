@@ -30,6 +30,7 @@ export interface IChatFunctionMessage extends IChatMessageBase {
   role: Extract<IChatMessageRole, "function">;
   content: string;
   name: string;
+  tool_call_id?: string;
 }
 
 export interface IChatAssistantMessage extends IChatMessageBase {

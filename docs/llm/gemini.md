@@ -1,4 +1,4 @@
-# OpenAI
+# Google Gemini
 
 When using Google Gemini models, llm-exe will make POST requests to `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`. All models are supported if you pass `google.chat.v1` as the first argument, and then specify a model in the options.
 
@@ -25,7 +25,7 @@ const llm = useLlm("google.gemini-2.0-flash", {
 
 ## Authentication
 
-To authenticate, you need to provide an OpenAi API Key. You can provide the API key various ways, depending on your use case.
+To authenticate, you need to provide a Google Gemini API Key. You can provide the API key various ways, depending on your use case.
 
 1. Pass in as execute options using `geminiApiKey`
 2. Pass in as setup options using `geminiApiKey`
@@ -43,14 +43,14 @@ await llm.completion("");
 
 ## Gemini-Specific Options
 
-In addition to the generic options, the following options are OpenAi-specific and can be passed in when creating a llm function.
+In addition to the generic options, the following options are Gemini-specific and can be passed in when creating a llm function.
 
 | Option       | Type   | Default          | Description                                                          |
 | ------------ | ------ | ---------------- | -------------------------------------------------------------------- |
-| model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See OpenAI Docs       |
+| model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See Gemini Docs       |
 | geminiApiKey | string | undefined        | API key for Google. See [authentication](/llm/gemini#authentication) |
 | temperature  | number | undefined        | Maps to temperature.\*                                               |
-| maxTokens    | number | undefined        | Maps to max_tokens. See OpenAI Docs                                  |
-| topP         | number | undefined        | Maps to top_p. See OpenAI Docs                                       |
+| maxTokens    | number | undefined        | Maps to max_tokens. See Gemini Docs                                  |
+| topP         | number | undefined        | Maps to top_p. See Gemini Docs                                       |
 
-\* OpenAI Docs: [link](https://ai.google.dev/gemini-api/docs)
+\* Gemini Docs: [link](https://ai.google.dev/gemini-api/docs)

@@ -10,6 +10,7 @@ import {
   IPromptChatMessages,
   IChatMessage,
   IChatMessageContentDetailed,
+  IChatFunctionMessage,
 } from "@/types";
 import { extractPromptPlaceholderToken } from "@/utils/modules/extractPromptPlaceholderToken";
 import { pick } from "@/utils/modules/pick";
@@ -152,14 +153,24 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   /**
    * addFunctionMessage Helper to add an assistant message to the prompt.
    * @param content The message content.
+   * @param name The function name.
+   * @param tool_call_id (optional) The tool call ID for matching with tool responses.
    * @return ChatPrompt so it can be chained.
    */
-  addFunctionMessage(content: string, name: string): ChatPrompt<I> {
-    this.messages.push({
+  addFunctionMessage(
+    content: string,
+    name: string,
+    tool_call_id?: string
+  ): ChatPrompt<I> {
+    const message: IChatFunctionMessage = {
       role: "function",
       name,
       content,
-    });
+    };
+    if (tool_call_id) {
+      message.tool_call_id = tool_call_id;
+    }
+    this.messages.push(message);
     return this;
   }
   /**
@@ -205,7 +216,11 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
             this.addSystemMessage(message.content);
             break;
           case "function":
-            this.addFunctionMessage(message.content, message.name);
+            this.addFunctionMessage(
+              message.content,
+              message.name,
+              message.tool_call_id
+            );
             break;
         }
       }
@@ -300,13 +315,18 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
             }
             break;
           }
-          case "function":
-            messagesOut.push({
+          case "function": {
+            const funcMsg: IChatFunctionMessage = {
               role: "function",
               name: message.name,
               content: message.content,
-            });
+            };
+            if (message.tool_call_id) {
+              funcMsg.tool_call_id = message.tool_call_id;
+            }
+            messagesOut.push(funcMsg);
             break;
+          }
           case "system":
             messagesOut.push({
               role: "system",
@@ -557,13 +577,18 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                     }
                     break;
                   }
-                  case "function":
-                    messagesOut.push({
+                  case "function": {
+                    const funcMsg: IChatFunctionMessage = {
                       role: "function",
                       name: message.name,
                       content: message.content,
-                    });
+                    };
+                    if (message.tool_call_id) {
+                      funcMsg.tool_call_id = message.tool_call_id;
+                    }
+                    messagesOut.push(funcMsg);
                     break;
+                  }
                   case "system":
                     messagesOut.push({
                       role: "system",

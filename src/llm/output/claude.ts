@@ -22,6 +22,7 @@ function formatResult(response: Claude3Response): OutputResultContent[] {
         type: "function_use",
         name: result.name,
         input: result.input,
+        tool_call_id: result.id,
       } as OutputResultsFunction);
     }
   }
@@ -39,7 +40,7 @@ export function OutputAnthropicClaude3Chat(
   const usage = {
     input_tokens: result?.usage?.input_tokens,
     output_tokens: result?.usage?.output_tokens,
-    total_tokens: result?.usage?.input_tokens + result?.usage?.input_tokens,
+    total_tokens: result?.usage?.input_tokens + result?.usage?.output_tokens, // Fixed: was adding input_tokens twice
   };
 
   return BaseLlmOutput2({

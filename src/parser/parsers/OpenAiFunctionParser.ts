@@ -1,31 +1,12 @@
-import { BaseParserOptions, OutputResultContent, ParserOutput } from "@/types";
-import { BaseParser } from "../_base";
-import { maybeParseJSON } from "@/utils";
-import { getResultText } from "@/llm/output/_utils/getResultText";
+// This file is maintained for backward compatibility
+// The implementation has moved to FunctionCallParser.ts
 
-export interface OpenAiFunctionParserOptions<T extends BaseParser<any>>
-  extends BaseParserOptions {
-  parser: T;
-}
+export { 
+  OpenAiFunctionParser,
+  FunctionCallParser,
+  type FunctionCall,
+  type FunctionCallParserOptions
+} from "./FunctionCallParser";
 
-export class OpenAiFunctionParser<T extends BaseParser<any>> extends BaseParser<
-  ParserOutput<T> | { name: any; arguments: any }
-> {
-  public parser: T;
-
-  constructor(options: OpenAiFunctionParserOptions<T>) {
-    super("openAiFunction", options, "function_call");
-    this.parser = options.parser;
-  }
-  parse(text: OutputResultContent[], _options?: Record<string, any>) {
-    const functionUse = text?.find((a) => a.type === "function_use");
-    if (functionUse && "name" in functionUse && "input" in functionUse) {
-      return {
-        name: functionUse.name,
-        arguments: maybeParseJSON(functionUse.input),
-      };
-    }
-
-    return this.parser.parse(getResultText(text)) as ParserOutput<T>;
-  }
-}
+// Re-export the deprecated name as default for maximum compatibility
+export { OpenAiFunctionParser as default } from "./FunctionCallParser";

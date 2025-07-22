@@ -16,6 +16,7 @@ export {
 export {
   BaseParser,
   CustomParser,
+  FunctionCallParser,
   OpenAiFunctionParser,
   createParser,
   createCustomParser,

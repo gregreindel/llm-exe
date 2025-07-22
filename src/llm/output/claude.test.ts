@@ -12,7 +12,7 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     stop_sequence: null,
     usage: {
       input_tokens: 427,
-      total_tokens: 854,
+      total_tokens: 428,
       output_tokens: 1,
     },
     content: [
@@ -36,7 +36,11 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     expect((output as any).id).toEqual(mock.id);
     expect((output as any).name).toEqual(mock.model);
     expect((output as any).content).toEqual(mock.content);
-    expect((output as any).usage).toEqual(mock.usage);
+    expect((output as any).usage).toEqual({
+      input_tokens: 427,
+      output_tokens: 1,
+      total_tokens: 428  // Fixed: was 854 (input * 2), now correct as input + output
+    });
   });
   it("creates class with expected methods", () => {
     const output = OutputAnthropicClaude3Chat(mock as any);
@@ -89,10 +93,10 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
 
   it("getResultContent gets [] if not exists", () => {
     const output = OutputAnthropicClaude3Chat(mock_tools as any);
-    expect(output.getResultContent()).toEqual([
-      { type: 'text', text: 'Certainly!' },
-      { type: 'function_use', name: 'move', input: { direction: 'right' } }
+    expect(output.getResultContent()).toMatchObject([
+      { type: "text", text: "Certainly!" },
+      { type: "function_use", name: "move", input: { direction: "right" } },
+      // tool_call_id is optional and may be present
     ]);
   });
-
 });

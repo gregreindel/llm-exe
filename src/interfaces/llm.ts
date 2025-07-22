@@ -24,6 +24,7 @@ export interface OutputOpenAIChatChoiceFunction
     role: Extract<IChatMessageRole, "assistant">;
     content: null;
     tool_calls: {
+      id?: string;
       type: "function";
       function: {
         name: string;
@@ -186,7 +187,7 @@ export interface AmazonTitalResponse {
       tokenCount: number;
       outputText: string;
       completionReason: string;
-    }
+    },
   ];
 }
 
@@ -197,15 +198,12 @@ interface OutputGoogleGeminiChatChoiceBase {
   content: {
     role?: Extract<IChatMessageRole, "model">;
     parts: {
-      text?: string
-      functionCall?:
-      | null
-      | {
+      text?: string;
+      functionCall?: null | {
         name: string;
         args: string;
-      }
-    }[]
-
+      };
+    }[];
   };
   finishReason: "STOP";
   avgLogprobs?: number;
@@ -216,12 +214,12 @@ export interface OutputGoogleGeminiChatChoiceFunction
   content: {
     role?: Extract<IChatMessageRole, "model">;
     parts: {
-      text: undefined
+      text: undefined;
       functionCall?: {
         name: string;
         args: string;
-      }
-    }[]
+      };
+    }[];
   };
   finishReason: "STOP";
   avgLogprobs?: number;
@@ -234,7 +232,7 @@ export interface OutputGoogleGeminiChatChoiceMessage
     parts: {
       text: string;
       functionCall?: null;
-    }[]
+    }[];
   };
   finishReason: "STOP";
   avgLogprobs?: number;
@@ -254,19 +252,17 @@ export interface GoogleGeminiResponse {
       {
         modality: "TEXT";
         tokenCount: number;
-      }
+      },
     ];
     candidatesTokensDetails: [
       {
         modality: "TEXT";
         tokenCount: number;
-      }
+      },
     ];
   };
   candidates: OutputGoogleGeminiChatChoice[];
 }
-
-
 
 export interface OutputResultsBase {
   type: "text" | "function_use";
@@ -282,6 +278,7 @@ export interface OutputResultsFunction extends OutputResultsBase {
   type: "function_use";
   name: string;
   input: Record<string, any>;
+  tool_call_id?: string;
 }
 
 export type OutputResultContent = OutputResultsText | OutputResultsFunction;
@@ -461,7 +458,7 @@ export type AllLlm = {
     // output: OpenAiRequest;
   };
   "deepseek.chat.v1": {
-    input: DeepseekRequest;  
+    input: DeepseekRequest;
     // output: OpenAiRequest;
   };
 };
@@ -527,7 +524,7 @@ export type AllUseLlmOptions = AllLlm & {
   };
   "deepseek.chat": {
     input: DeepseekRequest;
-  }
+  };
 };
 
 export type LlmProviderKey = keyof AllLlm;
