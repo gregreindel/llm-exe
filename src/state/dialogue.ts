@@ -92,40 +92,45 @@ export class Dialogue extends BaseStateItem<InternalMessage[]> {
     // Clear existing
     this.value = [];
     
+    if (!Array.isArray(messages)) {
+      throw new Error('setHistory expects an array of messages');
+    }
+    
     // Convert each message using toInternal for proper format detection
-    if (Array.isArray(messages)) {
-      for (const message of messages) {
-        try {
-          const internalMessages = toInternal(message);
-          this.value.push(...internalMessages);
-        } catch (e) {
-          // Fallback to manual parsing for edge cases
-          switch (message?.role) {
-            case "user":
-              this.setUserMessage(message?.content, message?.name);
-              break;
-            case "assistant":
-              if (message.function_call) {
-                this.setFunctionCallMessage({
-                  function_call: message.function_call,
-                });
-              } else if (message?.content !== undefined) {
-                this.setAssistantMessage(message?.content);
-              }
-              break;
-            case "system":
-              this.setSystemMessage(message?.content);
-              break;
-            case "function":
-              this.setFunctionMessage(message?.content, message.name);
-              break;
-            case "tool":
-              this.setToolMessage(message?.content, message.tool_call_id);
-              break;
-            case "model": // Gemini's "model" is equivalent to "assistant"
+    for (const [index, message] of messages.entries()) {
+      try {
+        const internalMessages = toInternal(message);
+        this.value.push(...internalMessages);
+      } catch (error: any) {
+        // Log the error with context but don't fail completely
+        console.warn(`Failed to convert message at index ${index}:`, error.message, message);
+        
+        // Fallback to manual parsing for edge cases
+        switch (message?.role) {
+          case "user":
+            this.setUserMessage(message?.content, message?.name);
+            break;
+          case "assistant":
+            if (message.function_call) {
+              this.setFunctionCallMessage({
+                function_call: message.function_call,
+              });
+            } else if (message?.content !== undefined) {
               this.setAssistantMessage(message?.content);
-              break;
-          }
+            }
+            break;
+          case "system":
+            this.setSystemMessage(message?.content);
+            break;
+          case "function":
+            this.setFunctionMessage(message?.content, message.name);
+            break;
+          case "tool":
+            this.setToolMessage(message?.content, message.tool_call_id);
+            break;
+          case "model": // Gemini's "model" is equivalent to "assistant"
+            this.setAssistantMessage(message?.content);
+            break;
         }
       }
     }

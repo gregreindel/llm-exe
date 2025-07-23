@@ -46,6 +46,23 @@ import { InternalMessage } from "@/types";
  * Detect the provider format of messages
  */
 export function detectProvider(message: any): ProviderDetectionResult {
+  // Add null/undefined checks first
+  if (!message || typeof message !== "object") {
+    return {
+      provider: "unknown",
+      confidence: 0,
+      reason: "Invalid message structure - not an object",
+    };
+  }
+
+  if (!message.role || typeof message.role !== "string") {
+    return {
+      provider: "unknown",
+      confidence: 0,
+      reason: "Invalid message structure - missing or invalid role",
+    };
+  }
+
   // Check for provider-specific formats
   if (isOpenAIFormat(message)) {
     return {
@@ -72,8 +89,7 @@ export function detectProvider(message: any): ProviderDetectionResult {
     };
   }
 
-  // Try to infer from role patterns
-
+  // Try to infer from role patterns (now safe because we checked message.role above)
   if (message.role.includes("model")) {
     return {
       provider: "gemini",
@@ -108,6 +124,15 @@ export function toInternal(
     provider?: "openai" | "anthropic" | "gemini";
   } = {}
 ): InternalMessage[] {
+  // Input validation
+  if (!message || typeof message !== "object") {
+    throw new ConversionError("Message must be a valid object", "unknown");
+  }
+
+  if (!message.role || typeof message.role !== "string") {
+    throw new ConversionError("Message must have a valid role", "unknown");
+  }
+
   // Check if already in internal format (no conversion needed)
   if (!needsConversion(message)) {
     // If provider specified, add metadata
@@ -168,50 +193,6 @@ export function fromInternal(
 
     default:
       throw new ConversionError(`Unknown provider: ${provider}`, provider);
-  }
-}
-
-/**
- * Extract text content from messages regardless of format
- * Useful for getting a simple text representation
- */
-export function extractTextContent(messages: any[]): string {
-  try {
-    // Convert to internal format first
-    const internal = toInternal(messages);
-
-    // Extract text from internal messages
-    return internal
-      .filter((msg) => msg.content !== null)
-      .map((msg) => `${msg.role}: ${msg.content}`)
-      .join("\n");
-  } catch (error) {
-    // Fallback to direct extraction
-    return messages
-      .map((msg) => {
-        const role = msg.role || "unknown";
-        let content = "";
-
-        if (typeof msg.content === "string") {
-          content = msg.content;
-        } else if (Array.isArray(msg.content)) {
-          // Anthropic format
-          content = msg.content
-            .filter((c: any) => c.type === "text")
-            .map((c: any) => c.text)
-            .join(" ");
-        } else if (Array.isArray(msg.parts)) {
-          // Gemini format
-          content = msg.parts
-            .filter((p: any) => "text" in p)
-            .map((p: any) => p.text)
-            .join(" ");
-        }
-
-        return content ? `${role}: ${content}` : null;
-      })
-      .filter(Boolean)
-      .join("\n");
   }
 }
 
