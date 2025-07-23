@@ -5,17 +5,10 @@
  * Supports content arrays with mixed text and tool use.
  */
 
-import {
-  InternalMessage,
-  ConversionError,
-  ValidationError,
-  ConverterOptions,
-  generateId,
-  safeJsonParse,
-  safeJsonStringify,
-  TextContentPart,
-  ContentPart,
-} from "../types";
+import { maybeParseJSON, maybeStringifyJSON } from "@/utils";
+import { ConversionError, ValidationError, ConverterOptions } from "../types";
+import { ContentPart, InternalMessage, TextContentPart } from "@/types";
+import { generateUniqueNameId } from "@/utils/modules/generateUniqueNameId";
 
 /**
  * Anthropic content types
@@ -55,6 +48,8 @@ export type AnthropicContent =
 
 /**
  * Anthropic message format
+ * Note: While Anthropic API doesn't support system role in messages,
+ * we allow it here for compatibility when strict: false
  */
 export interface AnthropicMessage {
   role: "user" | "assistant" | "system";
@@ -183,7 +178,7 @@ export function anthropicMessageToInternal(
   options: ConverterOptions = {}
 ): InternalMessage[] {
   const results: InternalMessage[] = [];
-  const idGenerator = options.generateId || generateId;
+  const idGenerator = options.generateId || generateUniqueNameId;
 
   // Validate if requested
   if (options.validate !== false) {
@@ -218,7 +213,7 @@ export function anthropicMessageToInternal(
           content: [],
           function_call: {
             name: contentItem.name,
-            arguments: safeJsonStringify(contentItem.input),
+            arguments: maybeStringifyJSON(contentItem.input),
           },
           _meta: {
             group: {
@@ -366,7 +361,7 @@ export function internalMessagesToAnthropic(
   }
 
   const results: AnthropicMessage[] = [];
-  const idGenerator = options.generateId || generateId;
+  const idGenerator = options.generateId || generateUniqueNameId;
   let i = 0;
 
   while (i < messages.length) {
@@ -402,7 +397,7 @@ export function internalMessagesToAnthropic(
               type: "tool_use",
               id: m._meta?.original?.tool_call_id || `tool_${idGenerator()}`,
               name: m.function_call.name,
-              input: safeJsonParse(m.function_call.arguments, {}),
+              input: maybeParseJSON(m.function_call.arguments),
             });
           } else {
             content.push(...contentPartsToAnthropic(m.content));
@@ -441,6 +436,14 @@ export function internalMessagesToAnthropic(
       }
       // Single message conversion
       else {
+        // Handle system messages based on strict mode
+        if (msg.role === "system" && options.strict !== false) {
+          throw new ConversionError(
+            "Anthropic does not support system role in messages array. System prompts must be passed as a separate parameter. Use strict: false to pass through system messages.",
+            "anthropic"
+          );
+        }
+        
         // Convert content
         const content =
           msg._meta?.original?.wasArray ||

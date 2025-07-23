@@ -1,7 +1,7 @@
 import {
   ExecutorExecutionMetadata,
   ExecutorExecutionMetadataProperties,
-} from "@/interfaces";
+} from "@/types";
 
 export class ExecutorExecutionMetadataState<I, O> {
   #state: ExecutorExecutionMetadata = {

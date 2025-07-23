@@ -5,19 +5,7 @@
  * Supports parts arrays with text, functionCall, and functionResponse.
  */
 
-import {
-  InternalMessage,
-  ConversionError,
-  ValidationError,
-  ConverterOptions,
-  generateId,
-  safeJsonParse,
-  safeJsonStringify,
-  isInternalMessage,
-  ContentPart,
-  TextContentPart,
-  MultimediaContentPart,
-} from "../types";
+import { ConversionError, ValidationError, ConverterOptions } from "../types";
 import {
   GeminiPart,
   GeminiTextPart,
@@ -26,6 +14,14 @@ import {
   GeminiFunctionCallPart,
   GeminiFunctionResponsePart,
 } from "../../interfaces/gemini";
+import { isInternalMessage, maybeParseJSON, maybeStringifyJSON } from "@/utils";
+import {
+  ContentPart,
+  InternalMessage,
+  MultimediaContentPart,
+  TextContentPart,
+} from "@/types";
+import { generateUniqueNameId } from "@/utils/modules/generateUniqueNameId";
 
 /**
  * Gemini message format
@@ -193,7 +189,7 @@ export function geminiMessageToInternal(
   options: ConverterOptions = {}
 ): InternalMessage[] {
   const results: InternalMessage[] = [];
-  const idGenerator = options.generateId || generateId;
+  const idGenerator = options.generateId || generateUniqueNameId;
 
   // Validate if requested
   if (options.validate !== false) {
@@ -286,7 +282,7 @@ export function geminiMessageToInternal(
         content: [],
         function_call: {
           name: part.functionCall.name,
-          arguments: safeJsonStringify(part.functionCall.args),
+          arguments: maybeStringifyJSON(part.functionCall.args),
         },
         _meta: {
           group:
@@ -312,7 +308,7 @@ export function geminiMessageToInternal(
         content: [
           {
             type: "text",
-            text: safeJsonStringify(part.functionResponse.response),
+            text: maybeStringifyJSON(part.functionResponse.response),
           },
         ],
         _meta: {
@@ -387,7 +383,7 @@ export function internalMessagesToGemini(
             parts.push({
               functionCall: {
                 name: m.function_call.name,
-                args: safeJsonParse(m.function_call.arguments, {}),
+                args: maybeParseJSON(m.function_call.arguments),
               },
             });
           } else if (m.content.length > 0) {
@@ -434,7 +430,7 @@ export function internalMessagesToGemini(
             .filter((part): part is TextContentPart => part.type === "text")
             .map((part) => part.text)
             .join("");
-          const responseValue = safeJsonParse(textContent || "{}", {});
+          const responseValue = maybeParseJSON(textContent || "{}");
 
           functionResponses.push({
             functionResponse: {
@@ -467,7 +463,7 @@ export function internalMessagesToGemini(
               {
                 functionCall: {
                   name: msg.function_call.name,
-                  args: safeJsonParse(msg.function_call.arguments, {}),
+                  args: maybeParseJSON(msg.function_call.arguments),
                 },
               },
             ],

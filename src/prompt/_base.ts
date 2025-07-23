@@ -6,17 +6,9 @@ import {
   PromptPartial,
   PromptHelper,
 } from "@/types";
-import {
-  InternalMessage,
-  ContentPart,
-  TextContentPart,
-} from "@/converters/types";
+import { InternalMessage } from "@/types";
 import { toInternal } from "@/converters";
-
-// Type guard for text content parts
-function isTextContentPart(part: ContentPart): part is TextContentPart {
-  return part.type === "text";
-}
+import { isTextContentPart } from "@/utils";
 
 /**
  * BasePrompt should be extended.
@@ -142,7 +134,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
         if (!message.content || !Array.isArray(message.content)) {
           return "";
         }
-        
+
         const textParts = message.content
           .filter(isTextContentPart)
           .map((part) => part.text)
@@ -181,7 +173,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
         if (!message.content || !Array.isArray(message.content)) {
           return "";
         }
-        
+
         const textParts = message.content
           .filter(isTextContentPart)
           .map((part) => part.text)

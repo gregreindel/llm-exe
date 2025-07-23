@@ -20,6 +20,7 @@ export interface AnthropicToolResultContent {
   type: 'tool_result';
   tool_use_id: string;
   content: string;
+  is_error?: boolean;
 }
 
 export interface AnthropicTextContent {
@@ -27,16 +28,37 @@ export interface AnthropicTextContent {
   text: string;
 }
 
-export interface AnthropicAssistantToolMessage {
-  role: 'assistant';
-  content: Array<AnthropicTextContent | AnthropicToolUseContent>;
+export interface AnthropicImageContent {
+  type: 'image';
+  source: {
+    type: 'base64' | 'url';
+    media_type: string;
+    data?: string;
+    url?: string;
+  };
 }
 
-export interface AnthropicUserToolResultMessage {
-  role: 'user';
-  content: Array<AnthropicTextContent | AnthropicToolResultContent>;
+// Basic message types
+export interface AnthropicSystemMessage {
+  role: 'system';
+  content: string | Array<AnthropicTextContent>;
 }
+
+export interface AnthropicUserMessage {
+  role: 'user';
+  content: string | Array<AnthropicTextContent | AnthropicImageContent | AnthropicToolResultContent>;
+}
+
+export interface AnthropicAssistantMessage {
+  role: 'assistant';
+  content: string | Array<AnthropicTextContent | AnthropicToolUseContent>;
+}
+
+// Legacy aliases for backward compatibility
+export interface AnthropicAssistantToolMessage extends AnthropicAssistantMessage {}
+export interface AnthropicUserToolResultMessage extends AnthropicUserMessage {}
 
 export type AnthropicMessage = 
-  | AnthropicAssistantToolMessage
-  | AnthropicUserToolResultMessage;
+  | AnthropicSystemMessage
+  | AnthropicUserMessage
+  | AnthropicAssistantMessage;

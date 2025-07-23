@@ -5,17 +5,11 @@
  * Supports both legacy (function_call) and new (tool_calls) formats.
  */
 
-import {
-  InternalMessage,
-  ConversionError,
-  ValidationError,
-  ConverterOptions,
-  generateId,
-  isInternalMessage,
-  ContentPart,
-  TextContentPart,
-} from "../types";
+import { ConversionError, ValidationError, ConverterOptions } from "../types";
 import { OpenAIContentPart, OpenAIMessage } from "../../interfaces/openai";
+import { ContentPart, InternalMessage, TextContentPart } from "@/types";
+import { generateUniqueNameId } from "@/utils/modules/generateUniqueNameId";
+import { isInternalMessage } from "@/utils";
 
 /**
  * Type guard for OpenAI tool call
@@ -40,6 +34,33 @@ function contentPartsToText(content: ContentPart[]): string {
     .filter((part): part is TextContentPart => part.type === "text")
     .map((part) => part.text)
     .join("\n");
+}
+
+/**
+ * Convert internal content to OpenAI format intelligently
+ * Decides whether to use string or array format based on content and metadata
+ */
+function internalContentToOpenAI(
+  content: ContentPart[],
+  role: string,
+  metadata?: any
+): string | null | OpenAIContentPart[] {
+  if (content.length === 0) {
+    // Empty content: assistant gets null, others get empty array
+    return role === "assistant" ? null : [];
+  } else if (metadata?.original?.wasArray) {
+    // Respect original format if metadata exists
+    return contentPartsToOpenAI(content);
+  } else if (content.some((p) => p.type !== "text")) {
+    // Non-text content must be array
+    return contentPartsToOpenAI(content);
+  } else if (content.length > 1) {
+    // Multiple parts should be array (intelligent default)
+    return contentPartsToOpenAI(content);
+  } else {
+    // Single text part can be string
+    return contentPartsToText(content);
+  }
 }
 
 /**
@@ -260,7 +281,7 @@ export function openAIMessageToInternal(
   options: ConverterOptions = {}
 ): InternalMessage[] {
   const results: InternalMessage[] = [];
-  const idGenerator = options.generateId || generateId;
+  const idGenerator = options.generateId || generateUniqueNameId;
 
   // Validate if requested
   if (options.validate !== false) {
@@ -422,7 +443,7 @@ export function internalMessagesToOpenAI(
   }
 
   const results: OpenAIMessage[] = [];
-  const idGenerator = options.generateId || generateId;
+  const idGenerator = options.generateId || generateUniqueNameId;
   let i = 0;
 
   while (i < messages.length) {
@@ -470,11 +491,11 @@ export function internalMessagesToOpenAI(
 
           if (contentMessages.length > 0) {
             const firstContent = contentMessages[0];
-            content =
-              firstContent._meta?.original?.wasArray ||
-              firstContent.content.some((p) => p.type !== "text")
-                ? contentPartsToOpenAI(firstContent.content)
-                : contentPartsToText(firstContent.content);
+            content = internalContentToOpenAI(
+              firstContent.content,
+              "assistant",
+              firstContent._meta
+            );
           }
 
           // Create message with tool_calls array
@@ -495,11 +516,11 @@ export function internalMessagesToOpenAI(
         } else if (contentMessages.length > 0) {
           // Just content
           const firstContent = contentMessages[0];
-          const content =
-            firstContent._meta?.original?.wasArray ||
-            firstContent.content.some((p) => p.type !== "text")
-              ? contentPartsToOpenAI(firstContent.content)
-              : contentPartsToText(firstContent.content);
+          const content = internalContentToOpenAI(
+            firstContent.content,
+            "assistant",
+            firstContent._meta
+          );
 
           results.push({
             role: "assistant",
@@ -528,13 +549,11 @@ export function internalMessagesToOpenAI(
           });
         } else if (msg.role === "assistant" && msg.function_call) {
           // Assistant with function call
-          const content =
-            msg.content.length === 0
-              ? null
-              : msg._meta?.original?.wasArray ||
-                  msg.content.some((p) => p.type !== "text")
-                ? contentPartsToOpenAI(msg.content)
-                : contentPartsToText(msg.content);
+          const content = internalContentToOpenAI(
+            msg.content,
+            "assistant",
+            msg._meta
+          );
 
           results.push({
             role: "assistant",
@@ -553,11 +572,11 @@ export function internalMessagesToOpenAI(
           });
         } else {
           // Regular messages
-          const content =
-            msg._meta?.original?.wasArray ||
-            msg.content.some((p) => p.type !== "text")
-              ? contentPartsToOpenAI(msg.content)
-              : contentPartsToText(msg.content);
+          const content = internalContentToOpenAI(
+            msg.content,
+            msg.role,
+            msg._meta
+          );
 
           const openAIMsg: OpenAIMessage = {
             role: msg.role as any,

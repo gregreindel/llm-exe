@@ -21,7 +21,7 @@ import {
   GeminiFunctionCallPart,
   GeminiFunctionResponsePart,
 } from "@/interfaces/gemini";
-import { InternalMessage } from "@/converters/types";
+import { ContentPart, InternalMessage, TextContentPart } from "@/interfaces";
 
 // OpenAI
 export function isOpenAIAssistantToolCallMessage(
@@ -214,4 +214,28 @@ export function isPlaceholderMessage(msg: any): msg is {
   ];
 } {
   return msg.role === "placeholder";
+}
+
+export function isTextContentPart(part: ContentPart): part is TextContentPart {
+  return part.type === "text";
+}
+
+/**
+ * Type guard for InternalMessage
+ */
+export function isInternalMessage(msg: any): msg is InternalMessage {
+  return (
+    msg &&
+    typeof msg === "object" &&
+    typeof msg.role === "string" &&
+    Array.isArray(msg.content) &&
+    msg.content.every(
+      (part: any) =>
+        part && typeof part === "object" && typeof part.type === "string"
+    ) &&
+    (!msg.function_call ||
+      (typeof msg.function_call === "object" &&
+        typeof msg.function_call.name === "string" &&
+        typeof msg.function_call.arguments === "string"))
+  );
 }

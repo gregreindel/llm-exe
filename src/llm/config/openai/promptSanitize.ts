@@ -1,6 +1,6 @@
 import { generateToolCallId } from "@/utils/modules/generateToolCallId";
 import { fromInternal } from "@/converters";
-import { InternalMessage } from "@/converters/types";
+import { InternalMessage } from "@/types";
 
 /**
  * Sanitizes messages for OpenAI API, handling both legacy and new formats.

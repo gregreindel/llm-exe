@@ -10,18 +10,9 @@ import {
 import { extractPromptPlaceholderToken } from "@/utils/modules/extractPromptPlaceholderToken";
 import { get } from "@/utils/modules/get";
 import { escape } from "@/utils/modules/escape";
-import { isPlaceholderMessage } from "@/utils/guards";
+import { isPlaceholderMessage, isTextContentPart } from "@/utils/guards";
 import { toInternal } from "@/converters";
-import {
-  InternalMessage,
-  ContentPart,
-  TextContentPart,
-} from "@/converters/types";
-
-// Type guard for text content parts
-function isTextContentPart(part: ContentPart): part is TextContentPart {
-  return part.type === "text";
-}
+import { InternalMessage } from "@/types";
 
 /**
  * `ChatPrompt` provides a conversation-style prompt enabling various roles.

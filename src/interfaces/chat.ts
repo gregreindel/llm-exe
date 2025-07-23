@@ -1,4 +1,4 @@
-import type { InternalMessage, MessageMetadata } from "../converters/types";
+import type { InternalMessage, MessageMetadata } from "@/types";
 
 export type IChatMessageRole =
   | "system"

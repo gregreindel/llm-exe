@@ -1,6 +1,5 @@
-import { IChatMessages } from "@/types";
+import { IChatMessages, InternalMessage } from "@/types";
 import { fromInternal } from "@/converters";
-import { InternalMessage } from "@/converters/types";
 
 // Define types for Gemini message parts
 interface GeminiTextPart {

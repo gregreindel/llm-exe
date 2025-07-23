@@ -18,7 +18,6 @@ export {
 } from "./providers/gemini";
 
 import {
-  InternalMessage,
   ConverterOptions,
   ConversionError,
   ProviderDetectionResult,
@@ -41,6 +40,7 @@ import {
   internalMessagesToGemini,
   isGeminiFormat,
 } from "./providers/gemini";
+import { InternalMessage } from "@/types";
 
 /**
  * Detect the provider format of messages
@@ -316,15 +316,20 @@ export function createGroupId(): string {
  */
 export function needsConversion(message: any): boolean {
   // Check if already in internal format by looking for content structure
-  
+
   // If content is already a ContentPart array, it's internal format
   if (
     Array.isArray(message?.content) &&
     message.content.length > 0 &&
-    message.content.every((part: any) => 
-      typeof part === 'object' && 
-      'type' in part && 
-      (part.type === 'text' || part.type === 'image' || part.type === 'audio' || part.type === 'video' || part.type === 'document')
+    message.content.every(
+      (part: any) =>
+        typeof part === "object" &&
+        "type" in part &&
+        (part.type === "text" ||
+          part.type === "image" ||
+          part.type === "audio" ||
+          part.type === "video" ||
+          part.type === "document")
     )
   ) {
     // Also check if it has the right structure for internal format

@@ -1,7 +1,6 @@
-import { IChatMessages } from "@/types";
+import { IChatMessages, InternalMessage } from "@/types";
 import { generateToolCallId } from "@/utils/modules/generateToolCallId";
 import { fromInternal } from "@/converters";
-import { InternalMessage } from "@/converters/types";
 
 export function anthropicPromptSanitize(
   _messages: string | IChatMessages,
