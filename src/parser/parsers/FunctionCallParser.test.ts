@@ -9,7 +9,7 @@ describe("llm-exe:parser/FunctionCallParser", () => {
     expect(parser).toBeInstanceOf(BaseParser);
     expect(parser).toBeInstanceOf(FunctionCallParser);
     expect(parser).toHaveProperty("name");
-    expect(parser.name).toEqual("functionCall");
+    expect(parser.name).toEqual("openAiFunction");
   });
 
   it("parses simple string correctly when no function", () => {

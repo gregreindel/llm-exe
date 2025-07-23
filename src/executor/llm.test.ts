@@ -82,7 +82,7 @@ describe("llm-exe:executor/LlmExecutor", () => {
     const executor = new LlmExecutor({ llm, prompt });
     const response = await executor.execute({ input: "input-value" });
     expect(response).toEqual(
-      'Hello world from LLM! The input was [{"role":"system","content":"This is a prompt."}]'
+      `Hello world from LLM! The input was [{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"This is a prompt.\"}],\"_meta\":{\"original\":{\"provider\":\"openai\",\"wasArray\":false}}}]`
     );
   });
   it("MockExecutor returns correct result from execute", async () => {
@@ -91,7 +91,7 @@ describe("llm-exe:executor/LlmExecutor", () => {
     const executor = new LlmExecutor({ llm, prompt: promptAsFn });
     const response = await executor.execute({ input: "input-value" });
     expect(response).toEqual(
-      'Hello world from LLM! The input was [{"role":"system","content":"This is a prompt from a function"}]'
+      `Hello world from LLM! The input was [{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"This is a prompt from a function\"}],\"_meta\":{\"original\":{\"provider\":\"openai\",\"wasArray\":false}}}]`
     );
   });
   it("MockExecutor throws error if no prompt", async () => {
@@ -197,7 +197,12 @@ describe("llm-exe:executor/LlmExecutor", () => {
     await executor.execute(input);
 
     expect(executor.handler).toHaveBeenCalledWith(
-      [{ content: "This is a prompt.", role: "system" }],
+      [
+        expect.objectContaining({
+          content: [{ text: "This is a prompt.", type: "text" }],
+          role: "system",
+        }),
+      ],
       {
         jsonSchema: schema,
       }

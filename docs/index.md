@@ -107,7 +107,7 @@ async function llmClassifier(text: string) {
       "Classify this as 'bug', 'feature', or 'question': {{text}}"
     ),
     parser: createParser("stringExtract", {
-      enum: ["bug", "feature", "question"],
+      values: ["bug", "feature", "question"],
     }),
   }).execute({ text });
 }

@@ -28,7 +28,7 @@ const copyCode = () => {
 const classifier = createLlmExecutor({
   llm: useLlm("openai.gpt-4o-mini"),
   prompt: "Classify as bug/feature/question: {{text}}",
-  parser: createParser("enum", {
+  parser: createParser("stringExtract", {
     values: ["bug", "feature", "question"]
   })
 });

@@ -50,9 +50,18 @@ export default defineConfig({
       `window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      gtag('config', 'AW-17336997906');
       gtag('config', 'G-5YTJ8HRXNF');`,
     ],
     ["script", { src: "https://assets.llm-exe.com/llm-exe-browser-utils.js" }],
+
+    [
+      "script",
+      {
+        async: "",
+        src: "https://www.googletagmanager.com/gtag/js?id=AW-17336997906",
+      },
+    ],
   ],
   themeConfig: {
     logo: "https://assets.llm-exe.com/logo.png",

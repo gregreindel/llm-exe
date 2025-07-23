@@ -2,24 +2,25 @@ import { maybeStringifyJSON } from "@/utils";
 import { assert } from "@/utils/modules/assert";
 import { BasePrompt } from "./_base";
 import {
-  IChatMessages,
-  IChatUserMessage,
   IChatMessageRole,
   ChatPromptType,
   ChatPromptOptions,
-  IPromptChatMessages,
-  IChatMessage,
   IChatMessageContentDetailed,
-  IChatFunctionMessage,
 } from "@/types";
 import { extractPromptPlaceholderToken } from "@/utils/modules/extractPromptPlaceholderToken";
-import { pick } from "@/utils/modules/pick";
 import { get } from "@/utils/modules/get";
 import { escape } from "@/utils/modules/escape";
+import { isPlaceholderMessage } from "@/utils/guards";
+import { toInternal } from "@/converters";
+import {
+  InternalMessage,
+  ContentPart,
+  TextContentPart,
+} from "@/converters/types";
 
-export interface ChatPrompt<I extends Record<string, any>>
-  extends BasePrompt<I> {
-  messages: IPromptChatMessages;
+// Type guard for text content parts
+function isTextContentPart(part: ContentPart): part is TextContentPart {
+  return part.type === "text";
 }
 
 /**
@@ -50,6 +51,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     options?: ChatPromptOptions
   ) {
     super(initialSystemPromptMessage, options);
+
     if (typeof options?.allowUnsafeUserTemplate === "boolean") {
       this.parseUserTemplates = options?.allowUnsafeUserTemplate;
     }
@@ -62,36 +64,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param name (optional) The name of the user. Only accepted if role is `user`.
    * @return instance of ChatPrompt.
    */
-  addToPrompt(
-    content: string,
-    role: Extract<IChatMessageRole, "assistant">,
-    name?: undefined
-  ): ChatPrompt<I>;
-  addToPrompt(
-    content: string,
-    role: Extract<IChatMessageRole, "system">,
-    name?: undefined
-  ): ChatPrompt<I>;
-  addToPrompt(
-    content: string,
-    role: Extract<IChatMessageRole, "user">,
-    name?: string
-  ): ChatPrompt<I>;
-  addToPrompt(
-    content: string,
-    role: Extract<IChatMessageRole, "function">,
-    name: string
-  ): ChatPrompt<I>;
-  addToPrompt(
-    content: string,
-    role: Extract<IChatMessageRole, "function_call">,
-    name: string
-  ): ChatPrompt<I>;
-  addToPrompt(
-    content: string,
-    role: IChatMessageRole,
-    name?: string
-  ): ChatPrompt<I> {
+  addToPrompt(content: string, role: string, name?: string) {
     if (content) {
       switch (role) {
         case "system":
@@ -126,14 +99,13 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     content: string | IChatMessageContentDetailed[],
     name?: string
   ): ChatPrompt<I> {
-    const message: IChatUserMessage = {
-      role: "user",
-      content,
-    };
-    if (name) {
-      message.name = name;
-    }
-    this.messages.push(message);
+    this.messages.push(
+      ...toInternal({
+        role: "user",
+        content,
+        name,
+      })
+    );
     return this;
   }
 
@@ -143,10 +115,12 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @return ChatPrompt so it can be chained.
    */
   addAssistantMessage(content: string): ChatPrompt<I> {
-    this.messages.push({
-      role: "assistant",
-      content,
-    });
+    this.messages.push(
+      ...toInternal({
+        role: "assistant",
+        content,
+      })
+    );
     return this;
   }
 
@@ -162,15 +136,15 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     name: string,
     tool_call_id?: string
   ): ChatPrompt<I> {
-    const message: IChatFunctionMessage = {
-      role: "function",
-      name,
-      content,
-    };
-    if (tool_call_id) {
-      message.tool_call_id = tool_call_id;
-    }
-    this.messages.push(message);
+    this.messages.push(
+      ...toInternal({
+        role: "function",
+        name,
+        content,
+        tool_call_id,
+      })
+    );
+
     return this;
   }
   /**
@@ -181,50 +155,35 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
 
   addFunctionCallMessage(function_call?: { name: string; arguments: string }) {
     if (function_call) {
-      this.messages.push({
-        role: "assistant",
-        function_call: {
-          name: function_call.name,
-          arguments: maybeStringifyJSON(function_call.arguments),
-        },
-        content: null,
-      });
+      this.messages.push(
+        ...toInternal({
+          role: "assistant",
+          function_call: {
+            name: function_call.name,
+            arguments: maybeStringifyJSON(function_call.arguments),
+          },
+          content: null,
+        })
+      );
     }
 
     return this;
   }
   /**
    * addFromHistory Adds multiple messages at one time.
-   * @param history History of chat messages.
+   * Normalizes various provider-specific message formats into our internal format.
+   * @param history History of chat messages (can be from any provider).
    * @return ChatPrompt so it can be chained.
    */
-  addFromHistory(history: IChatMessages): ChatPrompt<I> {
-    if (history && Array.isArray(history)) {
-      for (const message of history) {
-        switch (message.role) {
-          case "user":
-            this.addUserMessage(message.content, message?.name);
-            break;
-          case "assistant":
-            if (message.function_call) {
-              this.addFunctionCallMessage(message.function_call);
-            } else if (message?.content) {
-              this.addAssistantMessage(message?.content);
-            }
-            break;
-          case "system":
-            this.addSystemMessage(message.content);
-            break;
-          case "function":
-            this.addFunctionMessage(
-              message.content,
-              message.name,
-              message.tool_call_id
-            );
-            break;
-        }
-      }
+  addFromHistory(history: any[]): ChatPrompt<I> {
+    if (!history || !Array.isArray(history)) {
+      return this;
     }
+
+    for (const message of history) {
+      this.messages.push(...toInternal(message));
+    }
+
     return this;
   }
 
@@ -249,7 +208,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     }
     this.messages.push({
       role: "placeholder",
-      content: `${start}${params.join(" ")}${end}`,
+      content: [{ type: "text", text: `${start}${params.join(" ")}${end}` }],
     });
     return this;
   }
@@ -273,67 +232,36 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
       }
       this.messages.push({
         role: "placeholder",
-        content: `${start}${params.join(" ")}${end}`,
+        content: [{ type: "text", text: `${start}${params.join(" ")}${end}` }],
       });
     }
     return this;
   }
 
   private _format_placeholderDialogueHistory(
-    data: ReturnType<typeof extractPromptPlaceholderToken>,
+    data: Omit<ReturnType<typeof extractPromptPlaceholderToken>, "token">,
     replacements: any
   ) {
-    const messagesOut: IChatMessages = [];
+    const messagesOut: InternalMessage[] = [];
 
     /* istanbul ignore next */
     const { key = "", user } = data;
-    const history: IChatMessages = get(replacements, key, []);
+    const history: any[] = get(replacements, key, []);
     if (history && Array.isArray(history)) {
       for (const message of history) {
-        switch (message.role) {
-          case "user": {
-            const m = pick(message, ["role", "content", "name"]);
-            if (user) {
-              m["name"] = user;
-            }
-            messagesOut.push(m);
-            break;
-          }
+        // Convert each message to internal format
+        const internalMessages = toInternal(message);
 
-          case "assistant": {
-            if (message.function_call) {
-              messagesOut.push({
-                role: "assistant",
-                content: null,
-                function_call: message.function_call,
-              });
-            } else if (message?.content) {
-              messagesOut.push({
-                role: "assistant",
-                content: message.content,
-              });
-            }
-            break;
-          }
-          case "function": {
-            const funcMsg: IChatFunctionMessage = {
-              role: "function",
-              name: message.name,
-              content: message.content,
-            };
-            if (message.tool_call_id) {
-              funcMsg.tool_call_id = message.tool_call_id;
-            }
-            messagesOut.push(funcMsg);
-            break;
-          }
-          case "system":
-            messagesOut.push({
-              role: "system",
-              content: message.content,
-            });
-            break;
+        // Apply user name override if specified
+        if (
+          user &&
+          internalMessages.length > 0 &&
+          internalMessages[0].role === "user"
+        ) {
+          internalMessages[0].name = user;
         }
+
+        messagesOut.push(...internalMessages);
       }
     }
 
@@ -347,8 +275,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param values input values.
    * @return formatted prompt.
    */
-  format(values: I): IChatMessages {
-    const messagesOut: IChatMessages = [];
+  format(values: I): InternalMessage[] {
+    const messagesOut: InternalMessage[] = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
 
@@ -357,8 +285,14 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     }
 
     for (const message of this.messages) {
-      if (message.role === "placeholder") {
-        const tokenData = extractPromptPlaceholderToken(message.content);
+      if (
+        message.role === "placeholder" &&
+        message.content &&
+        isPlaceholderMessage(message)
+      ) {
+        const tokenData = extractPromptPlaceholderToken(
+          message.content[0].text
+        );
         switch (tokenData.token) {
           case ">DialogueHistory": {
             messagesOut.push(
@@ -367,157 +301,94 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                 replacements
               )
             );
-            /* istanbul ignore next */
-            // const { key = "", user } = data;
-            // const history: IChatMessages = get(replacements, key, []);
-            // if (history && Array.isArray(history)) {
-            //   for (const message of history) {
-            //     switch (message.role) {
-            //       case "user": {
-            //         const m = pick(message, ["role", "content", "name"]);
-            //         if (user) {
-            //           m["name"] = user;
-            //         }
-            //         messagesOut.push(m);
-            //         break;
-            //       }
 
-            //       case "assistant": {
-            //         if (message.function_call) {
-            //           messagesOut.push({
-            //             role: "assistant",
-            //             content: null,
-            //             function_call: message.function_call,
-            //           });
-            //         } else if (message?.content) {
-            //           messagesOut.push({
-            //             role: "assistant",
-            //             content: message.content,
-            //           });
-            //         }
-            //         break;
-            //       }
-            //       case "function":
-            //         messagesOut.push({
-            //           role: "function",
-            //           name: message.name,
-            //           content: message.content,
-            //         });
-            //         break;
-            //       case "system":
-            //         messagesOut.push({
-            //           role: "system",
-            //           content: message.content,
-            //         });
-            //         break;
-            //     }
-            //   }
-            // }
             break;
           }
           case ">SingleChatMessage": {
             const { name, content, role } = tokenData;
             if (role && content) {
-              const message = {
-                role,
-                name,
-                content: this.replaceTemplateString(content, replacements, {
-                  partials: this.partials,
-                  helpers: this.helpers,
-                }),
-              };
-
-              if (!name || role !== "user") {
-                delete message.name;
-              }
-              messagesOut.push(message as IChatMessage);
-            }
-            break;
-          }
-        }
-      } else if (message.role === "function") {
-        messagesOut.push(
-          Object.assign({}, message, {
-            content: this.replaceTemplateString(message.content, replacements, {
-              partials: this.partials,
-              helpers: this.helpers,
-            }),
-          })
-        );
-      } else {
-        if (safeToParseTemplate.includes(message.role)) {
-          if (Array.isArray(message.content)) {
-            const content = message.content.map((m) =>
-              m.text
-                ? {
-                    type: "text",
-                    text: this.runPromptFilter(
-                      this.replaceTemplateString(
-                        this.runPromptFilter(m.text, this.filters.pre, values),
-                        replacements,
-                        {
-                          partials: this.partials,
-                          helpers: this.helpers,
-                        }
-                      ),
-                      this.filters.post,
-                      values
-                    ),
-                  }
-                : m
-            );
-            messagesOut.push(Object.assign({}, message, { content }));
-          } else if (message.content) {
-            const content = this.runPromptFilter(
-              this.replaceTemplateString(
-                this.runPromptFilter(message.content, this.filters.pre, values),
+              const processedContent = this.replaceTemplateString(
+                content,
                 replacements,
                 {
                   partials: this.partials,
                   helpers: this.helpers,
                 }
-              ),
-              this.filters.post,
-              values
-            );
-            messagesOut.push(Object.assign({}, message, { content }));
-          } else {
-            messagesOut.push(Object.assign({}, message, { content: null }));
+              );
+
+              const message: InternalMessage = {
+                role,
+                content: [{ type: "text", text: processedContent }],
+              };
+
+              if (name && role === "user") {
+                message.name = name;
+              }
+              messagesOut.push(message);
+            }
+            break;
           }
+        }
+      } else if (message.role === "function") {
+        // Process text content parts for function messages
+        const processedContent = message.content.map((part) => {
+          if (isTextContentPart(part)) {
+            return {
+              type: "text" as const,
+              text: this.replaceTemplateString(part.text, replacements, {
+                partials: this.partials,
+                helpers: this.helpers,
+              }),
+            };
+          }
+          return part;
+        });
+        messagesOut.push(
+          Object.assign({}, message, {
+            content: processedContent,
+          })
+        );
+      } else {
+        if (safeToParseTemplate.includes(message.role)) {
+          // Process content parts array
+          const content = message.content.map((part) => {
+            if (isTextContentPart(part)) {
+              return {
+                type: "text" as const,
+                text: this.runPromptFilter(
+                  this.replaceTemplateString(
+                    this.runPromptFilter(part.text, this.filters.pre, values),
+                    replacements,
+                    {
+                      partials: this.partials,
+                      helpers: this.helpers,
+                    }
+                  ),
+                  this.filters.post,
+                  values
+                ),
+              };
+            }
+            // Non-text content parts pass through unchanged
+            return part;
+          });
+          messagesOut.push(Object.assign({}, message, { content }));
         } else {
-          /* istanbul ignore next */
-          messagesOut.push(
-            Object.assign({}, message, {
-              content: Array.isArray(message.content)
-                ? message.content.map((m) =>
-                    m.text
-                      ? {
-                          type: "text",
-                          text: this.runPromptFilter(
-                            this.runPromptFilter(
-                              m.text,
-                              this.filters.pre,
-                              values
-                            ),
-                            this.filters.post,
-                            values
-                          ),
-                        }
-                      : m
-                  )
-                : message.content && !Array.isArray(message.content)
-                  ? this.runPromptFilter(
-                      this.runPromptFilter(
-                        message.content,
-                        this.filters.pre,
-                        values
-                      ),
-                      this.filters.post,
-                      values
-                    )
-                  : null,
-            })
-          );
+          // For roles that shouldn't be parsed, still apply filters to text parts
+          const content = message.content.map((part) => {
+            if (isTextContentPart(part)) {
+              return {
+                type: "text" as const,
+                text: this.runPromptFilter(
+                  this.runPromptFilter(part.text, this.filters.pre, values),
+                  this.filters.post,
+                  values
+                ),
+              };
+            }
+            return part;
+          });
+          messagesOut.push(Object.assign({}, message, { content }));
         }
       }
     }
@@ -531,8 +402,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param values input values.
    * @return formatted prompt.
    */
-  async formatAsync(values: I): Promise<IChatMessages> {
-    const messagesOut: IChatMessages = [];
+  async formatAsync(values: I): Promise<InternalMessage[]> {
+    const messagesOut: InternalMessage[] = [];
     const replacements = this.getReplacements(values);
     const safeToParseTemplate = ["assistant", "system"];
 
@@ -541,73 +412,51 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     }
 
     for (const message of this.messages) {
-      if (message.role === "placeholder") {
+      if (message.role === "placeholder" && isPlaceholderMessage(message)) {
         const { token, ...data } = extractPromptPlaceholderToken(
-          message.content
+          message.content[0].text
         );
         switch (token) {
           case ">DialogueHistory": {
-            /* istanbul ignore next */
-            const { key = "", user } = data;
-            const history: IChatMessages = get(replacements, key, []);
-            if (history && Array.isArray(history)) {
-              for (const message of history) {
-                switch (message.role) {
-                  case "user": {
-                    const m = pick(message, ["role", "content", "name"]);
-                    if (user) {
-                      m["name"] = user;
-                    }
-                    messagesOut.push(m);
-                    break;
-                  }
-
-                  case "assistant": {
-                    if (message.function_call) {
-                      messagesOut.push({
-                        role: "assistant",
-                        content: null,
-                        function_call: message.function_call,
-                      });
-                    } else if (message?.content) {
-                      messagesOut.push({
-                        role: "assistant",
-                        content: message.content,
-                      });
-                    }
-                    break;
-                  }
-                  case "function": {
-                    const funcMsg: IChatFunctionMessage = {
-                      role: "function",
-                      name: message.name,
-                      content: message.content,
-                    };
-                    if (message.tool_call_id) {
-                      funcMsg.tool_call_id = message.tool_call_id;
-                    }
-                    messagesOut.push(funcMsg);
-                    break;
-                  }
-                  case "system":
-                    messagesOut.push({
-                      role: "system",
-                      content: message.content,
-                    });
-                    break;
-                }
-              }
-            }
+            messagesOut.push(
+              ...this._format_placeholderDialogueHistory(data, replacements)
+            );
             break;
           }
           case ">SingleChatMessage": {
             const { name, content, role } = data;
             if (role && content) {
-              const message = {
+              const processedContent = await this.replaceTemplateStringAsync(
+                content,
+                replacements,
+                {
+                  partials: this.partials,
+                  helpers: this.helpers,
+                }
+              );
+
+              const message: InternalMessage = {
                 role,
-                name,
-                content: await this.replaceTemplateStringAsync(
-                  content,
+                content: [{ type: "text", text: processedContent }],
+              };
+
+              if (name && role === "user") {
+                message.name = name;
+              }
+              messagesOut.push(message);
+            }
+            break;
+          }
+        }
+      } else if (message.role === "function") {
+        // Process text content parts for function messages
+        const processedContent = await Promise.all(
+          message.content.map(async (part) => {
+            if (isTextContentPart(part)) {
+              return {
+                type: "text" as const,
+                text: await this.replaceTemplateStringAsync(
+                  part.text,
                   replacements,
                   {
                     partials: this.partials,
@@ -615,41 +464,26 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                   }
                 ),
               };
-
-              if (!name || role !== "user") {
-                delete message.name;
-              }
-              messagesOut.push(message as IChatMessage);
             }
-            break;
-          }
-        }
-      } else if (message.role === "function") {
+            return part;
+          })
+        );
         messagesOut.push(
           Object.assign({}, message, {
-            content: await this.replaceTemplateStringAsync(
-              message.content,
-              replacements,
-              {
-                partials: this.partials,
-                helpers: this.helpers,
-              }
-            ),
+            content: processedContent,
           })
         );
       } else {
         if (safeToParseTemplate.includes(message.role)) {
-          if (Array.isArray(message.content)) {
-            const content = [];
-
-            for (const m of message.content) {
-              if (m.text) {
-                content.push({
-                  type: "text",
+          // Process content parts array
+          const content = await Promise.all(
+            message.content.map(async (part) => {
+              if (isTextContentPart(part)) {
+                return {
+                  type: "text" as const,
                   text: this.runPromptFilter(
-                    // HERE
                     await this.replaceTemplateStringAsync(
-                      this.runPromptFilter(m.text, this.filters.pre, values),
+                      this.runPromptFilter(part.text, this.filters.pre, values),
                       replacements,
                       {
                         partials: this.partials,
@@ -659,64 +493,29 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                     this.filters.post,
                     values
                   ),
-                });
-              } else {
-                content.push(m);
+                };
               }
-            }
-
-            messagesOut.push(Object.assign({}, message, { content }));
-          } else if (message.content) {
-            const content = this.runPromptFilter(
-              await this.replaceTemplateStringAsync(
-                this.runPromptFilter(message.content, this.filters.pre, values),
-                replacements,
-                {
-                  partials: this.partials,
-                  helpers: this.helpers,
-                }
-              ),
-              this.filters.post,
-              values
-            );
-            messagesOut.push(Object.assign({}, message, { content }));
-          } else {
-            messagesOut.push(Object.assign({}, message, { content: null }));
-          }
-        } else {
-          /* istanbul ignore next */
-          messagesOut.push(
-            Object.assign({}, message, {
-              content: Array.isArray(message.content)
-                ? message.content.map((m) =>
-                    m.text
-                      ? {
-                          type: "text",
-                          text: this.runPromptFilter(
-                            this.runPromptFilter(
-                              m.text,
-                              this.filters.pre,
-                              values
-                            ),
-                            this.filters.post,
-                            values
-                          ),
-                        }
-                      : m
-                  )
-                : message.content && !Array.isArray(message.content)
-                  ? this.runPromptFilter(
-                      this.runPromptFilter(
-                        message.content,
-                        this.filters.pre,
-                        values
-                      ),
-                      this.filters.post,
-                      values
-                    )
-                  : null,
+              // Non-text content parts pass through unchanged
+              return part;
             })
           );
+          messagesOut.push(Object.assign({}, message, { content }));
+        } else {
+          // For roles that shouldn't be parsed, still apply filters to text parts
+          const content = message.content.map((part) => {
+            if (isTextContentPart(part)) {
+              return {
+                type: "text" as const,
+                text: this.runPromptFilter(
+                  this.runPromptFilter(part.text, this.filters.pre, values),
+                  this.filters.post,
+                  values
+                ),
+              };
+            }
+            return part;
+          });
+          messagesOut.push(Object.assign({}, message, { content }));
         }
       }
     }

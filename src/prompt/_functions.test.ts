@@ -27,8 +27,8 @@ describe("llm-exe:prompt/createPrompt", () => {
   });
   it("allows you to create text prompt with default message", () => {
     const prompt = createPrompt("text", defaultMessage);
-    expect(prompt.messages[0]).toEqual({
-      content: defaultMessage,
+    expect(prompt.messages[0]).toMatchObject({
+      content: [{ text: defaultMessage, type: "text" }],
       role: "system",
     });
   });
@@ -41,8 +41,8 @@ describe("llm-exe:prompt/createPrompt", () => {
   });
   it("allows you to create chat prompt with default system message", () => {
     const prompt = createPrompt("chat", defaultMessage);
-    expect(prompt.messages[0]).toEqual({
-      content: defaultMessage,
+    expect(prompt.messages[0]).toMatchObject({
+      content: [{ text: defaultMessage, type: "text" }],
       role: "system",
     });
   });
@@ -55,8 +55,8 @@ describe("llm-exe:prompt/createPrompt", () => {
   });
   it("allows you to create chat prompt with default system message via createChatPrompt", () => {
     const prompt = createChatPrompt(defaultMessage);
-    expect(prompt.messages[0]).toEqual({
-      content: defaultMessage,
+    expect(prompt.messages[0]).toMatchObject({
+      content: [{ text: defaultMessage, type: "text" }],
       role: "system",
     });
   });

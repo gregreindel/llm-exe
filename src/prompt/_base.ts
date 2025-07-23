@@ -1,14 +1,22 @@
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { replaceTemplateStringAsync } from "@/utils/modules/replaceTemplateStringAsync";
 import {
-  IChatMessages,
   PromptOptions,
   PromptType,
   PromptPartial,
   PromptHelper,
-  IPromptMessages,
-  IPromptChatMessages,
 } from "@/types";
+import {
+  InternalMessage,
+  ContentPart,
+  TextContentPart,
+} from "@/converters/types";
+import { toInternal } from "@/converters";
+
+// Type guard for text content parts
+function isTextContentPart(part: ContentPart): part is TextContentPart {
+  return part.type === "text";
+}
 
 /**
  * BasePrompt should be extended.
@@ -16,7 +24,7 @@ import {
 export abstract class BasePrompt<I extends Record<string, any>> {
   readonly type: PromptType = "text";
 
-  public messages: IPromptMessages | IPromptChatMessages = [];
+  public messages: InternalMessage[] = [];
 
   public partials: PromptPartial[] = [];
   public helpers: PromptHelper[] = [];
@@ -66,7 +74,7 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @param role The role of the user. Defaults to system for base text prompt.
    * @return instance of BasePrompt.
    */
-  addToPrompt(content: string, role = "system"): BasePrompt<I> {
+  addToPrompt(content: string, role = "system") {
     if (content) {
       switch (role) {
         case "system":
@@ -84,10 +92,12 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @return returns BasePrompt so it can be chained.
    */
   addSystemMessage(content: string) {
-    this.messages.push({
-      role: "system",
-      content,
-    });
+    this.messages.push(
+      ...toInternal({
+        role: "system",
+        content,
+      })
+    );
     return this;
   }
 
@@ -123,14 +133,24 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @param separator The separator between messages. defaults to "\n\n"
    * @return returns messages formatted with template replacement
    */
-  format(values: I, separator: string = "\n\n"): string | IChatMessages {
+  format(values: I, separator: string = "\n\n"): string | InternalMessage[] {
     const replacements = this.getReplacements(values);
     /* istanbul ignore next */
     const messages = this.messages
       .map((message) => {
-        return message.content && !Array.isArray(message.content)
+        // Extract text content from ContentPart array
+        if (!message.content || !Array.isArray(message.content)) {
+          return "";
+        }
+        
+        const textParts = message.content
+          .filter(isTextContentPart)
+          .map((part) => part.text)
+          .join("\n");
+
+        return textParts
           ? this.replaceTemplateString(
-              this.runPromptFilter(message.content, this.filters.pre, values),
+              this.runPromptFilter(textParts, this.filters.pre, values),
               replacements,
               {
                 partials: this.partials,
@@ -150,24 +170,38 @@ export abstract class BasePrompt<I extends Record<string, any>> {
    * @param separator The separator between messages. defaults to "\n\n"
    * @return returns messages formatted with template replacement
    */
-  async formatAsync(values: I, separator: string = "\n\n"): Promise<string | IChatMessages> {
+  async formatAsync(
+    values: I,
+    separator: string = "\n\n"
+  ): Promise<string | InternalMessage[]> {
     const replacements = this.getReplacements(values);
-    const _messages = await Promise.all(this.messages
-      .map((message) => {
-        return message.content && !Array.isArray(message.content)
-          ?  this.replaceTemplateStringAsync(
-              this.runPromptFilter(message.content, this.filters.pre, values),
+    const _messages = await Promise.all(
+      this.messages.map((message) => {
+        // Extract text content from ContentPart array
+        if (!message.content || !Array.isArray(message.content)) {
+          return "";
+        }
+        
+        const textParts = message.content
+          .filter(isTextContentPart)
+          .map((part) => part.text)
+          .join("\n");
+
+        return textParts
+          ? this.replaceTemplateStringAsync(
+              this.runPromptFilter(textParts, this.filters.pre, values),
               replacements,
               {
                 partials: this.partials,
                 helpers: this.helpers,
               }
             )
-          : ""
-      }))
-    
+          : "";
+      })
+    );
+
     const messages = _messages.join(separator);
-    return this.runPromptFilter(messages, this.filters.post, values)
+    return this.runPromptFilter(messages, this.filters.post, values);
   }
 
   runPromptFilter(

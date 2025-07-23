@@ -1,4 +1,6 @@
 import { IChatMessages } from "@/types";
+import { fromInternal } from "@/converters";
+import { InternalMessage } from "@/converters/types";
 
 // Define types for Gemini message parts
 interface GeminiTextPart {
@@ -21,7 +23,10 @@ interface GeminiFunctionResponsePart {
   };
 }
 
-type GeminiPart = GeminiTextPart | GeminiFunctionCallPart | GeminiFunctionResponsePart;
+type GeminiPart =
+  | GeminiTextPart
+  | GeminiFunctionCallPart
+  | GeminiFunctionResponsePart;
 
 interface GeminiMessage {
   role: string;
@@ -54,6 +59,66 @@ export function googleGeminiPromptSanitize(
   // Clone messages to avoid mutations
   const messages = [..._messages.map((a) => ({ ...a }))];
 
+  // Check if messages have _meta field (indicating they came from converters)
+  const hasMetadata = messages.some((msg: any) => msg._meta !== undefined);
+
+  if (hasMetadata) {
+    try {
+      // Messages have metadata - use converter to reconstruct Gemini format
+      const geminiMessages = fromInternal(
+        messages as InternalMessage[],
+        "gemini",
+        {
+          strict: false,
+          validate: false,
+        }
+      );
+
+      // Extract system instructions if present
+      const systemMessages = geminiMessages.filter(
+        (msg: any) => msg.role === "system"
+      );
+      const nonSystemMessages = geminiMessages.filter(
+        (msg: any) => msg.role !== "system"
+      );
+
+      if (systemMessages.length > 0) {
+        // Add system instructions to output object
+        _outputObj.system_instruction = {
+          parts: systemMessages.map((message: any) => ({
+            text:
+              typeof message.content === "string"
+                ? message.content
+                : String(message.content),
+          })),
+        };
+      }
+
+      // If only system messages, convert to user message
+      if (nonSystemMessages.length === 0 && systemMessages.length === 1) {
+        return [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  typeof systemMessages[0].content === "string"
+                    ? systemMessages[0].content
+                    : String(systemMessages[0].content),
+              },
+            ],
+          },
+        ];
+      }
+
+      return nonSystemMessages;
+    } catch (error) {
+      console.warn("Failed to convert messages back to Gemini format:", error);
+      // Fall through to legacy logic
+    }
+  }
+
+  // Legacy transformation logic for backward compatibility
   // Handle single system message case
   if (messages.length === 1 && messages[0].role === "system") {
     return [{ role: "user", parts: [{ text: messages[0].content }] }];
@@ -135,7 +200,7 @@ export function googleGeminiPromptSanitize(
           typeof msg.content === "string"
             ? [{ text: msg.content }]
             : Array.isArray(msg.content)
-              ? msg.content as any // Pass through array content as-is
+              ? (msg.content as any) // Pass through array content as-is
               : [{ text: String(msg.content) }],
       });
     }
