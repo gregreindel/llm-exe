@@ -172,63 +172,6 @@ export function fromInternal(
 }
 
 /**
- * Round-trip conversion test
- * Useful for testing that messages can be converted back and forth without loss
- */
-export function testRoundTrip(
-  messages: any[],
-  provider?: "openai" | "anthropic" | "gemini",
-  options?: ConverterOptions
-): {
-  success: boolean;
-  provider: string;
-  internal: InternalMessage[];
-  roundTrip: any[];
-  matches: boolean;
-  error?: Error;
-} {
-  try {
-    // Detect provider if not specified
-    const detectedProvider = provider || detectProvider(messages).provider;
-
-    if (detectedProvider === "unknown") {
-      throw new Error("Could not detect provider format");
-    }
-
-    // Convert to internal
-    const internal = toInternal(messages, {
-      ...options,
-      provider: detectedProvider,
-    });
-
-    // Convert back
-    const roundTrip = fromInternal(internal, detectedProvider as any, options);
-
-    // Check if they match
-    const originalJson = JSON.stringify(messages);
-    const roundTripJson = JSON.stringify(roundTrip);
-    const matches = originalJson === roundTripJson;
-
-    return {
-      success: true,
-      provider: detectedProvider,
-      internal,
-      roundTrip,
-      matches,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      provider: provider || "unknown",
-      internal: [],
-      roundTrip: [],
-      matches: false,
-      error: error as Error,
-    };
-  }
-}
-
-/**
  * Extract text content from messages regardless of format
  * Useful for getting a simple text representation
  */
@@ -270,45 +213,6 @@ export function extractTextContent(messages: any[]): string {
       .filter(Boolean)
       .join("\n");
   }
-}
-
-/**
- * Count tool/function calls in messages
- */
-export function countToolCalls(messages: any[]): number {
-  try {
-    const internal = toInternal(messages);
-    return internal.filter((msg) => msg.function_call !== undefined).length;
-  } catch {
-    // Direct count as fallback
-    let count = 0;
-
-    messages.forEach((msg) => {
-      // OpenAI
-      if (msg.tool_calls) {
-        count += msg.tool_calls.length;
-      } else if (msg.function_call) {
-        count += 1;
-      }
-      // Anthropic
-      else if (Array.isArray(msg.content)) {
-        count += msg.content.filter((c: any) => c.type === "tool_use").length;
-      }
-      // Gemini
-      else if (Array.isArray(msg.parts)) {
-        count += msg.parts.filter((p: any) => "functionCall" in p).length;
-      }
-    });
-
-    return count;
-  }
-}
-
-/**
- * Utility to create a message group ID
- */
-export function createGroupId(): string {
-  return `group_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /**
