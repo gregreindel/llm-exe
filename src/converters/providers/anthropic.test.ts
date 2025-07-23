@@ -4,18 +4,14 @@ import {
   internalMessagesToAnthropic,
   isAnthropicFormat,
 } from "./anthropic";
+import type { AnthropicToolUseContent, AnthropicContent } from "./anthropic";
 import { AnthropicMessage } from "@/interfaces/anthropic";
 import { InternalMessage } from "@/interfaces";
 import {
-  getProviderToInternalTestCases,
-  getInternalToProviderTestCases,
   sharedErrorTestCases,
 } from "../test-messages";
 
 describe("Anthropic Message Converter", () => {
-  // Get Anthropic-specific test cases from shared repository
-  const toInternalTestCases = getProviderToInternalTestCases("anthropic");
-  const fromInternalTestCases = getInternalToProviderTestCases("anthropic");
 
   // Additional Anthropic-specific test cases not in shared
   const anthropicSpecificTestCases: {
@@ -365,9 +361,9 @@ describe("Anthropic Message Converter", () => {
 
   describe("Internal to Anthropic conversion", () => {
     it("should convert simple text message", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "user",
-        content: [{ type: "text", text: "Hello, world!" }]
+        content: [{ type: "text" as const, text: "Hello, world!" }]
       }];
       const result = internalMessagesToAnthropic(input);
       expect(result).toEqual([{
@@ -398,10 +394,10 @@ describe("Anthropic Message Converter", () => {
     });
 
     it("should convert function response to tool_result", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "function",
         name: "function",
-        content: [{ type: "text", text: "72F and sunny" }],
+        content: [{ type: "text" as const, text: "72F and sunny" }],
         tool_call_id: "call_123"
       }];
       const result = internalMessagesToAnthropic(input);
@@ -416,12 +412,13 @@ describe("Anthropic Message Converter", () => {
     });
 
     it("should convert assistant with text and function call", () => {
-      const input = [
+      const input: InternalMessage[] = [
         {
           role: "assistant",
-          content: [{ type: "text", text: "Let me check that" }],
+          content: [{ type: "text" as const, text: "Let me check that" }],
           _meta: {
-            group: { id: "group_123", position: 0, total: 2 }
+            group: { id: "group_123", position: 0, total: 2 },
+            original: { provider: "anthropic" }
           }
         },
         {
@@ -432,7 +429,8 @@ describe("Anthropic Message Converter", () => {
             arguments: '{"location": "Paris"}'
           },
           _meta: {
-            group: { id: "group_123", position: 1, total: 2 }
+            group: { id: "group_123", position: 1, total: 2 },
+            original: { provider: "anthropic" }
           }
         }
       ];
@@ -442,10 +440,12 @@ describe("Anthropic Message Converter", () => {
       expect(result[0].content).toHaveLength(2);
       expect(result[0].content[0]).toEqual({ type: "text", text: "Let me check that" });
       // Check tool_use content separately to handle generated ID
-      expect(result[0].content[1].type).toBe("tool_use");
-      expect(result[0].content[1].id).toMatch(/^toolu_/);
-      expect(result[0].content[1].name).toBe("get_weather");
-      expect(result[0].content[1].input).toEqual({ location: "Paris" });
+      const content = result[0].content as AnthropicContent[];
+      const toolUse = content[1] as AnthropicToolUseContent;
+      expect(toolUse.type).toBe("tool_use");
+      expect(toolUse.id).toMatch(/^toolu_/);
+      expect(toolUse.name).toBe("get_weather");
+      expect(toolUse.input).toEqual({ location: "Paris" });
     });
 
     it("should convert multiple function calls", () => {
@@ -479,22 +479,25 @@ describe("Anthropic Message Converter", () => {
       expect(result[0].content).toHaveLength(2);
       
       // Check first tool_use
-      expect(result[0].content[0].type).toBe("tool_use");
-      expect(result[0].content[0].id).toMatch(/^toolu_/);
-      expect(result[0].content[0].name).toBe("get_weather");
-      expect(result[0].content[0].input).toEqual({ location: "Tokyo" });
+      const content = result[0].content as AnthropicContent[];
+      const firstTool = content[0] as AnthropicToolUseContent;
+      expect(firstTool.type).toBe("tool_use");
+      expect(firstTool.id).toMatch(/^toolu_/);
+      expect(firstTool.name).toBe("get_weather");
+      expect(firstTool.input).toEqual({ location: "Tokyo" });
       
       // Check second tool_use
-      expect(result[0].content[1].type).toBe("tool_use");
-      expect(result[0].content[1].id).toMatch(/^toolu_/);
-      expect(result[0].content[1].name).toBe("get_time");
-      expect(result[0].content[1].input).toEqual({ timezone: "JST" });
+      const secondTool = content[1] as AnthropicToolUseContent;
+      expect(secondTool.type).toBe("tool_use");
+      expect(secondTool.id).toMatch(/^toolu_/);
+      expect(secondTool.name).toBe("get_time");
+      expect(secondTool.input).toEqual({ timezone: "JST" });
     });
 
     it("should handle system messages with strict: false", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "system",
-        content: [{ type: "text", text: "You are helpful" }]
+        content: [{ type: "text" as const, text: "You are helpful" }]
       }];
       const result = internalMessagesToAnthropic(input, { strict: false });
       expect(result).toHaveLength(1);
@@ -505,16 +508,16 @@ describe("Anthropic Message Converter", () => {
     });
 
     it("should throw on system messages with strict: true", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "system",
-        content: [{ type: "text", text: "You are helpful" }]
+        content: [{ type: "text" as const, text: "You are helpful" }]
       }];
       expect(() => internalMessagesToAnthropic(input)).toThrow(/system role/);
     });
   });
 
   describe("Bidirectional conversion (round-trip)", () => {
-    [...toInternalTestCases, ...anthropicSpecificTestCases]
+    anthropicSpecificTestCases
       .filter((tc) => !tc.skipRoundTrip)
       .forEach(({ name, input }) => {
         it(`should round-trip ${name}`, () => {

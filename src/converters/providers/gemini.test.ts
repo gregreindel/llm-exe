@@ -250,9 +250,9 @@ describe("Gemini Message Converter", () => {
 
   describe("Internal to Gemini conversion", () => {
     it("should convert simple text message", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "user",
-        content: [{ type: "text", text: "Hello, world!" }]
+        content: [{ type: "text" as const, text: "Hello, world!" }]
       }];
       const result = internalMessagesToGemini(input);
       expect(result).toEqual([{
@@ -262,9 +262,9 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should convert assistant to model role", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "assistant",
-        content: [{ type: "text", text: "I can help" }]
+        content: [{ type: "text" as const, text: "I can help" }]
       }];
       const result = internalMessagesToGemini(input);
       expect(result).toEqual([{
@@ -274,9 +274,9 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should convert system messages to user with prefix", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "system",
-        content: [{ type: "text", text: "You are helpful" }]
+        content: [{ type: "text" as const, text: "You are helpful" }]
       }];
       const result = internalMessagesToGemini(input);
       expect(result).toEqual([{
@@ -286,7 +286,7 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should convert function call", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "assistant",
         content: [],
         function_call: {
@@ -307,10 +307,10 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should convert function response with text result", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "function",
         name: "get_weather",
-        content: [{ type: "text", text: '{"temp": 72, "desc": "sunny"}' }]
+        content: [{ type: "text" as const, text: '{"temp": 72, "desc": "sunny"}' }]
       }];
       const result = internalMessagesToGemini(input);
       // Gemini puts function responses in user messages
@@ -326,10 +326,10 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should convert function response with JSON result", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "function",
         name: "get_weather",
-        content: [{ type: "text", text: '{"temp": 72, "conditions": "sunny"}' }]
+        content: [{ type: "text" as const, text: '{"temp": 72, "conditions": "sunny"}' }]
       }];
       const result = internalMessagesToGemini(input);
       expect(result).toEqual([{
@@ -344,33 +344,34 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should group consecutive function responses", () => {
-      const input = [
+      const input: InternalMessage[] = [
         {
           role: "function",
           name: "get_weather",
-          content: [{ type: "text", text: "NYC: 72F" }]
+          content: [{ type: "text" as const, text: "NYC: 72F" }]
         },
         {
           role: "function",
           name: "get_time",
-          content: [{ type: "text", text: "3:00 PM EST" }]
+          content: [{ type: "text" as const, text: "3:00 PM EST" }]
         }
       ];
       const result = internalMessagesToGemini(input);
       expect(result).toHaveLength(1);
       expect(result[0].role).toBe("user");
       expect(result[0].parts).toHaveLength(2);
-      expect(result[0].parts[0].functionResponse?.name).toBe("get_weather");
-      expect(result[0].parts[1].functionResponse?.name).toBe("get_time");
+      expect((result[0].parts[0] as any).functionResponse?.name).toBe("get_weather");
+      expect((result[0].parts[1] as any).functionResponse?.name).toBe("get_time");
     });
 
     it("should convert grouped assistant messages", () => {
-      const input = [
+      const input: InternalMessage[] = [
         {
           role: "assistant",
-          content: [{ type: "text", text: "Let me check both" }],
+          content: [{ type: "text" as const, text: "Let me check both" }],
           _meta: {
-            group: { id: "group_123", position: 0, total: 3 }
+            group: { id: "group_123", position: 0, total: 3 },
+            original: { provider: "gemini" }
           }
         },
         {
@@ -381,7 +382,8 @@ describe("Gemini Message Converter", () => {
             arguments: '{"location": "NYC"}'
           },
           _meta: {
-            group: { id: "group_123", position: 1, total: 3 }
+            group: { id: "group_123", position: 1, total: 3 },
+            original: { provider: "gemini" }
           }
         },
         {
@@ -392,7 +394,8 @@ describe("Gemini Message Converter", () => {
             arguments: '{"timezone": "EST"}'
           },
           _meta: {
-            group: { id: "group_123", position: 2, total: 3 }
+            group: { id: "group_123", position: 2, total: 3 },
+            original: { provider: "gemini" }
           }
         }
       ];
@@ -401,18 +404,18 @@ describe("Gemini Message Converter", () => {
       expect(result[0].role).toBe("model");
       expect(result[0].parts).toHaveLength(3);
       expect(result[0].parts[0]).toEqual({ text: "Let me check both" });
-      expect(result[0].parts[1].functionCall?.name).toBe("get_weather");
-      expect(result[0].parts[2].functionCall?.name).toBe("get_time");
+      expect((result[0].parts[1] as any).functionCall?.name).toBe("get_weather");
+      expect((result[0].parts[2] as any).functionCall?.name).toBe("get_time");
     });
 
     it("should convert base64 images", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "user",
         content: [{
-          type: "image",
+          type: "image" as const,
           mediaType: "image/png",
           source: {
-            type: "base64",
+            type: "base64" as const,
             data: "base64data"
           }
         }]
@@ -430,13 +433,13 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should convert URL images", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "user",
         content: [{
-          type: "image",
+          type: "image" as const,
           mediaType: "image/jpeg",
           source: {
-            type: "url",
+            type: "url" as const,
             url: "https://example.com/image.jpg"
           }
         }]
@@ -454,11 +457,14 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should handle empty content", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "assistant",
         content: [],
         _meta: {
-          original: { hadEmptyParts: true }
+          original: { 
+            provider: "gemini" as const,
+            hadEmptyParts: true 
+          }
         }
       }];
       const result = internalMessagesToGemini(input);
@@ -469,12 +475,12 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should skip unsupported content types", () => {
-      const input = [{
+      const input: InternalMessage[] = [{
         role: "user",
         content: [
-          { type: "text", text: "Check this audio" },
-          { type: "audio", mediaType: "audio/mp3", source: { type: "url", url: "audio.mp3" } },
-          { type: "text", text: "What do you hear?" }
+          { type: "text" as const, text: "Check this audio" },
+          { type: "audio" as const, mediaType: "audio/mp3", source: { type: "url" as const, url: "audio.mp3" } },
+          { type: "text" as const, text: "What do you hear?" }
         ]
       }];
       const result = internalMessagesToGemini(input);
@@ -661,9 +667,9 @@ describe("Gemini Message Converter", () => {
     });
 
     it("should handle strict mode for unknown roles", () => {
-      const internal = [{
+      const internal: InternalMessage[] = [{
         role: "unknown",
-        content: [{ type: "text", text: "test" }]
+        content: [{ type: "text" as const, text: "test" }]
       }];
       
       // Should throw in strict mode (default)
@@ -779,15 +785,15 @@ describe("Gemini Message Converter", () => {
       const messages: InternalMessage[] = [
         {
           role: "system",
-          content: [{ type: "text", text: "You are helpful" }]
+          content: [{ type: "text" as const, text: "You are helpful" }]
         },
         {
           role: "user", 
-          content: [{ type: "text", text: "Hello" }]
+          content: [{ type: "text" as const, text: "Hello" }]
         },
         {
           role: "assistant",
-          content: [{ type: "text", text: "Hi there!" }]
+          content: [{ type: "text" as const, text: "Hi there!" }]
         }
       ];
 
@@ -797,7 +803,7 @@ describe("Gemini Message Converter", () => {
         role: "user",
         parts: [{ text: "[System] You are helpful" }]
       });
-      expect(result[1].parts[0].text).toBe("Hello");
+      expect((result[1].parts[0] as any).text).toBe("Hello");
       expect(result[2].role).toBe("model");
     });
   });

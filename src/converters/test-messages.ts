@@ -61,10 +61,8 @@ export const sharedTestMessages: TestMessage[] = [
         role: "system",
         content: "You are a helpful assistant.", // String content since wasArray metadata is not preserved
       },
-      gemini: {
-        role: "system",
-        parts: [{ text: "You are a helpful assistant." }],
-      },
+      // Gemini doesn't support system role, it would be converted to user with [System] prefix
+      gemini: undefined,
     }
   ),
 
@@ -392,17 +390,8 @@ export const sharedTestMessages: TestMessage[] = [
           },
         ],
       },
-      gemini: {
-        role: "function",
-        parts: [
-          {
-            functionResponse: {
-              name: "get_weather",
-              response: { result: "72F and sunny" },
-            },
-          },
-        ],
-      },
+      // Gemini puts function responses in user messages, not function role
+      gemini: undefined,
     },
     {
       skipRoundTrip: true, // ID mapping varies
