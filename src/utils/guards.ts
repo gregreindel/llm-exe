@@ -239,3 +239,67 @@ export function isInternalMessage(msg: any): msg is InternalMessage {
         typeof msg.function_call.arguments === "string"))
   );
 }
+
+// Universal role guards - work with any message format
+export function isUserMessage(msg: any): boolean {
+  return msg && typeof msg === "object" && msg.role === "user";
+}
+
+export function isAssistantMessage(msg: any): boolean {
+  return (
+    msg &&
+    typeof msg === "object" &&
+    (msg.role === "assistant" || msg.role === "model") // Gemini uses "model"
+  );
+}
+
+export function isSystemMessage(msg: any): boolean {
+  return msg && typeof msg === "object" && msg.role === "system";
+}
+
+export function isToolMessage(msg: any): boolean {
+  return msg && typeof msg === "object" && msg.role === "tool";
+}
+
+export function isFunctionMessage(msg: any): boolean {
+  return msg && typeof msg === "object" && msg.role === "function";
+}
+
+// Utility to check if message has function/tool call
+export function hasToolCall(msg: any): boolean {
+  return (
+    msg &&
+    typeof msg === "object" &&
+    (msg.function_call || // Legacy format
+      msg.tool_calls || // OpenAI format
+      (Array.isArray(msg.content) &&
+        msg.content.some(
+          (c: any) => c.type === "tool_use" // Anthropic format
+        )) ||
+      (Array.isArray(msg.parts) &&
+        msg.parts.some(
+          (p: any) => p.functionCall // Gemini format
+        )))
+  );
+}
+
+// Check if message is a tool/function response
+export function isToolResponse(msg: any): boolean {
+  return isToolMessage(msg) || isFunctionMessage(msg);
+}
+
+// Check if ANY message in array has tool calls
+export function hasAnyToolCalls(messages: any[]): boolean {
+  return messages.some((msg) => hasToolCall(msg));
+}
+
+// Get all tool response messages
+export function getToolResponses(messages: any[]): any[] {
+  return messages.filter(isToolResponse);
+}
+
+// Check if conversation needs tool execution
+export function needsToolExecution(messages: any[]): boolean {
+  const lastMessage = messages[messages.length - 1];
+  return hasToolCall(lastMessage);
+}

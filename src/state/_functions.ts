@@ -1,6 +1,7 @@
 import { DefaultState } from "./index";
 import { Dialogue } from "./dialogue";
 import { DefaultStateItem } from "./item";
+import { get } from "@/utils/modules/get";
 
 export function createState() {
   return new DefaultState();
@@ -20,8 +21,12 @@ export function createStateFrom(savedState?: any) {
   const attributes = savedState?.attributes || {};
 
   for (const dialogue of Object.keys(dialogues)) {
-    const value = dialogues[dialogue].value;
-    state.createDialogue(dialogue).setHistory(value);
+    const dialogueData = get(dialogues, dialogue);
+    // Handle both serialized format (with .value) and direct value
+    const value = dialogueData?.value || dialogueData;
+    if (value) {
+      state.createDialogue(dialogue).setHistory(value);
+    }
   }
 
   for (const attribute of Object.keys(attributes)) {

@@ -1,17 +1,18 @@
 import {
   IChatMessageContentDetailed,
   IChatMessages,
-  IChatUserMessage,
+  InternalMessage,
 } from "@/types";
 import { BaseStateItem } from "./item";
 import { maybeStringifyJSON } from "@/utils";
 import { LlmExeError } from "@/utils/modules/errors";
+import { toInternal, fromInternal } from "@/converters";
 
-export class Dialogue extends BaseStateItem<IChatMessages> {
+export class Dialogue extends BaseStateItem<InternalMessage[]> {
   public name: string;
 
   constructor(name: string) {
-    super(name, []);
+    super(name, [] as InternalMessage[]);
     this.name = name;
   }
 
@@ -20,45 +21,38 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     name?: string
   ) {
     if (content) {
-      const msg: IChatUserMessage = {
-        role: "user",
-        content,
-      };
-      if (name) {
-        msg.name = name;
-      }
-      this.value.push(msg);
+      // Use toInternal for consistent conversion
+      const msg = { role: "user", content, ...(name && { name }) };
+      const internalMessages = toInternal(msg);
+      this.value.push(...internalMessages);
     }
     return this;
   }
 
-  setAssistantMessage(content: string) {
+  setAssistantMessage(content: string | null) {
+    // Only add if content is truthy (maintains backward compatibility)
     if (content) {
-      this.value.push({
-        role: "assistant",
-        content,
-      });
+      const msg = { role: "assistant", content };
+      const internalMessages = toInternal(msg);
+      this.value.push(...internalMessages);
     }
     return this;
   }
 
   setSystemMessage(content: string) {
     if (content) {
-      this.value.push({
-        role: "system",
-        content,
-      });
+      const msg = { role: "system", content };
+      const internalMessages = toInternal(msg);
+      this.value.push(...internalMessages);
     }
     return this;
   }
 
   setFunctionMessage(content: string, name: string) {
     if (content) {
-      this.value.push({
-        role: "function",
-        name,
-        content,
-      });
+      const msg = { role: "function", content, name };
+      const internalMessages = toInternal(msg);
+      this.value.push(...internalMessages);
     }
     return this;
   }
@@ -71,14 +65,16 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
         module: "dialogue",
       });
     }
-    this.value.push({
+    const msg = {
       role: "assistant",
+      content: null,
       function_call: {
         name: input?.function_call.name,
         arguments: maybeStringifyJSON(input?.function_call.arguments),
-      },
-      content: null,
-    });
+      }
+    };
+    const internalMessages = toInternal(msg);
+    this.value.push(...internalMessages);
     return this;
   }
   setMessageTurn(
@@ -92,41 +88,109 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
-  setHistory(messages: IChatMessages) {
-    for (const message of messages) {
-      switch (message?.role) {
-        case "user":
-          this.setUserMessage(message?.content, message?.name);
-          break;
-        case "assistant":
-          if (message.function_call) {
-            this.setFunctionCallMessage({
-              function_call: message.function_call,
-            });
-          } else if (message?.content) {
-            this.setAssistantMessage(message?.content);
+  setHistory(messages: IChatMessages | any[]): this {
+    // Clear existing
+    this.value = [];
+    
+    // Convert each message using toInternal for proper format detection
+    if (Array.isArray(messages)) {
+      for (const message of messages) {
+        try {
+          const internalMessages = toInternal(message);
+          this.value.push(...internalMessages);
+        } catch (e) {
+          // Fallback to manual parsing for edge cases
+          switch (message?.role) {
+            case "user":
+              this.setUserMessage(message?.content, message?.name);
+              break;
+            case "assistant":
+              if (message.function_call) {
+                this.setFunctionCallMessage({
+                  function_call: message.function_call,
+                });
+              } else if (message?.content !== undefined) {
+                this.setAssistantMessage(message?.content);
+              }
+              break;
+            case "system":
+              this.setSystemMessage(message?.content);
+              break;
+            case "function":
+              this.setFunctionMessage(message?.content, message.name);
+              break;
+            case "tool":
+              this.setToolMessage(message?.content, message.tool_call_id);
+              break;
+            case "model": // Gemini's "model" is equivalent to "assistant"
+              this.setAssistantMessage(message?.content);
+              break;
           }
-          break;
-        case "system":
-          this.setSystemMessage(message?.content);
-          break;
-        case "function":
-          this.setFunctionMessage(message?.content, message.name);
-          break;
+        }
       }
     }
     return this;
   }
 
-  getHistory() {
-    return this.getValue();
+  getHistory(provider: "openai" | "anthropic" | "gemini" | "unknown" = "unknown"): any[] {
+    // fromInternal doesn't support "unknown", so handle it specially
+    if (provider === "unknown") {
+      // Return a generic format that matches IChatMessages
+      return this.value.map(msg => {
+        const base: any = {
+          role: msg.role,
+          content: msg.content.length === 1 && msg.content[0].type === "text" 
+            ? msg.content[0].text 
+            : msg.content.length === 0 && msg.function_call
+            ? null  // Function calls have null content
+            : msg.content
+        };
+        if (msg.name) base.name = msg.name;
+        if (msg.function_call) base.function_call = msg.function_call;
+        if (msg.tool_call_id) base.tool_call_id = msg.tool_call_id;
+        return base;
+      });
+    }
+    return fromInternal(this.value, provider, {
+      strict: false,
+      validate: false
+    });
+  }
+
+  // Override getValue to maintain correct type
+  getValue(): InternalMessage[] {
+    return this.value;
+  }
+
+  // New method for tool messages (new OpenAI format)
+  setToolMessage(content: string, toolCallId: string): this {
+    if (content) {
+      const msg = { role: "tool", content, tool_call_id: toolCallId };
+      const internalMessages = toInternal(msg);
+      this.value.push(...internalMessages);
+    }
+    return this;
+  }
+
+  // Override setValue to handle type conversion
+  setValue(value: any) {
+    if (!Array.isArray(value)) {
+      throw new Error("Dialogue value must be an array");
+    }
+    // If it looks like IChatMessages, convert it
+    if (value.length > 0 && value[0].role && typeof value[0].content !== "undefined") {
+      this.value = toInternal(value);
+    } else {
+      // Assume it's already InternalMessage[]
+      this.value = value;
+    }
   }
 
   serialize() {
     return {
       class: "Dialogue",
       name: this.name,
-      value: [...this.value],
+      value: this.getHistory() // Serialize in legacy format for backward compatibility
     };
   }
   // deserialize() {}
