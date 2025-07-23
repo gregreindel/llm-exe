@@ -85,7 +85,6 @@ function contentPartsToOpenAI(content: ContentPart[]): OpenAIContentPart[] {
         type: "image_url",
         image_url: {
           url,
-          detail: "auto",
         },
       };
     } else {

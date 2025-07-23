@@ -1,6 +1,6 @@
 /**
  * Shared Test Messages for Provider Converters
- * 
+ *
  * This file contains a comprehensive set of test messages that can be used
  * across all provider test files to ensure consistent and exhaustive testing.
  * Each message type includes expected outputs for each provider.
@@ -59,7 +59,7 @@ export const sharedTestMessages: TestMessage[] = [
       openai: { role: "system", content: "You are a helpful assistant." },
       anthropic: {
         role: "system",
-        content: "You are a helpful assistant.",  // String content since wasArray metadata is not preserved
+        content: "You are a helpful assistant.", // String content since wasArray metadata is not preserved
       },
       gemini: {
         role: "system",
@@ -371,7 +371,7 @@ export const sharedTestMessages: TestMessage[] = [
     [
       {
         role: "function",
-        name: "function",  // Tool messages get a generic name
+        name: "function", // Tool messages get a generic name
         content: [{ type: "text", text: "72F and sunny" }],
         tool_call_id: "call_123",
       },
@@ -691,6 +691,7 @@ export const sharedTestMessages: TestMessage[] = [
     {
       skipProviders: ["anthropic", "gemini"],
       description: "Legacy OpenAI function_call format",
+      skipRoundTrip: true, // Format gets modernized to tool_calls
     }
   ),
 
@@ -703,6 +704,7 @@ export const sharedTestMessages: TestMessage[] = [
         content: [{ type: "text", text: "Error: Location not found" }],
         tool_call_id: "toolu_error",
         _meta: {
+          // @ts-expect-error missing metadata
           original: {
             is_error: true,
           },

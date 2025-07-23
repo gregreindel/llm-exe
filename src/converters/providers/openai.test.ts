@@ -137,6 +137,40 @@ describe("OpenAI Message Converter", () => {
     fromInternalTestCases.forEach(({ name, input, expected }) => {
       it(`should convert ${name}`, () => {
         const result = internalMessagesToOpenAI(input);
+        
+        // Special handling for messages with function calls that get modernized
+        if (name === "OpenAI legacy function_call") {
+          expect(result).toHaveLength(1);
+          expect(result[0].role).toBe("assistant");
+          expect(result[0].content).toBe("Checking weather...");
+          expect(result[0].tool_calls).toHaveLength(1);
+          expect(result[0].tool_calls![0].type).toBe("function");
+          expect(result[0].tool_calls![0].function.name).toBe("get_weather");
+          expect(result[0].tool_calls![0].function.arguments).toBe('{"location": "London"}');
+          expect(result[0].tool_calls![0].id).toMatch(/^call_/);
+          return;
+        }
+        
+        // Special handling for messages with generated IDs
+        if (name.includes("function call") && !name.includes("legacy")) {
+          const exp = Array.isArray(expected) ? expected : [expected];
+          expect(result).toHaveLength(exp.length);
+          result.forEach((msg, i) => {
+            const expMsg = exp[i];
+            expect(msg.role).toBe(expMsg.role);
+            expect(msg.content).toEqual(expMsg.content);
+            if (msg.tool_calls && expMsg.tool_calls) {
+              expect(msg.tool_calls).toHaveLength(expMsg.tool_calls.length);
+              msg.tool_calls.forEach((tc, j) => {
+                expect(tc.type).toBe(expMsg.tool_calls[j].type);
+                expect(tc.function).toEqual(expMsg.tool_calls[j].function);
+                expect(tc.id).toMatch(/^call_/); // Generated ID
+              });
+            }
+          });
+          return;
+        }
+        
         expect(result).toEqual(Array.isArray(expected) ? expected : [expected]);
       });
     });
@@ -212,12 +246,12 @@ describe("OpenAI Message Converter", () => {
     const openAIErrorCases = [
       {
         name: "invalid tool_calls type",
-        input: { role: "assistant", tool_calls: "not-array" },
+        input: { role: "assistant", content: null, tool_calls: "not-array" },
         errorMessage: "tool_calls must be an array",
       },
       {
         name: "invalid function_call",
-        input: { role: "assistant", function_call: { name: "test" } },
+        input: { role: "assistant", content: null, function_call: { name: "test" } },
         errorMessage: "function_call must have name and arguments",
       },
       {

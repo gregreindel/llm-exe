@@ -593,8 +593,10 @@ export function internalMessagesToGemini(
  */
 export function isGeminiFormat(message: any): boolean {
   // Check for Gemini-specific indicators
+  if (!message || typeof message !== "object") return false;
+  
   return (
-    message?.role === "model" ||
+    message.role === "model" ||
     "text" in message ||
     "functionCall" in message ||
     "functionResponse" in message
