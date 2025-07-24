@@ -120,39 +120,135 @@ describe("llm-exe:output/OutputGoogleGeminiChat", () => {
     expect(output.getResultContent(8)).toEqual([]);
   });
 
-  //   it("getResultContent gets tool_calls if content is null", () => {
-  //     const output = OutputGoogleGeminiChat({
-  //       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
-  //       object: "chat.completion",
-  //       created: 1685025755,
-  //       model: "gpt-3.5-turbo-0301",
-  //       usage: {
-  //         prompt_tokens: 427,
-  //         completion_tokens: 1,
-  //         total_tokens: 428,
-  //       },
-  //       choices: [
-  //         {
-  //           message: {
-  //             role: "assistant",
-  //             content: null,
-  //             tool_calls: [
-  //               {
-  //                 type: "function",
-  //                 function: {
-  //                   name: "test_fn",
-  //                   arguments: "{}",
-  //                 },
-  //               },
-  //             ],
-  //           },
-  //           finish_reason: "stop",
-  //           index: 0,
-  //         },
-  //       ],
-  //     } as unknown as OpenAiResponse);
-  //     expect(output.getResultContent()).toEqual(
-  //       [{"input": {}, "name": "test_fn", "type": "function_use"}]
-  //     );
-  //   });
+  it("handles multiple parts with function call and text", () => {
+    const mockMultipleParts: GoogleGeminiResponse = {
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: "I'll help you with that.",
+              },
+              {
+                functionCall: {
+                  name: "get_weather",
+                  args: '{"location": "NYC"}',
+                },
+              },
+            ],
+            role: "model",
+          },
+          finishReason: "STOP",
+        },
+      ],
+      usageMetadata: {
+        promptTokenCount: 100,
+        candidatesTokenCount: 50,
+        totalTokenCount: 150,
+      },
+      modelVersion: "gemini-2.0-flash",
+    };
+
+    const output = OutputGoogleGeminiChat(mockMultipleParts as any);
+    const result = output.getResult();
+    
+    expect(result.content).toHaveLength(2);
+    expect(result.content[0]).toEqual({
+      type: "text",
+      text: "I'll help you with that.",
+    });
+    expect(result.content[1]).toEqual({
+      type: "function_use",
+      name: "get_weather",
+      input: { location: "NYC" },
+    });
+  });
+
+  it("handles multiple parts with only function calls", () => {
+    const mockOnlyFunctions: GoogleGeminiResponse = {
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                functionCall: {
+                  name: "get_weather",
+                  args: '{"location": "NYC"}',
+                },
+              },
+              {
+                functionCall: {
+                  name: "get_time",
+                  args: '{"timezone": "EST"}',
+                },
+              },
+            ],
+            role: "model",
+          },
+          finishReason: "STOP",
+        },
+      ],
+      usageMetadata: {
+        promptTokenCount: 100,
+        candidatesTokenCount: 50,
+        totalTokenCount: 150,
+      },
+      modelVersion: "gemini-2.0-flash",
+    };
+
+    const output = OutputGoogleGeminiChat(mockOnlyFunctions as any);
+    const result = output.getResult();
+    
+    expect(result.content).toHaveLength(2);
+    expect(result.content[0]).toEqual({
+      type: "function_use",
+      name: "get_weather",
+      input: { location: "NYC" },
+    });
+    expect(result.content[1]).toEqual({
+      type: "function_use",
+      name: "get_time",
+      input: { timezone: "EST" },
+    });
+  });
+
+  it("handles multiple parts with only text", () => {
+    const mockOnlyText: GoogleGeminiResponse = {
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: "First part of response.",
+              },
+              {
+                text: "Second part of response.",
+              },
+            ],
+            role: "model",
+          },
+          finishReason: "STOP",
+        },
+      ],
+      usageMetadata: {
+        promptTokenCount: 100,
+        candidatesTokenCount: 50,
+        totalTokenCount: 150,
+      },
+      modelVersion: "gemini-2.0-flash",
+    };
+
+    const output = OutputGoogleGeminiChat(mockOnlyText as any);
+    const result = output.getResult();
+    
+    expect(result.content).toHaveLength(2);
+    expect(result.content[0]).toEqual({
+      type: "text",
+      text: "First part of response.",
+    });
+    expect(result.content[1]).toEqual({
+      type: "text",
+      text: "Second part of response.",
+    });
+  });
 });

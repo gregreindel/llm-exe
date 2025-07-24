@@ -255,4 +255,125 @@ describe("anthropicPromptSanitize", () => {
     expect(result[2].role).toBe("user"); // tool result
     expect(result[3].role).toBe("assistant"); // final assistant response
   });
+
+  it("should handle messages with metadata using fromInternal converter", () => {
+    // Mock console.warn to avoid noise in test output
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "user",
+        content: [{ type: "text", text: "Hello" }],
+        _meta: { original: { provider: "anthropic" } },
+      },
+      {
+        role: "assistant", 
+        content: [{ type: "text", text: "Hi there!" }],
+        _meta: { original: { provider: "anthropic" } },
+      },
+    ] as any;
+
+    const result = anthropicPromptSanitize(messagesWithMeta, {}, {});
+    expect(result).toHaveLength(2);
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle metadata path with system message extraction", () => {
+    // Mock console.warn to avoid noise in test output  
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "You are helpful" }],
+        _meta: { original: { provider: "anthropic" } },
+      },
+      {
+        role: "user",
+        content: [{ type: "text", text: "Hello" }],
+        _meta: { original: { provider: "anthropic" } },
+      },
+    ] as any;
+
+    const outputObj: Record<string, any> = {};
+    const result = anthropicPromptSanitize(messagesWithMeta, {}, outputObj);
+    
+    // The metadata path falls back to legacy logic
+    expect(result).toHaveLength(1);
+    expect(result[0].role).toBe("user");
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle single system message with metadata", () => {
+    // Mock console.warn to avoid noise in test output
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "You are helpful" }],
+        _meta: { original: { provider: "anthropic" } },
+      },
+    ] as any;
+
+    const outputObj: Record<string, any> = {};
+    const result = anthropicPromptSanitize(messagesWithMeta, {}, outputObj);
+    
+    expect(result).toHaveLength(1);
+    expect(result[0].role).toBe("user");
+    // The metadata path fallback uses legacy logic
+    expect(result[0].content).toBe("You are helpful");
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle function_call with object arguments", () => {
+    const messages: IChatMessages = [
+      {
+        role: "assistant",
+        function_call: {
+          name: "get_weather",
+          arguments: { location: "SF" } // Object instead of string
+        }
+      } as any
+    ];
+    const result = anthropicPromptSanitize(messages, {}, {});
+    
+    expect(result[0].content[0].input).toEqual({ location: "SF" });
+  });
+
+  it("should handle function message with null content", () => {
+    const messages: IChatMessages = [
+      {
+        role: "function",
+        name: "test_function",
+        content: null
+      } as any
+    ];
+    const result = anthropicPromptSanitize(messages, {}, {});
+    
+    expect(result[0].content[0].content).toBe("null");
+  });
+
+  it("should handle function message with undefined content", () => {
+    const messages: IChatMessages = [
+      {
+        role: "function",
+        name: "test_function",
+        content: undefined
+      } as any
+    ];
+    const result = anthropicPromptSanitize(messages, {}, {});
+    
+    expect(result[0].content[0].content).toBe("undefined");
+  });
+
+  it("should handle non-array input", () => {
+    const invalidInput = { not: "an array" };
+    const result = anthropicPromptSanitize(invalidInput as any, {}, {});
+    
+    expect(result).toEqual(invalidInput);
+  });
 });

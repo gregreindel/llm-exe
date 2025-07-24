@@ -1044,4 +1044,54 @@ describe("Gemini Message Converter", () => {
       });
     });
   });
+
+  describe("Branch coverage for missing conditions", () => {
+    it("should handle sorting when partIndex and position are undefined (lines 371-373)", () => {
+      // Create grouped messages with missing metadata to test the sorting fallbacks
+      const internal: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Second" }],
+          _meta: {
+            group: { id: "test_group", position: 1, total: 2 },
+            // No partIndex
+          }
+        },
+        {
+          role: "assistant",
+          content: [],
+          function_call: { name: "test", arguments: "{}" },
+          _meta: {
+            group: { id: "test_group", total: 2 },
+            // No partIndex or position
+          }
+        }
+      ];
+      
+      const result = internalMessagesToGemini(internal);
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe("model");
+      expect(Array.isArray(result[0].parts)).toBe(true);
+    });
+
+    it("should handle function message without name (line 437)", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "function",
+          content: [{ type: "text", text: '{"result": "success"}' }],
+          // No name property to test the fallback
+        } as any
+      ];
+      
+      const result = internalMessagesToGemini(internal);
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe("user");
+      expect(result[0].parts[0]).toMatchObject({
+        functionResponse: {
+          name: "unknown", // Should fallback to "unknown"
+          response: { result: { result: "success" } }
+        }
+      });
+    });
+  });
 });

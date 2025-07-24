@@ -581,6 +581,32 @@ describe("Anthropic Message Converter", () => {
         message: {},
         expected: false,
       },
+      {
+        name: "does not detect null (line 627)",
+        message: null,
+        expected: false,
+      },
+      {
+        name: "does not detect primitive string (line 627)",
+        message: "not an object",
+        expected: false,
+      },
+      {
+        name: "does not detect when content is not array (line 632)",
+        message: { role: "user", content: "string content" },
+        expected: false,
+      },
+      {
+        name: "does not detect when content array has no anthropic types (line 632)",
+        message: { 
+          role: "user", 
+          content: [
+            { type: "unknown", data: "test" },
+            { type: "custom", value: "data" }
+          ] 
+        },
+        expected: false,
+      },
     ];
 
     detectionCases.forEach(({ name, message, expected }) => {
@@ -1273,6 +1299,63 @@ describe("Anthropic Message Converter", () => {
           }
         }
       ]);
+    });
+
+    it("should handle missing data in base64 image source (line 456)", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              mediaType: "image/png",
+              source: {
+                type: "base64",
+                data: undefined as any // Missing data should fallback to ""
+              }
+            }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([
+        {
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: "image/png",
+            data: ""
+          }
+        }
+      ]);
+    });
+
+    it("should handle group sorting when positions are equal (line 506)", () => {
+      // Create grouped messages with missing/undefined positions to test sorting
+      const internal: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Second part" }],
+          _meta: {
+            group: { id: "group_test", position: undefined as any, total: 2 }
+          }
+        },
+        {
+          role: "assistant",
+          content: [],
+          function_call: { name: "test", arguments: "{}" },
+          _meta: {
+            group: { id: "group_test", position: 0, total: 2 }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result).toHaveLength(1);
+      // Should handle the sorting gracefully and produce valid output
+      expect(result[0].role).toBe("assistant");
+      expect(Array.isArray(result[0].content)).toBe(true);
     });
   });
 });

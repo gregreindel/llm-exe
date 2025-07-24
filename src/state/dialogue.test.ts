@@ -255,16 +255,22 @@ describe("llm-exe:state/Dialogue", () => {
   describe("error handling", () => {
     it("throws error when setFunctionCallMessage receives invalid input", () => {
       const dialogue = new Dialogue("test");
-      expect(() => dialogue.setFunctionCallMessage(null as any)).toThrow('Invalid arguments');
-      expect(() => dialogue.setFunctionCallMessage({} as any)).toThrow('Invalid arguments');
-      expect(() => dialogue.setFunctionCallMessage({ function_call: null } as any)).toThrow('Invalid arguments');
+      // @ts-expect-error Testing invalid input
+      expect(() => dialogue.setFunctionCallMessage(null)).toThrow('Invalid arguments');
+      // @ts-expect-error Testing invalid input
+      expect(() => dialogue.setFunctionCallMessage({})).toThrow('Invalid arguments');
+      // @ts-expect-error Testing invalid input  
+      expect(() => dialogue.setFunctionCallMessage({ function_call: null })).toThrow('Invalid arguments');
     });
 
     it("throws error when setHistory receives non-array", () => {
       const dialogue = new Dialogue("test");
-      expect(() => dialogue.setHistory("not an array" as any)).toThrow('setHistory expects an array of messages');
-      expect(() => dialogue.setHistory({} as any)).toThrow('setHistory expects an array of messages');
-      expect(() => dialogue.setHistory(null as any)).toThrow('setHistory expects an array of messages');
+      // @ts-expect-error Testing invalid input
+      expect(() => dialogue.setHistory("not an array")).toThrow('setHistory expects an array of messages');
+      // @ts-expect-error Testing invalid input
+      expect(() => dialogue.setHistory({})).toThrow('setHistory expects an array of messages');
+      // @ts-expect-error Testing invalid input
+      expect(() => dialogue.setHistory(null)).toThrow('setHistory expects an array of messages');
     });
 
     it("handles conversion errors in setHistory with fallback", () => {

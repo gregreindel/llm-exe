@@ -237,4 +237,220 @@ describe("googleGeminiPromptSanitize", () => {
       parts: [{ text: "Custom message" }],
     });
   });
+
+  it("should handle messages with metadata using fromInternal converter", () => {
+    // Mock console.warn to avoid noise in test output
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "user",
+        content: [{ type: "text", text: "Hello" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+      {
+        role: "assistant", 
+        content: [{ type: "text", text: "Hi there!" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ] as any;
+
+    const result = googleGeminiPromptSanitize(messagesWithMeta, {}, {});
+    expect(result).toHaveLength(2);
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle metadata path with system messages", () => {
+    // Mock console.warn to avoid noise in test output  
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "You are helpful" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+      {
+        role: "user",
+        content: [{ type: "text", text: "Hello" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ] as any;
+
+    const outputObj: Record<string, any> = {};
+    const result = googleGeminiPromptSanitize(messagesWithMeta, {}, outputObj);
+    
+    // The metadata path falls back to legacy logic in test environment
+    // System message gets converted to user message with "[System]" prefix, plus regular user message
+    expect(result).toHaveLength(2);
+    expect(result[0].role).toBe("user");
+    expect(result[1].role).toBe("user");
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle only system message with metadata", () => {
+    // Mock console.warn to avoid noise in test output
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "You are helpful" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ] as any;
+
+    const outputObj: Record<string, any> = {};
+    const result = googleGeminiPromptSanitize(messagesWithMeta, {}, outputObj);
+    
+    expect(result).toHaveLength(1);
+    expect(result[0].role).toBe("user");
+    // The metadata path fallback uses legacy logic
+    expect(result[0].parts[0].text).toBe("[System] You are helpful");
+    
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle non-string content in system messages with metadata", () => {
+    // Mock console.warn to avoid noise in test output
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    const messagesWithMeta = [
+      {
+        role: "system",
+        content: { some: "object" },
+        _meta: { original: { provider: "gemini" } },
+      },
+      {
+        role: "user",
+        content: [{ type: "text", text: "Hello" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ] as any;
+
+    const outputObj: Record<string, any> = {};
+    const result = googleGeminiPromptSanitize(messagesWithMeta, {}, outputObj);
+    
+    // The metadata path fallback will result in legacy processing
+    expect(result).toHaveLength(1);
+    expect(result[0].role).toBe("user");
+    
+    consoleSpy.mockRestore();
+  });
+
+
+  it("should handle user message with non-string content", () => {
+    const messages = [
+      {
+        role: "user",
+        content: 123, // Non-string, non-array content
+      } as any,
+    ];
+    const result = googleGeminiPromptSanitize(messages, {}, {});
+
+    expect(result[0].parts).toEqual([{ text: "123" }]);
+  });
+
+  it("should extract system instructions via metadata path (lines 86-87)", () => {
+    // Create proper internal messages that fromInternal can process
+    const properInternalMessages = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "You are a helpful assistant" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+      {
+        role: "user", 
+        content: [{ type: "text", text: "Hello world" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ];
+
+    // Override fromInternal to return the exact structure needed for lines 86-87
+    const originalFromInternal = require('@/converters').fromInternal;
+    
+    // Temporarily replace fromInternal with a version that returns what we need
+    const mockConverters = require('@/converters');
+    const originalFunc = mockConverters.fromInternal;
+    mockConverters.fromInternal = () => [
+      { role: "system", content: "You are a helpful assistant" },
+      { role: "user", content: [{ type: "text", text: "Hello world" }] },
+    ];
+
+    const outputObj: Record<string, any> = {};
+    const result = googleGeminiPromptSanitize(properInternalMessages, {}, outputObj);
+
+    // Should hit lines 86-87: system instruction extraction
+    expect(outputObj.system_instruction).toEqual({
+      parts: [{ text: "You are a helpful assistant" }]
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].role).toBe("user");
+
+    // Restore
+    mockConverters.fromInternal = originalFunc;
+  });
+
+  it("should convert single system message via metadata path (line 98)", () => {
+    // Create single system message with metadata
+    const singleSystemMessage = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "You are helpful" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ];
+
+    // Override fromInternal to return single system message  
+    const mockConverters = require('@/converters');
+    const originalFunc = mockConverters.fromInternal;
+    mockConverters.fromInternal = () => [
+      { role: "system", content: "You are helpful" },
+    ];
+
+    const result = googleGeminiPromptSanitize(singleSystemMessage, {}, {});
+
+    // Should hit line 98: convert single system to user message
+    expect(result).toHaveLength(1);
+    expect(result[0].role).toBe("user");
+    expect(result[0].parts[0].text).toBe("You are helpful");
+
+    // Restore
+    mockConverters.fromInternal = originalFunc;
+  });
+
+  it("should handle fromInternal conversion error (line 115)", () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    // Create messages with metadata to trigger the path
+    const messagesWithMeta = [
+      {
+        role: "user",
+        content: [{ type: "text", text: "Hello" }],
+        _meta: { original: { provider: "gemini" } },
+      },
+    ];
+
+    // Override fromInternal to throw error
+    const mockConverters = require('@/converters');
+    const originalFunc = mockConverters.fromInternal;
+    mockConverters.fromInternal = () => {
+      throw new Error("Conversion failed!");
+    };
+
+    const result = googleGeminiPromptSanitize(messagesWithMeta, {}, {});
+
+    // Should hit line 115: console.warn for conversion failure
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to convert messages back to Gemini format:",
+      expect.any(Error)
+    );
+    expect(result).toHaveLength(1); // Falls back to legacy logic
+
+    // Restore
+    mockConverters.fromInternal = originalFunc;
+    consoleSpy.mockRestore();
+  });
 });

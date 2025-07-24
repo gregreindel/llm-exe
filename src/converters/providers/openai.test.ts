@@ -580,4 +580,91 @@ describe("OpenAI Message Converter", () => {
       expect(backToOpenAI).toHaveLength(conversation.length);
     });
   });
+
+  describe("Branch coverage for missing conditions", () => {
+    it("should handle image with missing url (line 82)", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              mediaType: "image/jpeg",
+              source: {
+                type: "url",
+                url: undefined as any // Missing url should fallback to ""
+              }
+            }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToOpenAI(input);
+      expect(result[0].content[0]).toMatchObject({
+        type: "image_url",
+        image_url: {
+          url: "" // Should fallback to empty string
+        }
+      });
+    });
+
+    it("should handle function message without name (line 378)", () => {
+      const input = {
+        role: "function",
+        content: "Function result",
+        // No name property to test the fallback
+      } as any;
+      
+      // Disable validation to test the fallback logic
+      const result = openAIMessageToInternal(input, { validate: false });
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe("function"); // Should fallback to "function"
+    });
+
+    it("should handle group sorting when positions are undefined (line 478)", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Second" }],
+          _meta: {
+            group: { id: "test_group", total: 2 },
+            // No position property - should default to 0
+          }
+        },
+        {
+          role: "assistant",
+          content: [],
+          function_call: { name: "test", arguments: "{}" },
+          _meta: {
+            group: { id: "test_group", total: 2 },
+            // Also no position - should default to 0, testing the (0 - 0) case
+          }
+        }
+      ];
+      
+      const result = internalMessagesToOpenAI(internal);
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe("assistant");
+      // Should handle sorting gracefully when both have position 0
+      expect(result[0]).toHaveProperty("content");
+    });
+
+    it("should handle function message without name in internal to openai (line 547)", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "function",
+          content: [{ type: "text", text: "Result" }],
+          // No name property to test the fallback
+        } as any
+      ];
+      
+      const result = internalMessagesToOpenAI(internal);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        role: "function",
+        name: "function", // Should fallback to "function"
+        content: "Result"
+      });
+    });
+  });
 });
