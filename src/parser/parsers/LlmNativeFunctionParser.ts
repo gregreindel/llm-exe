@@ -14,6 +14,7 @@ export class LlmNativeFunctionParser<
   public parser: T;
 
   constructor(options: LlmNativeFunctionParserOptions<T>) {
+    // pass the `function_call` target through so the executor knows
     super("openAiFunction", options, "function_call");
     this.parser = options.parser;
   }

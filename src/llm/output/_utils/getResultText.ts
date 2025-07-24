@@ -5,5 +5,6 @@ export function getResultText(content: OutputResultContent[]): string {
     return content[0]?.text || "";
   }
 
+  // PROBLEM!!!!!
   return "";
 }
