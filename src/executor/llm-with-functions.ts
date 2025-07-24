@@ -31,7 +31,7 @@ export class LlmExecutorWithFunctions<
       Object.assign({}, llmConfiguration, {
         parser: new FunctionCallParser({
           parser: llmConfiguration.parser || new StringParser(),
-          multiple: (llmConfiguration as any).multipleFunctions || false
+          multiple: (llmConfiguration as any).multipleFunctions || false,
         }),
       }),
       options
@@ -62,7 +62,10 @@ export class LlmExecutorOpenAiFunctions<
     llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
     options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
   ) {
-    console.warn("LlmExecutorOpenAiFunctions is deprecated. Use LlmExecutorWithFunctions instead.");
+    /* istanbul ignore next */
+    console.warn(
+      "LlmExecutorOpenAiFunctions is deprecated. Use LlmExecutorWithFunctions instead."
+    );
     super(llmConfiguration, options);
   }
 }

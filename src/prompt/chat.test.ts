@@ -772,4 +772,228 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       },
     ]);
   });
+
+  describe("addFromHistory", () => {
+    it("handles null history gracefully", () => {
+      const prompt = new ChatPrompt("Hello");
+      const result = prompt.addFromHistory(null as any);
+      expect(result).toBe(prompt); // Should return this for chaining
+      expect(prompt.messages).toHaveLength(1); // Only the initial message
+    });
+
+    it("handles undefined history gracefully", () => {
+      const prompt = new ChatPrompt("Hello");
+      const result = prompt.addFromHistory(undefined as any);
+      expect(result).toBe(prompt);
+      expect(prompt.messages).toHaveLength(1);
+    });
+
+    it("handles non-array history gracefully", () => {
+      const prompt = new ChatPrompt("Hello");
+      const result = prompt.addFromHistory("not an array" as any);
+      expect(result).toBe(prompt);
+      expect(prompt.messages).toHaveLength(1);
+    });
+  });
+
+  describe("format with non-text content parts", () => {
+    it("preserves non-text content parts in function messages", () => {
+      const prompt = new ChatPrompt("Hello");
+      // Add a function message with mixed content
+      prompt.messages.push({
+        role: "function",
+        content: [
+          { type: "text", text: "Function result: {{result}}" },
+          { type: "image", image_url: { url: "data:image/png;base64,xyz" } }
+        ],
+        name: "analyze_image",
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = prompt.format({ result: "success" });
+      expect(formatted[1].content).toHaveLength(2);
+      expect(formatted[1].content[0]).toMatchObject({ type: "text", text: "Function result: success" });
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "image", 
+        image_url: { url: "data:image/png;base64,xyz" } 
+      });
+    });
+
+    it("preserves non-text content parts in function messages (async)", async () => {
+      const prompt = new ChatPrompt("Hello");
+      // Add a function message with mixed content
+      prompt.messages.push({
+        role: "function",
+        content: [
+          { type: "text", text: "Function result: {{result}}" },
+          { type: "audio", url: "audio.mp3" }
+        ],
+        name: "process_audio",
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = await prompt.formatAsync({ result: "processed" });
+      expect(formatted[1].content).toHaveLength(2);
+      expect(formatted[1].content[0]).toMatchObject({ type: "text", text: "Function result: processed" });
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "audio", 
+        url: "audio.mp3"
+      });
+    });
+
+    it("preserves non-text content in non-template roles", () => {
+      const prompt = new ChatPrompt("Hello", { allowUnsafeUserTemplate: false });
+      // Add a user message with mixed content when template parsing is disabled
+      prompt.messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: "Look at this {{shouldNotParse}}" },
+          { type: "video", url: "video.mp4" }
+        ],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = prompt.format({ shouldNotParse: "REPLACED" });
+      expect(formatted[1].content).toHaveLength(2);
+      // Text should not be parsed when allowUnsafeUserTemplate is false
+      expect(formatted[1].content[0].text).toContain("{{shouldNotParse}}");
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "video", 
+        url: "video.mp4"
+      });
+    });
+
+    it("preserves non-text content in non-template roles (async)", async () => {
+      const prompt = new ChatPrompt("Hello", { allowUnsafeUserTemplate: false });
+      // Add a user message with mixed content when template parsing is disabled
+      prompt.messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: "Check this {{shouldNotParse}}" },
+          { type: "document", url: "document.pdf" }
+        ],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = await prompt.formatAsync({ shouldNotParse: "REPLACED" });
+      expect(formatted[1].content).toHaveLength(2);
+      // Text should not be parsed when allowUnsafeUserTemplate is false
+      expect(formatted[1].content[0].text).toContain("{{shouldNotParse}}");
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "document", 
+        url: "document.pdf"
+      });
+    });
+
+    it("preserves non-text content parts in assistant messages", () => {
+      const prompt = new ChatPrompt("Hello");
+      // Add a message with mixed content directly to test the non-text preservation path
+      prompt.messages.push({
+        role: "assistant",
+        content: [
+          { type: "text", text: "Here's an analysis:" },
+          { type: "tool_use", id: "tool_123", name: "analyze", input: {} }
+        ],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = prompt.format({});
+      expect(formatted[1].content).toHaveLength(2);
+      expect(formatted[1].content[0]).toMatchObject({ type: "text", text: "Here's an analysis:" });
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "tool_use", 
+        id: "tool_123", 
+        name: "analyze", 
+        input: {} 
+      });
+    });
+
+    it("preserves non-text content when formatting user messages", () => {
+      const prompt = new ChatPrompt("Hello");
+      // Add message directly to test the format path with non-text content
+      prompt.messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: "What's in this {{thing}}?" },
+          { type: "image", image_url: { url: "data:image/png;base64,abc" } }
+        ],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = prompt.format({ thing: "image" });
+      expect(formatted[1].content).toHaveLength(2);
+      expect(formatted[1].content[0]).toMatchObject({ type: "text", text: "What's in this image?" });
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "image", 
+        image_url: { url: "data:image/png;base64,abc" } 
+      });
+    });
+
+    it("handles non-text content in format method", () => {
+      const prompt = new ChatPrompt("System message");
+      // Add message with non-text content directly
+      prompt.messages.push({
+        role: "assistant",
+        content: [
+          { type: "text", text: "Result: {{status}}" },
+          { type: "function_call", function_call: { name: "search", arguments: "{}" } }
+        ],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = prompt.format({ status: "complete" });
+      expect(formatted[1].content).toHaveLength(2);
+      expect(formatted[1].content[0]).toMatchObject({ type: "text", text: "Result: complete" });
+      expect(formatted[1].content[1]).toMatchObject({ 
+        type: "function_call", 
+        function_call: { name: "search", arguments: "{}" } 
+      });
+    });
+
+    it("handles both string and array content in different messages", () => {
+      const prompt = new ChatPrompt("System");
+      // First message with string content
+      prompt.messages.push({
+        role: "system",
+        content: [{ type: "text", text: "Simple {{var}}" }],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      // Second message with array content including non-text parts
+      prompt.messages.push({
+        role: "assistant",
+        content: [
+          { type: "text", text: "Response {{status}}" },
+          { type: "tool_use", id: "123", name: "search", input: {} }
+        ],
+        name: undefined,
+        tool_call_id: undefined,
+        function_call: undefined
+      });
+      
+      const formatted = prompt.format({ var: "replaced", status: "complete" });
+      expect(formatted[1].content[0]).toMatchObject({ type: "text", text: "Simple replaced" });
+      expect(formatted[2].content[0]).toMatchObject({ type: "text", text: "Response complete" });
+      expect(formatted[2].content[1]).toMatchObject({ 
+        type: "tool_use",
+        id: "123",
+        name: "search",
+        input: {}
+      });
+    });
+  });
 });

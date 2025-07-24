@@ -28,4 +28,31 @@ describe("llm-exe:parser/MarkdownCodeBlocks", () => {
     const markdown = `nothing here`;
     expect(parser.parse(markdown)).toEqual([]);
   });
+
+  it("handles stringified JSON input", () => {
+    const parser = new MarkdownCodeBlocksParser();
+    const codeContent = `const x = 1;`;
+    const markdownContent = `\`\`\`js\n${codeContent}\n\`\`\``;
+    // Create a stringified JSON object
+    const jsonInput = JSON.stringify({ content: markdownContent });
+    
+    const result = parser.parse(jsonInput);
+    expect(result).toEqual([
+      { code: `${codeContent}\n`, language: 'js' }
+    ]);
+  });
+
+  it("handles multiple code blocks in stringified JSON", () => {
+    const parser = new MarkdownCodeBlocksParser();
+    const code1 = `function hello() { return "world"; }`;
+    const code2 = `print("hello")`;
+    const markdownContent = `Some text\n\`\`\`javascript\n${code1}\n\`\`\`\n\nMore text\n\`\`\`python\n${code2}\n\`\`\``;
+    const jsonInput = JSON.stringify({ result: markdownContent });
+    
+    const result = parser.parse(jsonInput);
+    expect(result).toEqual([
+      { code: `${code1}\n`, language: 'javascript' },
+      { code: `${code2}\n`, language: 'python' }
+    ]);
+  });
 });

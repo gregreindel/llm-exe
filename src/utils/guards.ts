@@ -224,7 +224,7 @@ export function isTextContentPart(part: ContentPart): part is TextContentPart {
  * Type guard for InternalMessage
  */
 export function isInternalMessage(msg: any): msg is InternalMessage {
-  return (
+  return !!(
     msg &&
     typeof msg === "object" &&
     typeof msg.role === "string" &&
@@ -242,11 +242,11 @@ export function isInternalMessage(msg: any): msg is InternalMessage {
 
 // Universal role guards - work with any message format
 export function isUserMessage(msg: any): boolean {
-  return msg && typeof msg === "object" && msg.role === "user";
+  return !!(msg && typeof msg === "object" && msg.role === "user");
 }
 
 export function isAssistantMessage(msg: any): boolean {
-  return (
+  return !!(
     msg &&
     typeof msg === "object" &&
     (msg.role === "assistant" || msg.role === "model") // Gemini uses "model"
@@ -254,20 +254,20 @@ export function isAssistantMessage(msg: any): boolean {
 }
 
 export function isSystemMessage(msg: any): boolean {
-  return msg && typeof msg === "object" && msg.role === "system";
+  return !!(msg && typeof msg === "object" && msg.role === "system");
 }
 
 export function isToolMessage(msg: any): boolean {
-  return msg && typeof msg === "object" && msg.role === "tool";
+  return !!(msg && typeof msg === "object" && msg.role === "tool");
 }
 
 export function isFunctionMessage(msg: any): boolean {
-  return msg && typeof msg === "object" && msg.role === "function";
+  return !!(msg && typeof msg === "object" && msg.role === "function");
 }
 
 // Utility to check if message has function/tool call
 export function hasToolCall(msg: any): boolean {
-  return (
+  return !!(
     msg &&
     typeof msg === "object" &&
     (msg.function_call || // Legacy format

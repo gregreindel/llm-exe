@@ -1,4 +1,4 @@
-import { BaseParser, FunctionCallParser, StringParser } from "@/parser";
+import { BaseParser, FunctionCallParser, StringParser, JsonParser } from "@/parser";
 
 /**
  * Tests the FunctionCallParser class
@@ -141,6 +141,64 @@ describe("llm-exe:parser/FunctionCallParser", () => {
       name: "test_function",
       arguments: { foo: "bar" }, // Parsed object
     });
+  });
+
+  it("returns array when multiple mode is enabled", () => {
+    const parser = new FunctionCallParser({ 
+      parser: new StringParser(),
+      multiple: true 
+    });
+    
+    const result = parser.parse([
+      {
+        type: "function_use",
+        name: "func1",
+        input: { a: 1 },
+      },
+      {
+        type: "function_use",
+        name: "func2",
+        input: { b: 2 },
+        tool_call_id: "call_123",
+      }
+    ]);
+    
+    expect(result).toEqual([
+      {
+        name: "func1",
+        arguments: { a: 1 },
+        tool_call_id: undefined
+      },
+      {
+        name: "func2", 
+        arguments: { b: 2 },
+        tool_call_id: "call_123"
+      }
+    ]);
+  });
+
+  it("uses fallback parser when no function calls", () => {
+    const fallbackParser = new JsonParser();
+    const parser = new FunctionCallParser({ 
+      parser: fallbackParser 
+    });
+    
+    const result = parser.parse([
+      { type: "text", text: '{"result": "no function here"}' }
+    ]);
+    
+    expect(result).toEqual({ result: "no function here" });
+  });
+
+  it("uses fallback parser when content array is empty", () => {
+    const fallbackParser = new StringParser();
+    const parser = new FunctionCallParser({ 
+      parser: fallbackParser 
+    });
+    
+    const result = parser.parse([]);
+    
+    expect(result).toBe("");
   });
 });
 

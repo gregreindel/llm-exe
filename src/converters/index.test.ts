@@ -281,6 +281,19 @@ describe("toInternal", () => {
     expect(result[0].role).toBe("assistant");
     expect(Array.isArray(result[0].content)).toBe(true);
   });
+
+  test("throws error for invalid provider option", () => {
+    // Test the default case by providing an invalid provider
+    const message = {
+      role: "user",
+      content: "Test message",
+    };
+
+    // @ts-expect-error invalid provider
+    expect(() => toInternal(message, { provider: "invalid-provider" })).toThrow(
+      "Could not detect provider format. Please specify provider in options."
+    );
+  });
 });
 
 describe("fromInternal", () => {

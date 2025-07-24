@@ -570,6 +570,15 @@ describe("Gemini Message Converter", () => {
   });
 
   describe("Error handling", () => {
+    it("should throw error for null message", () => {
+      expect(() => geminiMessageToInternal(null as any))
+        .toThrow("Message must be an object");
+    });
+
+    it("should throw error for non-array messages", () => {
+      expect(() => internalMessagesToGemini("not an array" as any))
+        .toThrow("Messages must be an array");
+    });
     it("should throw error for invalid role", () => {
       expect(() => geminiMessageToInternal({ role: "invalid", parts: [] } as any))
         .toThrow("Invalid role: invalid");
@@ -805,6 +814,234 @@ describe("Gemini Message Converter", () => {
       });
       expect((result[1].parts[0] as any).text).toBe("Hello");
       expect(result[2].role).toBe("model");
+    });
+
+    it("should validate internal message format", () => {
+      const invalid = [{ not: "a valid message" }];
+      expect(() => internalMessagesToGemini(invalid as any))
+        .toThrow("Invalid internal message format");
+    });
+
+    it("should skip invalid messages in non-strict mode", () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      const messages: any[] = [
+        {
+          role: "user",
+          content: [{ type: "text", text: "Valid" }]
+        },
+        {
+          // Invalid message that will throw
+          role: "assistant",
+          content: null
+        },
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Another valid" }]
+        }
+      ];
+      
+      const result = internalMessagesToGemini(messages, { strict: false });
+      
+      // Should skip the invalid message
+      expect(result).toHaveLength(2);
+      expect(result[0].parts[0]).toEqual({ text: "Valid" });
+      expect(result[1].parts[0]).toEqual({ text: "Another valid" });
+      
+      // Should have logged a warning
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Skipping invalid internal message at index 1:"),
+        expect.any(Error)
+      );
+      
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("Content conversion for grouped messages", () => {
+    it("should convert grouped messages with images in group", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [
+            { type: "text" as const, text: "Here's an image analysis" },
+            { 
+              type: "image" as const, 
+              mediaType: "image/png",
+              source: { type: "base64" as const, data: "base64data" }
+            }
+          ],
+          _meta: {
+            group: { id: "group_123", position: 0, total: 2 },
+            original: { provider: "gemini" }
+          }
+        },
+        {
+          role: "assistant",
+          content: [],
+          function_call: {
+            name: "analyze_image",
+            arguments: '{}'
+          },
+          _meta: {
+            group: { id: "group_123", position: 1, total: 2 },
+            original: { provider: "gemini" }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToGemini(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].parts).toHaveLength(3);
+      expect(result[0].parts[0]).toEqual({ text: "Here's an image analysis" });
+      expect(result[0].parts[1]).toEqual({
+        inlineData: {
+          mimeType: "image/png",
+          data: "base64data"
+        }
+      });
+      expect((result[0].parts[2] as any).functionCall?.name).toBe("analyze_image");
+    });
+
+    it("should convert grouped messages with URL images", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [
+            { 
+              type: "image" as const, 
+              mediaType: "image/jpeg",
+              source: { type: "url" as const, url: "https://example.com/image.jpg" }
+            }
+          ],
+          _meta: {
+            group: { id: "group_456", position: 0, total: 2 },
+            original: { provider: "gemini" }
+          }
+        },
+        {
+          role: "assistant",
+          content: [],
+          function_call: {
+            name: "process",
+            arguments: '{}'
+          },
+          _meta: {
+            group: { id: "group_456", position: 1, total: 2 },
+            original: { provider: "gemini" }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToGemini(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].parts).toHaveLength(2);
+      expect(result[0].parts[0]).toEqual({
+        fileData: {
+          mimeType: "image/jpeg",
+          fileUri: "https://example.com/image.jpg"
+        }
+      });
+    });
+
+    it("should sort grouped messages by partIndex from metadata", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text" as const, text: "Second" }],
+          _meta: {
+            group: { id: "group_789", position: 1, total: 2 },
+            original: { provider: "gemini", partIndex: 1 }
+          }
+        },
+        {
+          role: "assistant",
+          content: [{ type: "text" as const, text: "First" }],
+          _meta: {
+            group: { id: "group_789", position: 0, total: 2 },
+            original: { provider: "gemini", partIndex: 0 }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToGemini(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].parts).toEqual([
+        { text: "First" },
+        { text: "Second" }
+      ]);
+    });
+  });
+
+  describe("Content conversion for non-grouped assistant messages", () => {
+    it("should convert assistant message with base64 image", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [
+            { type: "text" as const, text: "Here's an image:" },
+            { 
+              type: "image" as const, 
+              mediaType: "image/png",
+              source: { type: "base64" as const, data: "imagedata" }
+            }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToGemini(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].parts).toEqual([
+        { text: "Here's an image:" },
+        {
+          inlineData: {
+            mimeType: "image/png",
+            data: "imagedata"
+          }
+        }
+      ]);
+    });
+
+    it("should convert assistant message with URL image", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [
+            { 
+              type: "image" as const, 
+              mediaType: "application/pdf",
+              source: { type: "url" as const, url: "gs://bucket/doc.pdf" }
+            }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToGemini(input);
+      expect(result).toHaveLength(1);
+      expect(result[0].parts).toEqual([
+        {
+          fileData: {
+            mimeType: "application/pdf",
+            fileUri: "gs://bucket/doc.pdf"
+          }
+        }
+      ]);
+    });
+
+    it("should handle assistant message with only content no function call", () => {
+      const input: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text" as const, text: "Simple response" }]
+        }
+      ];
+      
+      const result = internalMessagesToGemini(input);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        role: "model",
+        parts: [{ text: "Simple response" }]
+      });
     });
   });
 });

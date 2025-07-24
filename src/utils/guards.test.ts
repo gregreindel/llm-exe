@@ -14,6 +14,19 @@ import {
   hasGeminiFormat,
   hasLegacyFunctionCallFormat,
   isLegacyFunctionMessage,
+  isPlaceholderMessage,
+  isTextContentPart,
+  isInternalMessage,
+  isUserMessage,
+  isAssistantMessage,
+  isSystemMessage,
+  isToolMessage,
+  isFunctionMessage,
+  hasToolCall,
+  isToolResponse,
+  hasAnyToolCalls,
+  getToolResponses,
+  needsToolExecution,
 } from "./guards";
 
 describe("Provider type guards", () => {
@@ -302,6 +315,302 @@ describe("Provider type guards", () => {
       it("should return false for null or undefined", () => {
         expect(isLegacyFunctionMessage(null)).toBe(false);
         expect(isLegacyFunctionMessage(undefined)).toBe(false);
+      });
+    });
+  });
+
+  describe("Universal role guards", () => {
+    describe("isUserMessage", () => {
+      it("should return true for user messages", () => {
+        expect(isUserMessage({ role: "user", content: "Hello" })).toBe(true);
+      });
+
+      it("should return false for non-user messages", () => {
+        expect(isUserMessage({ role: "assistant", content: "Hi" })).toBe(false);
+      });
+
+      it("should return false for null or undefined", () => {
+        expect(isUserMessage(null)).toBe(false);
+        expect(isUserMessage(undefined)).toBe(false);
+      });
+    });
+
+    describe("isAssistantMessage", () => {
+      it("should return true for assistant messages", () => {
+        expect(isAssistantMessage({ role: "assistant", content: "Hi" })).toBe(true);
+      });
+
+      it("should return true for model messages (Gemini)", () => {
+        expect(isAssistantMessage({ role: "model", parts: [{ text: "Hi" }] })).toBe(true);
+      });
+
+      it("should return false for non-assistant messages", () => {
+        expect(isAssistantMessage({ role: "user", content: "Hello" })).toBe(false);
+      });
+
+      it("should return false for null or undefined", () => {
+        expect(isAssistantMessage(null)).toBe(false);
+        expect(isAssistantMessage(undefined)).toBe(false);
+      });
+    });
+
+    describe("isSystemMessage", () => {
+      it("should return true for system messages", () => {
+        expect(isSystemMessage({ role: "system", content: "You are helpful" })).toBe(true);
+      });
+
+      it("should return false for non-system messages", () => {
+        expect(isSystemMessage({ role: "user", content: "Hello" })).toBe(false);
+      });
+
+      it("should return false for null or undefined", () => {
+        expect(isSystemMessage(null)).toBe(false);
+        expect(isSystemMessage(undefined)).toBe(false);
+      });
+    });
+
+    describe("isToolMessage", () => {
+      it("should return true for tool messages", () => {
+        expect(isToolMessage({ role: "tool", content: "Result" })).toBe(true);
+      });
+
+      it("should return false for non-tool messages", () => {
+        expect(isToolMessage({ role: "assistant", content: "Hi" })).toBe(false);
+      });
+
+      it("should return false for null or undefined", () => {
+        expect(isToolMessage(null)).toBe(false);
+        expect(isToolMessage(undefined)).toBe(false);
+      });
+    });
+
+    describe("isFunctionMessage", () => {
+      it("should return true for function messages", () => {
+        expect(isFunctionMessage({ role: "function", name: "test", content: "Result" })).toBe(true);
+      });
+
+      it("should return false for non-function messages", () => {
+        expect(isFunctionMessage({ role: "assistant", content: "Hi" })).toBe(false);
+      });
+
+      it("should return false for null or undefined", () => {
+        expect(isFunctionMessage(null)).toBe(false);
+        expect(isFunctionMessage(undefined)).toBe(false);
+      });
+    });
+  });
+
+  describe("Placeholder and content guards", () => {
+    describe("isPlaceholderMessage", () => {
+      it("should return true for placeholder messages", () => {
+        const message = {
+          role: "placeholder",
+          content: [{ type: "text", text: "Placeholder text" }]
+        };
+        expect(isPlaceholderMessage(message)).toBe(true);
+      });
+
+      it("should return false for non-placeholder messages", () => {
+        const message = {
+          role: "user",
+          content: [{ type: "text", text: "User text" }]
+        };
+        expect(isPlaceholderMessage(message)).toBe(false);
+      });
+    });
+
+    describe("isTextContentPart", () => {
+      it("should return true for text content parts", () => {
+        expect(isTextContentPart({ type: "text", text: "Hello" })).toBe(true);
+      });
+
+      it("should return false for non-text content parts", () => {
+        expect(isTextContentPart({ type: "image_url", image_url: { url: "https://example.com/image.jpg" } })).toBe(false);
+      });
+    });
+  });
+
+  describe("InternalMessage guard", () => {
+    it("should return true for valid internal messages", () => {
+      const message = {
+        role: "assistant",
+        content: [{ type: "text", text: "Hello" }]
+      };
+      expect(isInternalMessage(message)).toBe(true);
+    });
+
+    it("should return true for messages with function_call", () => {
+      const message = {
+        role: "assistant",
+        content: [{ type: "text", text: "Calling function" }],
+        function_call: {
+          name: "get_weather",
+          arguments: '{"location": "NYC"}'
+        }
+      };
+      expect(isInternalMessage(message)).toBe(true);
+    });
+
+    it("should return false when content is not an array", () => {
+      const message = {
+        role: "assistant",
+        content: "String content"
+      };
+      expect(isInternalMessage(message)).toBe(false);
+    });
+
+    it("should return false when content items lack type", () => {
+      const message = {
+        role: "assistant",
+        content: [{ text: "Hello" }]
+      };
+      expect(isInternalMessage(message)).toBe(false);
+    });
+
+    it("should return false when function_call is invalid", () => {
+      const message = {
+        role: "assistant",
+        content: [{ type: "text", text: "Hello" }],
+        function_call: "invalid"
+      };
+      expect(isInternalMessage(message)).toBe(false);
+    });
+
+    it("should return false for null or undefined", () => {
+      expect(isInternalMessage(null)).toBe(false);
+      expect(isInternalMessage(undefined)).toBe(false);
+    });
+  });
+
+  describe("Tool call utilities", () => {
+    describe("hasToolCall", () => {
+      it("should detect legacy function_call format", () => {
+        const message = {
+          role: "assistant",
+          function_call: { name: "test", arguments: "{}" }
+        };
+        expect(hasToolCall(message)).toBe(true);
+      });
+
+      it("should detect OpenAI tool_calls format", () => {
+        const message = {
+          role: "assistant",
+          tool_calls: [{ type: "function", function: { name: "test", arguments: "{}" } }]
+        };
+        expect(hasToolCall(message)).toBe(true);
+      });
+
+      it("should detect Anthropic tool_use format", () => {
+        const message = {
+          role: "assistant",
+          content: [
+            { type: "text", text: "Let me help" },
+            { type: "tool_use", id: "123", name: "test", input: {} }
+          ]
+        };
+        expect(hasToolCall(message)).toBe(true);
+      });
+
+      it("should detect Gemini functionCall format", () => {
+        const message = {
+          role: "model",
+          parts: [
+            { text: "Let me help" },
+            { functionCall: { name: "test", args: {} } }
+          ]
+        };
+        expect(hasToolCall(message)).toBe(true);
+      });
+
+      it("should return false for messages without tool calls", () => {
+        expect(hasToolCall({ role: "user", content: "Hello" })).toBe(false);
+        expect(hasToolCall({ role: "assistant", content: [{ type: "text", text: "Hi" }] })).toBe(false);
+      });
+
+      it("should return false for null or undefined", () => {
+        expect(hasToolCall(null)).toBe(false);
+        expect(hasToolCall(undefined)).toBe(false);
+      });
+    });
+
+    describe("isToolResponse", () => {
+      it("should return true for tool messages", () => {
+        expect(isToolResponse({ role: "tool", content: "Result" })).toBe(true);
+      });
+
+      it("should return true for function messages", () => {
+        expect(isToolResponse({ role: "function", name: "test", content: "Result" })).toBe(true);
+      });
+
+      it("should return false for non-tool/function messages", () => {
+        expect(isToolResponse({ role: "assistant", content: "Hi" })).toBe(false);
+      });
+    });
+
+    describe("hasAnyToolCalls", () => {
+      it("should return true if any message has tool calls", () => {
+        const messages = [
+          { role: "user", content: "Hello" },
+          { role: "assistant", tool_calls: [{ type: "function", function: { name: "test", arguments: "{}" } }] }
+        ];
+        expect(hasAnyToolCalls(messages)).toBe(true);
+      });
+
+      it("should return false if no messages have tool calls", () => {
+        const messages = [
+          { role: "user", content: "Hello" },
+          { role: "assistant", content: "Hi there" }
+        ];
+        expect(hasAnyToolCalls(messages)).toBe(false);
+      });
+    });
+
+    describe("getToolResponses", () => {
+      it("should return all tool response messages", () => {
+        const messages = [
+          { role: "user", content: "Hello" },
+          { role: "tool", content: "Result 1", tool_call_id: "1" },
+          { role: "assistant", content: "Processing" },
+          { role: "function", name: "test", content: "Result 2" }
+        ];
+        const toolResponses = getToolResponses(messages);
+        expect(toolResponses).toHaveLength(2);
+        expect(toolResponses[0].role).toBe("tool");
+        expect(toolResponses[1].role).toBe("function");
+      });
+
+      it("should return empty array when no tool responses", () => {
+        const messages = [
+          { role: "user", content: "Hello" },
+          { role: "assistant", content: "Hi" }
+        ];
+        expect(getToolResponses(messages)).toEqual([]);
+      });
+    });
+
+    describe("needsToolExecution", () => {
+      it("should return true if last message has tool calls", () => {
+        const messages = [
+          { role: "user", content: "What's the weather?" },
+          { role: "assistant", tool_calls: [{ type: "function", function: { name: "get_weather", arguments: "{}" } }] }
+        ];
+        expect(needsToolExecution(messages)).toBe(true);
+      });
+
+      it("should return false if last message has no tool calls", () => {
+        const messages = [
+          { role: "assistant", tool_calls: [{ type: "function", function: { name: "get_weather", arguments: "{}" } }] },
+          { role: "tool", content: "Sunny", tool_call_id: "123" }
+        ];
+        expect(needsToolExecution(messages)).toBe(false);
+      });
+
+      it("should return false for empty array", () => {
+        expect(needsToolExecution([])).toBe(false);
+      });
+
+      it("should handle undefined last message", () => {
+        expect(needsToolExecution([])).toBe(false);
       });
     });
   });

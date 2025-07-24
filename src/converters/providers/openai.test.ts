@@ -273,6 +273,105 @@ describe("OpenAI Message Converter", () => {
         );
       });
     });
+
+    it("should throw error for missing content type in array", () => {
+      const input = {
+        role: "user",
+        content: [{ text: "hello" }] // missing type field
+      };
+      expect(() => openAIMessageToInternal(input as any)).toThrow(
+        "Invalid content item at index 0: missing type"
+      );
+    });
+
+    it("should throw error for invalid text content", () => {
+      const input = {
+        role: "user",
+        content: [{ type: "text", text: 123 }] // text should be string
+      };
+      expect(() => openAIMessageToInternal(input as any)).toThrow(
+        "Invalid text content at index 0"
+      );
+    });
+
+    it("should throw error for invalid image_url content", () => {
+      const input = {
+        role: "user",
+        content: [{ type: "image_url" }] // missing image_url field
+      };
+      expect(() => openAIMessageToInternal(input as any)).toThrow(
+        "Invalid image_url content at index 0"
+      );
+    });
+
+    it("should throw error for invalid tool call in array", () => {
+      const input = {
+        role: "assistant",
+        content: null,
+        tool_calls: [{ id: "123" }] // missing required fields
+      };
+      expect(() => openAIMessageToInternal(input as any)).toThrow(
+        "Invalid tool call at index 0"
+      );
+    });
+
+    it("should preserve tool_call_id when present in function message", () => {
+      const input = {
+        role: "function",
+        name: "test_func",
+        content: "Result",
+        tool_call_id: "custom_id_123"
+      };
+      const result = openAIMessageToInternal(input);
+      expect(result[0].tool_call_id).toBe("custom_id_123");
+    });
+
+    it("should throw error when messages is not an array for internalMessagesToOpenAI", () => {
+      expect(() => internalMessagesToOpenAI("not an array" as any))
+        .toThrow("Messages must be an array");
+    });
+
+    it("should validate internal message format", () => {
+      const invalid = [{ not: "a valid message" }];
+      expect(() => internalMessagesToOpenAI(invalid as any))
+        .toThrow("Invalid internal message format");
+    });
+
+    it("should skip invalid messages in non-strict mode", () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      const messages: any[] = [
+        {
+          role: "user",
+          content: [{ type: "text", text: "Valid" }]
+        },
+        {
+          // Invalid message that will throw
+          role: "assistant",
+          content: "test", // This should be wrapped, will cause validation to fail
+          _meta: { invalid: true } // Force validation failure
+        },
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Another valid" }]
+        }
+      ];
+      
+      const result = internalMessagesToOpenAI(messages, { strict: false });
+      
+      // Should skip the invalid message
+      expect(result).toHaveLength(2);
+      expect(result[0].content).toBe("Valid");
+      expect(result[1].content).toBe("Another valid");
+      
+      // Should have logged a warning
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Skipping invalid internal message at index 1:"),
+        expect.any(Error)
+      );
+      
+      consoleSpy.mockRestore();
+    });
   });
 
   describe("Options handling", () => {
@@ -316,6 +415,99 @@ describe("OpenAI Message Converter", () => {
         generateId: customId,
       });
       expect(result[0]._meta?.group?.id).toBe("group_custom-id-123");
+    });
+  });
+
+  describe("Content edge cases", () => {
+    it("should convert unsupported content type to text", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Check this:" },
+            { type: "audio" as any, data: "audio data" } as any
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToOpenAI(internal);
+      expect(result[0].content).toEqual([
+        { type: "text", text: "Check this:" },
+        { type: "text", text: "[audio content]" }
+      ]);
+    });
+
+    it("should handle unknown content type in OpenAI format", () => {
+      const input = {
+        role: "user",
+        content: [
+          { type: "unknown_type", data: "some data" }
+        ]
+      };
+      
+      const result = openAIMessageToInternal(input as any);
+      expect(result[0].content).toEqual([
+        { type: "text", text: "[Unknown content type: unknown_type]" }
+      ]);
+    });
+
+    it("should handle malformed data URL for images", () => {
+      const input = {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: { url: "data:image/png;notbase64,baddata" }
+          }
+        ]
+      };
+      
+      const result = openAIMessageToInternal(input);
+      // Should fall back to regular URL handling
+      expect(result[0].content[0]).toMatchObject({
+        type: "image",
+        mediaType: "image/jpeg",
+        source: {
+          type: "url",
+          url: "data:image/png;notbase64,baddata"
+        }
+      });
+    });
+
+    it("should return empty array for non-array content", () => {
+      const input = {
+        role: "user",
+        content: {} // Neither string, null, nor array
+      };
+      
+      const result = openAIMessageToInternal(input as any, { validate: false });
+      expect(result[0].content).toEqual([]);
+    });
+  });
+
+  describe("Grouped message handling", () => {
+    it("should handle grouped messages with only content", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "First part" }],
+          _meta: {
+            group: { id: "group_1", position: 0, total: 2 }
+          }
+        },
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Second part" }],
+          _meta: {
+            group: { id: "group_1", position: 1, total: 2 }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToOpenAI(internal);
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe("assistant");
+      expect(result[0].content).toBe("First part"); // Takes first content message
     });
   });
 

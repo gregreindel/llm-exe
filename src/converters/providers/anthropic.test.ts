@@ -647,6 +647,29 @@ describe("Anthropic Message Converter", () => {
       ).not.toThrow();
     });
 
+    it("should use custom generateId function when provided", () => {
+      let counter = 0;
+      const customIdGen = () => `custom_${counter++}`;
+      
+      const input = {
+        role: "assistant",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_123",
+            name: "test_func",
+            input: { test: true }
+          }
+        ]
+      };
+      
+      const result = anthropicMessageToInternal(input, { generateId: customIdGen });
+      
+      // Check that the group ID uses our custom generator
+      const groupId = result[0]._meta?.group?.id;
+      expect(groupId).toMatch(/^group_custom_\d+$/);
+    });
+
     it("should preserve unknown fields when preserveUnknown is true", () => {
       const input = {
         role: "user",
@@ -768,6 +791,488 @@ describe("Anthropic Message Converter", () => {
       // Need strict: false because of system message
       const backToAnthropic = internalMessagesToAnthropic(internal, { strict: false });
       expect(backToAnthropic).toHaveLength(conversation.length);
+    });
+  });
+
+  describe("Additional validation error cases", () => {
+    it("should throw error for tool_use without id", () => {
+      const input = {
+        role: "assistant",
+        content: [
+          {
+            type: "tool_use",
+            name: "test_func",
+            input: { test: true }
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "tool_use content must have id, name, and input"
+      );
+    });
+
+    it("should throw error for tool_use without name", () => {
+      const input = {
+        role: "assistant",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_123",
+            input: { test: true }
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "tool_use content must have id, name, and input"
+      );
+    });
+
+    it("should throw error for tool_use without input", () => {
+      const input = {
+        role: "assistant",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_123",
+            name: "test_func"
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "tool_use content must have id, name, and input"
+      );
+    });
+
+    it("should throw error for non-serializable tool input", () => {
+      const circularRef: any = { a: 1 };
+      circularRef.self = circularRef;
+      
+      const input = {
+        role: "assistant",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_123",
+            name: "test_func",
+            input: circularRef
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "Invalid tool input at index 0: not serializable"
+      );
+    });
+
+    it("should throw error for tool_result without content string", () => {
+      const input = {
+        role: "user",
+        content: [
+          {
+            type: "tool_result",
+            tool_use_id: "toolu_123",
+            content: 123 // Should be string
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "tool_result must have content as string"
+      );
+    });
+
+    it("should throw error for unknown content type", () => {
+      const input = {
+        role: "user",
+        content: [
+          {
+            type: "unknown_type",
+            data: "test"
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "Invalid content type at index 0: unknown_type"
+      );
+    });
+
+    it("should throw error for user messages with tool_use", () => {
+      const input = {
+        role: "user",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_123",
+            name: "test_func",
+            input: {}
+          }
+        ]
+      };
+      expect(() => anthropicMessageToInternal(input as any)).toThrow(
+        "User messages cannot contain tool_use"
+      );
+    });
+  });
+
+  describe("Edge cases and special handling", () => {
+    it("should handle empty content array", () => {
+      const input = {
+        role: "assistant",
+        content: []
+      };
+      const result = anthropicMessageToInternal(input);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        role: "assistant",
+        content: [],
+        _meta: {
+          original: {
+            provider: "anthropic",
+            wasArray: true,
+            hadEmptyParts: true
+          }
+        }
+      });
+    });
+
+    it("should preserve unknown fields in empty content array with preserveUnknown", () => {
+      const input = {
+        role: "assistant",
+        content: [],
+        customField: "test",
+        metadata: { foo: "bar" }
+      } as any;
+      
+      const result = anthropicMessageToInternal(input, { preserveUnknown: true });
+      expect(result[0]._meta?.original).toMatchObject({
+        provider: "anthropic",
+        wasArray: true,
+        hadEmptyParts: true,
+        customField: "test",
+        metadata: { foo: "bar" }
+      });
+    });
+
+    it("should preserve unknown fields for string content with preserveUnknown", () => {
+      const input = {
+        role: "user",
+        content: "Hello",
+        customField: "value",
+        timestamp: 123456
+      } as any;
+      
+      const result = anthropicMessageToInternal(input, { preserveUnknown: true });
+      expect(result[0]._meta?.original).toMatchObject({
+        provider: "anthropic",
+        customField: "value",
+        timestamp: 123456
+      });
+    });
+
+    it("should handle assistant message with content and function_call", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Let me help" }],
+          function_call: {
+            name: "search",
+            arguments: '{"query": "test"}'
+          },
+          _meta: {
+            original: {
+              tool_call_id: "existing_id"
+            }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result).toHaveLength(1);
+      expect(result[0].content).toHaveLength(2);
+      expect(result[0].content[0]).toEqual({ type: "text", text: "Let me help" });
+      expect(result[0].content[1]).toMatchObject({
+        type: "tool_use",
+        id: "existing_id",
+        name: "search",
+        input: { query: "test" }
+      });
+    });
+
+    it("should log warning for conversion errors in non-strict mode", () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      // Create an internal message that will throw during conversion
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [{ type: "text", text: "Valid message" }]
+        },
+        {
+          // This will cause an error during conversion because content is not an array
+          role: "assistant",
+          content: null as any
+        },
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Another valid message" }]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal, { strict: false });
+      
+      // Should skip the invalid message and convert the rest
+      expect(result).toHaveLength(2);
+      expect(result[0].content).toEqual([{ type: "text", text: "Valid message" }]);
+      expect(result[1].content).toEqual([{ type: "text", text: "Another valid message" }]);
+      
+      // Should have logged a warning
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Skipping invalid internal message at index 1:"),
+        expect.any(Error)
+      );
+      
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("Content conversion edge cases", () => {
+    it("should throw error when messages is not an array", () => {
+      expect(() => internalMessagesToAnthropic("not an array" as any)).toThrow(
+        "Messages must be an array"
+      );
+    });
+    it("should convert unsupported content types to text", () => {
+      // This tests the fallback in contentPartsToAnthropic
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Hello" },
+            { type: "unsupported_type" as any, data: "test" } as any
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([
+        { type: "text", text: "Hello" },
+        { type: "text", text: "[unsupported_type content]" }
+      ]);
+    });
+
+    it("should handle image with missing data in base64 source", () => {
+      const input = {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: "image/png",
+              data: "" // Empty data instead of missing
+            }
+          }
+        ]
+      };
+      
+      const result = anthropicMessageToInternal(input);
+      expect(result[0].content[0]).toMatchObject({
+        type: "image",
+        mediaType: "image/png",
+        source: {
+          type: "base64",
+          data: ""
+        }
+      });
+    });
+
+    it("should handle consecutive function messages", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "function",
+          name: "func1",
+          content: [{ type: "text", text: "Result 1" }],
+          tool_call_id: "call_1"
+        },
+        {
+          role: "function",
+          name: "func2",
+          content: [{ type: "text", text: "Result 2" }],
+          tool_call_id: "call_2",
+          _meta: {
+            original: {
+              is_error: true
+            }
+          }
+        },
+        {
+          role: "assistant",
+          content: [{ type: "text", text: "Done" }]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result).toHaveLength(2);
+      
+      // First message should combine both function results
+      expect(result[0].role).toBe("user");
+      expect(result[0].content).toHaveLength(2);
+      expect(result[0].content[0]).toEqual({
+        type: "tool_result",
+        tool_use_id: "call_1",
+        content: "Result 1"
+      });
+      expect(result[0].content[1]).toEqual({
+        type: "tool_result",
+        tool_use_id: "call_2",
+        content: "Result 2",
+        is_error: true
+      });
+      
+      // Second message is the assistant response
+      expect(result[1].role).toBe("assistant");
+    });
+
+    it("should use generateId for missing tool_call_ids", () => {
+      let counter = 0;
+      const customIdGen = () => `custom_${counter++}`;
+      
+      const internal: InternalMessage[] = [
+        {
+          role: "function",
+          name: "test",
+          content: [{ type: "text", text: "Result" }]
+          // No tool_call_id
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal, { generateId: customIdGen });
+      expect(result[0].content[0]).toMatchObject({
+        type: "tool_result",
+        tool_use_id: "tool_custom_0",
+        content: "Result"
+      });
+    });
+  });
+
+  describe("Content format conversion logic", () => {
+    it("should convert single text content to string for non-user/assistant roles", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "system",
+          content: [{ type: "text", text: "System prompt" }]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal, { strict: false });
+      expect(result[0].content).toBe("System prompt");
+    });
+
+    it("should convert multiple text parts to array", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Part 1" },
+            { type: "text", text: "Part 2" }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([
+        { type: "text", text: "Part 1" },
+        { type: "text", text: "Part 2" }
+      ]);
+    });
+
+    it("should convert empty content to empty array", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: []
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([]);
+    });
+
+    it("should convert content to array when original was array", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [{ type: "text", text: "Hello" }],
+          _meta: {
+            original: {
+              wasArray: true
+            }
+          }
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([
+        { type: "text", text: "Hello" }
+      ]);
+    });
+
+    it("should convert internal image with url source", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              mediaType: "image/jpeg",
+              source: {
+                type: "url",
+                url: "https://example.com/image.jpg"
+              }
+            }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([
+        {
+          type: "image",
+          source: {
+            type: "url",
+            media_type: "image/jpeg",
+            url: "https://example.com/image.jpg"
+          }
+        }
+      ]);
+    });
+
+    it("should handle missing url in image source", () => {
+      const internal: InternalMessage[] = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              mediaType: "image/jpeg",
+              source: {
+                type: "url",
+                url: undefined as any
+              }
+            }
+          ]
+        }
+      ];
+      
+      const result = internalMessagesToAnthropic(internal);
+      expect(result[0].content).toEqual([
+        {
+          type: "image",
+          source: {
+            type: "url",
+            media_type: "image/jpeg",
+            url: ""
+          }
+        }
+      ]);
     });
   });
 });

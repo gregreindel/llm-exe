@@ -184,7 +184,12 @@ export class Dialogue extends BaseStateItem<InternalMessage[]> {
     }
     // If it looks like IChatMessages, convert it
     if (value.length > 0 && value[0].role && typeof value[0].content !== "undefined") {
-      this.value = toInternal(value);
+      // Convert each message individually
+      this.value = [];
+      for (const msg of value) {
+        const internalMessages = toInternal(msg);
+        this.value.push(...internalMessages);
+      }
     } else {
       // Assume it's already InternalMessage[]
       this.value = value;
