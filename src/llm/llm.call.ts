@@ -64,6 +64,12 @@ export async function useLlm_call(
         _options?.functionCall,
         "openai"
       );
+    } else if (state.provider.startsWith("google")) {
+      input["toolConfig"] = {
+        functionCallingConfig: {
+          mode: normalizeFunctionCall(_options?.functionCall, "google"),
+        },
+      };
     }
   }
   if (_options && _options?.functions?.length) {
@@ -91,6 +97,16 @@ export async function useLlm_call(
           ),
         };
       });
+    } else if (state.provider.startsWith("google")) {
+      input["tools"] = [
+        {
+          functionDeclarations: _options.functions.map((f) => ({
+            name: f.name,
+            description: f.description,
+            parameters: cleanJsonSchemaFor(f.parameters, "google.chat"),
+          })),
+        },
+      ];
     }
   }
   // END: provider-specific format handling
