@@ -1,4 +1,5 @@
 import { OutputGoogleGeminiChatChoice, OutputResultContent } from "@/types";
+import { maybeParseJSON } from "@/utils";
 
 export function formatResult(
   result: OutputGoogleGeminiChatChoice
@@ -11,7 +12,7 @@ export function formatResult(
       return {
         type: "function_use",
         name: answer.functionCall.name,
-        input: JSON.parse(answer.functionCall.args),
+        input: maybeParseJSON(answer.functionCall.args),
       };
     } else {
       return {

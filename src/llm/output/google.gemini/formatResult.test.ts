@@ -21,17 +21,14 @@ describe("formatResult", () => {
   it("returns text fallback if parts has length > 1", () => {
     const result = {
       content: {
-        parts: [
-          { text: "Part 1" },
-          { text: "Part 2" },
-        ],
+        parts: [{ text: "Part 1" }, { text: "Part 2" }],
       },
     } as any;
     const output = formatResult(result);
     expect(output).toEqual({ type: "text", text: "" });
   });
 
-  it("returns function_use object if parts length = 1 with valid functionCall JSON", () => {
+  it("returns function_use object if parts length = 1 with valid functionCall", () => {
     const argsObj = { foo: 123 };
     const result = {
       content: {
@@ -39,7 +36,7 @@ describe("formatResult", () => {
           {
             functionCall: {
               name: "testFunction",
-              args: JSON.stringify(argsObj),
+              args: argsObj,
             },
           },
         ],
@@ -51,22 +48,6 @@ describe("formatResult", () => {
       name: "testFunction",
       input: { foo: 123 },
     });
-  });
-
-  it("throws an error if functionCall args is invalid JSON", () => {
-    const result = {
-      content: {
-        parts: [
-          {
-            functionCall: {
-              name: "testFunction",
-              args: "{ invalid JSON }",
-            },
-          },
-        ],
-      },
-    } as any;
-    expect(() => formatResult(result)).toThrow();
   });
 
   it("returns text if parts length = 1 but no functionCall", () => {

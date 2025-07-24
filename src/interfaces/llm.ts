@@ -201,12 +201,33 @@ interface OutputGoogleGeminiChatChoiceBase {
       text?: string;
       functionCall?: null | {
         name: string;
-        args: string;
+        args: Record<string, any>;
       };
     }[];
   };
-  finishReason: "STOP";
+  finishReason: "STOP" | "MAX_TOKENS" | "SAFETY" | "RECITATION" | "OTHER" | "BLOCKLIST" | "PROHIBITED_CONTENT" | "SPII" | "MALFORMED_FUNCTION_CALL";
   avgLogprobs?: number;
+  safetyRatings?: {
+    category: string;
+    probability: string;
+    probabilityScore?: number;
+    severity?: string;
+    severityScore?: number;
+  }[];
+  citationMetadata?: {
+    citations: {
+      startIndex?: number;
+      endIndex?: number;
+      uri?: string;
+      title?: string;
+      license?: string;
+      publicationDate?: {
+        year?: number;
+        month?: number;
+        day?: number;
+      };
+    }[];
+  };
 }
 
 export interface OutputGoogleGeminiChatChoiceFunction
@@ -217,12 +238,10 @@ export interface OutputGoogleGeminiChatChoiceFunction
       text: undefined;
       functionCall?: {
         name: string;
-        args: string;
+        args: Record<string, any>;
       };
     }[];
   };
-  finishReason: "STOP";
-  avgLogprobs?: number;
 }
 
 export interface OutputGoogleGeminiChatChoiceMessage
@@ -234,8 +253,6 @@ export interface OutputGoogleGeminiChatChoiceMessage
       functionCall?: null;
     }[];
   };
-  finishReason: "STOP";
-  avgLogprobs?: number;
 }
 
 export type OutputGoogleGeminiChatChoice =
@@ -243,25 +260,31 @@ export type OutputGoogleGeminiChatChoice =
   | OutputGoogleGeminiChatChoiceMessage;
 
 export interface GoogleGeminiResponse {
-  modelVersion: string;
+  model?: string;
   usageMetadata: {
     promptTokenCount: number;
     candidatesTokenCount: number;
     totalTokenCount: number;
-    promptTokensDetails: [
-      {
-        modality: "TEXT";
-        tokenCount: number;
-      },
-    ];
-    candidatesTokensDetails: [
-      {
-        modality: "TEXT";
-        tokenCount: number;
-      },
-    ];
+    promptTokensDetails?: {
+      modality: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO";
+      tokenCount: number;
+    }[];
+    candidatesTokensDetails?: {
+      modality: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO";
+      tokenCount: number;
+    }[];
   };
   candidates: OutputGoogleGeminiChatChoice[];
+  promptFeedback?: {
+    blockReason?: string;
+    safetyRatings?: {
+      category: string;
+      probability: string;
+      probabilityScore?: number;
+      severity?: string;
+      severityScore?: number;
+    }[];
+  };
 }
 // END Gemini
 

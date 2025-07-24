@@ -37,7 +37,7 @@ describe("llm-exe:output/OutputGoogleGeminiChat", () => {
         },
       ],
     },
-    modelVersion: "gemini-2.0-flash",
+    model: "gemini-2.0-flash",
   };
   it("creates class with expected properties", () => {
     const output = OutputGoogleGeminiChat(mock as any).getResult();
@@ -50,7 +50,7 @@ describe("llm-exe:output/OutputGoogleGeminiChat", () => {
   it("creates class with expected properties", () => {
     const output = OutputGoogleGeminiChat(mock as any).getResult();
     expect(typeof (output as any).id).toEqual("string");
-    expect((output as any).name).toEqual(mock.modelVersion);
+    expect((output as any).name).toEqual(mock.model);
     expect(typeof (output as any).created).toEqual("number");
     expect((output as any).usage).toEqual({
       input_tokens: mock.usageMetadata.promptTokenCount,

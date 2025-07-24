@@ -8,7 +8,7 @@ export function OutputGoogleGeminiChat(
   _config?: { model?: string }
 ) {
   const id = "result.id";
-  const name = result.modelVersion;
+  const name = result.model || _config?.model || "gemini";
   const created = new Date().getTime();
 
   const [_content, ..._options] = result?.candidates || [];
