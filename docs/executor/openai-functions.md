@@ -200,7 +200,6 @@ Some providers support calling multiple functions in a single response. While th
 const executor = new LlmExecutorWithFunctions({
   llm,
   prompt,
-  multipleFunctions: true, // Coming soon
 });
 ```
 

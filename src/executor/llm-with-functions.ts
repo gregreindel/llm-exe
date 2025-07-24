@@ -31,7 +31,6 @@ export class LlmExecutorWithFunctions<
       Object.assign({}, llmConfiguration, {
         parser: new FunctionCallParser({
           parser: llmConfiguration.parser || new StringParser(),
-          multiple: (llmConfiguration as any).multipleFunctions || false,
         }),
       }),
       options
