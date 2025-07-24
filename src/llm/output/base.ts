@@ -15,7 +15,7 @@ export function BaseLlmOutput2(
     usage: result.usage,
     stopReason: result.stopReason,
     options: [...(result?.options || [])],
-    content: [...(result.content)],
+    content: [...result.content],
     created: result?.created || new Date().getTime(),
   });
 
@@ -33,7 +33,7 @@ export function BaseLlmOutput2(
 
   return {
     getResultContent: (index?: number) => getResultContent(__result, index),
-    getResultText: () => getResultText(__result.content),
+    getResultText: (index?: number) => getResultText(__result, index),
     getResult,
   };
 }

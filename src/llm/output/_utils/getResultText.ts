@@ -1,10 +1,11 @@
-import { OutputResultContent } from "@/interfaces";
+import { OutputResult } from "@/types";
 
-export function getResultText(content: OutputResultContent[]): string {
-  if (content.length === 1 && content.every((a) => a.type === "text")) {
-    return content[0]?.text || "";
+export function getResultText(result: OutputResult, index?: number): string {
+  if (typeof index === "number" && index > 0) {
+    const arr = result?.options || [];
+    const val = arr[index];
+    return val[0]?.text || "";
   }
 
-  // PROBLEM!!!!!
-  return "";
+  return result.content[0]?.text || "";
 }

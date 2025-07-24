@@ -7,7 +7,7 @@ export function getResultContent(
     Partial<Pick<OutputResult, BaseLlmOutput2Optional>>,
   index?: number
 ): OutputResultContent[] {
-  if (index && index > 0) {
+  if (typeof index === "number" && index > 0) {
     const arr = result?.options || [];
     const val = arr[index];
     return val ? val : [];

@@ -22,14 +22,17 @@ export interface OutputOpenAIChatChoiceFunction
   extends OutputOpenAIChatChoiceBase {
   message: {
     role: Extract<IChatMessageRole, "assistant">;
-    content: null;
+    content: string | null;
     tool_calls: {
+      id: string;
       type: "function";
       function: {
         name: string;
         arguments: string;
       };
     }[];
+    refusal: null;
+    annotations: any[];
   };
   finish_reason: Extract<"tool_calls" | "stop", "tool_calls">;
 }
@@ -57,7 +60,19 @@ export interface OpenAiResponse {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+
+    prompt_tokens_details: {
+      cached_tokens: number;
+      audio_tokens: number;
+    };
+    completion_tokens_details: {
+      reasoning_tokens: number;
+      audio_tokens: number;
+      accepted_prediction_tokens: number;
+      rejected_prediction_tokens: number;
+    };
   };
+  service_tier: "default";
   choices: OutputOpenAIChatChoice[];
 }
 
@@ -89,7 +104,7 @@ export interface Claude3Response {
   role: "assistant";
   content: (
     | {
-        id: string;
+        // id: string; // i don't think this exists?
         type: "text";
         text: string;
       }
@@ -106,6 +121,9 @@ export interface Claude3Response {
   usage: {
     input_tokens: number;
     output_tokens: number;
+    cache_creation_input_tokens: number;
+    cache_read_input_tokens: number;
+    service_tier: "standard";
   };
 }
 
@@ -205,7 +223,16 @@ interface OutputGoogleGeminiChatChoiceBase {
       };
     }[];
   };
-  finishReason: "STOP" | "MAX_TOKENS" | "SAFETY" | "RECITATION" | "OTHER" | "BLOCKLIST" | "PROHIBITED_CONTENT" | "SPII" | "MALFORMED_FUNCTION_CALL";
+  finishReason:
+    | "STOP"
+    | "MAX_TOKENS"
+    | "SAFETY"
+    | "RECITATION"
+    | "OTHER"
+    | "BLOCKLIST"
+    | "PROHIBITED_CONTENT"
+    | "SPII"
+    | "MALFORMED_FUNCTION_CALL";
   avgLogprobs?: number;
   safetyRatings?: {
     category: string;
@@ -298,6 +325,20 @@ export interface GoogleGeminiResponse {
 export interface OutputResultsBase {
   type: "text" | "function_use";
   text?: string;
+
+  // NEW: Optional metadata
+  _metadata?: {
+    source?: {
+      provider: string;
+      path?: string;
+      toolCallId?: string;
+    };
+    messageGroup?: {
+      id: string;
+      index: number;
+      total: number;
+    };
+  };
 }
 
 // Storing text-based llm response
@@ -311,6 +352,9 @@ export interface OutputResultsFunction extends OutputResultsBase {
   type: "function_use";
   name: string;
   input: Record<string, any>;
+
+  // new
+  callId?: string;
 }
 
 export type OutputResultContent = OutputResultsText | OutputResultsFunction;
