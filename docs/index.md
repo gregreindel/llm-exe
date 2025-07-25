@@ -318,11 +318,11 @@ No magic. Just clean composition.
 <div class="testimonials-grid">
   <div class="testimonial-card">
     <div class="testimonial-quote">"Finally, LLM calls that don't feel like stringly-typed nightmares."</div>
-    <div class="testimonial-author">— Senior Engineer, YC Startup</div>
+    <div class="testimonial-author">— A Developer Really Said This</div>
   </div>
   <div class="testimonial-card">
     <div class="testimonial-quote">"Switched from OpenAI to Claude in literally one line. Everything just worked."</div>
-    <div class="testimonial-author">— Tech Lead, Series B Fintech</div>
+    <div class="testimonial-author">— A tech lead said ti</div>
   </div>
   <div class="testimonial-card">
     <div class="testimonial-quote">"The type safety alone saved us hours of debugging. The composability changed how we build."</div>

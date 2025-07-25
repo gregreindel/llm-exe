@@ -296,18 +296,10 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           }
 
           case "assistant": {
-            if (message.function_call) {
-              // messagesOut.push({
-              //   role: "assistant",
-              //   content: null,
-              //   function_call: message.function_call,
-              // });
-            } else if (message?.content) {
-              messagesOut.push({
-                role: "assistant",
-                content: message.content,
-              });
-            }
+            messagesOut.push({
+              role: "assistant",
+              content: message.content,
+            });
             break;
           }
           case "function_call":
