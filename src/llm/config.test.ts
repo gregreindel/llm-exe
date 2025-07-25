@@ -77,6 +77,27 @@ describe("configs", () => {
         system: {
           key: "system",
         },
+        temperature: {
+          key: "temperature",
+        },
+        topP: {
+          key: "top_p",
+        },
+        topK: {
+          key: "top_k",
+        },
+        stopSequences: {
+          key: "stop_sequences",
+        },
+        stream: {
+          key: "stream",
+        },
+        metadata: {
+          key: "metadata",
+        },
+        serviceTier: {
+          key: "service_tier",
+        },
       },
     };
     expect(configs["anthropic.chat.v1"]).toEqual(anthropicConfig);
