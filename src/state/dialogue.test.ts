@@ -91,8 +91,8 @@ describe("llm-exe:state/Dialogue", () => {
     const history = dialogue.getHistory();
     expect(history).toHaveLength(1);
 
-    expect(history[0].role).toEqual("assistant");
-    assert(history[0].role === "assistant");
+    expect(history[0].role).toEqual("function_call");
+    assert(history[0].role === "function_call");
     assert(history[0].content === null);
     expect(history[0].function_call).toEqual({
       name: "test_fn",
@@ -200,7 +200,7 @@ describe("llm-exe:state/Dialogue", () => {
         content: "Hello?",
       },
       {
-        role: "assistant",
+        role: "function_call",
         content: null,
         function_call: {
           name: "test_fn",
@@ -225,12 +225,12 @@ describe("llm-exe:state/Dialogue", () => {
     expect(history[0].role).toEqual("user");
 
     expect(history[1].content).toEqual(null);
-    expect(history[1].role).toEqual("assistant");
-    assert(history[1].role === "assistant")
+    expect(history[1].role).toEqual("function_call");
+    assert(history[1].role === "function_call");
     expect(history[1].function_call?.name).toEqual("test_fn");
     expect(history[1].function_call?.arguments).toEqual("{}");
 
-    assert(history[2].role === "function")
+    assert(history[2].role === "function");
     expect(history[2].role).toEqual("function");
     expect(history[2].name).toEqual("test_fn");
     expect(history[2].content).toEqual("Output");

@@ -35,49 +35,70 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     expect(format).toEqual([{ content: "Hello", role: "system" }]);
   });
 
-
   it("parses detailed user message", () => {
     const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
-    prompt.addUserMessage([{
-      type: "text",
-      text: "Hello"
-    }])
+    prompt.addUserMessage([
+      {
+        type: "text",
+        text: "Hello",
+      },
+    ]);
     const format = prompt.format({});
-    expect(format).toEqual([{"content": [{"text": "Hello", "type": "text"}], "role": "user"}]);
+    expect(format).toEqual([
+      { content: [{ text: "Hello", type: "text" }], role: "user" },
+    ]);
   });
 
   it("parses detailed user message (async)", async () => {
     const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
-    prompt.addUserMessage([{
-      type: "text",
-      text: "Hello"
-    }])
+    prompt.addUserMessage([
+      {
+        type: "text",
+        text: "Hello",
+      },
+    ]);
     const format = await prompt.formatAsync({});
-    expect(format).toEqual([{"content": [{"text": "Hello", "type": "text"}], "role": "user"}]);
+    expect(format).toEqual([
+      { content: [{ text: "Hello", type: "text" }], role: "user" },
+    ]);
   });
 
   it("parses detailed user message fallback", () => {
     const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
-    prompt.addUserMessage([{
-      type: "image",
-      image_url: {
-        url: "www.url.string"
-      }
-    }])
+    prompt.addUserMessage([
+      {
+        type: "image",
+        image_url: {
+          url: "www.url.string",
+        },
+      },
+    ]);
     const format = prompt.format({});
-    expect(format).toEqual([{"content": [{"type": "image", image_url: { url: "www.url.string"} }], "role": "user"}]);
+    expect(format).toEqual([
+      {
+        content: [{ type: "image", image_url: { url: "www.url.string" } }],
+        role: "user",
+      },
+    ]);
   });
 
   it("parses detailed user message fallback (async)", async () => {
     const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
-    prompt.addUserMessage([{
-      type: "image",
-      image_url: {
-        url: "www.url.string"
-      }
-    }])
+    prompt.addUserMessage([
+      {
+        type: "image",
+        image_url: {
+          url: "www.url.string",
+        },
+      },
+    ]);
     const format = await prompt.formatAsync({});
-    expect(format).toEqual([{"content": [{"type": "image", image_url: { url: "www.url.string"} }], "role": "user"}]);
+    expect(format).toEqual([
+      {
+        content: [{ type: "image", image_url: { url: "www.url.string" } }],
+        role: "user",
+      },
+    ]);
   });
 
   it("parses object to string", () => {
@@ -121,14 +142,13 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     const prompt = new ChatPrompt();
     prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
     const format = prompt.format({ replaceWithWorld: "World" });
-    expect(format).toEqual([
-      { content: "Hello World", role: "user" },
-    ]);
+    expect(format).toEqual([{ content: "Hello World", role: "user" }]);
   });
 
-
   it("does not allow template rendering in user messages if set", () => {
-    const prompt = new ChatPrompt(undefined, { allowUnsafeUserTemplate: false });
+    const prompt = new ChatPrompt(undefined, {
+      allowUnsafeUserTemplate: false,
+    });
     prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
     const format = prompt.format({ replaceWithWorld: "World" });
     expect(format).toEqual([
@@ -136,9 +156,10 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
-
   it("does not allow template rendering in user messages (async)", async () => {
-    const prompt = new ChatPrompt(undefined, { allowUnsafeUserTemplate: false });
+    const prompt = new ChatPrompt(undefined, {
+      allowUnsafeUserTemplate: false,
+    });
     async function replaceWithWorld() {
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -245,7 +266,6 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
-
   it("addToPrompt to add function message with name (async)", async () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addToPrompt("Output", "function", "test_fn");
@@ -260,14 +280,14 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addToPrompt("{}", "function_call", "test_fn");
 
-    assert(prompt.messages[1].role === "assistant");
+    assert(prompt.messages[1].role === "function_call");
 
     const format = prompt.format({});
     expect(format).toEqual([
       { content: "Hello", role: "system" },
       {
         content: null,
-        role: "assistant",
+        role: "function_call",
         function_call: {
           name: "test_fn",
           arguments: "{}",
@@ -283,8 +303,17 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
-      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
-      { content: "Function Output", name: "test_fn", role: "function" },
+      {
+        content: null,
+        role: "function_call",
+        function_call: { name: "test_fn", arguments: "{}", id: "123" },
+      },
+      {
+        content: "Function Output",
+        name: "test_fn",
+        role: "function",
+        id: "123",
+      },
     ]);
 
     expect(prompt.format({})).toEqual([
@@ -292,8 +321,17 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
-      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
-      { content: "Function Output", name: "test_fn", role: "function" },
+      {
+        content: null,
+        role: "function_call",
+        function_call: { name: "test_fn", arguments: "{}", id: "123" },
+      },
+      {
+        content: "Function Output",
+        name: "test_fn",
+        role: "function",
+        id: "123",
+      },
     ]);
   });
 
@@ -304,19 +342,37 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
-      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
-      { content: "Function Output", name: "test_fn", role: "function" },
+      {
+        content: null,
+        role: "function_call",
+        function_call: { name: "test_fn", arguments: "{}", id: "123" },
+      },
+      {
+        content: "Function Output",
+        name: "test_fn",
+        role: "function",
+        id: "123",
+      },
     ]);
 
-    const formatted = await prompt.formatAsync({})
+    const formatted = await prompt.formatAsync({});
 
     expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
-      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
-      { content: "Function Output", name: "test_fn", role: "function" },
+      {
+        content: null,
+        role: "function_call",
+        function_call: { name: "test_fn", arguments: "{}", id: "123" },
+      },
+      {
+        content: "Function Output",
+        name: "test_fn",
+        role: "function",
+        id: "123",
+      },
     ]);
   });
 
@@ -331,7 +387,11 @@ describe("llm-exe:prompt/ChatPrompt", () => {
           { content: "Message user", role: "user" },
           { content: "Message assistant", role: "assistant" },
           { content: "Message system", role: "system" },
-          { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+          {
+            content: null,
+            role: "function_call",
+            function_call: { name: "test_fn", arguments: "{}" },
+          },
           { content: "Function Output", name: "test_fn", role: "function" },
         ],
       })
@@ -340,7 +400,11 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
-      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+      {
+        content: null,
+        role: "function_call",
+        function_call: { name: "test_fn", arguments: "{}" },
+      },
       { content: "Function Output", name: "test_fn", role: "function" },
     ]);
   });
@@ -355,18 +419,24 @@ describe("llm-exe:prompt/ChatPrompt", () => {
         { content: "Message user", role: "user" },
         { content: "Message assistant", role: "assistant" },
         { content: "Message system", role: "system" },
-        { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+        {
+          content: null,
+          role: "function_call",
+          function_call: { name: "test_fn", arguments: "{}" },
+        },
         { content: "Function Output", name: "test_fn", role: "function" },
       ],
-    })
-    expect(
-      formatted
-    ).toEqual([
+    });
+    expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Message user", role: "user" },
       { content: "Message assistant", role: "assistant" },
       { content: "Message system", role: "system" },
-      { content: null, role: "assistant", function_call: { name: "test_fn", arguments: "{}"} },
+      {
+        content: null,
+        role: "function_call",
+        function_call: { name: "test_fn", arguments: "{}" },
+      },
       { content: "Function Output", name: "test_fn", role: "function" },
     ]);
   });
@@ -374,7 +444,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
   it("can add messages from addChatHistoryPlaceholder with user", () => {
     const prompt = new ChatPrompt("Hello");
 
-    prompt.addChatHistoryPlaceholder("myPlaceholder", { user: "NotGreg"});
+    prompt.addChatHistoryPlaceholder("myPlaceholder", { user: "NotGreg" });
 
     expect(
       prompt.format({
@@ -393,17 +463,15 @@ describe("llm-exe:prompt/ChatPrompt", () => {
   it("can add messages from addChatHistoryPlaceholder with user (async)", async () => {
     const prompt = new ChatPrompt("Hello");
 
-    prompt.addChatHistoryPlaceholder("myPlaceholder", { user: "NotGreg"});
-    const formatted = await  prompt.formatAsync({
+    prompt.addChatHistoryPlaceholder("myPlaceholder", { user: "NotGreg" });
+    const formatted = await prompt.formatAsync({
       myPlaceholder: [
         { content: "Message user", role: "user", name: "Greg" },
         { content: "Message assistant", role: "assistant" },
       ],
-    })
+    });
 
-    expect(
-     formatted
-    ).toEqual([
+    expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Message user", role: "user", name: "NotGreg" },
       { content: "Message assistant", role: "assistant" },
@@ -427,7 +495,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       },
     ]);
   });
-  
+
   it("can add user messages from addMessagePlaceholder defaults to user", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("Some Plain Text");
@@ -440,7 +508,7 @@ describe("llm-exe:prompt/ChatPrompt", () => {
   it("can add user messages from addMessagePlaceholder defaults to user (async)", async () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("Some Plain Text");
-    const formatted = await prompt.formatAsync({})
+    const formatted = await prompt.formatAsync({});
     expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Some Plain Text", role: "user" },
@@ -459,13 +527,12 @@ describe("llm-exe:prompt/ChatPrompt", () => {
   it("can add user messages from addMessagePlaceholder (async)", async () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("Some Plain Text", "user");
-    const formatted = await prompt.formatAsync({})
+    const formatted = await prompt.formatAsync({});
     expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Some Plain Text", role: "user" },
     ]);
   });
-
 
   it("can add user messages  with name from addMessagePlaceholder", () => {
     const prompt = new ChatPrompt("Hello");
@@ -476,11 +543,10 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
-
   it("can add user messages  with name from addMessagePlaceholder (async)", async () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("Some Plain Text", "user", "Greg");
-    const formatted = await prompt.formatAsync({})
+    const formatted = await prompt.formatAsync({});
     expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Some Plain Text", role: "user", name: "Greg" },
@@ -496,11 +562,12 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
-
   it("can add user messages from addMessagePlaceholder and they get replaced (async)", async () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addMessagePlaceholder("{{userInput}}", "user");
-    const formatted = await prompt.formatAsync({ userInput: "Some Plain Text" })
+    const formatted = await prompt.formatAsync({
+      userInput: "Some Plain Text",
+    });
     expect(formatted).toEqual([
       { content: "Hello", role: "system" },
       { content: "Some Plain Text", role: "user" },

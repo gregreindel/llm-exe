@@ -11,6 +11,14 @@ export function googleGeminiPromptMessageCallback(_message: IChatMessage) {
     message.role = "model";
   }
 
+  // this should not happen, its guarded before this
+  // if any get through, maybe we let later ones through?
+  // should figure this out.
+  // TODO: something
+  if (message.role === "system") {
+    message.role = "model";
+  }
+
   // do gemini-specific transformations
   let { role, ...payload } = message;
 

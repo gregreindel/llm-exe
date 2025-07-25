@@ -69,7 +69,7 @@ export class LlmNativeFunctionParser<
       };
     }
 
-    return this.parser.parse(text) as ParserOutput<T>;
+    return this.parser.parse((text as any)?.text ?? text) as ParserOutput<T>;
   }
 }
 

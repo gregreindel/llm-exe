@@ -90,9 +90,13 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
   it("getResultContent gets [] if not exists", () => {
     const output = OutputAnthropicClaude3Chat(mock_tools as any);
     expect(output.getResultContent()).toEqual([
-      { type: 'text', text: 'Certainly!' },
-      { type: 'function_use', name: 'move', input: { direction: 'right' } }
+      { type: "text", text: "Certainly!" },
+      {
+        type: "function_use",
+        name: "move",
+        input: { direction: "right" },
+        callId: "toolu_01EJ17EQLV15S2b45FHD1t6w",
+      },
     ]);
   });
-
 });
