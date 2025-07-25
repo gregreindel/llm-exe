@@ -16,12 +16,14 @@ function formatResult(
     };
   } else if (result?.message && "tool_calls" in result.message) {
     const tool_calls = result.message.tool_calls;
-    for (const call of tool_calls) {
-      return {
-        type: "function_use",
-        name: call.function.name,
-        input: JSON.parse(call.function.arguments),
-      };
+    if (tool_calls) {
+      for (const call of tool_calls) {
+        return {
+          type: "function_use",
+          name: call.function.name,
+          input: JSON.parse(call.function.arguments),
+        };
+      }
     }
   }
   // error??

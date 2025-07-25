@@ -465,4 +465,207 @@ describe("useLlm_call", () => {
       },
     });
   });
+
+  it("should handle mock provider", async () => {
+    const mockStateMock = {
+      key: "openai.chat-mock.v1",
+      provider: "openai.chat-mock",
+    } as unknown as GenericLLm & {
+      key: LlmProviderKey;
+      provider: LlmProvider;
+    };
+    
+    getLlmConfigMock.mockReturnValue({
+      ...mockConfig,
+      provider: "openai.chat-mock",
+    });
+    
+    getOutputParserMock.mockReturnValueOnce("mockParsedOutput");
+    
+    const result = await useLlm_call(mockStateMock, mockMessages, mockOptions);
+    
+    // Mock provider doesn't call apiRequest
+    expect(apiRequestMock).not.toHaveBeenCalled();
+    
+    // But it should call getOutputParser with the mock response
+    expect(getOutputParser).toHaveBeenCalledWith(
+      { key: mockStateMock.key, provider: mockStateMock.provider },
+      expect.objectContaining({
+        id: "0123-45-6789",
+        model: "model",
+        created: expect.any(Number),
+        usage: { completion_tokens: 0, prompt_tokens: 0, total_tokens: 0 },
+        choices: [
+          {
+            message: {
+              role: "assistant",
+              content: expect.stringContaining("Hello world from LLM!"),
+            },
+          },
+        ],
+      })
+    );
+    
+    expect(result).toBe("mockParsedOutput");
+  });
+
+  describe("Google provider", () => {
+    const mockStateGoogle = {
+      key: "google.chat.v1",
+      provider: "google.chat",
+    } as unknown as GenericLLm & {
+      key: LlmProviderKey;
+      provider: LlmProvider;
+    };
+
+    beforeEach(() => {
+      getLlmConfigMock.mockReturnValue({
+        ...mockConfig,
+        provider: "google.chat",
+      });
+    });
+
+    it("should handle Google provider with function call", async () => {
+      const mock_options = {
+        functionCall: "auto" as GenericFunctionCall,
+      };
+      await useLlm_call(mockStateGoogle, mockMessages, mock_options);
+      expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages,
+          toolConfig: {
+            functionCallingConfig: {
+              mode: "auto",
+            },
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    });
+
+    it("should handle Google provider with function call any", async () => {
+      const mock_options = {
+        functionCall: "any" as GenericFunctionCall,
+      };
+      await useLlm_call(mockStateGoogle, mockMessages, mock_options);
+      expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages,
+          toolConfig: {
+            functionCallingConfig: {
+              mode: "any",
+            },
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    });
+
+    it("should handle Google provider with function call none", async () => {
+      const mock_options = {
+        functionCall: "none" as GenericFunctionCall,
+      };
+      await useLlm_call(mockStateGoogle, mockMessages, mock_options);
+      expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages,
+          toolConfig: {
+            functionCallingConfig: {
+              mode: "none",
+            },
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    });
+
+    it("should handle Google provider with functions", async () => {
+      const mock_options = {
+        functions: [
+          { 
+            name: "testFunction", 
+            description: "Test description", 
+            parameters: {
+              type: "object",
+              properties: {
+                param1: { type: "string" }
+              }
+            } 
+          }
+        ],
+      };
+      await useLlm_call(mockStateGoogle, mockMessages, mock_options);
+      expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages,
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: "testFunction",
+                  description: "Test description",
+                  parameters: cleanJsonSchemaFor(
+                    mock_options.functions[0].parameters,
+                    "google.chat"
+                  ),
+                },
+              ],
+            },
+          ],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    });
+
+    it("should handle Google provider with both functions and functionCall", async () => {
+      const mock_options = {
+        functionCall: "auto" as GenericFunctionCall,
+        functions: [
+          { 
+            name: "weatherFunction", 
+            description: "Get weather", 
+            parameters: {} 
+          }
+        ],
+      };
+      await useLlm_call(mockStateGoogle, mockMessages, mock_options);
+      expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages,
+          toolConfig: {
+            functionCallingConfig: {
+              mode: "auto",
+            },
+          },
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: "weatherFunction",
+                  description: "Get weather",
+                  parameters: cleanJsonSchemaFor({}, "google.chat"),
+                },
+              ],
+            },
+          ],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    });
+  });
 });

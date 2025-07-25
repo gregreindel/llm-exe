@@ -75,7 +75,10 @@ export function itWithUseLlmMocked(
   }
 }
 
-export function mockOutputResultObject(content: OutputResultContent[]) {
+export function mockOutputResultObject(
+  content: OutputResultContent[],
+  options?: OutputResultContent[][]
+) {
   return {
     content,
     id: "123",
@@ -86,5 +89,6 @@ export function mockOutputResultObject(content: OutputResultContent[]) {
       output_tokens: 0,
       total_tokens: 0,
     },
+    ...(options && { options }),
   };
 }

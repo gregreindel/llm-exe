@@ -1,5 +1,5 @@
 import { IChatMessage } from "@/interfaces";
-import { maybeParseJSON } from "@/utils";
+import { maybeParseJSON, maybeStringifyJSON } from "@/utils";
 
 export function anthropicPromptMessageCallback(_message: IChatMessage) {
   /// TODO: Type this properly, its an Anthropic message
@@ -11,10 +11,11 @@ export function anthropicPromptMessageCallback(_message: IChatMessage) {
       {
         type: "tool_result",
         tool_use_id: message.id,
-        content: message.content,
+        content: maybeStringifyJSON(message.content),
       },
     ];
 
+    delete message.name;
     delete message.id;
   }
 

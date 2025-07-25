@@ -599,4 +599,150 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Some Plain Text", role: "user", name: "Greg" },
     ]);
   });
+
+  it("handles user message with null content", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - user role should not have null content
+      { content: null, role: "user" },
+    ]);
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles assistant message with null content", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - assistant role should not have null content
+      { content: null, role: "assistant" },
+    ]);
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "assistant" },
+    ]);
+  });
+
+  it("handles system message with null content", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - system role should not have null content
+      { content: null, role: "system" },
+    ]);
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "system" },
+    ]);
+  });
+
+  it("handles user message with null content (async)", async () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - user role should not have null content
+      { content: null, role: "user" },
+    ]);
+    const formatted = await prompt.formatAsync({});
+    expect(formatted).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles assistant message with null content (async)", async () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - assistant role should not have null content
+      { content: null, role: "assistant" },
+    ]);
+    const formatted = await prompt.formatAsync({});
+    expect(formatted).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "assistant" },
+    ]);
+  });
+
+  it("handles system message with null content (async)", async () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - system role should not have null content
+      { content: null, role: "system" },
+    ]);
+    const formatted = await prompt.formatAsync({});
+    expect(formatted).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "system" },
+    ]);
+  });
+
+  it("handles user message with undefined content", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      { role: "user" } as any,
+    ]);
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles user message with undefined content (async)", async () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      { role: "user" } as any,
+    ]);
+    const formatted = await prompt.formatAsync({});
+    expect(formatted).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles user message with empty string content", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      { content: "", role: "user" },
+    ]);
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles user message with empty string content (async)", async () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      { content: "", role: "user" },
+    ]);
+    const formatted = await prompt.formatAsync({});
+    expect(formatted).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles user message with allowUnsafeUserTemplate false and null content", () => {
+    const prompt = new ChatPrompt("Hello", { allowUnsafeUserTemplate: false });
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - user role should not have null content
+      { content: null, role: "user" },
+    ]);
+    expect(prompt.format({})).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
+
+  it("handles user message with allowUnsafeUserTemplate false and null content (async)", async () => {
+    const prompt = new ChatPrompt("Hello", { allowUnsafeUserTemplate: false });
+    prompt.addFromHistory([
+      // @ts-expect-error Testing invalid type - user role should not have null content
+      { content: null, role: "user" },
+    ]);
+    const formatted = await prompt.formatAsync({});
+    expect(formatted).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "user" },
+    ]);
+  });
 });

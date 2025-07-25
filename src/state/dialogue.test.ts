@@ -251,4 +251,209 @@ describe("llm-exe:state/Dialogue", () => {
       ],
     });
   });
+
+  describe("OutputResultsText handling", () => {
+    it("can set assistant message with OutputResultsText object", () => {
+      const dialogue = new Dialogue("main");
+      const outputResult = {
+        type: "text" as const,
+        text: "Hello from output result",
+      };
+      dialogue.setAssistantMessage(outputResult);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].content).toEqual("Hello from output result");
+      expect(history[0].role).toEqual("assistant");
+    });
+  });
+
+  describe("Tool methods", () => {
+    it("setToolCallMessage creates function_call message", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setToolCallMessage("testTool", '{"param": "value"}', "tool-123");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call).toEqual({
+        name: "testTool",
+        arguments: '{"param": "value"}',
+        id: "tool-123",
+      });
+    });
+
+    it("setToolCallMessage without id", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setToolCallMessage("testTool", '{"param": "value"}');
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call).toEqual({
+        name: "testTool",
+        arguments: '{"param": "value"}',
+        id: undefined,
+      });
+    });
+
+    it("setToolMessage creates function message", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setToolMessage("Tool response", "testTool", "tool-123");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function");
+      assert(history[0].role === "function");
+      expect(history[0].name).toEqual("testTool");
+      expect(history[0].content).toEqual("Tool response");
+      expect(history[0].id).toEqual("tool-123");
+    });
+
+    it("setToolMessage without id", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setToolMessage("Tool response", "testTool");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function");
+      assert(history[0].role === "function");
+      expect(history[0].name).toEqual("testTool");
+      expect(history[0].content).toEqual("Tool response");
+      expect(history[0].id).toEqual(undefined);
+    });
+  });
+
+  describe("Error handling", () => {
+    it("throws error when setFunctionCallMessage called without function_call", () => {
+      const dialogue = new Dialogue("main");
+      expect(() => {
+        dialogue.setFunctionCallMessage(null as any);
+      }).toThrow("Invalid arguments");
+    });
+
+    it("throws error when setFunctionCallMessage called with invalid input", () => {
+      const dialogue = new Dialogue("main");
+      expect(() => {
+        dialogue.setFunctionCallMessage({ function_call: null as any });
+      }).toThrow("Invalid arguments");
+    });
+  });
+
+  describe("setHistory edge cases", () => {
+    it("handles model role as assistant", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setHistory([
+        {
+          role: "model",
+          content: "Model response",
+        },
+      ]);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("assistant");
+      expect(history[0].content).toEqual("Model response");
+    });
+
+    it("handles unknown role in setHistory", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setHistory([
+        {
+          role: "custom-role" as any,
+          content: "Custom content",
+        },
+      ]);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("custom-role");
+      expect(history[0].content).toEqual("Custom content");
+    });
+
+    it("handles unknown role with no content in setHistory", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setHistory([
+        {
+          role: "custom-role" as any,
+        } as any,
+      ]);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("custom-role");
+      expect(history[0].content).toEqual("");
+    });
+
+    it("handles function_call with id in setHistory", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setHistory([
+        {
+          role: "function_call",
+          content: null,
+          function_call: {
+            name: "testFunc",
+            arguments: '{"test": true}',
+            id: "func-456",
+          },
+        },
+      ]);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.id).toEqual("func-456");
+    });
+  });
+
+  describe("Additional coverage", () => {
+    it("setUserMessage with detailed content array", () => {
+      const dialogue = new Dialogue("main");
+      const detailedContent = [
+        { type: "text" as const, text: "Hello" },
+        { type: "image_url" as const, image_url: { url: "https://example.com/image.jpg" } },
+      ];
+      dialogue.setUserMessage(detailedContent);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("user");
+      expect(history[0].content).toEqual(detailedContent);
+    });
+
+    it("setMessageTurn with system message", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setMessageTurn("User msg", "Assistant msg", "System msg");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(3);
+      expect(history[0].content).toEqual("User msg");
+      expect(history[1].content).toEqual("Assistant msg");
+      expect(history[2].content).toEqual("System msg");
+      expect(history[2].role).toEqual("system");
+    });
+
+    it("does not set function message with empty content", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setFunctionMessage("", "test_fn");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(0);
+    });
+
+    it("setFunctionMessage with id parameter", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setFunctionMessage("Result", "test_fn", "func-789");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function");
+      assert(history[0].role === "function");
+      expect(history[0].id).toEqual("func-789");
+    });
+
+    it("setFunctionCallMessage stringifies object arguments", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.setFunctionCallMessage({
+        function_call: { 
+          name: "test_fn", 
+          arguments: { key: "value" } as any 
+        },
+      });
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.arguments).toEqual('{"key":"value"}');
+    });
+  });
 });

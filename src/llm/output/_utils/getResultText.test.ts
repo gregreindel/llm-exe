@@ -39,4 +39,107 @@ describe("getResultText", () => {
 
     expect(getResultText(mockOutputResultObject(content))).toBe("");
   });
+
+  describe("with index parameter", () => {
+    it("should return text from options array at specified index", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: OutputResultContent[][] = [
+        [{ type: "text", text: "option 0" }],
+        [{ type: "text", text: "option 1" }],
+        [{ type: "text", text: "option 2" }],
+      ];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, 1)).toBe("option 1");
+      expect(getResultText(result, 2)).toBe("option 2");
+    });
+
+    it("should return empty string when index is out of bounds", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: OutputResultContent[][] = [
+        [{ type: "text", text: "option 0" }],
+      ];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, 5)).toBe("");
+    });
+
+    it("should return empty string when options array is empty", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: any[] = [];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, 1)).toBe("");
+    });
+
+    it("should return empty string when options item is not text type", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: OutputResultContent[][] = [
+        [{ type: "text", text: "option 0" }],
+        [{ type: "function_use", name: "test", input: {} } as any],
+      ];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, 1)).toBe("");
+    });
+
+    it("should return empty string when options item has no content", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: OutputResultContent[][] = [
+        [{ type: "text", text: "option 0" }],
+        [], // empty array at index 1
+      ];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, 1)).toBe("");
+    });
+
+    it("should return main content when index is 0", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: OutputResultContent[][] = [
+        [{ type: "text", text: "option 0" }],
+        [{ type: "text", text: "option 1" }],
+      ];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, 0)).toBe("main content");
+    });
+
+    it("should return main content when index is negative", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+      const options: OutputResultContent[][] = [
+        [{ type: "text", text: "option 0" }],
+        [{ type: "text", text: "option 1" }],
+      ];
+
+      const result = mockOutputResultObject(content, options);
+      expect(getResultText(result, -1)).toBe("main content");
+    });
+
+    it("should handle when result has no options property", () => {
+      const content: OutputResultContent[] = [
+        { type: "text", text: "main content" },
+      ];
+
+      const result = {
+        ...mockOutputResultObject(content),
+        options: undefined,
+      };
+      expect(getResultText(result, 1)).toBe("");
+    });
+  });
 });
