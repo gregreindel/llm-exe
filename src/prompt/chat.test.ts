@@ -745,4 +745,40 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: null, role: "user" },
     ]);
   });
+
+  it("handles assistant message with function_call", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      { 
+        role: "assistant", 
+        content: "I'll help you with that",
+        // @ts-expect-error Testing assistant with function_call
+        function_call: { name: "test_function", arguments: "{}" }
+      },
+    ]);
+    const result = prompt.format({});
+    // When function_call exists but content is present, message is included with content only
+    expect(result).toEqual([
+      { content: "Hello", role: "system" },
+      { content: "I'll help you with that", role: "assistant" },
+    ]);
+  });
+
+  it("handles assistant message with function_call but no content", () => {
+    const prompt = new ChatPrompt("Hello");
+    prompt.addFromHistory([
+      { 
+        role: "assistant",
+        content: null,
+        // @ts-expect-error Testing assistant with function_call and null content 
+        function_call: { name: "test_function", arguments: "{}" }
+      },
+    ]);
+    const result = prompt.format({});
+    // When content is null, message is still added with null content
+    expect(result).toEqual([
+      { content: "Hello", role: "system" },
+      { content: null, role: "assistant" },
+    ]);
+  });
 });

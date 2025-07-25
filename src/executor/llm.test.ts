@@ -249,4 +249,16 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(syncPrompt.format).toHaveBeenCalledWith({ test: "input" });
     expect(result).toEqual(["formatted"]);
   });
+
+  it("handles null input in execute method", async () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    const result = await executor.execute(null as any);
+    expect(result).toBeDefined();
+  });
+
+  it("handles undefined input in execute method", async () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    const result = await executor.execute(undefined as any);
+    expect(result).toBeDefined();
+  });
 });
