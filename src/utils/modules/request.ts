@@ -46,18 +46,16 @@ export async function apiRequest<T extends Record<string, any> | null>(
       throw new Error(message);
     }
 
-    if (response.headers.get("content-type")?.includes("application/json")) {
-      const responseData = (await response.json()) as unknown as Record<
-        string,
-        any
-      >;
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType?.includes("application/json")) {
+      const responseData = await response.json();
       return responseData as T;
     } else {
-      const responseData = (await response.text()) as unknown as Record<
-        string,
-        any
-      >;
-      return responseData as T;
+      // Handle non-JSON responses as text for backward compatibility
+      // Callers expecting objects should handle string responses appropriately
+      const responseData = await response.text();
+      return responseData as unknown as T;
     }
   } catch (error: unknown) {
     /* istanbul ignore next */

@@ -16,16 +16,23 @@ export async function getAwsAuthorizationHeaders(
   req: RequestInit,
   props: AuthProps
 ): Promise<Record<string, string>> {
+  // Validate required inputs early to fail fast
+  if (!props.url || !props.regionName) {
+    throw new Error('URL and region name are required for AWS authorization');
+  }
+  
   const providerChain = fromNodeProviderChain();
   const credentials = await runWithTemporaryEnv(
     () => {
-      if (props.awsAccessKey) {
+      // Only set env vars for non-empty string values
+      // Prevents accidentally clearing existing AWS credentials
+      if (props.awsAccessKey && typeof props.awsAccessKey === 'string') {
         process.env["AWS_ACCESS_KEY_ID"] = props.awsAccessKey;
       }
-      if (props.awsSecretKey) {
+      if (props.awsSecretKey && typeof props.awsSecretKey === 'string') {
         process.env["AWS_SECRET_ACCESS_KEY"] = props.awsSecretKey;
       }
-      if (props.awsSessionToken) {
+      if (props.awsSessionToken && typeof props.awsSessionToken === 'string') {
         process.env["AWS_SESSION_TOKEN"] = props.awsSessionToken;
       }
     },

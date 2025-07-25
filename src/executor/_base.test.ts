@@ -195,4 +195,149 @@ describe("llm-exe:executor/BaseExecutor", () => {
     expect(executor.getTraceId()).toEqual("1234");
   });
 
+  describe("Hook Memory Management", () => {
+    it("should enforce maximum hooks per event", () => {
+      const executor = new MockExecutor();
+      
+      // Add hooks up to the limit
+      for (let i = 0; i < executor.maxHooksPerEvent; i++) {
+        executor.on("onComplete", () => {});
+      }
+      
+      expect(executor.getHookCount("onComplete")).toBe(executor.maxHooksPerEvent);
+      
+      // Try to add one more hook - should throw
+      expect(() => {
+        executor.on("onComplete", () => {});
+      }).toThrow(`Maximum number of hooks (${executor.maxHooksPerEvent}) reached for event "onComplete"`);
+    });
+
+    it("should enforce maximum hooks for once method", () => {
+      const executor = new MockExecutor();
+      
+      // Add hooks up to the limit
+      for (let i = 0; i < executor.maxHooksPerEvent; i++) {
+        executor.once("onSuccess", () => {});
+      }
+      
+      // Try to add one more hook - should throw
+      expect(() => {
+        executor.once("onSuccess", () => {});
+      }).toThrow(`Maximum number of hooks (${executor.maxHooksPerEvent}) reached for event "onSuccess"`);
+    });
+
+    it("should clear hooks for specific event", () => {
+      const executor = new MockExecutor();
+      const hook1 = () => {};
+      const hook2 = () => {};
+      
+      executor.on("onComplete", hook1);
+      executor.on("onSuccess", hook2);
+      
+      expect(executor.getHookCount("onComplete")).toBe(1);
+      expect(executor.getHookCount("onSuccess")).toBe(1);
+      
+      executor.clearHooks("onComplete");
+      
+      expect(executor.getHookCount("onComplete")).toBe(0);
+      expect(executor.getHookCount("onSuccess")).toBe(1);
+    });
+
+    it("should clear all hooks when no event specified", () => {
+      const executor = new MockExecutor();
+      
+      executor.on("onComplete", () => {});
+      executor.on("onSuccess", () => {});
+      executor.on("onError", () => {});
+      
+      const counts = executor.getHookCount() as Record<string, number>;
+      expect(counts.onComplete).toBe(1);
+      expect(counts.onSuccess).toBe(1);
+      expect(counts.onError).toBe(1);
+      
+      executor.clearHooks();
+      
+      const clearedCounts = executor.getHookCount() as Record<string, number>;
+      expect(clearedCounts.onComplete).toBe(0);
+      expect(clearedCounts.onSuccess).toBe(0);
+      expect(clearedCounts.onError).toBe(0);
+    });
+
+    it("should return correct hook counts", () => {
+      const executor = new MockExecutor();
+      
+      executor.on("onComplete", () => {});
+      executor.on("onComplete", () => {});
+      executor.on("onSuccess", () => {});
+      
+      expect(executor.getHookCount("onComplete")).toBe(2);
+      expect(executor.getHookCount("onSuccess")).toBe(1);
+      expect(executor.getHookCount("onError")).toBe(0);
+      
+      const allCounts = executor.getHookCount() as Record<string, number>;
+      expect(allCounts).toEqual({
+        onComplete: 2,
+        onSuccess: 1,
+        onError: 0
+      });
+    });
+
+    it("should handle clearing non-existent event gracefully", () => {
+      const executor = new MockExecutor();
+      
+      // Should not throw
+      expect(() => {
+        executor.clearHooks("nonExistentEvent" as any);
+      }).not.toThrow();
+    });
+
+    it("should not count duplicate hooks towards limit", () => {
+      const executor = new MockExecutor();
+      const hook = () => {};
+      
+      // Add the same hook multiple times
+      for (let i = 0; i < 10; i++) {
+        executor.on("onComplete", hook);
+      }
+      
+      // Should only count as 1 hook
+      expect(executor.getHookCount("onComplete")).toBe(1);
+    });
+
+    it("should allow adding hooks after clearing", async () => {
+      const executor = new MockExecutor();
+      const results: string[] = [];
+      
+      // Fill up to limit
+      for (let i = 0; i < executor.maxHooksPerEvent; i++) {
+        executor.on("onComplete", () => results.push(`hook${i}`));
+      }
+      
+      // Clear and add new hooks
+      executor.clearHooks("onComplete");
+      executor.on("onComplete", () => results.push("new hook"));
+      
+      await executor.execute({});
+      
+      expect(results).toContain("new hook");
+      expect(results.filter(r => r === "new hook")).toHaveLength(1);
+    });
+
+    it("should properly handle once wrapper removal", async () => {
+      const executor = new MockExecutor();
+      let callCount = 0;
+      
+      executor.once("onComplete", () => callCount++);
+      
+      expect(executor.getHookCount("onComplete")).toBe(1);
+      
+      await executor.execute({});
+      expect(callCount).toBe(1);
+      expect(executor.getHookCount("onComplete")).toBe(0);
+      
+      await executor.execute({});
+      expect(callCount).toBe(1); // Should not increment again
+    });
+  });
+
 });
