@@ -312,6 +312,8 @@ export interface GoogleGeminiResponse {
       severityScore?: number;
     }[];
   };
+  modelVersion: string;
+  responseId: string;
 }
 // END Gemini
 
@@ -325,20 +327,6 @@ export interface GoogleGeminiResponse {
 export interface OutputResultsBase {
   type: "text" | "function_use";
   text?: string;
-
-  // NEW: Optional metadata
-  _metadata?: {
-    source?: {
-      provider: string;
-      path?: string;
-      toolCallId?: string;
-    };
-    messageGroup?: {
-      id: string;
-      index: number;
-      total: number;
-    };
-  };
 }
 
 // Storing text-based llm response

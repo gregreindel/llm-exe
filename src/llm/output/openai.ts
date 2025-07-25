@@ -4,31 +4,31 @@ import {
   OutputResultContent,
 } from "@/types";
 import { BaseLlmOutput2 } from "./base";
-import { formatContent, formatOptions } from "./_util";
+import { formatOptions } from "./_util";
+import { maybeParseJSON } from "@/utils";
 
-function formatResult(
-  result: OutputOpenAIChatChoice
-): OutputResultContent | undefined {
+function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
+  const out: OutputResultContent[] = [];
+
   if (typeof result?.message?.content === "string") {
-    return {
+    out.push({
       type: "text",
       text: result.message.content,
-    };
-  } else if (result?.message && "tool_calls" in result.message) {
-    const tool_calls = result.message.tool_calls;
-    for (const call of tool_calls) {
-      return {
+    });
+  }
+
+  if (result?.message?.tool_calls) {
+    for (const call of result.message.tool_calls) {
+      out.push({
+        callId: call.id,
         type: "function_use",
         name: call.function.name,
-        input: JSON.parse(call.function.arguments),
-      };
+        input: maybeParseJSON(call.function.arguments),
+      });
     }
   }
-  // error??
-  return {
-    type: "text",
-    text: "",
-  };
+
+  return out;
 }
 
 export function OutputOpenAIChat(
@@ -40,8 +40,9 @@ export function OutputOpenAIChat(
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];
+
   const stopReason = _content?.finish_reason;
-  const content = formatContent(_content, formatResult);
+  const content = formatResult(_content);
   const options = formatOptions(_options, formatResult);
 
   const usage = {

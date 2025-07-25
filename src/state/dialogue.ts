@@ -2,10 +2,12 @@ import {
   IChatMessageContentDetailed,
   IChatMessages,
   IChatUserMessage,
+  OutputResultsText,
 } from "@/types";
 import { BaseStateItem } from "./item";
 import { maybeStringifyJSON } from "@/utils";
 import { LlmExeError } from "@/utils/modules/errors";
+import { isOutputResultContentText } from "@/utils/guards";
 
 export class Dialogue extends BaseStateItem<IChatMessages> {
   public name: string;
@@ -32,12 +34,19 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
-  setAssistantMessage(content: string) {
+  setAssistantMessage(content: string | OutputResultsText) {
     if (content) {
-      this.value.push({
-        role: "assistant",
-        content,
-      });
+      if (isOutputResultContentText(content)) {
+        this.value.push({
+          role: "assistant",
+          content: content.text,
+        });
+      } else {
+        this.value.push({
+          role: "assistant",
+          content,
+        });
+      }
     }
     return this;
   }
@@ -52,18 +61,34 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
-  setFunctionMessage(content: string, name: string) {
+  setToolCallMessage(name: string, args: string, id?: string) {
+    this.setFunctionCallMessage({
+      function_call: {
+        name,
+        arguments: args,
+        id,
+      },
+    });
+  }
+
+  setToolMessage(content: string, name: string, id?: string) {
+    this.setFunctionMessage(content, name, id);
+  }
+
+  setFunctionMessage(content: string, name: string, id?: string) {
     if (content) {
       this.value.push({
         role: "function",
+        id,
         name,
         content,
       });
     }
     return this;
   }
+
   setFunctionCallMessage(input: {
-    function_call: { name: string; arguments: string };
+    function_call: { name: string; arguments: string; id?: string };
   }) {
     if (!input?.function_call) {
       throw new LlmExeError(`Invalid arguments`, "state", {
@@ -72,8 +97,9 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
       });
     }
     this.value.push({
-      role: "assistant",
+      role: "function_call",
       function_call: {
+        id: input?.function_call.id,
         name: input?.function_call.name,
         arguments: maybeStringifyJSON(input?.function_call.arguments),
       },
@@ -81,6 +107,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     });
     return this;
   }
+
   setMessageTurn(
     userMessage: string,
     assistantMessage: string,
@@ -98,21 +125,26 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
         case "user":
           this.setUserMessage(message?.content, message?.name);
           break;
+        case "model":
         case "assistant":
-          if (message.function_call) {
-            this.setFunctionCallMessage({
-              function_call: message.function_call,
-            });
-          } else if (message?.content) {
-            this.setAssistantMessage(message?.content);
-          }
+          this.setAssistantMessage(message?.content);
           break;
         case "system":
           this.setSystemMessage(message?.content);
           break;
+        case "function_call":
+          this.setFunctionCallMessage({
+            function_call: message.function_call,
+          });
+          break;
         case "function":
           this.setFunctionMessage(message?.content, message.name);
           break;
+        default:
+          this.value.push({
+            role: (message as any).role,
+            content: (message as any).content || "",
+          });
       }
     }
     return this;

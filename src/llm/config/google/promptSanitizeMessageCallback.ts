@@ -1,18 +1,57 @@
 import { IChatMessage } from "@/types";
-import { modifyPromptRoleChange } from "@/utils/modules/modifyPromptRoleChange";
+import { maybeParseJSON } from "@/utils";
 
 export function googleGeminiPromptMessageCallback(_message: IChatMessage) {
-  let message = { ..._message };
+  /// TODO: Type this properly, its a Gemini message
+  let message: Record<string, any> = { ..._message };
 
-  message = modifyPromptRoleChange(_message, [
-    { from: "assistant", to: "model" },
-  ]);
+  const parts = [];
+
+  if (message.role === "assistant") {
+    message.role = "model";
+  }
 
   // do gemini-specific transformations
-  const { role, ...payload } = message;
-  const parts = [];
+  let { role, ...payload } = message;
+
   if (typeof payload.content === "string") {
     parts.push({ text: message.content });
+  }
+
+  if (message.role === "function") {
+    role = "user";
+    parts.push({
+      functionResponse: {
+        name: message.name,
+        response: {
+          result: message.content,
+        },
+      },
+    });
+
+    delete message.id;
+  }
+
+  if (message?.function_call) {
+    const { function_call } = message;
+    const toolsArr = Array.isArray(function_call)
+      ? function_call
+      : [function_call];
+    role = "model";
+
+    parts.push(
+      ...toolsArr.map((call: any) => {
+        const { name, arguments: input } = call;
+        return {
+          functionCall: {
+            name,
+            args: maybeParseJSON(input),
+          },
+        };
+      })
+    );
+
+    delete message.function_call;
   }
 
   return {

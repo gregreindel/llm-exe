@@ -63,7 +63,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    */
   addToPrompt(
     content: string,
-    role: Extract<IChatMessageRole, "assistant">,
+    role: Extract<IChatMessageRole, "assistant" | "model">,
     name?: undefined
   ): ChatPrompt<I>;
   addToPrompt(
@@ -89,7 +89,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   addToPrompt(
     content: string,
     role: IChatMessageRole,
-    name?: string
+    name?: string,
+    id?: string
   ): ChatPrompt<I> {
     if (content) {
       switch (role) {
@@ -104,11 +105,11 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
           break;
         case "function":
           assert(name, "Function message requires name");
-          this.addFunctionMessage(content, name);
+          this.addFunctionMessage(content, name, id);
           break;
         case "function_call":
           assert(name, "Function message requires name");
-          this.addFunctionCallMessage({ name: name, arguments: content });
+          this.addFunctionCallMessage({ name: name, arguments: content, id });
           break;
       }
     }
@@ -154,11 +155,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @param content The message content.
    * @return ChatPrompt so it can be chained.
    */
-  addFunctionMessage(content: string, name: string): ChatPrompt<I> {
+  addFunctionMessage(
+    content: string,
+    name: string,
+    id?: string
+  ): ChatPrompt<I> {
     this.messages.push({
       role: "function",
       name,
       content,
+      id,
     });
     return this;
   }
@@ -168,11 +174,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * @return ChatPrompt so it can be chained.
    */
 
-  addFunctionCallMessage(function_call?: { name: string; arguments: string }) {
+  addFunctionCallMessage(function_call?: {
+    name: string;
+    arguments: string;
+    id?: string;
+  }) {
     if (function_call) {
       this.messages.push({
-        role: "assistant",
+        role: "function_call",
         function_call: {
+          id: function_call.id,
           name: function_call.name,
           arguments: maybeStringifyJSON(function_call.arguments),
         },
@@ -195,17 +206,16 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
             this.addUserMessage(message.content, message?.name);
             break;
           case "assistant":
-            if (message.function_call) {
-              this.addFunctionCallMessage(message.function_call);
-            } else if (message?.content) {
-              this.addAssistantMessage(message?.content);
-            }
+            this.addAssistantMessage(message?.content);
             break;
           case "system":
             this.addSystemMessage(message.content);
             break;
+          case "function_call":
+            this.addFunctionCallMessage(message.function_call);
+            break;
           case "function":
-            this.addFunctionMessage(message.content, message.name);
+            this.addFunctionMessage(message.content, message.name, message.id);
             break;
         }
       }
@@ -287,11 +297,11 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
 
           case "assistant": {
             if (message.function_call) {
-              messagesOut.push({
-                role: "assistant",
-                content: null,
-                function_call: message.function_call,
-              });
+              // messagesOut.push({
+              //   role: "assistant",
+              //   content: null,
+              //   function_call: message.function_call,
+              // });
             } else if (message?.content) {
               messagesOut.push({
                 role: "assistant",
@@ -300,6 +310,13 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
             }
             break;
           }
+          case "function_call":
+            messagesOut.push({
+              role: "function_call",
+              content: null,
+              function_call: message.function_call,
+            });
+            break;
           case "function":
             messagesOut.push({
               role: "function",
@@ -543,20 +560,27 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                   }
 
                   case "assistant": {
-                    if (message.function_call) {
-                      messagesOut.push({
-                        role: "assistant",
-                        content: null,
-                        function_call: message.function_call,
-                      });
-                    } else if (message?.content) {
-                      messagesOut.push({
-                        role: "assistant",
-                        content: message.content,
-                      });
-                    }
+                    // if (message.function_call) {
+                    //   messagesOut.push({
+                    //     role: "assistant",
+                    //     content: null,
+                    //     function_call: message.function_call,
+                    //   });
+                    // } else if (message?.content) {
+                    messagesOut.push({
+                      role: "assistant",
+                      content: message.content,
+                    });
+                    // }
                     break;
                   }
+                  case "function_call":
+                    messagesOut.push({
+                      role: "function_call",
+                      content: null,
+                      function_call: message.function_call,
+                    });
+                    break;
                   case "function":
                     messagesOut.push({
                       role: "function",
