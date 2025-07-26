@@ -230,4 +230,35 @@ describe("llm-exe:executor/LlmExecutor", () => {
     await executor.execute(input);
     expect(_prompt.format).toHaveBeenCalledWith(input);
   });
+
+  it("getHandlerInput uses sync format when formatAsync is not a promise function", async () => {
+    const syncPrompt = {
+      format: jest.fn().mockReturnValue(["formatted"]),
+      formatAsync: function() { return "not a promise"; }, // Regular function, not async
+    };
+    const promptFn = jest.fn().mockReturnValue(syncPrompt);
+    
+    const executor = new LlmExecutor({ 
+      llm, 
+      prompt: promptFn as any 
+    });
+    
+    const result = await executor.getHandlerInput({ test: "input" });
+    
+    expect(promptFn).toHaveBeenCalledWith({ test: "input" });
+    expect(syncPrompt.format).toHaveBeenCalledWith({ test: "input" });
+    expect(result).toEqual(["formatted"]);
+  });
+
+  it("handles null input in execute method", async () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    const result = await executor.execute(null as any);
+    expect(result).toBeDefined();
+  });
+
+  it("handles undefined input in execute method", async () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    const result = await executor.execute(undefined as any);
+    expect(result).toBeDefined();
+  });
 });

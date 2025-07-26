@@ -1,3 +1,4 @@
+import { OutputResultContent } from "@/interfaces";
 import { useLlm } from "@/llm";
 import { configs } from "@/llm/config";
 
@@ -72,4 +73,22 @@ export function itWithUseLlmMocked(
       return cb(Object.assign(defaultOptions, { key, model: modelName }));
     });
   }
+}
+
+export function mockOutputResultObject(
+  content: OutputResultContent[],
+  options?: OutputResultContent[][]
+) {
+  return {
+    content,
+    id: "123",
+    created: 123,
+    stopReason: "STOP",
+    usage: {
+      input_tokens: 0,
+      output_tokens: 0,
+      total_tokens: 0,
+    },
+    ...(options && { options }),
+  };
 }

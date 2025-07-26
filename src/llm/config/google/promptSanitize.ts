@@ -38,8 +38,10 @@ export function googleGeminiPromptSanitize(
 
       // add the system instructions from the messages on request.system_instruction
       _outputObj.system_instruction = {
-        parts: theSystemInstructions.map((message) => ({ text: message.content }))
-      }
+        parts: theSystemInstructions.map((message) => ({
+          text: message.content,
+        })),
+      };
 
       return withoutSystemInstructions.map(googleGeminiPromptMessageCallback);
     }

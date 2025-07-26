@@ -103,7 +103,7 @@ export class LlmExecutor<
     // depending on out parser type, and result obj (out)
     // we should use different methods here
     if (this.parser.target === "function_call") {
-      const outToStr = out.getResultContent();
+      const outToStr = out.getResult();
       return this.parser.parse(outToStr, _metadata);
     } else {
       const outToStr = out.getResultText();

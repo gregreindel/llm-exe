@@ -16,12 +16,15 @@ function formatResult(
     };
   } else if (result?.message && "tool_calls" in result.message) {
     const tool_calls = result.message.tool_calls;
-    for (const call of tool_calls) {
-      return {
-        type: "function_use",
-        name: call.function.name,
-        input: JSON.parse(call.function.arguments),
-      };
+    if (tool_calls) {
+      for (const call of tool_calls) {
+        return {
+          functionId: call.id,
+          type: "function_use",
+          name: call.function.name,
+          input: JSON.parse(call.function.arguments),
+        };
+      }
     }
   }
   // error??
@@ -36,7 +39,7 @@ export function OutputXAIChat(
   _config?: { model?: string }
 ) {
   const id = result.id;
-  const name = result?.model
+  const name = result?.model;
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];

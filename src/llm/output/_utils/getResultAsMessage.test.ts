@@ -13,6 +13,7 @@ describe("getResultAsMessage", () => {
 
   it("should return a message with role 'assistant', content null, and function_call from single function_use item", () => {
     const functionItem: OutputResultContent = {
+      functionId: "1234",
       type: "function_use",
       name: "testFunction",
       input: {},
@@ -32,7 +33,12 @@ describe("getResultAsMessage", () => {
   it("should return a message with role 'assistant', content from text item, and function_call from function_use item", () => {
     const input: OutputResultContent[] = [
       { type: "text", text: "Hello" },
-      { type: "function_use", name: "testFunction", input: {} },
+      {
+        type: "function_use",
+        name: "testFunction",
+        input: {},
+        functionId: "1234",
+      },
     ];
     const expected = {
       role: "assistant",
@@ -40,7 +46,8 @@ describe("getResultAsMessage", () => {
       function_call: JSON.stringify({
         type: "function_use",
         name: "testFunction",
-        input: {}
+        input: {},
+        functionId: "1234",
       }),
     };
 
@@ -61,7 +68,12 @@ describe("getResultAsMessage", () => {
   it("should throw an error for unsupported number of items", () => {
     const input: OutputResultContent[] = [
       { type: "text", text: "Hello" },
-      { type: "function_use", name: "testFunction", input: {} },
+      {
+        type: "function_use",
+        name: "testFunction",
+        input: {},
+        functionId: "1234",
+      },
       { type: "text", text: "World" },
     ];
 

@@ -1,4 +1,16 @@
 import * as utils from "./index"
+import { hbs, hbsAsync } from "./handlebars";
+
+jest.mock("./handlebars", () => ({
+  hbs: {
+    registerHelpers: jest.fn(),
+    registerPartials: jest.fn(),
+  },
+  hbsAsync: {
+    registerHelpers: jest.fn(),
+    registerPartials: jest.fn(),
+  },
+}));
 
 describe("exports correct utils", () => {
   it("exports correct utils", async () => {
@@ -18,4 +30,23 @@ describe("exports correct utils", () => {
     expect(typeof utils.guessProviderFromModel).toBe("function");
   });
 
+  describe("registerHelpers", () => {
+    it("calls both hbs and hbsAsync registerHelpers", () => {
+      const helpers = [{ name: "test", fn: () => {} }];
+      utils.registerHelpers(helpers);
+      
+      expect(hbs.registerHelpers).toHaveBeenCalledWith(helpers);
+      expect(hbsAsync.registerHelpers).toHaveBeenCalledWith(helpers);
+    });
+  });
+
+  describe("registerPartials", () => {
+    it("calls both hbs and hbsAsync registerPartials", () => {
+      const partials = [{ name: "test", template: "{{test}}" }];
+      utils.registerPartials(partials);
+      
+      expect(hbs.registerPartials).toHaveBeenCalledWith(partials);
+      expect(hbsAsync.registerPartials).toHaveBeenCalledWith(partials);
+    });
+  });
 })

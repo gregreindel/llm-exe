@@ -1,9 +1,14 @@
-import { OutputResultContent } from "@/interfaces";
+import { OutputResult } from "@/types";
+import { isOutputResultContentText } from "@/utils/guards";
 
-export function getResultText(content: OutputResultContent[]): string {
-  if (content.length === 1 && content.every((a) => a.type === "text")) {
-    return content[0]?.text || "";
+export function getResultText(result: OutputResult, index?: number): string {
+  if (typeof index === "number" && index > 0) {
+    const arr = result?.options || [];
+    const val = arr[index];
+    return isOutputResultContentText(val?.[0]) ? val[0]?.text : "";
   }
 
-  return "";
+  return isOutputResultContentText(result?.content?.[0])
+    ? result.content[0]?.text
+    : "";
 }

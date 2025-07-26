@@ -1,6 +1,7 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { openaiPromptSanitize } from "./promptSanitize";
 
 const openAiChatV1: Config = {
   key: "openai.chat.v1",
@@ -11,7 +12,7 @@ const openAiChatV1: Config = {
     topP: {},
     useJson: {},
     openAiApiKey: {
-      default: getEnvironmentVariable("OPENAI_API_KEY")
+      default: getEnvironmentVariable("OPENAI_API_KEY"),
     },
   },
   method: "POST",
@@ -19,12 +20,7 @@ const openAiChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: (v) => {
-        if (typeof v === "string") {
-          return [{ role: "user", content: v }];
-        }
-        return v;
-      },
+      sanitize: openaiPromptSanitize,
     },
     model: {
       key: "model",
@@ -48,7 +44,7 @@ const openAiChatMockV1: Config = {
     topP: {},
     useJson: {},
     openAiApiKey: {
-      default: getEnvironmentVariable("OPENAI_API_KEY_MOCK")
+      default: getEnvironmentVariable("OPENAI_API_KEY_MOCK"),
     },
   },
   method: "POST",
@@ -70,12 +66,9 @@ const openAiChatMockV1: Config = {
   },
 };
 
-
-
-
 export const openai = {
   "openai.chat.v1": openAiChatV1,
   "openai.chat-mock.v1": openAiChatMockV1,
   "openai.gpt-4o": withDefaultModel(openAiChatV1, "gpt-4o"),
-  "openai.gpt-4o-mini": withDefaultModel(openAiChatV1, "gpt-4o-mini")
+  "openai.gpt-4o-mini": withDefaultModel(openAiChatV1, "gpt-4o-mini"),
 };
