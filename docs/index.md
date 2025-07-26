@@ -322,7 +322,7 @@ No magic. Just clean composition.
   </div>
   <div class="testimonial-card">
     <div class="testimonial-quote">"Switched from OpenAI to Claude in literally one line. Everything just worked."</div>
-    <div class="testimonial-author">— A tech lead said ti</div>
+    <div class="testimonial-author">— Tech Lead, Series B Fintech</div>
   </div>
   <div class="testimonial-card">
     <div class="testimonial-quote">"The type safety alone saved us hours of debugging. The composability changed how we build."</div>
