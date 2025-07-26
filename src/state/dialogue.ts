@@ -167,14 +167,14 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
 
   /**
    * Add LLM output to dialogue history in the order it was returned
-   * 
+   *
    * @param output - The LLM output result from llm.call()
    * @returns this for chaining
    */
   addFromOutput(output: OutputResult | BaseLlCall) {
     // Handle both raw OutputResult and the wrapped BaseLlCall
-    const result = 'getResult' in output ? output.getResult() : output;
-    
+    const result = "getResult" in output ? output.getResult() : output;
+
     // Just add everything in order, exactly as returned
     for (const item of result.content) {
       if (item.type === "text") {
@@ -183,7 +183,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
         this.setToolCallMessage(
           item.name,
           maybeStringifyJSON(item.input),
-          item.callId
+          item.functionId
         );
       }
     }
@@ -194,7 +194,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
   /**
    * Add function results back to the dialogue
    * Helper method for adding tool/function responses
-   * 
+   *
    * @param results - Array of function results
    * @returns this for chaining
    */
@@ -209,5 +209,31 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
       this.setToolMessage(result.content, result.name, result.id);
     }
     return this;
+  }
+
+  /**
+   * Add a function call to the dialogue
+   * Alias for setToolCallMessage using function terminology
+   *
+   * @param name - Function name
+   * @param args - Function arguments
+   * @param functionId - Optional function invocation ID
+   * @returns this for chaining
+   */
+  addFunctionCall(name: string, args: any, functionId?: string) {
+    return this.setToolCallMessage(name, args, functionId);
+  }
+
+  /**
+   * Add a function result to the dialogue
+   * Alias for setToolMessage using function terminology
+   *
+   * @param result - Function execution result
+   * @param name - Function name
+   * @param functionId - Optional function invocation ID
+   * @returns this for chaining
+   */
+  addFunctionResult(result: string, name: string, functionId?: string) {
+    return this.setToolMessage(result, name, functionId);
   }
 }

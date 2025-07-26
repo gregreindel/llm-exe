@@ -18,7 +18,7 @@ export function formatResult(
       });
     } else if (part?.functionCall) {
       out.push({
-        callId: `${id || uuid()}-${i}`,
+        functionId: `${id || uuid()}-${i}`,
         type: "function_use",
         name: part.functionCall.name,
         input: maybeParseJSON(part.functionCall.args),

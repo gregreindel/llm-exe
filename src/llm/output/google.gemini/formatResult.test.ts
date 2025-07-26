@@ -48,7 +48,7 @@ describe("formatResult", () => {
     const output = formatResult(result);
     expect(output).toEqual([
       {
-        callId: expect.any(String),
+        functionId: expect.any(String),
         type: "function_use",
         name: "testFunction",
         input: { foo: 123 },

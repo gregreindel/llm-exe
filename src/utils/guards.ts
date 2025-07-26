@@ -36,7 +36,7 @@ export function isToolCall(result: any): result is OutputResultsFunction {
   return !!(
     result &&
     typeof result === "object" &&
-    "callId" in result &&
+    "functionId" in result &&
     "type" in result &&
     result.type === "function_use"
   );

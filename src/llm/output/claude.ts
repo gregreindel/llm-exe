@@ -19,7 +19,7 @@ function formatResult(response: Claude3Response): OutputResultContent[] {
       } as OutputResultsText);
     } else if (result.type === "tool_use") {
       out.push({
-        callId: result.id,
+        functionId: result.id,
         type: "function_use",
         name: result.name,
         input: result.input,

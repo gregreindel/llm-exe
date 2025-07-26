@@ -1,19 +1,19 @@
-import { 
-  isOutputResult, 
-  isOutputResultContentText, 
-  isToolCall, 
+import {
+  isOutputResult,
+  isOutputResultContentText,
+  isToolCall,
   hasToolCall,
   isFunctionMessage,
   isUserMessage,
   isAssistantMessage,
   isSystemMessage,
-  isFunctionCallMessage
+  isFunctionCallMessage,
 } from "./guards";
-import { 
-  OutputResult, 
-  OutputResultsText, 
+import {
+  OutputResult,
+  OutputResultsText,
   OutputResultsFunction,
-  IChatMessage
+  IChatMessage,
 } from "@/interfaces";
 
 describe("guards", () => {
@@ -39,7 +39,7 @@ describe("guards", () => {
         stopReason: "length",
         content: [
           { type: "text", text: "Hello" },
-          { type: "function_use", name: "test", input: {}, callId: "123" },
+          { type: "function_use", name: "test", input: {}, functionId: "123" },
         ],
         created: 123456,
         usage: {
@@ -165,7 +165,7 @@ describe("guards", () => {
     it("returns true for valid OutputResultsFunction", () => {
       const validFunc: OutputResultsFunction = {
         type: "function_use",
-        callId: "call-123",
+        functionId: "call-123",
         name: "testFunction",
         input: { param: "value" },
       };
@@ -175,7 +175,7 @@ describe("guards", () => {
     it("returns true with minimal required properties", () => {
       const validFunc = {
         type: "function_use",
-        callId: "123",
+        functionId: "123",
       };
       expect(isToolCall(validFunc)).toBe(true);
     });
@@ -194,7 +194,7 @@ describe("guards", () => {
       expect(isToolCall(true)).toBe(false);
     });
 
-    it("returns false when missing callId", () => {
+    it("returns false when missing functionId", () => {
       const invalid = {
         type: "function_use",
         name: "test",
@@ -204,7 +204,7 @@ describe("guards", () => {
 
     it("returns false when missing type", () => {
       const invalid = {
-        callId: "123",
+        functionId: "123",
         name: "test",
       };
       expect(isToolCall(invalid)).toBe(false);
@@ -213,7 +213,7 @@ describe("guards", () => {
     it("returns false when type is not 'function_use'", () => {
       const invalid = {
         type: "text",
-        callId: "123",
+        functionId: "123",
       };
       expect(isToolCall(invalid)).toBe(false);
     });
@@ -223,15 +223,15 @@ describe("guards", () => {
     it("returns true when array contains tool call", () => {
       const results = [
         { type: "text", text: "Hello" },
-        { type: "function_use", callId: "123", name: "test", input: {} },
+        { type: "function_use", functionId: "123", name: "test", input: {} },
       ];
       expect(hasToolCall(results)).toBe(true);
     });
 
     it("returns true when array contains only tool calls", () => {
       const results = [
-        { type: "function_use", callId: "123", name: "test1", input: {} },
-        { type: "function_use", callId: "456", name: "test2", input: {} },
+        { type: "function_use", functionId: "123", name: "test1", input: {} },
+        { type: "function_use", functionId: "456", name: "test2", input: {} },
       ];
       expect(hasToolCall(results)).toBe(true);
     });
@@ -266,8 +266,8 @@ describe("guards", () => {
       const results = [
         null,
         undefined,
-        { type: "function_use" }, // missing callId
-        { callId: "123" }, // missing type
+        { type: "function_use" }, // missing functionId
+        { functionId: "123" }, // missing type
       ];
       expect(hasToolCall(results)).toBe(false);
     });
@@ -276,8 +276,8 @@ describe("guards", () => {
       const results = [
         null,
         { type: "text", text: "Hello" },
-        { type: "function_use", callId: "valid-123" }, // This one is valid
-        { type: "function_use" }, // Invalid - missing callId
+        { type: "function_use", functionId: "valid-123" }, // This one is valid
+        { type: "function_use" }, // Invalid - missing functionId
       ];
       expect(hasToolCall(results)).toBe(true);
     });
@@ -289,7 +289,7 @@ describe("guards", () => {
         const message: IChatMessage = {
           role: "function",
           content: "result",
-          name: "test_function"
+          name: "test_function",
         };
         expect(isFunctionMessage(message)).toBe(true);
       });
@@ -298,7 +298,7 @@ describe("guards", () => {
         const userMsg: IChatMessage = { role: "user", content: "hello" };
         const assistantMsg: IChatMessage = { role: "assistant", content: "hi" };
         const systemMsg: IChatMessage = { role: "system", content: "system" };
-        
+
         expect(isFunctionMessage(userMsg)).toBe(false);
         expect(isFunctionMessage(assistantMsg)).toBe(false);
         expect(isFunctionMessage(systemMsg)).toBe(false);
@@ -315,10 +315,10 @@ describe("guards", () => {
         const functionMsg: IChatMessage = {
           role: "function",
           content: "result",
-          name: "test_function"
+          name: "test_function",
         };
         const assistantMsg: IChatMessage = { role: "assistant", content: "hi" };
-        
+
         expect(isUserMessage(functionMsg)).toBe(false);
         expect(isUserMessage(assistantMsg)).toBe(false);
       });
@@ -338,7 +338,7 @@ describe("guards", () => {
       it("returns false for non-assistant messages", () => {
         const userMsg: IChatMessage = { role: "user", content: "hello" };
         const systemMsg: IChatMessage = { role: "system", content: "system" };
-        
+
         expect(isAssistantMessage(userMsg)).toBe(false);
         expect(isAssistantMessage(systemMsg)).toBe(false);
       });
@@ -353,7 +353,7 @@ describe("guards", () => {
       it("returns false for non-system messages", () => {
         const userMsg: IChatMessage = { role: "user", content: "hello" };
         const assistantMsg: IChatMessage = { role: "assistant", content: "hi" };
-        
+
         expect(isSystemMessage(userMsg)).toBe(false);
         expect(isSystemMessage(assistantMsg)).toBe(false);
       });
@@ -364,7 +364,7 @@ describe("guards", () => {
         const message: IChatMessage = {
           role: "function_call",
           content: null,
-          function_call: { name: "test", arguments: "{}" }
+          function_call: { name: "test", arguments: "{}" },
         };
         expect(isFunctionCallMessage(message)).toBe(true);
       });
@@ -374,9 +374,9 @@ describe("guards", () => {
         const functionMsg: IChatMessage = {
           role: "function",
           content: "result",
-          name: "test_function"
+          name: "test_function",
         };
-        
+
         expect(isFunctionCallMessage(userMsg)).toBe(false);
         expect(isFunctionCallMessage(functionMsg)).toBe(false);
       });

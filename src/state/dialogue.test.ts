@@ -502,7 +502,7 @@ describe("llm-exe:state/Dialogue", () => {
           type: "function_use",
           name: "calculate",
           input: { x: 1, y: 2 },
-          callId: "call-123",
+          functionId: "call-123",
         },
       ]);
 
@@ -524,13 +524,13 @@ describe("llm-exe:state/Dialogue", () => {
           type: "function_use",
           name: "func1",
           input: { a: 1 },
-          callId: "call-1",
+          functionId: "call-1",
         },
         {
           type: "function_use",
           name: "func2",
           input: { b: 2 },
-          callId: "call-2",
+          functionId: "call-2",
         },
       ]);
 
@@ -554,7 +554,7 @@ describe("llm-exe:state/Dialogue", () => {
           type: "function_use",
           name: "search",
           input: { query: "test" },
-          callId: "call-456",
+          functionId: "call-456",
         },
         { type: "text", text: "Let me search for you." },
       ]);
@@ -606,7 +606,7 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history[0].content).toEqual("Wrapped response");
     });
 
-    it("handles function calls without callId", () => {
+    it("handles function calls without functionId", () => {
       const dialogue = new Dialogue("main");
       const output = mockOutputResultObject([
         {

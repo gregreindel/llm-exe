@@ -342,7 +342,7 @@ export interface OutputResultsFunction extends OutputResultsBase {
   input: Record<string, any>;
 
   // new
-  callId?: string;
+  functionId?: string;
 }
 
 export type OutputResultContent = OutputResultsText | OutputResultsFunction;

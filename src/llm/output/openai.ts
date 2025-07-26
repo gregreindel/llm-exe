@@ -20,7 +20,7 @@ function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
   if (result?.message?.tool_calls) {
     for (const call of result.message.tool_calls) {
       out.push({
-        callId: call.id,
+        functionId: call.id,
         type: "function_use",
         name: call.function.name,
         input: maybeParseJSON(call.function.arguments),

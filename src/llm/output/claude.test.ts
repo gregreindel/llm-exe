@@ -95,7 +95,7 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
         type: "function_use",
         name: "move",
         input: { direction: "right" },
-        callId: "toolu_01EJ17EQLV15S2b45FHD1t6w",
+        functionId: "toolu_01EJ17EQLV15S2b45FHD1t6w",
       },
     ]);
   });

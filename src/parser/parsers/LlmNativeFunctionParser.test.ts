@@ -1,8 +1,8 @@
-import { 
-  BaseParser, 
-  LlmNativeFunctionParser, 
+import {
+  BaseParser,
+  LlmNativeFunctionParser,
   StringParser,
-  JsonParser 
+  JsonParser,
 } from "@/parser";
 import { LlmFunctionParser } from "./LlmNativeFunctionParser";
 import { OutputResult } from "@/interfaces";
@@ -53,7 +53,7 @@ describe("llm-exe:parser/LlmFunctionParser", () => {
           type: "function_use" as const,
           name: "test_function",
           input: { key: "value" },
-          callId: "test-123",
+          functionId: "test-123",
         },
       ];
       const result = parser.parse(mockOutputResultObject(content));
@@ -120,7 +120,7 @@ describe("llm-exe:parser/LlmFunctionParser", () => {
         },
         // content property is missing/undefined
       } as OutputResult;
-      
+
       // When content is undefined, content?.filter returns undefined,
       // triggering the || [] fallback to return an empty array
       // Then functionUses.length === 0, so it tries to access content[0]
@@ -148,7 +148,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
 
   describe("parse method", () => {
     it("handles OutputResult with undefined content", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const mockResult = {
         id: "123",
         created: 123,
@@ -165,7 +167,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
       }).toThrow("Invalid input. Expected string. Received object.");
     });
     it("returns function call object when function_use is present", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse(
         mockOutputResultObject([
           {
@@ -182,7 +186,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("handles function_use with JSON string input", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse(
         mockOutputResultObject([
           {
@@ -199,7 +205,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("handles function_use with invalid JSON string", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse(
         mockOutputResultObject([
           {
@@ -216,7 +224,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("parses text content when no function_use", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse(
         mockOutputResultObject([{ text: "Hello", type: "text" }])
       );
@@ -224,7 +234,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("returns first function_use when multiple are present", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse(
         mockOutputResultObject([
           {
@@ -246,7 +258,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("handles mixed content types without function_use", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse(
         mockOutputResultObject([
           { type: "text", text: "Hello" },
@@ -258,25 +272,29 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("handles object with text property fallback", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const inputObj = {
         text: "fallback text",
-        content: [
-          { type: "text" as const, text: "content text" },
-        ],
+        content: [{ type: "text" as const, text: "content text" }],
       } as any;
       const result = parser.parse(inputObj);
       expect(result).toEqual("fallback text");
     });
 
     it("handles raw string fallback", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const result = parser.parse("raw string" as any);
       expect(result).toEqual("raw string");
     });
 
     it("ignores function_use without required properties", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const mockResult = mockOutputResultObject([
         {
           type: "function_use",
@@ -294,7 +312,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     it("works with JSON parser", () => {
       const parser = new LlmNativeFunctionParser({ parser: new JsonParser() });
       const mockResult = mockOutputResultObject([
-        { text: '{"result": "success"}', type: "text" }
+        { text: '{"result": "success"}', type: "text" },
       ]);
       // The parser passes the whole object to JsonParser since mockResult doesn't have a text property
       const result = parser.parse(mockResult);
@@ -303,7 +321,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
     });
 
     it("handles OutputResult with no content property", () => {
-      const parser = new LlmNativeFunctionParser({ parser: new StringParser() });
+      const parser = new LlmNativeFunctionParser({
+        parser: new StringParser(),
+      });
       const resultWithoutContent = {
         id: "123",
         created: 123,
@@ -315,7 +335,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
         },
         // content property is missing/undefined
       } as OutputResult;
-      
+
       // When content is undefined, content?.find returns undefined,
       // and the parser falls back to parsing the object itself
       // Since the object has no text property, it passes the whole object to StringParser
@@ -330,7 +350,9 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
 // Test the deprecated export
 describe("OpenAiFunctionParser export", () => {
   it("OpenAiFunctionParser is alias for LlmNativeFunctionParser", () => {
-    const { OpenAiFunctionParser } = require("@/parser/parsers/LlmNativeFunctionParser");
+    const {
+      OpenAiFunctionParser,
+    } = require("@/parser/parsers/LlmNativeFunctionParser");
     expect(OpenAiFunctionParser).toBe(LlmNativeFunctionParser);
   });
 });
