@@ -345,8 +345,8 @@ function copyCode() {
   transition: all 0.2s ease;
   position: relative;
   white-space: nowrap;
-  justify-content: center;
   flex: 0 0 auto;
+  gap: 6px;
 }
 .provider-tab.active {
   background: var(--vp-c-brand-dimm);
@@ -363,9 +363,9 @@ function copyCode() {
   opacity: 0.95;
 }
 .provider-logo {
-  display: inline-block;
-  margin-right: 8px;
-  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
 }
@@ -637,17 +637,23 @@ function copyCode() {
   .provider-tab {
     min-width: 100px;
     font-size: 13px;
-    padding: 5px 8px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .provider-logo {
     width: 16px;
     height: 16px;
-    margin-right: 4px;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
   }
 
   .provider-name {
     font-size: 13px;
+    line-height: 1;
   }
 
   .model-tabs {
