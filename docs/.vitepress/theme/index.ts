@@ -2,7 +2,7 @@ import type { Theme } from "vitepress";
 import DefaultTheme from "vitepress/theme";
 import { h } from "vue";
 import "./styles.css";
-import "./custom-shiki-theme.css"; // Import our custom Shiki theme fixes
+import "./custom-shiki-theme.css";
 
 import GenericOutput from "../components/GenericOutput.vue";
 
