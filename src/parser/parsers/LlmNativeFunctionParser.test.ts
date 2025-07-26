@@ -73,6 +73,7 @@ describe("llm-exe:parser/LlmFunctionParser", () => {
       const content = [
         { type: "text" as const, text: "Processing..." },
         {
+          functionId: "calc-789",
           type: "function_use" as const,
           name: "calculate",
           input: { x: 1, y: 2 },
@@ -173,6 +174,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
       const result = parser.parse(
         mockOutputResultObject([
           {
+            functionId: "test-func-123",
             type: "function_use",
             name: "test_function",
             input: { key: "value" },
@@ -192,6 +194,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
       const result = parser.parse(
         mockOutputResultObject([
           {
+            functionId: "json-func-456",
             type: "function_use",
             name: "test_function",
             input: '{"key": "value"}' as any,
@@ -211,6 +214,7 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
       const result = parser.parse(
         mockOutputResultObject([
           {
+            functionId: "invalid-json-789",
             type: "function_use",
             name: "test_function",
             input: "not valid json" as any,
@@ -240,11 +244,13 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
       const result = parser.parse(
         mockOutputResultObject([
           {
+            functionId: "first-func-111",
             type: "function_use",
             name: "first_function",
             input: { first: true },
           },
           {
+            functionId: "second-func-222",
             type: "function_use",
             name: "second_function",
             input: { second: true },

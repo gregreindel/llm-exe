@@ -612,10 +612,11 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history[0].content).toEqual("Wrapped response");
     });
 
-    it("handles function calls without functionId", () => {
+    it("handles function calls with functionId", () => {
       const dialogue = new Dialogue("main");
       const output = mockOutputResultObject([
         {
+          functionId: "call-123",
           type: "function_use",
           name: "test",
           input: { data: "value" },
@@ -627,7 +628,7 @@ describe("llm-exe:state/Dialogue", () => {
       const history = dialogue.getHistory();
       expect(history).toHaveLength(1);
       assert(history[0].role === "function_call");
-      expect(history[0].function_call?.id).toBeUndefined();
+      expect(history[0].function_call?.id).toEqual("call-123");
     });
 
     it("handles null/undefined text gracefully", () => {
@@ -653,6 +654,7 @@ describe("llm-exe:state/Dialogue", () => {
       };
       const output = mockOutputResultObject([
         {
+          functionId: "complex-123",
           type: "function_use",
           name: "complex",
           input: complexInput,
@@ -682,9 +684,9 @@ describe("llm-exe:state/Dialogue", () => {
       const dialogue = new Dialogue("main");
       const output = mockOutputResultObject([
         { type: "text", text: "First" },
-        { type: "function_use", name: "fn1", input: {} },
+        { type: "function_use", name: "fn1", input: {}, functionId: "fn1-123" },
         { type: "text", text: "Second" },
-        { type: "function_use", name: "fn2", input: {} },
+        { type: "function_use", name: "fn2", input: {}, functionId: "fn2-456" },
       ]);
 
       dialogue.addFromOutput(output);

@@ -197,6 +197,10 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     // Handle both raw OutputResult and the wrapped BaseLlCall
     const result = "getResult" in output ? output.getResult() : output;
 
+    if (!result || typeof result !== "object") {
+      return this;
+    }
+
     // Just add everything in order, exactly as returned
     for (const item of result.content) {
       if (item.type === "text") {

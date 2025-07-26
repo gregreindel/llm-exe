@@ -19,6 +19,7 @@ function formatResult(
     if (tool_calls) {
       for (const call of tool_calls) {
         return {
+          functionId: call.id,
           type: "function_use",
           name: call.function.name,
           input: JSON.parse(call.function.arguments),
@@ -38,7 +39,7 @@ export function OutputXAIChat(
   _config?: { model?: string }
 ) {
   const id = result.id;
-  const name = result?.model
+  const name = result?.model;
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];
