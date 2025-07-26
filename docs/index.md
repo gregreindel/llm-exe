@@ -572,6 +572,62 @@ No magic. Just clean composition.
     height: 100%;
 }
 
+.HomeAfterIntro {
+    position: relative;
+    display: block;
+    padding-top: 40px;
+    margin-top: 24px;
+}
+
+.VPHome {
+    position: relative;
+    overflow: hidden;
+}
+
+
+@media (max-width: 640px) {
+    .VPHero .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .VPFeatures.VPHomeFeatures {
+        position: static !important;
+        padding-top: 30px !important;
+        margin-top: 40px !important;
+        clear: both !important;
+    }
+
+    .VPHero.has-image .container {
+        flex-direction: column;
+        align-items: flex-start !important;
+        row-gap: 24px;
+    }
+
+    .VPHero.has-image .text,
+    .VPHero.has-image .image {
+        max-width: 100%;
+        width: 100%;
+        flex-grow: 0;
+    }
+
+    .VPHero.has-image .image {
+        margin-top: 16px;
+        margin-bottom: 32px;
+        order: 2;
+    }
+
+    .VPImage.hero-code-container {
+        width: 100% !important;
+        max-width: none !important;
+    }
+}
+
+.VPHero {
+    padding-bottom: 24px;
+}
+
 /* Responsive */
 @media (max-width: 960px) {
     .home-blocks {
@@ -608,6 +664,7 @@ No magic. Just clean composition.
 }
 
 @media (max-width: 768px) {
+    
     .testimonials-grid {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -661,6 +718,7 @@ No magic. Just clean composition.
 }
 
 @media (max-width: 480px) {
+    
     .home-blocks {
         padding: 24px 0;
     }
