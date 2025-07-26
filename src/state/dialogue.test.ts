@@ -1,6 +1,9 @@
 import { BaseStateItem, Dialogue, createDialogue } from "@/state";
 import { IChatUserMessage } from "@/types";
 import { assert } from "@/utils/modules/assert";
+import { mockOutputResultObject } from "../../utils/mock.helpers";
+import { BaseLlmOutput2 } from "@/llm/output/base";
+import { isFunctionMessage } from "@/utils/guards";
 
 /**
  * Tests Dialogue
@@ -405,7 +408,10 @@ describe("llm-exe:state/Dialogue", () => {
       const dialogue = new Dialogue("main");
       const detailedContent = [
         { type: "text" as const, text: "Hello" },
-        { type: "image_url" as const, image_url: { url: "https://example.com/image.jpg" } },
+        {
+          type: "image_url" as const,
+          image_url: { url: "https://example.com/image.jpg" },
+        },
       ];
       dialogue.setUserMessage(detailedContent);
       const history = dialogue.getHistory();
@@ -445,15 +451,330 @@ describe("llm-exe:state/Dialogue", () => {
     it("setFunctionCallMessage stringifies object arguments", () => {
       const dialogue = new Dialogue("main");
       dialogue.setFunctionCallMessage({
-        function_call: { 
-          name: "test_fn", 
-          arguments: { key: "value" } as any 
+        function_call: {
+          name: "test_fn",
+          arguments: { key: "value" } as any,
         },
       });
       const history = dialogue.getHistory();
       expect(history).toHaveLength(1);
       assert(history[0].role === "function_call");
       expect(history[0].function_call?.arguments).toEqual('{"key":"value"}');
+    });
+  });
+
+  describe("addFromOutput", () => {
+    it("adds text-only response", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        { type: "text", text: "Hello world" },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("assistant");
+      expect(history[0].content).toEqual("Hello world");
+    });
+
+    it("adds multiple text content as separate messages", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        { type: "text", text: "Hello" },
+        { type: "text", text: " " },
+        { type: "text", text: "world" },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(3);
+      expect(history[0].content).toEqual("Hello");
+      expect(history[1].content).toEqual(" ");
+      expect(history[2].content).toEqual("world");
+    });
+
+    it("adds function-only response", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        {
+          type: "function_use",
+          name: "calculate",
+          input: { x: 1, y: 2 },
+          callId: "call-123",
+        },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.name).toEqual("calculate");
+      expect(history[0].function_call?.arguments).toEqual('{"x":1,"y":2}');
+      expect(history[0].function_call?.id).toEqual("call-123");
+    });
+
+    it("adds multiple function calls", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        {
+          type: "function_use",
+          name: "func1",
+          input: { a: 1 },
+          callId: "call-1",
+        },
+        {
+          type: "function_use",
+          name: "func2",
+          input: { b: 2 },
+          callId: "call-2",
+        },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].role).toEqual("function_call");
+      expect(history[1].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      assert(history[1].role === "function_call");
+      expect(history[0].function_call?.name).toEqual("func1");
+      expect(history[1].function_call?.name).toEqual("func2");
+    });
+
+    it("adds mixed content (text + functions) in order", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        { type: "text", text: "I'll help you with that." },
+        {
+          type: "function_use",
+          name: "search",
+          input: { query: "test" },
+          callId: "call-456",
+        },
+        { type: "text", text: "Let me search for you." },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(3);
+      expect(history[0].role).toEqual("assistant");
+      expect(history[0].content).toEqual("I'll help you with that.");
+      expect(history[1].role).toEqual("function_call");
+      assert(history[1].role === "function_call");
+      expect(history[1].function_call?.name).toEqual("search");
+      expect(history[2].role).toEqual("assistant");
+      expect(history[2].content).toEqual("Let me search for you.");
+    });
+
+    it("handles empty content array", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(0);
+    });
+
+    it("skips empty text (respects setAssistantMessage behavior)", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([{ type: "text", text: "" }]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(0);
+    });
+
+    it("works with BaseLlCall wrapper", () => {
+      const dialogue = new Dialogue("main");
+      const result = mockOutputResultObject([
+        { type: "text", text: "Wrapped response" },
+      ]);
+      const wrapped = BaseLlmOutput2(result);
+
+      dialogue.addFromOutput(wrapped);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].content).toEqual("Wrapped response");
+    });
+
+    it("handles function calls without callId", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        {
+          type: "function_use",
+          name: "test",
+          input: { data: "value" },
+        },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.id).toBeUndefined();
+    });
+
+    it("handles null/undefined text gracefully", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        { type: "text", text: null as any },
+        { type: "text", text: undefined as any },
+        { type: "text", text: "Valid text" },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].content).toEqual("Valid text");
+    });
+
+    it("stringifies function input objects", () => {
+      const dialogue = new Dialogue("main");
+      const complexInput = {
+        nested: { data: [1, 2, 3] },
+        flag: true,
+      };
+      const output = mockOutputResultObject([
+        {
+          type: "function_use",
+          name: "complex",
+          input: complexInput,
+        },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.arguments).toEqual(
+        JSON.stringify(complexInput)
+      );
+    });
+
+    it("returns dialogue instance for chaining", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([{ type: "text", text: "Test" }]);
+
+      const result = dialogue.addFromOutput(output);
+
+      expect(result).toBe(dialogue);
+    });
+
+    it("preserves exact order of mixed content", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        { type: "text", text: "First" },
+        { type: "function_use", name: "fn1", input: {} },
+        { type: "text", text: "Second" },
+        { type: "function_use", name: "fn2", input: {} },
+      ]);
+
+      dialogue.addFromOutput(output);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(4);
+      expect(history[0].role).toEqual("assistant");
+      expect(history[0].content).toEqual("First");
+      expect(history[1].role).toEqual("function_call");
+      assert(history[1].role === "function_call");
+      expect(history[1].function_call?.name).toEqual("fn1");
+      expect(history[2].role).toEqual("assistant");
+      expect(history[2].content).toEqual("Second");
+      expect(history[3].role).toEqual("function_call");
+      assert(history[3].role === "function_call");
+      expect(history[3].function_call?.name).toEqual("fn2");
+    });
+  });
+
+  describe("addFunctionResults", () => {
+    it("adds single function result", () => {
+      const dialogue = new Dialogue("main");
+
+      dialogue.addFunctionResults([
+        { name: "calculate", content: "Result: 42" },
+      ]);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function");
+      assert(history[0].role === "function");
+      expect(history[0].name).toEqual("calculate");
+      expect(history[0].content).toEqual("Result: 42");
+    });
+
+    it("adds multiple function results", () => {
+      const dialogue = new Dialogue("main");
+
+      dialogue.addFunctionResults([
+        { name: "func1", content: "Result 1", id: "id-1" },
+        { name: "func2", content: "Result 2", id: "id-2" },
+        { name: "func3", content: "Result 3" },
+      ]);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(3);
+
+      for (let i = 0; i < 3; i++) {
+        const message = history[i];
+        expect(message.role).toEqual("function");
+        assert(isFunctionMessage(message));
+        expect(message.name).toEqual(`func${i + 1}`);
+        expect(message.content).toEqual(`Result ${i + 1}`);
+      }
+
+      assert(isFunctionMessage(history[0]));
+      assert(isFunctionMessage(history[1]));
+      assert(isFunctionMessage(history[2]));
+      expect(history[0].id).toEqual("id-1");
+      expect(history[1].id).toEqual("id-2");
+      expect(history[2].id).toBeUndefined();
+    });
+
+    it("handles empty results array", () => {
+      const dialogue = new Dialogue("main");
+
+      dialogue.addFunctionResults([]);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(0);
+    });
+
+    it("returns dialogue instance for chaining", () => {
+      const dialogue = new Dialogue("main");
+
+      const result = dialogue.addFunctionResults([
+        { name: "test", content: "data" },
+      ]);
+
+      expect(result).toBe(dialogue);
+    });
+
+    it("works with chained calls", () => {
+      const dialogue = new Dialogue("main");
+      const output = mockOutputResultObject([
+        { type: "function_use", name: "search", input: { q: "test" } },
+      ]);
+
+      dialogue
+        .addFromOutput(output)
+        .addFunctionResults([{ name: "search", content: "Found 3 results" }]);
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].role).toEqual("function_call");
+      expect(history[1].role).toEqual("function");
     });
   });
 });

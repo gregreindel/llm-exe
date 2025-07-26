@@ -2,12 +2,18 @@ import {
   isOutputResult, 
   isOutputResultContentText, 
   isToolCall, 
-  hasToolCall 
+  hasToolCall,
+  isFunctionMessage,
+  isUserMessage,
+  isAssistantMessage,
+  isSystemMessage,
+  isFunctionCallMessage
 } from "./guards";
 import { 
   OutputResult, 
   OutputResultsText, 
-  OutputResultsFunction 
+  OutputResultsFunction,
+  IChatMessage
 } from "@/interfaces";
 
 describe("guards", () => {
@@ -274,6 +280,106 @@ describe("guards", () => {
         { type: "function_use" }, // Invalid - missing callId
       ];
       expect(hasToolCall(results)).toBe(true);
+    });
+  });
+
+  describe("Chat message type guards", () => {
+    describe("isFunctionMessage", () => {
+      it("returns true for function message", () => {
+        const message: IChatMessage = {
+          role: "function",
+          content: "result",
+          name: "test_function"
+        };
+        expect(isFunctionMessage(message)).toBe(true);
+      });
+
+      it("returns false for non-function messages", () => {
+        const userMsg: IChatMessage = { role: "user", content: "hello" };
+        const assistantMsg: IChatMessage = { role: "assistant", content: "hi" };
+        const systemMsg: IChatMessage = { role: "system", content: "system" };
+        
+        expect(isFunctionMessage(userMsg)).toBe(false);
+        expect(isFunctionMessage(assistantMsg)).toBe(false);
+        expect(isFunctionMessage(systemMsg)).toBe(false);
+      });
+    });
+
+    describe("isUserMessage", () => {
+      it("returns true for user message", () => {
+        const message: IChatMessage = { role: "user", content: "hello" };
+        expect(isUserMessage(message)).toBe(true);
+      });
+
+      it("returns false for non-user messages", () => {
+        const functionMsg: IChatMessage = {
+          role: "function",
+          content: "result",
+          name: "test_function"
+        };
+        const assistantMsg: IChatMessage = { role: "assistant", content: "hi" };
+        
+        expect(isUserMessage(functionMsg)).toBe(false);
+        expect(isUserMessage(assistantMsg)).toBe(false);
+      });
+    });
+
+    describe("isAssistantMessage", () => {
+      it("returns true for assistant message", () => {
+        const message: IChatMessage = { role: "assistant", content: "hello" };
+        expect(isAssistantMessage(message)).toBe(true);
+      });
+
+      it("returns true for model message", () => {
+        const message: IChatMessage = { role: "model", content: "hello" };
+        expect(isAssistantMessage(message)).toBe(true);
+      });
+
+      it("returns false for non-assistant messages", () => {
+        const userMsg: IChatMessage = { role: "user", content: "hello" };
+        const systemMsg: IChatMessage = { role: "system", content: "system" };
+        
+        expect(isAssistantMessage(userMsg)).toBe(false);
+        expect(isAssistantMessage(systemMsg)).toBe(false);
+      });
+    });
+
+    describe("isSystemMessage", () => {
+      it("returns true for system message", () => {
+        const message: IChatMessage = { role: "system", content: "hello" };
+        expect(isSystemMessage(message)).toBe(true);
+      });
+
+      it("returns false for non-system messages", () => {
+        const userMsg: IChatMessage = { role: "user", content: "hello" };
+        const assistantMsg: IChatMessage = { role: "assistant", content: "hi" };
+        
+        expect(isSystemMessage(userMsg)).toBe(false);
+        expect(isSystemMessage(assistantMsg)).toBe(false);
+      });
+    });
+
+    describe("isFunctionCallMessage", () => {
+      it("returns true for function_call message", () => {
+        const message: IChatMessage = {
+          role: "function_call",
+          content: null,
+          function_call: { name: "test", arguments: "{}" }
+        };
+        expect(isFunctionCallMessage(message)).toBe(true);
+      });
+
+      it("returns false for non-function_call messages", () => {
+        const userMsg: IChatMessage = { role: "user", content: "hello" };
+        const functionMsg: IChatMessage = {
+          role: "function",
+          content: "result",
+          name: "test_function"
+        };
+        
+        expect(isFunctionCallMessage(userMsg)).toBe(false);
+        expect(isFunctionCallMessage(functionMsg)).toBe(false);
+      });
     });
   });
 });

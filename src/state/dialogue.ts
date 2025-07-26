@@ -3,6 +3,8 @@ import {
   IChatMessages,
   IChatUserMessage,
   OutputResultsText,
+  OutputResult,
+  BaseLlCall,
 } from "@/types";
 import { BaseStateItem } from "./item";
 import { maybeStringifyJSON } from "@/utils";
@@ -162,4 +164,50 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     };
   }
   // deserialize() {}
+
+  /**
+   * Add LLM output to dialogue history in the order it was returned
+   * 
+   * @param output - The LLM output result from llm.call()
+   * @returns this for chaining
+   */
+  addFromOutput(output: OutputResult | BaseLlCall) {
+    // Handle both raw OutputResult and the wrapped BaseLlCall
+    const result = 'getResult' in output ? output.getResult() : output;
+    
+    // Just add everything in order, exactly as returned
+    for (const item of result.content) {
+      if (item.type === "text") {
+        this.setAssistantMessage(item.text);
+      } else if (item.type === "function_use") {
+        this.setToolCallMessage(
+          item.name,
+          maybeStringifyJSON(item.input),
+          item.callId
+        );
+      }
+    }
+
+    return this;
+  }
+
+  /**
+   * Add function results back to the dialogue
+   * Helper method for adding tool/function responses
+   * 
+   * @param results - Array of function results
+   * @returns this for chaining
+   */
+  addFunctionResults(
+    results: Array<{
+      name: string;
+      content: string;
+      id?: string;
+    }>
+  ) {
+    for (const result of results) {
+      this.setToolMessage(result.content, result.name, result.id);
+    }
+    return this;
+  }
 }
