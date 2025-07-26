@@ -1,4 +1,4 @@
-import { getOutputParser } from "@/llm/output";
+import { normalizeLlmOutputToInternalFormat } from "@/llm/output";
 import { apiRequest } from "@/utils/modules/request";
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 import { getLlmConfig } from "@/llm/config";
@@ -145,5 +145,5 @@ export async function useLlm_call(
           headers: headers,
         });
 
-  return getOutputParser(state, response);
+  return normalizeLlmOutputToInternalFormat(state, response);
 }

@@ -13,7 +13,7 @@ import { OutputGoogleGeminiChat } from "./google.gemini";
  * @param response
  * @returns
  */
-export function getOutputParser(
+export function normalizeLlmOutputToInternalFormat(
   config: {
     key: LlmProviderKey;
     model?: string;

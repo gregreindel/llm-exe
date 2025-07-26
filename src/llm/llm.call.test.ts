@@ -1,6 +1,6 @@
 import { apiRequest } from "@/utils/modules/request";
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
-import { getOutputParser } from "@/llm/output";
+import { normalizeLlmOutputToInternalFormat } from "@/llm/output";
 import {
   GenericLLm,
   IChatMessages,
@@ -32,7 +32,7 @@ jest.mock("@/llm/_utils.parseHeaders", () => ({
 }));
 
 jest.mock("@/llm/output", () => ({
-  getOutputParser: jest.fn(),
+  normalizeLlmOutputToInternalFormat: jest.fn(),
 }));
 
 jest.mock("@/llm/config", () => ({
@@ -46,7 +46,8 @@ describe("useLlm_call", () => {
   const mapBodyMock = mapBody as jest.Mock;
   const parseHeadersMock = parseHeaders as jest.Mock;
   const apiRequestMock = apiRequest as jest.Mock;
-  const getOutputParserMock = getOutputParser as jest.Mock;
+  const normalizeLlmOutputToInternalFormatMock =
+    normalizeLlmOutputToInternalFormat as jest.Mock;
 
   const mockState = {
     key: "openai.chat-mock.v1",
@@ -104,7 +105,7 @@ describe("useLlm_call", () => {
   });
 
   it("should call all necessary functions and return parsed output", async () => {
-    getOutputParserMock.mockReturnValueOnce("parsedOutput");
+    normalizeLlmOutputToInternalFormatMock.mockReturnValueOnce("parsedOutput");
 
     const result = await useLlm_call(mockState, mockMessages, mockOptions);
 
@@ -139,7 +140,7 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(getOutputParser).toHaveBeenCalledWith(
+    expect(normalizeLlmOutputToInternalFormat).toHaveBeenCalledWith(
       { key: mockState.key, provider: mockState.provider },
       {
         data: "response",
@@ -474,21 +475,23 @@ describe("useLlm_call", () => {
       key: LlmProviderKey;
       provider: LlmProvider;
     };
-    
+
     getLlmConfigMock.mockReturnValue({
       ...mockConfig,
       provider: "openai.chat-mock",
     });
-    
-    getOutputParserMock.mockReturnValueOnce("mockParsedOutput");
-    
+
+    normalizeLlmOutputToInternalFormatMock.mockReturnValueOnce(
+      "mockParsedOutput"
+    );
+
     const result = await useLlm_call(mockStateMock, mockMessages, mockOptions);
-    
+
     // Mock provider doesn't call apiRequest
     expect(apiRequestMock).not.toHaveBeenCalled();
-    
-    // But it should call getOutputParser with the mock response
-    expect(getOutputParser).toHaveBeenCalledWith(
+
+    // But it should call normalizeLlmOutputToInternalFormat with the mock response
+    expect(normalizeLlmOutputToInternalFormat).toHaveBeenCalledWith(
       { key: mockStateMock.key, provider: mockStateMock.provider },
       expect.objectContaining({
         id: "0123-45-6789",
@@ -505,7 +508,7 @@ describe("useLlm_call", () => {
         ],
       })
     );
-    
+
     expect(result).toBe("mockParsedOutput");
   });
 
@@ -591,16 +594,16 @@ describe("useLlm_call", () => {
     it("should handle Google provider with functions", async () => {
       const mock_options = {
         functions: [
-          { 
-            name: "testFunction", 
-            description: "Test description", 
+          {
+            name: "testFunction",
+            description: "Test description",
             parameters: {
               type: "object",
               properties: {
-                param1: { type: "string" }
-              }
-            } 
-          }
+                param1: { type: "string" },
+              },
+            },
+          },
         ],
       };
       await useLlm_call(mockStateGoogle, mockMessages, mock_options);
@@ -633,11 +636,11 @@ describe("useLlm_call", () => {
       const mock_options = {
         functionCall: "auto" as GenericFunctionCall,
         functions: [
-          { 
-            name: "weatherFunction", 
-            description: "Get weather", 
-            parameters: {} 
-          }
+          {
+            name: "weatherFunction",
+            description: "Get weather",
+            parameters: {},
+          },
         ],
       };
       await useLlm_call(mockStateGoogle, mockMessages, mock_options);
