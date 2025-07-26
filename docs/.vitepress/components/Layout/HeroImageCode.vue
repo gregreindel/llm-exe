@@ -41,6 +41,8 @@ const providerModels = getProviders();
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   max-height: 400px !important;
   min-height: auto !important;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .hero-code-container :deep(.code-block code span) {
@@ -67,10 +69,17 @@ const providerModels = getProviders();
   text-align: left !important;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .hero-code-wrapper {
     width: 100vw !important;
     position: static !important;
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+  
+  .hero-code-container {
+    width: 100% !important;
+    max-width: none !important;
   }
   
   .hero-code-container :deep(.provider-tabs) {
@@ -84,6 +93,12 @@ const providerModels = getProviders();
     display: none;
   }
 
+  .hero-code-container :deep(.switcher-root) {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+  
   .hero-code-container :deep(.provider-tab) {
     flex: 0 0 auto;
     min-width: 100px;
@@ -101,6 +116,11 @@ const providerModels = getProviders();
   
   .hero-code-container :deep(.provider-name) {
     line-height: 1;
+  }
+  
+  .hero-code-container :deep(.code-block) {
+    text-align: left !important;
+    padding: 12px;
   }
 }
 </style>
