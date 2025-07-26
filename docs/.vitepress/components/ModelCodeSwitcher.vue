@@ -311,6 +311,10 @@ function copyCode() {
   overflow: hidden;
   transition: background-color 0.5s;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  --vp-c-tab-active-bg: #f8f8fa;
+  --vp-c-tab-hover-bg: #f0f0f2;
+  --vp-c-tab-active-text: #818cf8;
+  --vp-c-tab-inactive-text: #6b7280;
 }
 .provider-tabs {
   display: flex;
@@ -346,10 +350,12 @@ function copyCode() {
 }
 .provider-tab.active {
   background: var(--vp-c-brand-dimm);
-  color: var(--vp-c-brand);
+  color: #818cf8;
   opacity: 1;
-  font-weight: 600;
+  font-weight: 700;
   z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 .provider-tab:hover:not(.active) {
   background: var(--vp-c-bg-alt);
@@ -468,6 +474,7 @@ function copyCode() {
   min-height: 360px;
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .code-block.vp-code-block-switcher,
@@ -543,8 +550,10 @@ function copyCode() {
   color: var(--vp-c-tab-active-text);
   font-weight: 700;
   opacity: 1;
-  box-shadow: 0 2px 8px #0001;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
   z-index: 2;
+  transform: translateY(-1px);
 }
 .provider-tab:hover:not(.active) {
   background: var(--vp-c-tab-hover-bg);
@@ -658,6 +667,7 @@ function copyCode() {
     font-size: 12px;
     line-height: 1.4;
     min-height: 300px;
+    text-align: left;
   }
 
   .code-actions {
