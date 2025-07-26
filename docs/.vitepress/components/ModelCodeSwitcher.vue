@@ -130,17 +130,18 @@ const codeBlock = computed(() => {
     "gpt-4o-mini";
   let code = props.code;
 
+  const defaultModels = {
+    openai: "gpt-4o",
+    anthropic: "claude-3-5-sonnet-latest",
+    google: "gemini-1.5-pro",
+    deepseek: "deepseek-chat",
+    xai: "grok-2-latest",
+    ollama: "deepseek-r1",
+    bedrock: "claude-3-sonnet-20240229-v1:0"
+  };
+
   if (model === "chat.v1") {
-    const defaultModel =
-      provider === "openai"
-        ? "gpt-4o"
-        : provider === "anthropic"
-          ? "claude-3-sonnet-20240620"
-          : provider === "google"
-            ? "gemini-1.5-pro"
-            : provider === "deepseek"
-              ? "deepseek-chat"
-              : "model-name";
+    const defaultModel = defaultModels[provider] || "model-name";
 
     if (provider === "bedrock") {
       code = code.replace(
@@ -663,40 +664,22 @@ function copyCode() {
 }
 @media (max-width: 900px) {
   .switcher-root {
+    width: 100%;
     max-width: 100vw;
-    padding: 10px 2vw 10px 2vw;
-  }
-}
-@media (max-width: 768px) {
-  .switcher-root {
-    padding: 16px;
+    padding: 10px;
     margin: 0;
-    border-radius: 12px;
-    min-height: auto;
-    height: 100%;
-    gap: 8px;
+    border-radius: 8px;
   }
-
+  
   .provider-tabs {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     padding-bottom: 8px;
     margin-bottom: 0;
     gap: 6px;
   }
-
-  .code-block,
-  .output-block {
-    padding: 12px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 640px) {
-  .switcher-root {
-    padding: 10px;
-    gap: 4px;
-    min-height: 380px;
-  }
-
+  
   .provider-tab {
     min-width: 100px;
     font-size: 13px;
@@ -705,17 +688,58 @@ function copyCode() {
     align-items: center;
     justify-content: center;
   }
+  
+  .provider-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+  }
+  
+  .code-block,
+  .output-block {
+    padding: 12px;
+    font-size: 13px;
+    text-align: left;
+  }
+}
+@media (max-width: 768px) {
+  .switcher-root {
+    padding: 12px 8px;
+    margin: 0;
+    border-radius: 8px;
+    min-height: auto;
+    height: 100%;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .switcher-root {
+    padding: 8px;
+    gap: 4px;
+    min-height: 380px;
+    width: 100vw;
+    margin-left: -16px;
+    margin-right: -16px;
+    border-radius: 0;
+  }
+
+  .provider-tab {
+    min-width: 90px;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
 
   .provider-logo {
     width: 16px;
     height: 16px;
-    margin-right: 6px;
-    display: flex;
-    align-items: center;
+    margin-right: 4px;
   }
 
   .provider-name {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1;
   }
 
