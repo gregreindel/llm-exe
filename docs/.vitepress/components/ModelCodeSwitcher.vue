@@ -130,7 +130,70 @@ const codeBlock = computed(() => {
     "gpt-4o-mini";
   let code = props.code;
 
-  code = code.replace(/\$\{provider\}\.\$\{model\}/g, `${provider}.${model}`);
+  if (model === "chat.v1") {
+    const defaultModel =
+      provider === "openai"
+        ? "gpt-4o"
+        : provider === "anthropic"
+          ? "claude-3-sonnet-20240620"
+          : provider === "google"
+            ? "gemini-1.5-pro"
+            : provider === "deepseek"
+              ? "deepseek-chat"
+              : "model-name";
+
+    if (provider === "bedrock") {
+      code = code.replace(
+        /\$\{provider\}\.\$\{model\}/g,
+        `amazon:anthropic.chat.v1`
+      );
+
+      if (!code.includes("model:")) {
+        code = code.replace(
+          /useLlm\("([^"]+)"\)/g,
+          `useLlm("$1", {\n  model: "claude-3-sonnet-20240229-v1:0" // specify a model from Bedrock\n})`
+        );
+      }
+    } else {
+      code = code.replace(
+        /\$\{provider\}\.\$\{model\}/g,
+        `${provider}.chat.v1`
+      );
+
+      if (!code.includes("model:")) {
+        code = code.replace(
+          /useLlm\("([^"]+)"\)/g,
+          `useLlm("$1", {\n  model: "${defaultModel}" // specify a model\n})`
+        );
+      }
+    }
+  } else if (
+    model.includes("anthropic.chat.v1") ||
+    model.includes("meta.chat.v1")
+  ) {
+    code = code.replace(/\$\{provider\}\.\$\{model\}/g, `amazon:${model}`);
+
+    const defaultBedrockModel = model.includes("anthropic")
+      ? "claude-3-sonnet-20240229-v1:0"
+      : "llama3-8b-instruct-v1:0";
+    if (!code.includes("model:")) {
+      code = code.replace(
+        /useLlm\("([^"]+)"\)/g,
+        `useLlm("$1", {\n  model: "${defaultBedrockModel}" // This is the model id from Bedrock\n})`
+      );
+    }
+  } else {
+    code = code.replace(/\$\{provider\}\.\$\{model\}/g, `${provider}.${model}`);
+
+    if (code.includes("model:") && !model.includes("chat.v1")) {
+      code = code.replace(
+        /useLlm\("([^"]+)",\s*{\s*model:[^}]+}\)/g,
+        'useLlm("$1", {\n  // other options,\n  // no model needed, using ' +
+          model +
+          "\n})"
+      );
+    }
+  }
 
   if (code.includes("${apiKeyProp}") || code.includes("${apiKeyEnv}")) {
     const apiKey = apiKeyMap[provider] || { prop: "apiKey", env: "API_KEY" };
