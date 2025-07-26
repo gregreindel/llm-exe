@@ -86,7 +86,8 @@ function extractModelsFromSourceFiles() {
                         if (providerKey && !providerKey.includes('mock')) {
                             const parts = providerKey.split('.');
                             if (parts.length >= 2 && parts[parts.length - 1] === 'v1') {
-                                models.add(providerKey.replace('amazon:', ''));
+                                const cleanProviderKey = providerKey.replace('amazon:', '');
+                                models.add(cleanProviderKey);
                             }
                         }
                     }
