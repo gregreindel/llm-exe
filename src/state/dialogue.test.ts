@@ -3,7 +3,6 @@ import { IChatUserMessage } from "@/types";
 import { assert } from "@/utils/modules/assert";
 import { mockOutputResultObject } from "../../utils/mock.helpers";
 import { BaseLlmOutput2 } from "@/llm/output/base";
-import { isFunctionMessage } from "@/utils/guards";
 
 /**
  * Tests Dialogue
@@ -273,7 +272,11 @@ describe("llm-exe:state/Dialogue", () => {
   describe("Tool methods", () => {
     it("setToolCallMessage creates function_call message", () => {
       const dialogue = new Dialogue("main");
-      dialogue.setToolCallMessage("testTool", '{"param": "value"}', "tool-123");
+      dialogue.setToolCallMessage({
+        name: "testTool",
+        arguments: '{"param": "value"}',
+        id: "tool-123",
+      });
       const history = dialogue.getHistory();
       expect(history).toHaveLength(1);
       expect(history[0].role).toEqual("function_call");
@@ -287,7 +290,10 @@ describe("llm-exe:state/Dialogue", () => {
 
     it("setToolCallMessage without id", () => {
       const dialogue = new Dialogue("main");
-      dialogue.setToolCallMessage("testTool", '{"param": "value"}');
+      dialogue.setToolCallMessage({
+        name: "testTool",
+        arguments: '{"param": "value"}',
+      });
       const history = dialogue.getHistory();
       expect(history).toHaveLength(1);
       expect(history[0].role).toEqual("function_call");
@@ -695,86 +701,6 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history[3].role).toEqual("function_call");
       assert(history[3].role === "function_call");
       expect(history[3].function_call?.name).toEqual("fn2");
-    });
-  });
-
-  describe("addFunctionResults", () => {
-    it("adds single function result", () => {
-      const dialogue = new Dialogue("main");
-
-      dialogue.addFunctionResults([
-        { name: "calculate", content: "Result: 42" },
-      ]);
-
-      const history = dialogue.getHistory();
-      expect(history).toHaveLength(1);
-      expect(history[0].role).toEqual("function");
-      assert(history[0].role === "function");
-      expect(history[0].name).toEqual("calculate");
-      expect(history[0].content).toEqual("Result: 42");
-    });
-
-    it("adds multiple function results", () => {
-      const dialogue = new Dialogue("main");
-
-      dialogue.addFunctionResults([
-        { name: "func1", content: "Result 1", id: "id-1" },
-        { name: "func2", content: "Result 2", id: "id-2" },
-        { name: "func3", content: "Result 3" },
-      ]);
-
-      const history = dialogue.getHistory();
-      expect(history).toHaveLength(3);
-
-      for (let i = 0; i < 3; i++) {
-        const message = history[i];
-        expect(message.role).toEqual("function");
-        assert(isFunctionMessage(message));
-        expect(message.name).toEqual(`func${i + 1}`);
-        expect(message.content).toEqual(`Result ${i + 1}`);
-      }
-
-      assert(isFunctionMessage(history[0]));
-      assert(isFunctionMessage(history[1]));
-      assert(isFunctionMessage(history[2]));
-      expect(history[0].id).toEqual("id-1");
-      expect(history[1].id).toEqual("id-2");
-      expect(history[2].id).toBeUndefined();
-    });
-
-    it("handles empty results array", () => {
-      const dialogue = new Dialogue("main");
-
-      dialogue.addFunctionResults([]);
-
-      const history = dialogue.getHistory();
-      expect(history).toHaveLength(0);
-    });
-
-    it("returns dialogue instance for chaining", () => {
-      const dialogue = new Dialogue("main");
-
-      const result = dialogue.addFunctionResults([
-        { name: "test", content: "data" },
-      ]);
-
-      expect(result).toBe(dialogue);
-    });
-
-    it("works with chained calls", () => {
-      const dialogue = new Dialogue("main");
-      const output = mockOutputResultObject([
-        { type: "function_use", name: "search", input: { q: "test" } },
-      ]);
-
-      dialogue
-        .addFromOutput(output)
-        .addFunctionResults([{ name: "search", content: "Found 3 results" }]);
-
-      const history = dialogue.getHistory();
-      expect(history).toHaveLength(2);
-      expect(history[0].role).toEqual("function_call");
-      expect(history[1].role).toEqual("function");
     });
   });
 });

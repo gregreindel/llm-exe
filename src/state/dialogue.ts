@@ -63,16 +63,6 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
-  setToolCallMessage(name: string, args: string, id?: string) {
-    this.setFunctionCallMessage({
-      function_call: {
-        name,
-        arguments: args,
-        id,
-      },
-    });
-  }
-
   setToolMessage(content: string, name: string, id?: string) {
     this.setFunctionMessage(content, name, id);
   }
@@ -89,21 +79,53 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     return this;
   }
 
-  setFunctionCallMessage(input: {
-    function_call: { name: string; arguments: string; id?: string };
-  }) {
-    if (!input?.function_call) {
+  /**
+   * Set
+   */
+  setToolCallMessage(input: { name: string; arguments: string; id?: string }) {
+    this.setFunctionCallMessage(input);
+  }
+
+  setFunctionCallMessage(
+    input:
+      | { name: string; arguments: string; id?: string }
+      | {
+          function_call: { name: string; arguments: string; id?: string };
+        }
+  ) {
+    if (!input || typeof input !== "object") {
       throw new LlmExeError(`Invalid arguments`, "state", {
-        error: `Invalid arguments: missing required function_call`,
+        error: `Invalid arguments: input must be an object`,
         module: "dialogue",
       });
     }
+
+    // This is for backwards compatibility
+    if ("function_call" in input) {
+      if (!input.function_call || typeof input.function_call !== "object") {
+        throw new LlmExeError(`Invalid arguments`, "state", {
+          error: `Invalid arguments: input must be an object`,
+          module: "dialogue",
+        });
+      }
+      this.value.push({
+        role: "function_call",
+        function_call: {
+          id: input?.function_call.id,
+          name: input?.function_call.name,
+          arguments: maybeStringifyJSON(input?.function_call.arguments),
+        },
+        content: null,
+      });
+      return this;
+    }
+
     this.value.push({
       role: "function_call",
       function_call: {
-        id: input?.function_call.id,
-        name: input?.function_call.name,
-        arguments: maybeStringifyJSON(input?.function_call.arguments),
+        id: input?.id,
+        name: input?.name,
+        arguments: maybeStringifyJSON(input?.arguments),
       },
       content: null,
     });
@@ -180,60 +202,14 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
       if (item.type === "text") {
         this.setAssistantMessage(item.text);
       } else if (item.type === "function_use") {
-        this.setToolCallMessage(
-          item.name,
-          maybeStringifyJSON(item.input),
-          item.functionId
-        );
+        this.setToolCallMessage({
+          name: item.name,
+          arguments: maybeStringifyJSON(item.input),
+          id: item.functionId,
+        });
       }
     }
 
     return this;
-  }
-
-  /**
-   * Add function results back to the dialogue
-   * Helper method for adding tool/function responses
-   *
-   * @param results - Array of function results
-   * @returns this for chaining
-   */
-  addFunctionResults(
-    results: Array<{
-      name: string;
-      content: string;
-      id?: string;
-    }>
-  ) {
-    for (const result of results) {
-      this.setToolMessage(result.content, result.name, result.id);
-    }
-    return this;
-  }
-
-  /**
-   * Add a function call to the dialogue
-   * Alias for setToolCallMessage using function terminology
-   *
-   * @param name - Function name
-   * @param args - Function arguments
-   * @param functionId - Optional function invocation ID
-   * @returns this for chaining
-   */
-  addFunctionCall(name: string, args: any, functionId?: string) {
-    return this.setToolCallMessage(name, args, functionId);
-  }
-
-  /**
-   * Add a function result to the dialogue
-   * Alias for setToolMessage using function terminology
-   *
-   * @param result - Function execution result
-   * @param name - Function name
-   * @param functionId - Optional function invocation ID
-   * @returns this for chaining
-   */
-  addFunctionResult(result: string, name: string, functionId?: string) {
-    return this.setToolMessage(result, name, functionId);
   }
 }

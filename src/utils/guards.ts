@@ -3,11 +3,9 @@ import {
   OutputResultsFunction,
   OutputResultsText,
   IChatMessage,
-  IChatFunctionMessage,
   IChatUserMessage,
   IChatAssistantMessage,
   IChatSystemMessage,
-  IChatFunctionCallMessage,
 } from "@/interfaces";
 
 export function isOutputResult(obj: any): obj is OutputResult {
@@ -32,7 +30,10 @@ export function isOutputResultContentText(obj: any): obj is OutputResultsText {
   );
 }
 
-export function isToolCall(result: any): result is OutputResultsFunction {
+/**
+ * Does a llm response have a tool/function call?
+ */
+export function isFunctionCall(result: any): result is OutputResultsFunction {
   return !!(
     result &&
     typeof result === "object" &&
@@ -41,18 +42,21 @@ export function isToolCall(result: any): result is OutputResultsFunction {
     result.type === "function_use"
   );
 }
+export function isToolCall(result: any): result is OutputResultsFunction {
+  return isFunctionCall(result);
+}
 
-export function hasToolCall(results: any): boolean {
+/**
+ * Is it a tool/function Call
+ */
+export function hasFunctionCall(results: any): boolean {
   return !!(results && Array.isArray(results) && results.some(isToolCall));
+}
+export function hasToolCall(results: any): boolean {
+  return hasFunctionCall(results);
 }
 
 // Chat message type guards
-export function isFunctionMessage(
-  message: IChatMessage
-): message is IChatFunctionMessage {
-  return message.role === "function";
-}
-
 export function isUserMessage(
   message: IChatMessage
 ): message is IChatUserMessage {
@@ -69,10 +73,4 @@ export function isSystemMessage(
   message: IChatMessage
 ): message is IChatSystemMessage {
   return message.role === "system";
-}
-
-export function isFunctionCallMessage(
-  message: IChatMessage
-): message is IChatFunctionCallMessage {
-  return message.role === "function_call";
 }
