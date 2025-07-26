@@ -72,6 +72,13 @@ const providerModels = getProviders();
     width: 100vw !important;
     position: static !important;
   }
+  
+  .hero-code-container :deep(.provider-tabs) {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-bottom: 8px;
+  }
 
   .hero-code-container :deep(.provider-tabs::-webkit-scrollbar) {
     display: none;
@@ -80,6 +87,20 @@ const providerModels = getProviders();
   .hero-code-container :deep(.provider-tab) {
     flex: 0 0 auto;
     min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+  }
+  
+  .hero-code-container :deep(.provider-logo) {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+  }
+  
+  .hero-code-container :deep(.provider-name) {
+    line-height: 1;
   }
 }
 </style>
