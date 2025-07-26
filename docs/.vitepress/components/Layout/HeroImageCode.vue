@@ -51,6 +51,7 @@ const providerModels = getProviders();
   vertical-align: baseline !important;
   margin: 0 !important;
   padding: 0 !important;
+  text-align: left !important;
 }
 
 .hero-code-container :deep(.code-block span[class*="line"]) {
@@ -63,6 +64,7 @@ const providerModels = getProviders();
   line-height: 1.4 !important;
   white-space: pre !important;
   overflow: visible !important;
+  text-align: left !important;
 }
 
 @media (max-width: 640px) {
