@@ -1,19 +1,25 @@
 import { OutputOpenAIChat } from "./openai";
 import { OutputAnthropicClaude3Chat } from "./claude";
 import { OutputMetaLlama3Chat } from "./llama";
-import { LlmProviderKey } from "@/interfaces";
+import { BaseLlCall, LlmProviderKey } from "@/interfaces";
 import { OutputDefault } from "./default";
 import { OutputXAIChat } from "./xai";
 import { OutputOllamaChat } from "./ollama";
 import { OutputGoogleGeminiChat } from "./google.gemini";
 
-export function getOutputParser(
+/**
+ * Used to normalize the output of each llm provider into internal format
+ * @param config
+ * @param response
+ * @returns
+ */
+export function normalizeLlmOutputToInternalFormat(
   config: {
     key: LlmProviderKey;
     model?: string;
   },
   response: any
-) {
+): BaseLlCall {
   switch (config?.key) {
     case "openai.chat.v1":
     case "openai.chat-mock.v1":

@@ -25,4 +25,14 @@ describe("inferFunctionName", () => {
     const defaultName = "defaultName";
     expect(inferFunctionName(() => {}, defaultName)).toEqual(defaultName);
   });
+
+  it("should return default name when input is not a function", () => {
+    const defaultName = "defaultName";
+    expect(inferFunctionName("not a function", defaultName)).toEqual(defaultName);
+    expect(inferFunctionName(123, defaultName)).toEqual(defaultName);
+    expect(inferFunctionName(null, defaultName)).toEqual(defaultName);
+    expect(inferFunctionName(undefined, defaultName)).toEqual(defaultName);
+    expect(inferFunctionName({}, defaultName)).toEqual(defaultName);
+    expect(inferFunctionName([], defaultName)).toEqual(defaultName);
+  });
 });
