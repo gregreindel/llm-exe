@@ -8,5 +8,9 @@ export function useLlm<T extends keyof typeof configs>(
   options: AllUseLlmOptions[T]["input"] = {}
 ) {
   const config = getLlmConfig(provider);
+
+  if (config) {
+    throw new Error("Testing Error for Actions");
+  }
   return apiRequestWrapper(config, options, useLlm_call);
 }
