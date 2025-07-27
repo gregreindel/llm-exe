@@ -3,6 +3,7 @@ import DefaultTheme from "vitepress/theme";
 import { h } from "vue";
 import "./styles.css";
 import "./custom-shiki-theme.css";
+import "./mobile-fix.css";
 
 import GenericOutput from "../components/GenericOutput.vue";
 
