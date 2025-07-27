@@ -1,14 +1,13 @@
 {
   "openai": {
     "name": "OpenAI",
-    "models": [
-      "gpt-4o",
-      "gpt-4o-mini"
-    ]
+    "models": ["gpt-4o", "gpt-4o-mini"]
   },
   "anthropic": {
     "name": "Anthropic",
     "models": [
+      "claude-opus-4-0",
+      "claude-sonnet-4-0",
       "claude-3-7-sonnet",
       "claude-3-5-sonnet",
       "claude-3-5-haiku",
@@ -20,24 +19,19 @@
     "models": [
       "gemini-2.0-flash",
       "gemini-2.0-flash-lite",
-      "gemini-1.5-pro"
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-1.5-pro",
+      "gemini-2.5-pro"
     ]
   },
   "ollama": {
     "name": "Ollama",
-    "models": [
-      "deepseek-r1",
-      "llama3.3",
-      "llama3.2",
-      "llama3.1",
-      "qwq"
-    ]
+    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq"]
   },
   "xai": {
     "name": "XAi",
-    "models": [
-      "grok-2"
-    ]
+    "models": ["grok-2", "grok-3", "grok-4"]
   },
   "amazon:anthropic": {
     "name": "Amazon Bedrock - Anthropic",
@@ -46,5 +40,9 @@
   "amazon:meta": {
     "name": "Amazon Bedrock - Meta",
     "models": []
+  },
+  "deepseek": {
+    "name": "DeepSeek",
+    "models": ["chat"]
   }
 }
