@@ -38,4 +38,6 @@ const xaiChatV1: Config = {
 export const xai = {
   "xai.chat.v1": xaiChatV1,
   "xai.grok-2": withDefaultModel(xaiChatV1, "grok-2-latest"),
+  "xai.grok-3": withDefaultModel(xaiChatV1, "grok-3"),
+  "xai.grok-4": withDefaultModel(xaiChatV1, "grok-4"),
 };
