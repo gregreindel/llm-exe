@@ -84,4 +84,21 @@ describe("anthropicPromptSanitize", () => {
       },
     ]);
   });
+
+  it("should handle non-system first message with system messages later", () => {
+    const messages: IChatMessages = [
+      { role: "user", content: "User message" },
+      { role: "system", content: "System message that should become user" },
+      { role: "assistant", content: "Assistant response" },
+    ];
+    const outputObj: Record<string, any> = {};
+    const result = anthropicPromptSanitize(messages, {}, outputObj);
+
+    expect(outputObj).toEqual({});
+    expect(result).toEqual([
+      { role: "user", content: "User message" },
+      { role: "user", content: "System message that should become user" },
+      { role: "assistant", content: "Assistant response" },
+    ]);
+  });
 });

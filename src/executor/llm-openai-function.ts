@@ -1,7 +1,6 @@
 import {
   BaseLlm,
   PromptInput,
-  ParserOutput,
   CoreExecutorExecuteOptions,
   ExecutorWithLlmOptions,
   LlmExecutorHooks,
@@ -12,7 +11,10 @@ import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { BaseParser, StringParser } from "@/parser";
 import { LlmExecutor } from "./llm";
-import { LlmNativeFunctionParser } from "@/parser/parsers/LlmNativeFunctionParser";
+import {
+  LlmFunctionParser,
+  LlmNativeFunctionParser,
+} from "@/parser/parsers/LlmNativeFunctionParser";
 
 /**
  * Core Executor With LLM
@@ -21,25 +23,22 @@ export class LlmExecutorWithFunctions<
   Llm extends BaseLlm,
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
-  State extends BaseState,
-> extends LlmExecutor<Llm, Prompt, Parser, State> {
+  State extends BaseState = BaseState,
+> extends LlmExecutor<Llm, Prompt, LlmFunctionParser<Parser>, State> {
   constructor(
     llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
     options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
   ) {
     super(
       Object.assign({}, llmConfiguration, {
-        parser: new LlmNativeFunctionParser({
-          parser: llmConfiguration.parser || new StringParser(),
-        }),
+        parser: new LlmFunctionParser({
+          parser: llmConfiguration.parser || (new StringParser() as Parser),
+        }) as any,
       }),
       options
     );
   }
-  async execute<T extends GenericFunctionCall>(
-    _input: PromptInput<Prompt>,
-    _options: LlmExecutorWithFunctionsOptions<T>
-  ): Promise<ParserOutput<Parser>>;
+
   async execute<T extends GenericFunctionCall>(
     _input: PromptInput<Prompt>,
     _options: LlmExecutorWithFunctionsOptions<T>
@@ -55,5 +54,30 @@ export class LlmExecutorOpenAiFunctions<
   Llm extends BaseLlm,
   Prompt extends BasePrompt<Record<string, any>>,
   Parser extends BaseParser,
-  State extends BaseState,
-> extends LlmExecutorWithFunctions<Llm, Prompt, Parser, State> {}
+  State extends BaseState = BaseState,
+> extends LlmExecutor<Llm, Prompt, LlmNativeFunctionParser<Parser>, State> {
+  constructor(
+    llmConfiguration: ExecutorWithLlmOptions<Llm, Prompt, Parser, State>,
+    options?: CoreExecutorExecuteOptions<LlmExecutorHooks>
+  ) {
+    super(
+      Object.assign({}, llmConfiguration, {
+        parser: new LlmNativeFunctionParser({
+          parser: llmConfiguration.parser || (new StringParser() as Parser),
+        }) as any,
+      }),
+      options
+    );
+
+    console.warn(
+      `LlmExecutorOpenAiFunctions is deprecated. Please migrate to LlmExecutorWithFunctions`
+    );
+  }
+
+  async execute<T extends GenericFunctionCall>(
+    _input: PromptInput<Prompt>,
+    _options: LlmExecutorWithFunctionsOptions<T>
+  ) {
+    return super.execute(_input, _options);
+  }
+}

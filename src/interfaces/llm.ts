@@ -22,14 +22,17 @@ export interface OutputOpenAIChatChoiceFunction
   extends OutputOpenAIChatChoiceBase {
   message: {
     role: Extract<IChatMessageRole, "assistant">;
-    content: null;
+    content: string | null;
     tool_calls: {
+      id: string;
       type: "function";
       function: {
         name: string;
         arguments: string;
       };
     }[];
+    refusal: null;
+    annotations: any[];
   };
   finish_reason: Extract<"tool_calls" | "stop", "tool_calls">;
 }
@@ -57,7 +60,19 @@ export interface OpenAiResponse {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+
+    prompt_tokens_details: {
+      cached_tokens: number;
+      audio_tokens: number;
+    };
+    completion_tokens_details: {
+      reasoning_tokens: number;
+      audio_tokens: number;
+      accepted_prediction_tokens: number;
+      rejected_prediction_tokens: number;
+    };
   };
+  service_tier: "default";
   choices: OutputOpenAIChatChoice[];
 }
 
@@ -89,7 +104,7 @@ export interface Claude3Response {
   role: "assistant";
   content: (
     | {
-        id: string;
+        // id: string; // i don't think this exists?
         type: "text";
         text: string;
       }
@@ -106,6 +121,9 @@ export interface Claude3Response {
   usage: {
     input_tokens: number;
     output_tokens: number;
+    cache_creation_input_tokens: number;
+    cache_read_input_tokens: number;
+    service_tier: "standard";
   };
 }
 
@@ -186,29 +204,57 @@ export interface AmazonTitalResponse {
       tokenCount: number;
       outputText: string;
       completionReason: string;
-    }
+    },
   ];
 }
 
 /**
  * Gemini
+ * this is how we're expecting Gemini responses to look like
  */
 interface OutputGoogleGeminiChatChoiceBase {
   content: {
     role?: Extract<IChatMessageRole, "model">;
     parts: {
-      text?: string
-      functionCall?:
-      | null
-      | {
+      text?: string;
+      functionCall?: null | {
         name: string;
-        args: string;
-      }
-    }[]
-
+        args: Record<string, any>;
+      };
+    }[];
   };
-  finishReason: "STOP";
+  finishReason:
+    | "STOP"
+    | "MAX_TOKENS"
+    | "SAFETY"
+    | "RECITATION"
+    | "OTHER"
+    | "BLOCKLIST"
+    | "PROHIBITED_CONTENT"
+    | "SPII"
+    | "MALFORMED_FUNCTION_CALL";
   avgLogprobs?: number;
+  safetyRatings?: {
+    category: string;
+    probability: string;
+    probabilityScore?: number;
+    severity?: string;
+    severityScore?: number;
+  }[];
+  citationMetadata?: {
+    citations: {
+      startIndex?: number;
+      endIndex?: number;
+      uri?: string;
+      title?: string;
+      license?: string;
+      publicationDate?: {
+        year?: number;
+        month?: number;
+        day?: number;
+      };
+    }[];
+  };
 }
 
 export interface OutputGoogleGeminiChatChoiceFunction
@@ -216,15 +262,13 @@ export interface OutputGoogleGeminiChatChoiceFunction
   content: {
     role?: Extract<IChatMessageRole, "model">;
     parts: {
-      text: undefined
+      text: undefined;
       functionCall?: {
         name: string;
-        args: string;
-      }
-    }[]
+        args: Record<string, any>;
+      };
+    }[];
   };
-  finishReason: "STOP";
-  avgLogprobs?: number;
 }
 
 export interface OutputGoogleGeminiChatChoiceMessage
@@ -234,10 +278,8 @@ export interface OutputGoogleGeminiChatChoiceMessage
     parts: {
       text: string;
       functionCall?: null;
-    }[]
+    }[];
   };
-  finishReason: "STOP";
-  avgLogprobs?: number;
 }
 
 export type OutputGoogleGeminiChatChoice =
@@ -245,43 +287,62 @@ export type OutputGoogleGeminiChatChoice =
   | OutputGoogleGeminiChatChoiceMessage;
 
 export interface GoogleGeminiResponse {
-  modelVersion: string;
+  model?: string;
   usageMetadata: {
     promptTokenCount: number;
     candidatesTokenCount: number;
     totalTokenCount: number;
-    promptTokensDetails: [
-      {
-        modality: "TEXT";
-        tokenCount: number;
-      }
-    ];
-    candidatesTokensDetails: [
-      {
-        modality: "TEXT";
-        tokenCount: number;
-      }
-    ];
+    promptTokensDetails?: {
+      modality: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO";
+      tokenCount: number;
+    }[];
+    candidatesTokensDetails?: {
+      modality: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO";
+      tokenCount: number;
+    }[];
   };
   candidates: OutputGoogleGeminiChatChoice[];
+  promptFeedback?: {
+    blockReason?: string;
+    safetyRatings?: {
+      category: string;
+      probability: string;
+      probabilityScore?: number;
+      severity?: string;
+      severityScore?: number;
+    }[];
+  };
+  modelVersion: string;
+  responseId: string;
 }
+// END Gemini
 
+/**
+ * Internal Formats
+ */
 
-
+// This is our internal result format base
+// this is the normalized responses from any llm
+// we convert to this format and internally expect it
 export interface OutputResultsBase {
   type: "text" | "function_use";
   text?: string;
 }
 
+// Storing text-based llm response
 export interface OutputResultsText extends OutputResultsBase {
   type: "text";
   text: string;
 }
 
+// Storing function-based llm response
 export interface OutputResultsFunction extends OutputResultsBase {
   type: "function_use";
   name: string;
   input: Record<string, any>;
+
+  // new
+  functionId: string;
 }
 
 export type OutputResultContent = OutputResultsText | OutputResultsFunction;
@@ -298,6 +359,7 @@ export interface OutputResult {
     output_tokens: number;
     total_tokens: number;
   };
+  // TODO: add metadata
 }
 
 export interface EmbeddingOutputResult {
@@ -461,7 +523,7 @@ export type AllLlm = {
     // output: OpenAiRequest;
   };
   "deepseek.chat.v1": {
-    input: DeepseekRequest;  
+    input: DeepseekRequest;
     // output: OpenAiRequest;
   };
 };
@@ -527,7 +589,7 @@ export type AllUseLlmOptions = AllLlm & {
   };
   "deepseek.chat": {
     input: DeepseekRequest;
-  }
+  };
 };
 
 export type LlmProviderKey = keyof AllLlm;
