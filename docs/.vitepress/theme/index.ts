@@ -18,6 +18,7 @@ import HomeBeforeIntro from "../components/Layout/HomeBeforeIntro.vue";
 import SiteTopBanner from "../components/Layout/SiteTopBanner.vue";
 import ExampleSingleBefore from "../components/ExampleSingleBefore.vue";
 import HomeAfterIntro from "../components/Layout/HomeAfterIntro.vue";
+import HeroImageCode from "../components/Layout/HeroImageCode.vue";
 
 const packageId = (import.meta as any).env.VITE_PACKAGE_ID || "";
 
@@ -44,6 +45,7 @@ export default {
     return h(DefaultTheme.Layout, null, {
       "nav-bar-content-before": () => h(SiteTopBanner, { packageId }),
       "home-hero-info-before": () => h(HomeBeforeIntro),
+      "home-hero-image": () => h(HeroImageCode),
       "doc-before": () => h(ExampleSingleBefore),
     });
   },

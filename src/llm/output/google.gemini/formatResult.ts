@@ -1,29 +1,30 @@
 import { OutputGoogleGeminiChatChoice, OutputResultContent } from "@/types";
+import { maybeParseJSON } from "@/utils";
+import { uuid } from "@/utils/modules/uuid";
 
 export function formatResult(
-  result: OutputGoogleGeminiChatChoice
-): OutputResultContent | undefined {
+  result: OutputGoogleGeminiChatChoice,
+  id?: string
+): OutputResultContent[] {
   const { parts = [] } = result?.content || {};
 
-  if (parts.length === 1) {
-    const answer = parts[0];
-    if (!!answer?.functionCall && typeof answer?.functionCall === "object") {
-      return {
-        type: "function_use",
-        name: answer.functionCall.name,
-        input: JSON.parse(answer.functionCall.args),
-      };
-    } else {
-      return {
+  const out: OutputResultContent[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (typeof part.text === "string") {
+      out.push({
         type: "text",
-        text: answer.text || "",
-      };
+        text: part.text,
+      });
+    } else if (part?.functionCall) {
+      out.push({
+        functionId: `${id || uuid()}-${i}`,
+        type: "function_use",
+        name: part.functionCall.name,
+        input: maybeParseJSON(part.functionCall.args),
+      });
     }
   }
 
-  // error??
-  return {
-    type: "text",
-    text: "",
-  };
+  return out;
 }

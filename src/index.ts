@@ -1,7 +1,12 @@
 export { useExecutors, createCallableExecutor } from "@/plugins/callable";
-export { createCoreExecutor, createLlmExecutor } from "@/executor/_functions";
+export {
+  createCoreExecutor,
+  createLlmExecutor,
+  createLlmFunctionExecutor,
+} from "@/executor/_functions";
 export { BaseExecutor } from "@/executor/_base";
 export * as utils from "./utils";
+export * as guards from "./utils/guards";
 export { useLlm } from "./llm";
 export { createEmbedding } from "./embedding/embedding";
 
@@ -17,6 +22,7 @@ export {
   BaseParser,
   CustomParser,
   OpenAiFunctionParser,
+  LlmNativeFunctionParser,
   createParser,
   createCustomParser,
 } from "./parser";

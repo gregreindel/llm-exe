@@ -38,6 +38,7 @@ describe("llm-exe:output/OutputGoogleGeminiChat", () => {
       ],
     },
     modelVersion: "gemini-2.0-flash",
+    responseId: "12345-67890",
   };
   it("creates class with expected properties", () => {
     const output = OutputGoogleGeminiChat(mock as any).getResult();
