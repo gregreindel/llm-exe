@@ -183,6 +183,18 @@ const codeBlock = computed(() => {
         `useLlm("$1", {\n  model: "${defaultBedrockModel}" // This is the model id from Bedrock\n})`
       );
     }
+  } else if ((provider === "deepseek" || provider === "ollama") && !model.includes("chat.v1")) {
+    // Special case for deepseek and ollama models - just use the model name without provider prefix
+    code = code.replace(/\$\{provider\}\.\$\{model\}/g, `${model}`);
+
+    if (code.includes("model:")) {
+      code = code.replace(
+        /useLlm\("([^"]+)",\s*{\s*model:[^}]+}\)/g,
+        'useLlm("$1", {\n  // other options,\n  // no model needed, using ' +
+          model +
+          "\n})"
+      );
+    }
   } else {
     code = code.replace(/\$\{provider\}\.\$\{model\}/g, `${provider}.${model}`);
 
