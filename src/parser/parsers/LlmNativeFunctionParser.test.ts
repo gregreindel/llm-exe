@@ -4,7 +4,7 @@ import {
   StringParser,
   JsonParser,
 } from "@/parser";
-import { LlmFunctionParser } from "./LlmNativeFunctionParser";
+import { LlmFunctionParser, OpenAiFunctionParser } from "./LlmNativeFunctionParser";
 import { OutputResult } from "@/interfaces";
 import { mockOutputResultObject } from "../../../utils/mock.helpers";
 
@@ -356,9 +356,6 @@ describe("llm-exe:parser/LlmNativeFunctionParser", () => {
 // Test the deprecated export
 describe("OpenAiFunctionParser export", () => {
   it("OpenAiFunctionParser is alias for LlmNativeFunctionParser", () => {
-    const {
-      OpenAiFunctionParser,
-    } = require("@/parser/parsers/LlmNativeFunctionParser");
     expect(OpenAiFunctionParser).toBe(LlmNativeFunctionParser);
   });
 });
