@@ -34,7 +34,11 @@ export async function useLlm_call(
   // this is where we'll handle provider-specific formatting
   // move into a separate function and have better tests
   if (_options && _options?.jsonSchema) {
-    if (state.provider.startsWith("openai")) {
+    if (
+      state.provider.startsWith("openai") ||
+      state.provider.startsWith("deepseek") ||
+      state.provider.startsWith("xai")
+    ) {
       const curr = input["response_format"] || {};
       input["response_format"] = Object.assign(curr, {
         type: "json_schema",
@@ -59,7 +63,11 @@ export async function useLlm_call(
       } else {
         input["tool_choice"] = _options?.functionCall;
       }
-    } else if (state.provider.startsWith("openai")) {
+    } else if (
+      state.provider.startsWith("openai") ||
+      state.provider.startsWith("deepseek") ||
+      state.provider.startsWith("xai")
+    ) {
       input["tool_choice"] = normalizeFunctionCall(
         _options?.functionCall,
         "openai"
@@ -79,7 +87,11 @@ export async function useLlm_call(
         description: f.description,
         input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
       }));
-    } else if (state.provider.startsWith("openai")) {
+    } else if (
+      state.provider.startsWith("openai") ||
+      state.provider.startsWith("deepseek") ||
+      state.provider.startsWith("xai")
+    ) {
       input["tools"] = _options.functions.map((f) => {
         const props = {
           name: f?.name,

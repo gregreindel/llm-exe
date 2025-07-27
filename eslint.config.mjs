@@ -10,6 +10,7 @@ export default [
       "**/dist/**",
       "**/.vitepress/**",
       "**/coverage/**",
+      "**/examples/**",
       "**/docs/**",
       "build.js",
       "eslint.config.mjs",
