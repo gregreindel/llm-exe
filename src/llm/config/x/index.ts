@@ -1,6 +1,7 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { openaiPromptSanitize } from "../openai/promptSanitize";
 
 const xaiChatV1: Config = {
   key: "xai.chat.v1",
@@ -11,7 +12,7 @@ const xaiChatV1: Config = {
     topP: {},
     useJson: {},
     xAiApiKey: {
-      default: getEnvironmentVariable("XAI_API_KEY")
+      default: getEnvironmentVariable("XAI_API_KEY"),
     },
   },
   method: "POST",
@@ -19,12 +20,7 @@ const xaiChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: (v) => {
-        if (typeof v === "string") {
-          return [{ role: "user", content: v }];
-        }
-        return v;
-      },
+      sanitize: openaiPromptSanitize,
     },
     model: {
       key: "model",
@@ -39,9 +35,9 @@ const xaiChatV1: Config = {
   },
 };
 
-
-
 export const xai = {
   "xai.chat.v1": xaiChatV1,
   "xai.grok-2": withDefaultModel(xaiChatV1, "grok-2-latest"),
+  "xai.grok-3": withDefaultModel(xaiChatV1, "grok-3"),
+  "xai.grok-4": withDefaultModel(xaiChatV1, "grok-4"),
 };

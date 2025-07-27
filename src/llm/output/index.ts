@@ -6,6 +6,7 @@ import { OutputDefault } from "./default";
 import { OutputXAIChat } from "./xai";
 import { OutputOllamaChat } from "./ollama";
 import { OutputGoogleGeminiChat } from "./google.gemini";
+import { OutputDeepSeekChat } from "./deepseek";
 
 /**
  * Used to normalize the output of each llm provider into internal format
@@ -38,7 +39,7 @@ export function normalizeLlmOutputToInternalFormat(
     case "google.chat.v1":
       return OutputGoogleGeminiChat(response, config);
     case "deepseek.chat.v1":
-      return OutputOpenAIChat(response, config); // use oai for now
+      return OutputDeepSeekChat(response, config); // use oai for now
     default: {
       if ((config?.key as string)?.startsWith("custom:")) {
         return OutputDefault(response, config);
