@@ -6,6 +6,7 @@ export {
 } from "@/executor/_functions";
 export { BaseExecutor } from "@/executor/_base";
 export * as utils from "./utils";
+export * as guards from "./utils/guards";
 export { useLlm } from "./llm";
 export { createEmbedding } from "./embedding/embedding";
 
