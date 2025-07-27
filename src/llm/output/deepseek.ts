@@ -1,5 +1,5 @@
 import {
-  XAiResponse,
+  OpenAiResponse,
   OutputOpenAIChatChoice,
   OutputResultContent,
 } from "@/types";
@@ -10,7 +10,10 @@ import { maybeParseJSON } from "@/utils";
 function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
   const out: OutputResultContent[] = [];
 
-  if (typeof result?.message?.content === "string") {
+  if (
+    typeof result?.message?.content === "string" &&
+    result?.message?.content
+  ) {
     out.push({
       type: "text",
       text: result.message.content,
@@ -31,12 +34,12 @@ function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
   return out;
 }
 
-export function OutputXAIChat(
-  result: XAiResponse,
+export function OutputDeepSeekChat(
+  result: OpenAiResponse,
   _config?: { model?: string }
 ) {
   const id = result.id;
-  const name = result.model || _config?.model || "openai.unknown";
+  const name = result.model || _config?.model || "deepseek.unknown";
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];

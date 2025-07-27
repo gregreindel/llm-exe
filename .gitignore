@@ -28,3 +28,4 @@ testing.ts
 llm-exe-**.tgz
 
 development.ts
+.docs
