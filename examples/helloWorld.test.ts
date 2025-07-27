@@ -30,10 +30,10 @@ describe("helloWorld", () => {
     "handle this simple instruction",
     [
       "anthropic.claude-3-5-sonnet",
-      // "openai.gpt-4o-mini",
-      // "google.gemini-2.0-flash",
-      // "xai.grok-2",
-      // "deepseek.chat",
+      "openai.gpt-4o-mini",
+      "google.gemini-2.0-flash",
+      "xai.grok-2",
+      "deepseek.chat",
     ],
     async (config: any) => {
       jest.resetModules();

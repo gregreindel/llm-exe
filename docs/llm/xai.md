@@ -8,21 +8,20 @@ When using xAI models, llm-exe will make POST requests to `https://api.x.ai/v1/c
 
 ```ts
 const llm = useLlm("xai.chat.v1", {
-  model: "grok-2", // specify a model
+  model: "grok-4", // specify a model
 });
 ```
 
 ### x.ai Chat By Model
 
 ```ts
-const llm = useLlm("xai.grok-2", {
+const llm = useLlm("xai.grok-4", {
   // other options,
-  // no model needed, using grok-2
+  // no model needed, using grok-4
 });
 ```
 
 <ImportModelNames provider="xai" />
-
 
 ## Authentication
 
@@ -39,16 +38,15 @@ Generally you pass the LLM instance off to an LLM Executor and call that. Howeve
 await llm.chat([]);
 ```
 
-
 ## xAI-Specific Options
 
 In addition to the generic options, the following options are xAI-specific and can be passed in when creating a llm function.
 
-| Option           | Type    | Default     | Description                                                    |
-| ---------------- | ------- | ----------- | -------------------------------------------------------------- |
+| Option           | Type    | Default     | Description                                                 |
+| ---------------- | ------- | ----------- | ----------------------------------------------------------- |
 | model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See xAI Docs |
-| xAiApiKey     | string  | undefined   | API key for xAI.    |
-| temperature      | number  | undefined   | Maps to temperature.*                          |
+| xAiApiKey        | string  | undefined   | API key for xAI.                                            |
+| temperature      | number  | undefined   | Maps to temperature.\*                                      |
 | maxTokens        | number  | undefined   | Maps to max_tokens. See xAI Docs                            |
 | topP             | number  | undefined   | Maps to top_p. See xAI Docs                                 |
 | n                | number  | undefined   | Maps to n. See xAI Docs                                     |
