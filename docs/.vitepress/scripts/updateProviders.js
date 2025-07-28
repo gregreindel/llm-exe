@@ -128,82 +128,60 @@ function extractModelsFromSourceFiles() {
 }
 
 function getHardcodedProviders() {
-    return [
-        {
-            key: 'openai',
-            name: 'OpenAI',
-            logo: providerLogos.openai,
-            models: [
-                'gpt-3.5-turbo',
-                'gpt-4',
-                'gpt-4-turbo',
-                'gpt-4o',
-                'gpt-4-vision-preview'
-            ]
-        },
-        {
-            key: 'anthropic',
-            name: 'Anthropic',
-            logo: providerLogos.anthropic,
-            models: [
-                'claude-3-opus-20240229',
-                'claude-3-sonnet-20240229',
-                'claude-3-haiku-20240307'
-            ]
-        },
-        {
-            key: 'google',
-            name: 'Google',
-            logo: providerLogos.google,
-            models: [
-                'gemini-pro',
-                'gemini-1.5-pro',
-                'gemini-1.5-flash'
-            ]
-        },
-        {
-            key: 'bedrock',
-            name: 'AWS Bedrock',
-            logo: providerLogos.bedrock,
-            models: [
-                'chat.v1',
-                'anthropic.chat.v1',
-                'meta.chat.v1'
-            ]
-        },
-        {
-            key: 'deepseek',
-            name: 'DeepSeek',
-            logo: providerLogos.deepseek,
-            models: [
-                'deepseek-chat',
-                'deepseek-coder'
-            ]
-        },
-        {
-            key: 'xai',
-            name: 'xAI',
-            logo: providerLogos.xai,
-            models: [
-                'grok-1'
-            ]
-        },
-        {
-            key: 'ollama',
-            name: 'Ollama',
-            logo: providerLogos.ollama,
-            models: [
-                'llama3',
-                'mistral',
-                'mixtral'
-            ]
+    // Load models from models.json
+    const modelsJsonPath = path.join(__dirname, '../data/models.json');
+    let modelsData;
+    
+    try {
+        if (fs.existsSync(modelsJsonPath)) {
+            modelsData = JSON.parse(fs.readFileSync(modelsJsonPath, 'utf8'));
+        } else {
+            console.warn('models.json not found at:', modelsJsonPath);
+            modelsData = {};
         }
-    ];
+    } catch (error) {
+        console.error('Error reading models.json:', error);
+        modelsData = {};
+    }
+    
+    const providers = [];
+    
+    for (const [key, data] of Object.entries(modelsData)) {
+        const providerKey = key.startsWith('amazon:') ? 'bedrock' : key;
+        const logoKey = providerKey in providerLogos ? providerKey : 'bedrock';
+        
+        providers.push({
+            key: providerKey,
+            name: data.name || getProviderDisplayName(providerKey),
+            logo: providerLogos[logoKey],
+            models: Array.isArray(data.models) ? data.models : ['chat.v1']
+        });
+    }
+    
+    // If no providers found in the JSON, return a minimal default set
+    if (providers.length === 0) {
+        return [
+            {
+                key: 'openai',
+                name: 'OpenAI',
+                logo: providerLogos.openai,
+                models: ['gpt-4o', 'gpt-4o-mini']
+            },
+            {
+                key: 'anthropic',
+                name: 'Anthropic',
+                logo: providerLogos.anthropic,
+                models: ['claude-3-5-sonnet', 'claude-3-5-haiku']
+            }
+        ];
+    }
+    
+    return providers;
 }
 
 async function updateProviders() {
     try {
-        console.log('Extracting providers from TypeScript config files...');
+        console.log('Extracting providers from source files...');
 
         const extractedProviders = extractModelsFromSourceFiles();
 
