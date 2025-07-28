@@ -73,7 +73,7 @@ jobs:
           PACKAGE_ID: ${{ env.PACKAGE_ID }}
 
       - name: Build docs
-        run: npm run docs:build
+        run: npm run docs:update-providers && npm run docs:build
         env:
           VITE_PACKAGE_ID: ${{ env.PACKAGE_ID }}
 
