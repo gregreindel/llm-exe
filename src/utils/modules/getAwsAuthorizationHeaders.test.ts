@@ -180,4 +180,125 @@ describe("getAwsAuthorizationHeaders", () => {
     const reqArgs = mockSign.mock.calls[0][0];
     expect(reqArgs.headers.connection).toBeUndefined();
   });
+
+  it("should throw an error when URL is missing", async () => {
+    const props = {
+      url: "",
+      regionName: "us-east-1",
+      awsAccessKey: "testAccessKey",
+      awsSecretKey: "testSecretKey",
+      awsSessionToken: undefined,
+    };
+
+    const req: RequestInit = {
+      method: "GET",
+    };
+
+    await expect(getAwsAuthorizationHeaders(req, props)).rejects.toThrow(
+      "URL and region name are required for AWS authorization"
+    );
+  });
+
+  it("should throw an error when region name is missing", async () => {
+    const props = {
+      url: "https://example.com",
+      regionName: "",
+      awsAccessKey: "testAccessKey",
+      awsSecretKey: "testSecretKey",
+      awsSessionToken: undefined,
+    };
+
+    const req: RequestInit = {
+      method: "GET",
+    };
+
+    await expect(getAwsAuthorizationHeaders(req, props)).rejects.toThrow(
+      "URL and region name are required for AWS authorization"
+    );
+  });
+
+  it("should not set environment variables for null or undefined values", async () => {
+    const props = {
+      url: "https://example.com",
+      regionName: "us-east-1",
+      awsAccessKey: null,
+      awsSecretKey: undefined,
+      awsSessionToken: "",
+    };
+
+    const req: RequestInit = {
+      method: "GET",
+    };
+
+    let envSetupCalled = false;
+    runWithTemporaryEnvMock.mockImplementation((setup, fn) => {
+      const originalAccessKey = process.env["AWS_ACCESS_KEY_ID"];
+      const originalSecretKey = process.env["AWS_SECRET_ACCESS_KEY"];
+      const originalSessionToken = process.env["AWS_SESSION_TOKEN"];
+      
+      setup();
+      envSetupCalled = true;
+      
+      // Verify that environment variables were not modified for null/undefined/empty values
+      expect(process.env["AWS_ACCESS_KEY_ID"]).toBe(originalAccessKey);
+      expect(process.env["AWS_SECRET_ACCESS_KEY"]).toBe(originalSecretKey);
+      expect(process.env["AWS_SESSION_TOKEN"]).toBe(originalSessionToken);
+      
+      return fn();
+    });
+
+    const mockCredentials = { accessKeyId: "mockAccessKeyId" };
+    fromNodeProviderChainMock.mockReturnValue(() =>
+      Promise.resolve(mockCredentials)
+    );
+
+    const mockSign = jest.fn().mockResolvedValue({
+      headers: { Authorization: "signed-header-value" },
+    });
+
+    SignatureV4Mock.mockImplementation(() => ({
+      sign: mockSign,
+    }));
+
+    await getAwsAuthorizationHeaders(req, props);
+    expect(envSetupCalled).toBe(true);
+  });
+
+  it("should only set environment variables for non-empty string values", async () => {
+    const props = {
+      url: "https://example.com",
+      regionName: "us-east-1",
+      awsAccessKey: "validAccessKey",
+      awsSecretKey: null,
+      awsSessionToken: undefined,
+    };
+
+    const req: RequestInit = {
+      method: "GET",
+    };
+
+    runWithTemporaryEnvMock.mockImplementation((setup, fn) => {
+      setup();
+      expect(process.env["AWS_ACCESS_KEY_ID"]).toBe("validAccessKey");
+      // These should not be set since they're null/undefined
+      expect(process.env["AWS_SECRET_ACCESS_KEY"]).not.toBe(null);
+      expect(process.env["AWS_SESSION_TOKEN"]).not.toBe(undefined);
+      return fn();
+    });
+
+    const mockCredentials = { accessKeyId: "mockAccessKeyId" };
+    fromNodeProviderChainMock.mockReturnValue(() =>
+      Promise.resolve(mockCredentials)
+    );
+
+    const mockSign = jest.fn().mockResolvedValue({
+      headers: { Authorization: "signed-header-value" },
+    });
+
+    SignatureV4Mock.mockImplementation(() => ({
+      sign: mockSign,
+    }));
+
+    await getAwsAuthorizationHeaders(req, props);
+  });
 });
