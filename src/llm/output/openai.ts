@@ -1,9 +1,9 @@
 import {
+  Config,
   OpenAiResponse,
   OutputOpenAIChatChoice,
   OutputResultContent,
 } from "@/types";
-import { BaseLlmOutput2 } from "./base";
 import { formatOptions } from "./_util";
 import { maybeParseJSON } from "@/utils";
 
@@ -33,10 +33,11 @@ function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
 
 export function OutputOpenAIChat(
   result: OpenAiResponse,
-  _config?: { model?: string }
+  _config?: Config<any>
 ) {
   const id = result.id;
-  const name = result.model || _config?.model || "openai.unknown";
+  const name =
+    result.model || _config?.options.model?.default || "openai.unknown";
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];
@@ -51,7 +52,7 @@ export function OutputOpenAIChat(
     total_tokens: result?.usage?.total_tokens,
   };
 
-  return BaseLlmOutput2({
+  return {
     id,
     name,
     created,
@@ -59,5 +60,5 @@ export function OutputOpenAIChat(
     stopReason,
     content,
     options,
-  });
+  };
 }

@@ -2,7 +2,7 @@ import { BaseStateItem, Dialogue, createDialogue } from "@/state";
 import { IChatUserMessage } from "@/types";
 import { assert } from "@/utils/modules/assert";
 import { mockOutputResultObject } from "../../utils/mock.helpers";
-import { BaseLlmOutput2 } from "@/llm/output/base";
+import { BaseLlmOutput } from "@/llm/output/base";
 
 /**
  * Tests Dialogue
@@ -603,7 +603,7 @@ describe("llm-exe:state/Dialogue", () => {
       const result = mockOutputResultObject([
         { type: "text", text: "Wrapped response" },
       ]);
-      const wrapped = BaseLlmOutput2(result);
+      const wrapped = BaseLlmOutput(result);
 
       dialogue.addFromOutput(wrapped);
 

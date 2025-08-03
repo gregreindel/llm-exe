@@ -1,4 +1,3 @@
-import { normalizeLlmOutputToInternalFormat } from "@/llm/output";
 import { apiRequest } from "@/utils/modules/request";
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
 import { getLlmConfig } from "@/llm/config";
@@ -15,6 +14,8 @@ import {
 } from "@/types";
 import { normalizeFunctionCall } from "./output/_util";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
+import { OutputDefault } from "./output/default";
+import { BaseLlmOutput } from "./output/base";
 
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
@@ -157,5 +158,7 @@ export async function useLlm_call(
           headers: headers,
         });
 
-  return normalizeLlmOutputToInternalFormat(state, response);
+  const { output = OutputDefault } = config;
+  const normalized = output(response, config);
+  return BaseLlmOutput(normalized);
 }

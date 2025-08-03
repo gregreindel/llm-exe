@@ -2,6 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { openaiPromptSanitize } from "./promptSanitize";
+import { OutputOpenAIChat } from "@/llm/output/openai";
 
 const openAiChatV1: Config = {
   key: "openai.chat.v1",
@@ -33,6 +34,7 @@ const openAiChatV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
+  output: OutputOpenAIChat,
 };
 
 const openAiChatMockV1: Config = {

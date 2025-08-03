@@ -1,7 +1,6 @@
-import { BaseLlmOutput2 } from "./base";
-
 import {
   Claude3Response,
+  Config,
   OutputResultContent,
   OutputResultsFunction,
   OutputResultsText,
@@ -31,10 +30,11 @@ function formatResult(response: Claude3Response): OutputResultContent[] {
 
 export function OutputAnthropicClaude3Chat(
   result: Claude3Response,
-  _config?: { model?: string }
+  _config?: Config<any>
 ) {
   const id = result.id;
-  const name = result.model || _config?.model || "anthropic.unknown";
+  const name =
+    result.model || _config?.options.model?.default || "anthropic.unknown";
   const stopReason = result.stop_reason;
   const content = formatResult(result);
   const usage = {
@@ -43,11 +43,11 @@ export function OutputAnthropicClaude3Chat(
     total_tokens: result?.usage?.input_tokens + result?.usage?.input_tokens,
   };
 
-  return BaseLlmOutput2({
+  return {
     id,
     name,
     usage,
     stopReason,
     content,
-  });
+  };
 }

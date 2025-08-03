@@ -1,12 +1,14 @@
 import { combineJsonl } from "./_utils/combineJsonl";
-import { BaseLlmOutput2 } from "./base";
-import { OllamaResponse } from "@/types";
+import { Config, OllamaResponse } from "@/types";
 
-export function OutputOllamaChat(result: string, _config?: { model?: string }) {
+export function OutputOllamaChat(result: string, _config?: Config<any>) {
   const combined = combineJsonl<OllamaResponse>(result);
 
   const id = `${combined.result.model}.${combined.result.created_at}`;
-  const name = combined.result.model || _config?.model || "ollama.unknown";
+  const name =
+    combined.result.model ||
+    _config?.options.model?.default ||
+    "ollama.unknown";
   const created = new Date(`${combined.result.created_at}`).getTime();
 
   const stopReason = `${combined?.result?.done_reason || "stop"}`;
@@ -18,7 +20,7 @@ export function OutputOllamaChat(result: string, _config?: { model?: string }) {
     total_tokens: 0,
   };
 
-  return BaseLlmOutput2({
+  return {
     id,
     name,
     created,
@@ -26,5 +28,5 @@ export function OutputOllamaChat(result: string, _config?: { model?: string }) {
     stopReason,
     content,
     options: [],
-  });
+  };
 }

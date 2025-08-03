@@ -1,5 +1,4 @@
-import { IChatMessages } from "./chat";
-import { LlmProviderKey } from "./llm";
+import { LlmProviderKey, OutputResult } from "./llm";
 
 export type LlmProvider =
   | "openai.chat"
@@ -23,14 +22,14 @@ export interface Config<Pk = LlmProviderKey> {
   endpoint: string;
   options: {
     [key in string]: {
-      default?: number | string;
+      default?: any;
       required?: [boolean, string] | [boolean];
     };
   };
   mapBody: {
     [key in string]: {
       key: string;
-      default?: number | string;
+      default?: any;
       sanitize?: (
         i: any,
         arg: Record<string, any>,
@@ -39,5 +38,5 @@ export interface Config<Pk = LlmProviderKey> {
     };
   };
   headers: string;
-  prompt?: (messages: IChatMessages) => any;
+  output: (result: any, _config?: Config<any>) => OutputResult;
 }
