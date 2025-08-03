@@ -2,6 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { googleGeminiPromptSanitize } from "./promptSanitize";
+import { OutputGoogleGeminiChat } from "@/llm/output/google.gemini";
 
 const googleGeminiChatV1: Config = {
   key: "google.chat.v1",
@@ -25,6 +26,7 @@ const googleGeminiChatV1: Config = {
     //   key: "top_p",
     // }
   },
+  output: OutputGoogleGeminiChat,
 };
 
 export const google = {

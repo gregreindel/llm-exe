@@ -1,5 +1,7 @@
 import { Config, EmbeddingProviderKey } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
+import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
 
 export const embeddingConfigs: {
   [key in EmbeddingProviderKey]: Config<EmbeddingProviderKey>;
@@ -34,6 +36,7 @@ export const embeddingConfigs: {
         key: "encoding_format",
       },
     },
+    output: OpenAiEmbedding as any,
   },
 
   "amazon.embedding.v1": {
@@ -62,6 +65,7 @@ export const embeddingConfigs: {
         key: "dimensions",
       },
     },
+    output: AmazonTitanEmbedding as any,
   },
 };
 

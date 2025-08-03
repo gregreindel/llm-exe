@@ -1,6 +1,5 @@
 import { apiRequest } from "@/utils/modules/request";
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
-import { normalizeLlmOutputToInternalFormat } from "@/llm/output";
 import {
   GenericLLm,
   IChatMessages,
@@ -14,6 +13,7 @@ import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
 import { useLlm_call } from "@/llm/llm.call";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
+import { BaseLlmOutput } from "./output/base";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -31,8 +31,8 @@ jest.mock("@/llm/_utils.parseHeaders", () => ({
   parseHeaders: jest.fn(),
 }));
 
-jest.mock("@/llm/output", () => ({
-  normalizeLlmOutputToInternalFormat: jest.fn(),
+jest.mock("@/llm/output/base", () => ({
+  BaseLlmOutput: jest.fn(),
 }));
 
 jest.mock("@/llm/config", () => ({
@@ -46,8 +46,7 @@ describe("useLlm_call", () => {
   const mapBodyMock = mapBody as jest.Mock;
   const parseHeadersMock = parseHeaders as jest.Mock;
   const apiRequestMock = apiRequest as jest.Mock;
-  const normalizeLlmOutputToInternalFormatMock =
-    normalizeLlmOutputToInternalFormat as jest.Mock;
+  const BaseLlmOutputMock = BaseLlmOutput as jest.Mock;
 
   const mockState = {
     key: "openai.chat-mock.v1",
@@ -86,6 +85,7 @@ describe("useLlm_call", () => {
     method: "POST",
     provider: "openai.chat",
     key: "openai.chat.v1",
+    output: jest.fn(),
   };
 
   beforeEach(() => {
@@ -105,7 +105,10 @@ describe("useLlm_call", () => {
   });
 
   it("should call all necessary functions and return parsed output", async () => {
-    normalizeLlmOutputToInternalFormatMock.mockReturnValueOnce("parsedOutput");
+    const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
+    mockConfig.output.mockReturnValueOnce(mockOutputResult);
+    const mockBaseLlmOutputReturn = "parsedOutput";
+    BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
     const result = await useLlm_call(mockState, mockMessages, mockOptions);
 
@@ -140,14 +143,15 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(normalizeLlmOutputToInternalFormat).toHaveBeenCalledWith(
-      { key: mockState.key, provider: mockState.provider },
+    expect(mockConfig.output).toHaveBeenCalledWith(
       {
         data: "response",
-      }
+      },
+      mockConfig
     );
+    expect(BaseLlmOutput).toHaveBeenCalledWith(mockOutputResult);
 
-    expect(result).toBe("parsedOutput");
+    expect(result).toBe(mockBaseLlmOutputReturn);
   });
 
   it("should handle an error in apiRequest", async () => {
@@ -476,23 +480,25 @@ describe("useLlm_call", () => {
       provider: LlmProvider;
     };
 
-    getLlmConfigMock.mockReturnValue({
+    const mockConfigForMock = {
       ...mockConfig,
       provider: "openai.chat-mock",
-    });
+    };
+    
+    getLlmConfigMock.mockReturnValue(mockConfigForMock);
 
-    normalizeLlmOutputToInternalFormatMock.mockReturnValueOnce(
-      "mockParsedOutput"
-    );
+    const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
+    mockConfigForMock.output.mockReturnValueOnce(mockOutputResult);
+    const mockBaseLlmOutputReturn = "mockParsedOutput";
+    BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
     const result = await useLlm_call(mockStateMock, mockMessages, mockOptions);
 
     // Mock provider doesn't call apiRequest
     expect(apiRequestMock).not.toHaveBeenCalled();
 
-    // But it should call normalizeLlmOutputToInternalFormat with the mock response
-    expect(normalizeLlmOutputToInternalFormat).toHaveBeenCalledWith(
-      { key: mockStateMock.key, provider: mockStateMock.provider },
+    // But it should call output with the mock response
+    expect(mockConfigForMock.output).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "0123-45-6789",
         model: "model",
@@ -506,10 +512,12 @@ describe("useLlm_call", () => {
             },
           },
         ],
-      })
+      }),
+      mockConfigForMock
     );
+    expect(BaseLlmOutput).toHaveBeenCalledWith(mockOutputResult);
 
-    expect(result).toBe("mockParsedOutput");
+    expect(result).toBe(mockBaseLlmOutputReturn);
   });
 
   describe("Google provider", () => {

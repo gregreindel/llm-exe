@@ -41,6 +41,7 @@ describe("configs", () => {
           sanitize: expect.any(Function),
         },
       },
+      output: expect.any(Function),
     };
     expect(configs["openai.chat.v1"]).toEqual(openaiConfig);
   });
@@ -78,6 +79,7 @@ describe("configs", () => {
           key: "system",
         },
       },
+      output: expect.any(Function),
     };
     expect(configs["anthropic.chat.v1"]).toEqual(anthropicConfig);
   });
@@ -117,6 +119,7 @@ describe("configs", () => {
           default: "bedrock-2023-05-31",
         },
       },
+      output: expect.any(Function),
     };
     expect(configs["amazon:anthropic.chat.v1"]).toEqual(amazonAnthropicConfig);
   });
@@ -155,6 +158,7 @@ describe("configs", () => {
           default: 2048,
         },
       },
+      output: expect.any(Function),
     };
     expect(configs["amazon:meta.chat.v1"]).toEqual(amazonMetaConfig);
   });

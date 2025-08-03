@@ -27,6 +27,7 @@ describe("stateFromOptions", () => {
     endpoint: "", 
     mapBody: {},
     method: 'POST',
+    output: () => ({ id: '', name: '', created: 0, content: [], usage: { input_tokens: 0, output_tokens: 0, total_tokens: 0 }, stopReason: 'stop' }),
   };
 
   beforeEach(() => {
@@ -101,6 +102,7 @@ describe("stateFromOptions", () => {
       endpoint: "", 
       mapBody: {},
       method: 'POST',
+      output: () => ({ id: '', name: '', created: 0, content: [], usage: { input_tokens: 0, output_tokens: 0, total_tokens: 0 }, stopReason: 'stop' }),
     };
 
     mockPick.mockReturnValueOnce({ model: "gpt-3" });

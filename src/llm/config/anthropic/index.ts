@@ -2,6 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { anthropicPromptSanitize } from "./promptSanitize";
+import { OutputAnthropicClaude3Chat } from "@/llm/output/claude";
 
 const ANTHROPIC_VERSION = "2023-06-01";
 
@@ -37,6 +38,7 @@ const anthropicChatV1: Config = {
       sanitize: anthropicPromptSanitize,
     },
   },
+  output: OutputAnthropicClaude3Chat,
 };
 
 export const anthropic = {

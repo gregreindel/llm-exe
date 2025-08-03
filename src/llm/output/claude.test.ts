@@ -1,7 +1,7 @@
 import { OutputAnthropicClaude3Chat } from "@/llm/output/claude";
 
 /**
- * Tests the TextPrompt class
+ * Tests the OutputAnthropicClaude3Chat function
  */
 describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
   const mock = {
@@ -23,41 +23,34 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     ],
   };
 
-  it("creates class with expected properties", () => {
-    const output = OutputAnthropicClaude3Chat(mock as any).getResult();
+  it("creates output with expected properties", () => {
+    const output = OutputAnthropicClaude3Chat(mock as any);
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
-    expect(output).toHaveProperty("created");
     expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
+    expect(output).toHaveProperty("stopReason");
   });
-  it("creates class with expected properties", () => {
-    const output = OutputAnthropicClaude3Chat(mock as any).getResult();
-    expect((output as any).id).toEqual(mock.id);
-    expect((output as any).name).toEqual(mock.model);
-    expect((output as any).content).toEqual(mock.content);
-    expect((output as any).usage).toEqual(mock.usage);
-  });
-  it("creates class with expected methods", () => {
+  it("creates output with correct values", () => {
     const output = OutputAnthropicClaude3Chat(mock as any);
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultText");
-    expect(typeof output.getResultText).toEqual("function");
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultContent");
-    expect(typeof output.getResultContent).toEqual("function");
+    expect(output.id).toEqual(mock.id);
+    expect(output.name).toEqual(mock.model);
+    expect(output.content).toEqual(mock.content);
+    expect(output.usage).toEqual({
+      input_tokens: mock.usage.input_tokens,
+      output_tokens: mock.usage.output_tokens,
+      total_tokens: mock.usage.input_tokens + mock.usage.output_tokens,
+    });
   });
-  it("getResultText gets result", () => {
+  it("formats content correctly", () => {
     const output = OutputAnthropicClaude3Chat(mock as any);
-    expect(output.getResultText()).toEqual(
-      "This is the assistant message content."
-    );
-  });
-  it("getResultContent gets [] if not exists", () => {
-    const output = OutputAnthropicClaude3Chat(mock as any);
-    expect(output.getResultContent(8)).toEqual([]);
+    expect(output.content).toEqual([
+      {
+        type: "text",
+        text: "This is the assistant message content.",
+      },
+    ]);
+    expect(output.stopReason).toEqual("end_turn");
   });
 
   const mock_tools = {
@@ -87,9 +80,9 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     },
   };
 
-  it("getResultContent gets [] if not exists", () => {
+  it("handles tool_use content correctly", () => {
     const output = OutputAnthropicClaude3Chat(mock_tools as any);
-    expect(output.getResultContent()).toEqual([
+    expect(output.content).toEqual([
       { type: "text", text: "Certainly!" },
       {
         type: "function_use",
@@ -98,5 +91,6 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
         functionId: "toolu_01EJ17EQLV15S2b45FHD1t6w",
       },
     ]);
+    expect(output.stopReason).toEqual("tool_use");
   });
 });

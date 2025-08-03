@@ -2,6 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { openaiPromptSanitize } from "../openai/promptSanitize";
+import { OutputXAIChat } from "@/llm/output/xai";
 
 const xaiChatV1: Config = {
   key: "xai.chat.v1",
@@ -33,6 +34,7 @@ const xaiChatV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
+  output: OutputXAIChat,
 };
 
 export const xai = {

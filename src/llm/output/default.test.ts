@@ -1,27 +1,16 @@
-import { BaseLlmOutput } from "@/llm/output/base";
 import { OutputDefault } from "@/llm/output/default";
 
-jest.mock("@/llm/output/base", () => ({
-  BaseLlmOutput: jest.fn(),
-}));
-
 describe("OutputDefault", () => {
-  const BaseLlmOutputMock = BaseLlmOutput as jest.Mock;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    BaseLlmOutputMock.mockClear();
-  });
 
   it("should handle default stopReason and model name", () => {
     const result = {
       text: "sample text",
     };
-    const config = {};
+    const config = undefined;
 
-    OutputDefault(result, config);
+    const output = OutputDefault(result, config);
 
-    expect(BaseLlmOutputMock).toHaveBeenCalledWith({
+    expect(output).toEqual({
       name: "unknown",
       stopReason: "stop",
       content: [{ type: "text", text: "sample text" }],
@@ -40,11 +29,11 @@ describe("OutputDefault", () => {
       output_tokens: 10,
       input_tokens: 15,
     };
-    const config = { model: "gpt-3" };
+    const config = { options: { model: { default: "gpt-3" } } };
 
-    OutputDefault(result as any, config);
+    const output = OutputDefault(result as any, config as any);
 
-    expect(BaseLlmOutputMock).toHaveBeenCalledWith({
+    expect(output).toEqual({
       name: "gpt-3",
       stopReason: "stop",
       content: [{ type: "text", text: "another sample" }],
@@ -60,11 +49,11 @@ describe("OutputDefault", () => {
     const result = {
       text: "text without tokens",
     };
-    const config = { model: "custom-model" };
+    const config = { options: { model: { default: "custom-model" } } };
 
-    OutputDefault(result, config);
+    const output = OutputDefault(result, config as any);
 
-    expect(BaseLlmOutputMock).toHaveBeenCalledWith({
+    expect(output).toEqual({
       name: "custom-model",
       stopReason: "stop",
       content: [{ type: "text", text: "text without tokens" }],
@@ -82,11 +71,11 @@ describe("OutputDefault", () => {
       output_tokens: 5,
       input_tokens: 10,
     };
-    const config = { model: "api-model" };
+    const config = { options: { model: { default: "api-model" } } };
 
-    OutputDefault(result, config);
+    const output = OutputDefault(result, config as any);
 
-    expect(BaseLlmOutputMock).toHaveBeenCalledWith({
+    expect(output).toEqual({
       name: "api-model",
       stopReason: "stop",
       content: [{ type: "text", text: "text with model" }],
@@ -105,11 +94,11 @@ describe("OutputDefault", () => {
       output_tokens: 0,
       input_tokens: 0,
     };
-    const config = { model: "test-model" };
+    const config = { options: { model: { default: "test-model" } } };
 
-    OutputDefault(result as any, config);
+    const output = OutputDefault(result as any, config as any);
 
-    expect(BaseLlmOutputMock).toHaveBeenCalledWith({
+    expect(output).toEqual({
       name: "test-model",
       stopReason: "stop",
       content: [{ type: "text", text: "zero tokens" }],
@@ -123,11 +112,11 @@ describe("OutputDefault", () => {
 
   it("should handle malformed", () => {
     const result = undefined;
-    const config = {};
+    const config = undefined;
 
-    OutputDefault(result as any, config);
+    const output = OutputDefault(result as any, config);
 
-    expect(BaseLlmOutputMock).toHaveBeenCalledWith({
+    expect(output).toEqual({
       name: "unknown",
       stopReason: "stop",
       content: [],

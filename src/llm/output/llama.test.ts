@@ -10,39 +10,28 @@ describe("llm-exe:output/OutputMetaLlama3Chat", () => {
     generation_token_count: 1,
     generation: "This is the assistant message content.",
   };
-  it("creates class with expected properties", () => {
-    const output = OutputMetaLlama3Chat(mock).getResult()
+  it("creates output with expected properties", () => {
+    const output = OutputMetaLlama3Chat(mock);
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
     expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
   });
-  it("creates class with expected properties", () => {
-    const output = OutputMetaLlama3Chat(mock).getResult()
-    expect((output as any).content).toEqual([{ type: "text", text: mock.generation}]);
-  });
-  it("creates class with expected methods", () => {
+  it("creates output with correct values", () => {
     const output = OutputMetaLlama3Chat(mock);
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultText");
-    expect(typeof output.getResultText).toEqual("function");
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultContent");
-    expect(typeof output.getResultContent).toEqual("function");
+    expect(output.content).toEqual([{ type: "text", text: mock.generation}]);
   });
-  it("getResultText gets result", () => {
+  it("formats content correctly", () => {
     const output = OutputMetaLlama3Chat(mock);
-    expect(output.getResultText()).toEqual(
-      "This is the assistant message content."
-    );
+    expect(output.content).toEqual([
+      {
+        type: "text",
+        text: "This is the assistant message content.",
+      },
+    ]);
+    expect(output.stopReason).toEqual("end_turn");
   });
 
-  it("getResultContent gets [] if not exists", () => {
-    const output = OutputMetaLlama3Chat(mock);
-    expect(output.getResultContent(8)).toEqual([]);
-  });
 
 });

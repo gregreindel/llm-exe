@@ -40,12 +40,13 @@ export function OutputAnthropicClaude3Chat(
   const usage = {
     input_tokens: result?.usage?.input_tokens,
     output_tokens: result?.usage?.output_tokens,
-    total_tokens: result?.usage?.input_tokens + result?.usage?.input_tokens,
+    total_tokens: result?.usage?.input_tokens + result?.usage?.output_tokens,
   };
 
   return {
     id,
     name,
+    created: Date.now(),
     usage,
     stopReason,
     content,

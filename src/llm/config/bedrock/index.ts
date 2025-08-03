@@ -2,6 +2,8 @@ import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { anthropicPromptSanitize } from "../anthropic/promptSanitize";
 import { Config } from "@/types";
+import { OutputAnthropicClaude3Chat } from "@/llm/output/claude";
+import { OutputMetaLlama3Chat } from "@/llm/output/llama";
 // import { amazonNovaPromptSanitize } from "./prompt.nova";
 
 const ANTORPIC_BEDROCK_VERSION = "bedrock-2023-05-31";
@@ -40,6 +42,7 @@ const amazonAnthropicChatV1: Config = {
       default: ANTORPIC_BEDROCK_VERSION,
     },
   },
+  output: OutputAnthropicClaude3Chat,
 };
 
 const amazonMetaChatV1: Config = {
@@ -83,6 +86,7 @@ const amazonMetaChatV1: Config = {
       default: 2048,
     },
   },
+  output: OutputMetaLlama3Chat,
 };
 
 

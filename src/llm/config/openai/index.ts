@@ -66,6 +66,7 @@ const openAiChatMockV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
+  output: OutputOpenAIChat,
 };
 
 export const openai = {

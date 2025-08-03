@@ -2,6 +2,7 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { openaiPromptSanitize } from "../openai/promptSanitize";
+import { OutputDeepSeekChat } from "@/llm/output/deepseek";
 
 const deepseekChatV1: Config = {
   key: "deepseek.chat.v1",
@@ -33,6 +34,7 @@ const deepseekChatV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
+  output: OutputDeepSeekChat,
 };
 
 export const deepseek = {

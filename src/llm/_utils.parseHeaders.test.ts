@@ -23,6 +23,7 @@ describe("parseHeaders", () => {
       method: 'POST',
       provider: "openai.chat-mock",
       key: "openai.chat-mock.v1",
+      output: () => ({ id: '', name: '', created: 0, content: [], usage: { input_tokens: 0, output_tokens: 0, total_tokens: 0 }, stopReason: 'stop' }),
     };
     replacements = {
       token: "test-token",
