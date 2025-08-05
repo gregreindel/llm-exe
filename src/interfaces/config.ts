@@ -28,12 +28,28 @@ export interface Config<Pk = LlmProviderKey> {
   };
   mapBody: {
     [key in string]: {
+      /**
+       * The target field name in the provider's request body.
+       * Supports dot notation for nested fields (e.g., "response_format.type")
+       */
       key: string;
+
+      /**
+       * Default value to use if the source field is not provided
+       */
       default?: any;
-      sanitize?: (
-        i: any,
-        arg: Record<string, any>,
-        arg2: Record<string, any>
+
+      /**
+       * Transform function to convert the value before mapping to the request body
+       * @param value - The input value from the user's state
+       * @param state - The complete user state object containing all parameters
+       * @param config - The current Config object (for access to options, etc.)
+       * @returns The transformed value to be included in the request body
+       */
+      transform?: (
+        value: any,
+        state: Record<string, any>,
+        config: Record<string, any>
       ) => any;
     };
   };

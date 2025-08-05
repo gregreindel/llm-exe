@@ -28,7 +28,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
         model: {
           key: "model",
@@ -38,7 +38,7 @@ describe("configs", () => {
         },
         useJson: {
           key: "response_format.type",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
       },
       transformResponse: expect.any(Function),
@@ -73,7 +73,7 @@ describe("configs", () => {
         },
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
         system: {
           key: "system",
@@ -105,7 +105,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
         topP: {
           key: "top_p",
@@ -145,7 +145,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "prompt",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
         topP: {
           key: "top_p",
@@ -163,17 +163,17 @@ describe("configs", () => {
     expect(configs["amazon:meta.chat.v1"]).toEqual(amazonMetaConfig);
   });
 
-  it("should have valid amazon:meta.chat.v1 sanitize prompt", () => {
+  it("should have valid amazon:meta.chat.v1 transform prompt", () => {
     const config = configs["amazon:meta.chat.v1"];
-    const sanitize = config.mapBody["prompt"].sanitize!;
-    expect(typeof sanitize).toEqual("function");
+    const transform = config.mapBody["prompt"].transform!;
+    expect(typeof transform).toEqual("function");
 
-    const sanitized = sanitize(
+    const transformed = transform(
       [{ role: "assistant", content: "Hello World" }],
       {},
       {}
     );
-    expect(sanitized.trim()).toEqual(`Assistant: Hello World`);
+    expect(transformed.trim()).toEqual(`Assistant: Hello World`);
   });
 });
 

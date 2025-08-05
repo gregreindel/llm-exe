@@ -8,9 +8,7 @@ describe("ollama configuration", () => {
     it("should have the correct key, provider, endpoint, and method", () => {
       expect(ollamaChatV1.key).toBe("ollama.chat.v1");
       expect(ollamaChatV1.provider).toBe("ollama.chat");
-      expect(ollamaChatV1.endpoint).toBe(
-        "http://localhost:11434/api/chat"
-      );
+      expect(ollamaChatV1.endpoint).toBe("http://localhost:11434/api/chat");
       expect(ollamaChatV1.method).toBe("POST");
     });
 
@@ -20,14 +18,14 @@ describe("ollama configuration", () => {
       );
     });
 
-    it("should sanitize the prompt correctly", () => {
-      const sanitizePrompt = ollamaChatV1.mapBody.prompt.sanitize as (
+    it("should transform the prompt correctly", () => {
+      const transformPrompt = ollamaChatV1.mapBody.prompt.transform as (
         v: any
       ) => any;
-      expect(sanitizePrompt("Hello")).toEqual([
+      expect(transformPrompt("Hello")).toEqual([
         { role: "user", content: "Hello" },
       ]);
-      expect(sanitizePrompt([{ role: "user", content: "Hello" }])).toEqual([
+      expect(transformPrompt([{ role: "user", content: "Hello" }])).toEqual([
         { role: "user", content: "Hello" },
       ]);
     });

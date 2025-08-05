@@ -20,7 +20,7 @@ const googleGeminiChatV1: Config = {
   mapBody: {
     prompt: {
       key: "contents",
-      sanitize: googleGeminiPromptSanitize,
+      transform: googleGeminiPromptSanitize,
     },
     // topP: {
     //   key: "top_p",

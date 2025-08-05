@@ -22,24 +22,24 @@ describe("openai configuration", () => {
       );
     });
 
-    it("should sanitize the prompt correctly", () => {
-      const sanitizePrompt = openAiChatV1.mapBody.prompt.sanitize as (
+    it("should transform the prompt correctly", () => {
+      const transformPrompt = openAiChatV1.mapBody.prompt.transform as (
         v: any
       ) => any;
-      expect(sanitizePrompt("Hello")).toEqual([
+      expect(transformPrompt("Hello")).toEqual([
         { role: "user", content: "Hello" },
       ]);
-      expect(sanitizePrompt([{ role: "user", content: "Hello" }])).toEqual([
+      expect(transformPrompt([{ role: "user", content: "Hello" }])).toEqual([
         { role: "user", content: "Hello" },
       ]);
     });
 
-    it("should sanitize useJson correctly", () => {
-      const sanitizeUseJson = openAiChatV1.mapBody.useJson.sanitize as (
+    it("should transform useJson correctly", () => {
+      const transformUseJson = openAiChatV1.mapBody.useJson.transform as (
         v: any
       ) => any;
-      expect(sanitizeUseJson(true)).toBe("json_object");
-      expect(sanitizeUseJson(false)).toBe("text");
+      expect(transformUseJson(true)).toBe("json_object");
+      expect(transformUseJson(false)).toBe("text");
     });
   });
 
@@ -57,12 +57,12 @@ describe("openai configuration", () => {
       );
     });
 
-    it("should sanitize useJson correctly", () => {
-      const sanitizeUseJson = openAiChatMockV1.mapBody.useJson.sanitize as (
+    it("should transform useJson correctly", () => {
+      const transformUseJson = openAiChatMockV1.mapBody.useJson.transform as (
         v: any
       ) => any;
-      expect(sanitizeUseJson(true)).toBe("json_object");
-      expect(sanitizeUseJson(false)).toBe("text");
+      expect(transformUseJson(true)).toBe("json_object");
+      expect(transformUseJson(false)).toBe("text");
     });
   });
 

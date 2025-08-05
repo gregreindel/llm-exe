@@ -31,20 +31,20 @@ describe("mapBody", () => {
     expect(result.userAge).toEqual(18);
   });
 
-  it("should sanitize the value if sanitize function is provided", () => {
-    const sanitizeFn = jest.fn().mockReturnValue("SANITIZED");
+  it("should transform the value if transform function is provided", () => {
+    const transformFn = jest.fn().mockReturnValue("SANITIZED");
     const template: Config["mapBody"] = {
-      password: { key: "securePassword", sanitize: sanitizeFn },
+      password: { key: "securePassword", transform: transformFn },
     };
     const body: Record<string, any> = {
-      password: "unsanitized_password",
+      password: "untransformed_password",
     };
 
     const result = mapBody(template, body);
 
     expect(result).toHaveProperty("securePassword");
     expect(result.securePassword).toEqual("SANITIZED");
-    expect(sanitizeFn).toHaveBeenCalledWith(body.password, body, {
+    expect(transformFn).toHaveBeenCalledWith(body.password, body, {
       securePassword: "SANITIZED",
     });
   });

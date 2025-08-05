@@ -28,7 +28,7 @@ const amazonAnthropicChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: anthropicPromptSanitize,
+      transform: anthropicPromptSanitize,
     },
     topP: {
       key: "top_p",
@@ -65,7 +65,7 @@ const amazonMetaChatV1: Config = {
   mapBody: {
     prompt: {
       key: "prompt",
-      sanitize: (messages: any) => {
+      transform: (messages: any) => {
         if (typeof messages === "string") {
           return messages;
         } else {
@@ -109,7 +109,7 @@ const amazonMetaChatV1: Config = {
 //   mapBody: {
 //     prompt: {
 //       key: "messages",
-//       sanitize: amazonNovaPromptSanitize,
+//       transform: amazonNovaPromptSanitize,
 //     },
 //   },
 // };

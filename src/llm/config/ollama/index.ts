@@ -16,7 +16,7 @@ const ollamaChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: (v) => {
+      transform: (v) => {
         if (typeof v === "string") {
           return [{ role: "user", content: v }];
         }

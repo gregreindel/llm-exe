@@ -21,7 +21,7 @@ const deepseekChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: openaiPromptSanitize,
+      transform: openaiPromptSanitize,
     },
     model: {
       key: "model",
@@ -31,7 +31,7 @@ const deepseekChatV1: Config = {
     },
     useJson: {
       key: "response_format.type",
-      sanitize: (v) => (v ? "json_object" : "text"),
+      transform: (v) => (v ? "json_object" : "text"),
     },
   },
   transformResponse: OutputDeepSeekChat,

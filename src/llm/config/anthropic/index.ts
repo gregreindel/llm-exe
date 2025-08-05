@@ -35,7 +35,7 @@ const anthropicChatV1: Config = {
     },
     prompt: {
       key: "messages",
-      sanitize: anthropicPromptSanitize,
+      transform: anthropicPromptSanitize,
     },
   },
   transformResponse: OutputAnthropicClaude3Chat,

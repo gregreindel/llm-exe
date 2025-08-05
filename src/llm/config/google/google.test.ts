@@ -21,14 +21,14 @@ describe("google configuration", () => {
       );
     });
 
-    it("should sanitize the prompt correctly", () => {
-      const sanitizePrompt = googleChatV1.mapBody.prompt.sanitize as (
+    it("should transform the prompt correctly", () => {
+      const transformPrompt = googleChatV1.mapBody.prompt.transform as (
         v: any
       ) => any;
-      expect(sanitizePrompt("Hello")).toEqual([
+      expect(transformPrompt("Hello")).toEqual([
         { role: "user", parts: [{ text: "Hello" }] },
       ]);
-      expect(sanitizePrompt([{ role: "user", content: "Hello" }])).toEqual([
+      expect(transformPrompt([{ role: "user", content: "Hello" }])).toEqual([
         { parts: [{ text: "Hello" }], role: "user" },
       ]);
     });
