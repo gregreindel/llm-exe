@@ -106,4 +106,40 @@ describe("llm-exe:output/OutputOpenAIChat", () => {
       [{"functionId": "call_123", "input": {}, "name": "test_fn", "type": "function_use"}]
     );
   });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const output = OutputOpenAIChat(mockWithoutModel as any);
+    expect(output.name).toBe("openai.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const config = {
+      options: {
+        model: {
+          default: "openai-from-config",
+        },
+      },
+    };
+    const output = OutputOpenAIChat(mockWithoutModel as any, config as any);
+    expect(output.name).toBe("openai-from-config");
+  });
+
+  it("handles missing choices array", () => {
+    const mockWithoutChoices = {
+      ...mock,
+      choices: undefined,
+    };
+    const output = OutputOpenAIChat(mockWithoutChoices as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
 });

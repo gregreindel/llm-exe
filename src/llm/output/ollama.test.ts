@@ -54,4 +54,50 @@ it("creates output with expected properties", () => {
     ]);
     expect(output.stopReason).toEqual("stop");
   });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = `
+{"created_at":"${created_at}","message":{"role":"assistant","content":"Hello"},"done":false}
+{"created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true}`;
+    const output = OutputOllamaChat(mockWithoutModel);
+    expect(output.name).toBe("ollama.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = `
+{"created_at":"${created_at}","message":{"role":"assistant","content":"Hello"},"done":false}
+{"created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true}`;
+    const config = {
+      options: {
+        model: {
+          default: "ollama-from-config",
+        },
+      },
+    };
+    const output = OutputOllamaChat(mockWithoutModel, config as any);
+    expect(output.name).toBe("ollama-from-config");
+  });
+
+  it("uses model from response when available", () => {
+    const mockWithModel = `
+{"model":"llama2","created_at":"${created_at}","message":{"role":"assistant","content":"Hi"},"done":false}
+{"model":"llama2","created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true}`;
+    const config = {
+      options: {
+        model: {
+          default: "ollama-from-config",
+        },
+      },
+    };
+    const output = OutputOllamaChat(mockWithModel, config as any);
+    expect(output.name).toBe("llama2");
+  });
+
+  it("handles missing done_reason", () => {
+    const mockWithoutDoneReason = `
+{"model":"${model}","created_at":"${created_at}","message":{"role":"assistant","content":"Hello"},"done":false}
+{"model":"${model}","created_at":"${created_at}","message":{"role":"assistant","content":""},"done":true}`;
+    const output = OutputOllamaChat(mockWithoutDoneReason);
+    expect(output.stopReason).toBe("stop");
+  });
 });

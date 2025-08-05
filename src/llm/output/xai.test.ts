@@ -107,4 +107,40 @@ describe("llm-exe:output/OutputXAIChat", () => {
       [{"functionId": "call_123", "input": {}, "name": "test_fn", "type": "function_use"}]
     );
   });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const output = OutputXAIChat(mockWithoutModel as any);
+    expect(output.name).toBe("xai.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const config = {
+      options: {
+        model: {
+          default: "xai-from-config",
+        },
+      },
+    };
+    const output = OutputXAIChat(mockWithoutModel as any, config as any);
+    expect(output.name).toBe("xai-from-config");
+  });
+
+  it("handles missing choices array", () => {
+    const mockWithoutChoices = {
+      ...mock,
+      choices: undefined,
+    };
+    const output = OutputXAIChat(mockWithoutChoices as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
 });

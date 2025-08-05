@@ -107,4 +107,51 @@ describe("llm-exe:output/OutputDeepSeekChat", () => {
       [{"functionId": "call_123", "input": {}, "name": "test_fn", "type": "function_use"}]
     );
   });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const output = OutputDeepSeekChat(mockWithoutModel as any);
+    expect(output.name).toBe("deepseek.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const config = {
+      options: {
+        model: {
+          default: "deepseek-from-config",
+        },
+      },
+    };
+    const output = OutputDeepSeekChat(mockWithoutModel as any, config as any);
+    expect(output.name).toBe("deepseek-from-config");
+  });
+
+  it("handles missing choices array", () => {
+    const mockWithoutChoices = {
+      ...mock,
+      choices: undefined,
+    };
+    const output = OutputDeepSeekChat(mockWithoutChoices as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
+
+  it("handles empty choices array", () => {
+    const mockWithEmptyChoices = {
+      ...mock,
+      choices: [],
+    };
+    const output = OutputDeepSeekChat(mockWithEmptyChoices as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
 });

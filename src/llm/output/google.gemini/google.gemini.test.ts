@@ -87,6 +87,50 @@ describe("llm-exe:output/OutputGoogleGeminiChat", () => {
     });
   });
 
+  it("uses default model name when modelVersion is undefined and no config", () => {
+    const mockWithoutModel = {
+      ...mock,
+      modelVersion: undefined,
+    };
+    const output = OutputGoogleGeminiChat(mockWithoutModel as any);
+    expect(output.name).toBe("gemini");
+  });
 
+  it("uses config default model when modelVersion is undefined", () => {
+    const mockWithoutModel = {
+      ...mock,
+      modelVersion: undefined,
+    };
+    const config = {
+      options: {
+        model: {
+          default: "gemini-from-config",
+        },
+      },
+    };
+    const output = OutputGoogleGeminiChat(mockWithoutModel as any, config as any);
+    expect(output.name).toBe("gemini-from-config");
+  });
 
+  it("handles missing candidates array", () => {
+    const mockWithoutCandidates = {
+      ...mock,
+      candidates: undefined,
+    };
+    const output = OutputGoogleGeminiChat(mockWithoutCandidates as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
+
+  it("handles empty candidates array", () => {
+    const mockWithEmptyCandidates = {
+      ...mock,
+      candidates: [],
+    };
+    const output = OutputGoogleGeminiChat(mockWithEmptyCandidates as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
 });

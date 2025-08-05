@@ -93,4 +93,52 @@ describe("llm-exe:output/OutputAnthropicClaude3Chat", () => {
     ]);
     expect(output.stopReason).toEqual("tool_use");
   });
+
+  it("handles empty content array", () => {
+    const mockWithEmptyContent = {
+      ...mock,
+      content: [],
+    };
+    const output = OutputAnthropicClaude3Chat(mockWithEmptyContent as any);
+    expect(output.content).toEqual([]);
+  });
+
+  it("handles undefined content", () => {
+    const mockWithoutContent = {
+      id: "test-id",
+      model: "claude-3",
+      stop_reason: "stop",
+      usage: {
+        input_tokens: 10,
+        output_tokens: 20,
+      },
+    };
+    const output = OutputAnthropicClaude3Chat(mockWithoutContent as any);
+    expect(output.content).toEqual([]);
+  });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const output = OutputAnthropicClaude3Chat(mockWithoutModel as any);
+    expect(output.name).toBe("anthropic.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const config = {
+      options: {
+        model: {
+          default: "claude-from-config",
+        },
+      },
+    };
+    const output = OutputAnthropicClaude3Chat(mockWithoutModel as any, config as any);
+    expect(output.name).toBe("claude-from-config");
+  });
 });

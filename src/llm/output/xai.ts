@@ -34,7 +34,7 @@ function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
 export function OutputXAIChat(result: XAiResponse, _config?: Config<any>) {
   const id = result.id;
   const name =
-    result.model || _config?.options.model?.default || "openai.unknown";
+    result.model || _config?.options.model?.default || "xai.unknown";
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];
