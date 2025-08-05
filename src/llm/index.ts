@@ -1,1 +1,1 @@
-export { useLlm } from "./llm";
+export { useLlm, useLlmConfiguration } from "./llm";
