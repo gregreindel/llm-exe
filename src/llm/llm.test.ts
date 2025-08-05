@@ -1,4 +1,4 @@
-import { IChatMessages } from "@/types";
+import { IChatMessages, Config } from "@/types";
 import { getLlmConfig } from "@/llm/config";
 import { useLlm, useLlmConfiguration } from "@/llm/llm";
 import { useLlm_call } from "@/llm/llm.call";
@@ -93,16 +93,22 @@ describe("useLlm", () => {
 });
 
 describe("useLlmConfiguration", () => {
-  const mockConfig = {
-    provider: "openai",
-    name: "openai.custom",
-    url: "https://api.openai.com/v1/chat/completions",
+  const mockConfig: Config<any> = {
+    key: "openai.custom" as any,
+    provider: "openai.chat",
+    endpoint: "https://api.openai.com/v1/chat/completions",
+    method: "POST",
+    headers: `{"Authorization":"Bearer {{apiKey}}", "Content-Type": "application/json"}`,
+    mapBody: {
+      prompt: { key: "messages" },
+      model: { key: "model" },
+    },
     options: {
       model: {
         default: "gpt-4",
       },
     },
-    output: jest.fn(),
+    transformResponse: jest.fn(),
   };
 
   beforeEach(() => {
@@ -137,7 +143,7 @@ describe("useLlmConfiguration", () => {
 
   it("should create different instances for different option sets", () => {
     const llmFactory = useLlmConfiguration(mockConfig);
-    
+
     const instance1 = llmFactory({ traceId: "trace-1" });
     const instance2 = llmFactory({ traceId: "trace-2" });
 
@@ -166,7 +172,7 @@ describe("useLlmConfiguration", () => {
   it("should allow calling the created LLM instance", async () => {
     const llmFactory = useLlmConfiguration(mockConfig);
     const llmInstance = llmFactory({ model: "custom-model" });
-    
+
     const mockMessages = [
       {
         role: "user",

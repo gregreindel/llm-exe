@@ -27,7 +27,7 @@ const ollamaChatV1: Config = {
       key: "model",
     },
   },
-  output: OutputOllamaChat,
+  transformResponse: OutputOllamaChat,
 };
 
 export const ollama = {

@@ -82,7 +82,7 @@ describe("embeddingConfigs", () => {
           key: "encoding_format",
         },
       },
-      output: expect.any(Function),
+      transformResponse: expect.any(Function),
     });
   });
 
@@ -118,7 +118,7 @@ describe("embeddingConfigs", () => {
           key: "dimensions",
         },
       },
-      output: expect.any(Function),
+      transformResponse: expect.any(Function),
     });
   });
 });

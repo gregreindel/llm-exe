@@ -42,7 +42,7 @@ const amazonAnthropicChatV1: Config = {
       default: ANTORPIC_BEDROCK_VERSION,
     },
   },
-  output: OutputAnthropicClaude3Chat,
+  transformResponse: OutputAnthropicClaude3Chat,
 };
 
 const amazonMetaChatV1: Config = {
@@ -86,9 +86,8 @@ const amazonMetaChatV1: Config = {
       default: 2048,
     },
   },
-  output: OutputMetaLlama3Chat,
+  transformResponse: OutputMetaLlama3Chat,
 };
-
 
 // const amazonAmazonNovaChatV1: Config = {
 //   key: "amazon:nova.chat.v1",

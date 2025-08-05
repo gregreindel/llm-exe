@@ -38,5 +38,6 @@ export interface Config<Pk = LlmProviderKey> {
     };
   };
   headers: string;
-  output: (result: any, _config?: Config<any>) => OutputResult;
+
+  transformResponse: (result: any, _config?: Config<any>) => OutputResult;
 }

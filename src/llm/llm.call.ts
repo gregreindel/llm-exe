@@ -158,7 +158,7 @@ export async function useLlm_call(
           headers: headers,
         });
 
-  const { output = OutputDefault } = config;
-  const normalized = output(response, config);
+  const { transformResponse = OutputDefault } = config;
+  const normalized = transformResponse(response, config);
   return BaseLlmOutput(normalized);
 }

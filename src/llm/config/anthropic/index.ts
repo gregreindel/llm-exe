@@ -38,7 +38,7 @@ const anthropicChatV1: Config = {
       sanitize: anthropicPromptSanitize,
     },
   },
-  output: OutputAnthropicClaude3Chat,
+  transformResponse: OutputAnthropicClaude3Chat,
 };
 
 export const anthropic = {

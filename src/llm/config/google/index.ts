@@ -26,7 +26,7 @@ const googleGeminiChatV1: Config = {
     //   key: "top_p",
     // }
   },
-  output: OutputGoogleGeminiChat,
+  transformResponse: OutputGoogleGeminiChat,
 };
 
 export const google = {

@@ -34,7 +34,7 @@ const openAiChatV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
-  output: OutputOpenAIChat,
+  transformResponse: OutputOpenAIChat,
 };
 
 const openAiChatMockV1: Config = {
@@ -66,7 +66,7 @@ const openAiChatMockV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
-  output: OutputOpenAIChat,
+  transformResponse: OutputOpenAIChat,
 };
 
 export const openai = {

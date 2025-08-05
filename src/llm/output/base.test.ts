@@ -1,5 +1,5 @@
 import { BaseLlmOutput } from "./base";
-import { OutputResult } from "@/interfaces";
+import { OutputResult, OutputResultContent } from "@/interfaces";
 
 describe("llm-exe:output/BaseLlmOutput", () => {
   const mockResult: Omit<OutputResult, "id" | "created" | "options"> = {
@@ -61,7 +61,7 @@ describe("llm-exe:output/BaseLlmOutput", () => {
   });
 
   it("preserves provided options", () => {
-    const mockOptions = [{ type: "text", text: "option1" }];
+    const mockOptions = [[{ type: "text", text: "option1" } as OutputResultContent]];
     const mockWithOptions = { ...mockResult, options: mockOptions };
     const output = BaseLlmOutput(mockWithOptions);
     const result = output.getResult();

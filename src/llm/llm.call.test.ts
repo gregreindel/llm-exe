@@ -91,7 +91,7 @@ describe("useLlm_call", () => {
     method: "POST",
     provider: "openai.chat",
     key: "openai.chat.v1",
-    output: jest.fn(),
+    transformResponse: jest.fn(),
   };
 
   beforeEach(() => {
@@ -112,7 +112,7 @@ describe("useLlm_call", () => {
 
   it("should call all necessary functions and return parsed output", async () => {
     const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
-    mockConfig.output.mockReturnValueOnce(mockOutputResult);
+    mockConfig.transformResponse.mockReturnValueOnce(mockOutputResult);
     const mockBaseLlmOutputReturn = "parsedOutput";
     BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
@@ -149,7 +149,7 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(mockConfig.output).toHaveBeenCalledWith(
+    expect(mockConfig.transformResponse).toHaveBeenCalledWith(
       {
         data: "response",
       },
@@ -494,7 +494,7 @@ describe("useLlm_call", () => {
     getLlmConfigMock.mockReturnValue(mockConfigForMock);
 
     const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
-    mockConfigForMock.output.mockReturnValueOnce(mockOutputResult);
+    mockConfigForMock.transformResponse.mockReturnValueOnce(mockOutputResult);
     const mockBaseLlmOutputReturn = "mockParsedOutput";
     BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
@@ -503,8 +503,8 @@ describe("useLlm_call", () => {
     // Mock provider doesn't call apiRequest
     expect(apiRequestMock).not.toHaveBeenCalled();
 
-    // But it should call output with the mock response
-    expect(mockConfigForMock.output).toHaveBeenCalledWith(
+    // But it should call transformResponse with the mock response
+    expect(mockConfigForMock.transformResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "0123-45-6789",
         model: "model",
@@ -689,7 +689,7 @@ describe("useLlm_call", () => {
   it("should handle deepseek provider with jsonSchema", async () => {
     const mockStateDeepseek = {
       ...mockState,
-      provider: "deepseek.chat",
+      provider: "deepseek.chat" as LlmProvider,
     };
     
     const mock_options = {
@@ -725,7 +725,7 @@ describe("useLlm_call", () => {
   it("should handle deepseek provider with functions", async () => {
     const mockStateDeepseek = {
       ...mockState,
-      provider: "deepseek.chat",
+      provider: "deepseek.chat" as LlmProvider,
     };
     
     const mock_options = {
@@ -774,7 +774,7 @@ describe("useLlm_call", () => {
   it("should handle xai provider with jsonSchema", async () => {
     const mockStateXai = {
       ...mockState,
-      provider: "xai.grok",
+      provider: "xai.chat" as LlmProvider,
     };
     
     const mock_options = {
@@ -810,7 +810,7 @@ describe("useLlm_call", () => {
   it("should handle xai provider with functions", async () => {
     const mockStateXai = {
       ...mockState,
-      provider: "xai.grok",
+      provider: "xai.chat" as LlmProvider,
     };
     
     const mock_options = {
@@ -842,7 +842,7 @@ describe("useLlm_call", () => {
             function: {
               name: "getWeather",
               description: "Get weather info",
-              parameters: cleanJsonSchemaFor(mock_options.functions[0].parameters, "xai.grok"),
+              parameters: cleanJsonSchemaFor(mock_options.functions[0].parameters, "xai.chat"),
               strict: false
             }
           }
@@ -899,7 +899,7 @@ describe("useLlm_call", () => {
   it("should not add response_format for provider that doesn't support jsonSchema", async () => {
     const mockStateOther = {
       ...mockState,
-      provider: "other.provider",
+      provider: "other.provider" as LlmProvider,
     };
     
     const mock_options = {
@@ -929,7 +929,7 @@ describe("useLlm_call", () => {
     const stringMessage = "Hello, this is a simple string message";
     
     const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
-    mockConfig.output.mockReturnValueOnce(mockOutputResult);
+    mockConfig.transformResponse.mockReturnValueOnce(mockOutputResult);
     const mockBaseLlmOutputReturn = "stringMessageOutput";
     BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
@@ -959,7 +959,7 @@ describe("useLlm_call", () => {
   it("should use default output when config has no output function", async () => {
     const mockConfigNoOutput = {
       ...mockConfig,
-      output: undefined,
+      transformResponse: undefined,
       options: {
         model: {
           default: "test-model"

@@ -34,7 +34,7 @@ const deepseekChatV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
-  output: OutputDeepSeekChat,
+  transformResponse: OutputDeepSeekChat,
 };
 
 export const deepseek = {

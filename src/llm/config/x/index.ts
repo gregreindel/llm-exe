@@ -34,7 +34,7 @@ const xaiChatV1: Config = {
       sanitize: (v) => (v ? "json_object" : "text"),
     },
   },
-  output: OutputXAIChat,
+  transformResponse: OutputXAIChat,
 };
 
 export const xai = {
