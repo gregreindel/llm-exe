@@ -12,10 +12,10 @@ import {
   LlmProviderKey,
   LlmExecutorWithFunctionsOptions,
 } from "@/types";
-import { normalizeFunctionCall } from "./output/_util";
-import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
+
 import { OutputDefault } from "./output/default";
 import { BaseLlmOutput } from "./output/base";
+import { mapOptions } from "./_utils.mapOptions";
 
 export async function useLlm_call(
   state: GenericLLm & { provider: LlmProvider; key: LlmProviderKey },
@@ -23,108 +23,17 @@ export async function useLlm_call(
   _options?: LlmExecutorWithFunctionsOptions<GenericFunctionCall>
 ) {
   const config = getLlmConfig(state.key);
-  const { functionCallStrictInput = false } = _options || {};
 
-  const input = mapBody(
+  const transformBody = mapBody(
     config.mapBody,
     Object.assign({}, state, {
       prompt: messages,
     })
   );
 
-  // this is where we'll handle provider-specific formatting
-  // move into a separate function and have better tests
-  if (_options && _options?.jsonSchema) {
-    if (
-      state.provider.startsWith("openai") ||
-      state.provider.startsWith("deepseek") ||
-      state.provider.startsWith("xai")
-    ) {
-      const curr = input["response_format"] || {};
-      input["response_format"] = Object.assign(curr, {
-        type: "json_schema",
-        json_schema: {
-          name: "output",
-          strict: !!functionCallStrictInput,
-          schema: cleanJsonSchemaFor(_options?.jsonSchema, "openai.chat"),
-        },
-      });
-    }
-  }
+  const applyOptions = mapOptions(transformBody, _options, config);
 
-  if (_options && _options?.functionCall) {
-    if (state.provider.startsWith("anthropic")) {
-      if (_options?.functionCall === "none") {
-        _options.functions = [];
-      } else if (
-        _options?.functionCall === "auto" ||
-        _options?.functionCall === "any"
-      ) {
-        input["tool_choice"] = { type: _options?.functionCall };
-      } else {
-        input["tool_choice"] = _options?.functionCall;
-      }
-    } else if (
-      state.provider.startsWith("openai") ||
-      state.provider.startsWith("deepseek") ||
-      state.provider.startsWith("xai")
-    ) {
-      input["tool_choice"] = normalizeFunctionCall(
-        _options?.functionCall,
-        "openai"
-      );
-    } else if (state.provider.startsWith("google")) {
-      input["toolConfig"] = {
-        functionCallingConfig: {
-          mode: normalizeFunctionCall(_options?.functionCall, "google"),
-        },
-      };
-    }
-  }
-  if (_options && _options?.functions?.length) {
-    if (state.provider.startsWith("anthropic")) {
-      input["tools"] = _options.functions.map((f) => ({
-        name: f.name,
-        description: f.description,
-        input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
-      }));
-    } else if (
-      state.provider.startsWith("openai") ||
-      state.provider.startsWith("deepseek") ||
-      state.provider.startsWith("xai")
-    ) {
-      input["tools"] = _options.functions.map((f) => {
-        const props = {
-          name: f?.name,
-          description: f?.description,
-          parameters: f?.parameters,
-        };
-        return {
-          type: "function",
-          function: Object.assign(
-            props,
-            {
-              parameters: cleanJsonSchemaFor(props.parameters, "openai.chat"),
-            },
-            { strict: functionCallStrictInput }
-          ),
-        };
-      });
-    } else if (state.provider.startsWith("google")) {
-      input["tools"] = [
-        {
-          functionDeclarations: _options.functions.map((f) => ({
-            name: f.name,
-            description: f.description,
-            parameters: cleanJsonSchemaFor(f.parameters, "google.chat"),
-          })),
-        },
-      ];
-    }
-  }
-  // END: provider-specific format handling
-
-  const body = JSON.stringify(input);
+  const body = JSON.stringify(applyOptions);
 
   const url = replaceTemplateStringSimple(config.endpoint, state);
 

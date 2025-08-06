@@ -3,6 +3,7 @@ import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { googleGeminiPromptSanitize } from "./promptSanitize";
 import { OutputGoogleGeminiChat } from "@/llm/output/google.gemini";
+import { cleanJsonSchemaFor } from "@/llm/output/_utils/cleanJsonSchemaFor";
 
 const googleGeminiChatV1: Config = {
   key: "google.chat.v1",
@@ -25,6 +26,27 @@ const googleGeminiChatV1: Config = {
     // topP: {
     //   key: "top_p",
     // }
+  },
+  mapOptions: {
+    functionCall: (call) => ({
+      toolConfig: {
+        functionCallingConfig: {
+          mode: call === "any" ? "any" : call === "none" ? "none" : "auto",
+        },
+      },
+    }),
+
+    functions: (functions) => ({
+      tools: [
+        {
+          functionDeclarations: functions.map((f) => ({
+            name: f.name,
+            description: f.description,
+            parameters: cleanJsonSchemaFor(f.parameters, "google.chat"),
+          })),
+        },
+      ],
+    }),
   },
   transformResponse: OutputGoogleGeminiChat,
 };

@@ -16,13 +16,53 @@ export type LlmProvider =
   | "deepseek.chat";
 
 export interface Config<Pk = LlmProviderKey> {
+  /**
+   * Unique identifier for this configuration (e.g., "openai.chat.v1", "anthropic.claude-3-opus")
+   * Used to reference this config when calling useLlm()
+   */
   key: Pk;
+
+  /**
+   * The provider type this config is for (e.g., "openai.chat", "anthropic.chat")
+   * Used internally for provider-specific logic
+   */
   provider: LlmProvider;
-  method: string;
+
+  /**
+   * HTTP method for the API request (typically "POST" for LLM providers)
+   */
+  method: "POST" | "PUT" | "GET";
+
+  /**
+   * API endpoint URL template. Supports template variables using {{variable}} syntax
+   * Variables are replaced with values from the state object
+   * @example "https://api.openai.com/v1/chat/completions"
+   * @example "https://bedrock-runtime.{{awsRegion}}.amazonaws.com/model/{{model}}/invoke"
+   */
   endpoint: string;
+
+  /**
+   * HTTP headers template as a JSON string. Supports template variables using {{variable}} syntax
+   * @example '{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json"}'
+   * // TODO: make this also accept object and function
+   */
+  headers: string;
   options: {
     [key in string]: {
+      /**
+       * Default value for this parameter if not provided by the user
+       * Can be a static value or a function that returns the value
+       * @example 4096
+       * @example () => process.env.OPENAI_API_KEY
+       */
       default?: any;
+
+      /**
+       * Whether this parameter is required
+       * [true, "error message"] - Required with custom error
+       * [true] - Required with default error message
+       * @example [true, "maxTokens is required for Anthropic"]
+       */
       required?: [boolean, string] | [boolean];
     };
   };
@@ -53,7 +93,55 @@ export interface Config<Pk = LlmProviderKey> {
       ) => any;
     };
   };
-  headers: string;
+  /**
+   * Maps executor-level options (jsonSchema, functions, functionCall) to provider-specific request formats
+   * @optional - Only needed if provider supports these features
+   */
+  mapOptions?: {
+    /**
+     * Transform JSON schema into provider-specific format
+     * @param schema - The JSON schema object
+     * @param options - Executor options (e.g., functionCallStrictInput)
+     * @param currentInput - Current accumulated input state (for merging)
+     * @param config - The full config object
+     * @returns Provider-specific request body additions
+     */
+    jsonSchema?: (
+      schema: any,
+      options: any,
+      currentInput?: Record<string, any>,
+      config?: Config
+    ) => Record<string, any>;
 
+    /**
+     * Transform function call mode into provider-specific format
+     * @param call - Function call mode ("auto", "any", "none", or specific function)
+     * @param options - Executor options
+     * @param currentInput - Current accumulated input state (for merging)
+     * @param config - The full config object
+     * @returns Provider-specific request body additions
+     */
+    functionCall?: (
+      call: any,
+      options?: any,
+      currentInput?: Record<string, any>,
+      config?: Config
+    ) => Record<string, any>;
+
+    /**
+     * Transform function definitions into provider-specific format
+     * @param functions - Array of function definitions
+     * @param options - Executor options (e.g., functionCallStrictInput)
+     * @param currentInput - Current accumulated input state (for merging)
+     * @param config - The full config object
+     * @returns Provider-specific request body additions
+     */
+    functions?: (
+      functions: any[],
+      options?: any,
+      currentInput?: Record<string, any>,
+      config?: Config
+    ) => Record<string, any>;
+  };
   transformResponse: (result: any, _config?: Config<any>) => OutputResult;
 }

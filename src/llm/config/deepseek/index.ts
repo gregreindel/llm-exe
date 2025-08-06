@@ -1,41 +1,13 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
-import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
-import { openaiPromptSanitize } from "../openai/promptSanitize";
-import { OutputDeepSeekChat } from "@/llm/output/deepseek";
+import { generateOpenAiCompatibleConfig } from "../openai";
 
-const deepseekChatV1: Config = {
+const deepseekChatV1: Config = generateOpenAiCompatibleConfig({
   key: "deepseek.chat.v1",
   provider: "deepseek.chat",
   endpoint: `https://api.deepseek.com/v1/chat/completions`,
-  options: {
-    prompt: {},
-    topP: {},
-    useJson: {},
-    deepseekApiKey: {
-      default: getEnvironmentVariable("DEEPSEEK_API_KEY"),
-    },
-  },
-  method: "POST",
-  headers: `{"Authorization":"Bearer {{deepseekApiKey}}", "Content-Type": "application/json" }`,
-  mapBody: {
-    prompt: {
-      key: "messages",
-      transform: openaiPromptSanitize,
-    },
-    model: {
-      key: "model",
-    },
-    topP: {
-      key: "top_p",
-    },
-    useJson: {
-      key: "response_format.type",
-      transform: (v) => (v ? "json_object" : "text"),
-    },
-  },
-  transformResponse: OutputDeepSeekChat,
-};
+  apiKeyMapping: ["deepseekApiKey", "DEEPSEEK_API_KEY"],
+});
 
 export const deepseek = {
   "deepseek.chat.v1": deepseekChatV1,

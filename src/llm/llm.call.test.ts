@@ -15,6 +15,9 @@ import { useLlm_call } from "@/llm/llm.call";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 import { BaseLlmOutput } from "./output/base";
 import { OutputDefault } from "./output/default";
+import { generateOpenAiCompatibleConfig } from "./config/openai";
+import { anthropic } from "./config/anthropic";
+import { google } from "./config/google";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -85,19 +88,70 @@ describe("useLlm_call", () => {
     },
   ] as IChatMessages;
   const mockOptions = {} as LlmExecutorWithFunctionsOptions;
-  const mockConfig = {
-    endpoint: "http://api.test/endpoint",
+  
+  // Create mock configs for different providers
+  const mockOpenAiConfig = {
+    ...generateOpenAiCompatibleConfig({
+      key: "openai.chat.v1",
+      provider: "openai.chat",
+      endpoint: "http://api.test/endpoint",
+      apiKeyMapping: ["openAiApiKey", "OPENAI_API_KEY"],
+      transformResponse: jest.fn(),
+    }),
     mapBody: jest.fn(),
-    method: "POST",
-    provider: "openai.chat",
-    key: "openai.chat.v1",
     transformResponse: jest.fn(),
   };
+  
+  const mockAnthropicConfig = {
+    ...anthropic["anthropic.chat.v1"],
+    endpoint: "http://api.test/endpoint",
+    mapBody: jest.fn(),
+    transformResponse: jest.fn(),
+  };
+  
+  const mockGoogleConfig = {
+    ...google["google.chat.v1"],
+    endpoint: "http://api.test/endpoint",
+    mapBody: jest.fn(),
+    transformResponse: jest.fn(),
+  };
+  
+  // Variable to hold the current mock config for tests
+  let mockConfig = mockOpenAiConfig;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetAllMocks();
-    getLlmConfigMock.mockReturnValue(mockConfig);
+    
+    // Return different configs based on the provider key
+    getLlmConfigMock.mockImplementation((key) => {
+      if (key === "anthropic.chat.v1") {
+        return mockAnthropicConfig;
+      } else if (key === "google.chat.v1") {
+        return mockGoogleConfig;
+      } else if (key === "deepseek.chat.v1") {
+        // DeepSeek uses OpenAI-compatible config
+        return {
+          ...mockOpenAiConfig,
+          provider: "deepseek.chat",
+        };
+      } else if (key === "xai.chat.v1") {
+        // xAI uses OpenAI-compatible config
+        return {
+          ...mockOpenAiConfig,
+          provider: "xai.chat",
+        };
+      } else if (key === "openai.chat.v1" || key === "openai.chat-mock.v1") {
+        // Return OpenAI config for OpenAI providers
+        return mockOpenAiConfig;
+      }
+      // For unknown providers, return config without mapOptions
+      return {
+        ...mockOpenAiConfig,
+        mapOptions: undefined,
+      };
+    });
+    
     replaceTemplateStringSimpleMock.mockReturnValue("http://api.test/endpoint");
     mapBodyMock.mockReturnValue({
       prompt: mockMessages,
@@ -536,10 +590,7 @@ describe("useLlm_call", () => {
     };
 
     beforeEach(() => {
-      getLlmConfigMock.mockReturnValue({
-        ...mockConfig,
-        provider: "google.chat",
-      });
+      getLlmConfigMock.mockReturnValue(mockGoogleConfig);
     });
 
     it("should handle Google provider with function call", async () => {
@@ -899,6 +950,7 @@ describe("useLlm_call", () => {
   it("should not add response_format for provider that doesn't support jsonSchema", async () => {
     const mockStateOther = {
       ...mockState,
+      key: "other.provider.v1" as LlmProviderKey,
       provider: "other.provider" as LlmProvider,
     };
     

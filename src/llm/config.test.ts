@@ -20,7 +20,9 @@ describe("configs", () => {
       options: {
         prompt: {},
         topP: {},
-        openAiApiKey: {},
+        openAiApiKey: {
+          default: undefined,
+        },
         useJson: {},
       },
       method: "POST",
@@ -40,6 +42,11 @@ describe("configs", () => {
           key: "response_format.type",
           transform: expect.any(Function),
         },
+      },
+      mapOptions: {
+        functionCall: expect.any(Function),
+        functions: expect.any(Function),
+        jsonSchema: expect.any(Function),
       },
       transformResponse: expect.any(Function),
     };
@@ -78,6 +85,10 @@ describe("configs", () => {
         system: {
           key: "system",
         },
+      },
+      mapOptions: {
+        functionCall: expect.any(Function),
+        functions: expect.any(Function),
       },
       transformResponse: expect.any(Function),
     };
@@ -118,6 +129,10 @@ describe("configs", () => {
           key: "anthropic_version",
           default: "bedrock-2023-05-31",
         },
+      },
+      mapOptions: {
+        functionCall: expect.any(Function),
+        functions: expect.any(Function),
       },
       transformResponse: expect.any(Function),
     };
