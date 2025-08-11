@@ -664,7 +664,80 @@ No magic. Just clean composition.
     }
 }
 
+@media (max-width: 639px) {
+    /* Override VitePress mobile defaults for features */
+  div.VPFeatures.VPHomeFeatures {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        padding:0;
+    }
+   /*    
+    div.VPFeatures.VPHomeFeatures > div.VPFeature {
+        width: auto !important;
+        max-width: 100% !important;
+    } */
+
+     div.VPFeatures.VPHomeFeatures {
+      display:block!important;
+     }
+     div.VPFeatures.VPHomeFeatures .container {
+      padding-left:0!important;
+      padding-right:0!important;
+     }
+     .VPFeatures.VPHomeFeatures .items {
+      padding-left:0!important;
+      padding-right:0!important;
+     }
+}
+
 @media (max-width: 768px) {
+    /* Target the actual items container that holds the cards */
+    .VPFeatures.VPHomeFeatures .items {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        /* gap: 12px !important; */
+        padding: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Make each feature card fill its grid cell */
+    /* .VPFeatures.VPHomeFeatures .item {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+    } */
+    
+    .VPFeatures.VPHomeFeatures .VPFeature {
+        width: 100% !important;
+        padding: 18px 12px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        background: var(--vp-c-bg-soft) !important;
+        border: 1px solid var(--vp-c-divider) !important;
+        border-radius: 8px !important;
+        min-height: 120px !important;
+    }
+    
+    .VPFeature article {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .VPFeature h2 {
+        font-size: 1rem !important;
+        margin: 0 0 2 0 !important;
+        line-height: 1.3 !important;
+        font-weight: 700 !important;
+    }
+    
+    .VPFeature p {
+        font-size: 0.875rem !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+        color: var(--vp-c-text-2) !important;
+    }
     
     .testimonials-grid {
         grid-template-columns: 1fr;
