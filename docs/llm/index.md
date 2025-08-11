@@ -29,9 +29,15 @@ Currently, llm-exe supports calling LLM's from:
 - [AWS Bedrock](/llm/bedrock/index.html)
 - [Ollama](/llm/ollama.html)
 - [Deepseek](/llm/deepseek.html)
+- [Custom Providers](/llm/custom.html)
 
 ## Adding Custom LLM's
 
-Coming soon: documentation on how to register a custom LLM.
+You can create custom LLM configurations using `useLlmConfiguration`. This allows you to:
 
-<!-- If you need to register additional LLM's to be used, you can, once I add documentation. -->
+- Connect to OpenAI-compatible APIs
+- Use local models
+- Work with corporate proxies
+- Add support for new providers
+
+See the [Custom Provider Configuration](/llm/custom.html) guide for details.

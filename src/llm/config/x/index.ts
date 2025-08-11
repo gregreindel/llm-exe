@@ -1,8 +1,8 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
-import { generateOpenAiCompatibleConfig } from "../openai";
+import { createOpenAiCompatibleConfiguration } from "../openai/compatible";
 
-const xaiChatV1: Config = generateOpenAiCompatibleConfig({
+const xaiChatV1: Config = createOpenAiCompatibleConfiguration({
   key: "xai.chat.v1",
   provider: "xai.chat",
   endpoint: `https://api.x.ai/v1/chat/completions`,

@@ -7,7 +7,11 @@ export {
 export { BaseExecutor } from "@/executor/_base";
 export * as utils from "./utils";
 export * as guards from "./utils/guards";
-export { useLlm, useLlmConfiguration } from "./llm";
+export {
+  useLlm,
+  useLlmConfiguration,
+  createOpenAiCompatibleConfiguration,
+} from "./llm";
 export { createEmbedding } from "./embedding/embedding";
 
 export {

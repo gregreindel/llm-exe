@@ -1,8 +1,8 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
-import { generateOpenAiCompatibleConfig } from "../openai";
+import { createOpenAiCompatibleConfiguration } from "../openai/compatible";
 
-const deepseekChatV1: Config = generateOpenAiCompatibleConfig({
+const deepseekChatV1: Config = createOpenAiCompatibleConfiguration({
   key: "deepseek.chat.v1",
   provider: "deepseek.chat",
   endpoint: `https://api.deepseek.com/v1/chat/completions`,

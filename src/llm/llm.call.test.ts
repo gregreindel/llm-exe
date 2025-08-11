@@ -15,9 +15,9 @@ import { useLlm_call } from "@/llm/llm.call";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
 import { BaseLlmOutput } from "./output/base";
 import { OutputDefault } from "./output/default";
-import { generateOpenAiCompatibleConfig } from "./config/openai";
 import { anthropic } from "./config/anthropic";
 import { google } from "./config/google";
+import { createOpenAiCompatibleConfiguration } from "./config/openai/compatible";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -88,10 +88,10 @@ describe("useLlm_call", () => {
     },
   ] as IChatMessages;
   const mockOptions = {} as LlmExecutorWithFunctionsOptions;
-  
+
   // Create mock configs for different providers
   const mockOpenAiConfig = {
-    ...generateOpenAiCompatibleConfig({
+    ...createOpenAiCompatibleConfiguration({
       key: "openai.chat.v1",
       provider: "openai.chat",
       endpoint: "http://api.test/endpoint",
@@ -101,28 +101,28 @@ describe("useLlm_call", () => {
     mapBody: jest.fn(),
     transformResponse: jest.fn(),
   };
-  
+
   const mockAnthropicConfig = {
     ...anthropic["anthropic.chat.v1"],
     endpoint: "http://api.test/endpoint",
     mapBody: jest.fn(),
     transformResponse: jest.fn(),
   };
-  
+
   const mockGoogleConfig = {
     ...google["google.chat.v1"],
     endpoint: "http://api.test/endpoint",
     mapBody: jest.fn(),
     transformResponse: jest.fn(),
   };
-  
+
   // Variable to hold the current mock config for tests
   let mockConfig = mockOpenAiConfig;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetAllMocks();
-    
+
     // Return different configs based on the provider key
     getLlmConfigMock.mockImplementation((key) => {
       if (key === "anthropic.chat.v1") {
@@ -151,7 +151,7 @@ describe("useLlm_call", () => {
         mapOptions: undefined,
       };
     });
-    
+
     replaceTemplateStringSimpleMock.mockReturnValue("http://api.test/endpoint");
     mapBodyMock.mockReturnValue({
       prompt: mockMessages,
@@ -544,7 +544,7 @@ describe("useLlm_call", () => {
       ...mockConfig,
       provider: "openai.chat-mock",
     };
-    
+
     getLlmConfigMock.mockReturnValue(mockConfigForMock);
 
     const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
@@ -742,7 +742,7 @@ describe("useLlm_call", () => {
       ...mockState,
       provider: "deepseek.chat" as LlmProvider,
     };
-    
+
     const mock_options = {
       jsonSchema: {
         type: "object",
@@ -753,7 +753,7 @@ describe("useLlm_call", () => {
     };
 
     await useLlm_call(mockStateDeepseek, mockMessages, mock_options as any);
-    
+
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -778,27 +778,27 @@ describe("useLlm_call", () => {
       ...mockState,
       provider: "deepseek.chat" as LlmProvider,
     };
-    
+
     const mock_options = {
       functionCall: "auto" as GenericFunctionCall,
       functions: [
         {
-          name: "searchDatabase", 
+          name: "searchDatabase",
           description: "Search the database",
           parameters: {
             type: "object",
             properties: {
-              query: { type: "string" }
+              query: { type: "string" },
             },
-            required: ["query"]
-          }
-        }
+            required: ["query"],
+          },
+        },
       ],
-      functionCallStrictInput: true
+      functionCallStrictInput: true,
     };
 
     await useLlm_call(mockStateDeepseek, mockMessages, mock_options);
-    
+
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -810,11 +810,14 @@ describe("useLlm_call", () => {
             function: {
               name: "searchDatabase",
               description: "Search the database",
-              parameters: cleanJsonSchemaFor(mock_options.functions[0].parameters, "deepseek.chat"),
-              strict: true
-            }
-          }
-        ]
+              parameters: cleanJsonSchemaFor(
+                mock_options.functions[0].parameters,
+                "deepseek.chat"
+              ),
+              strict: true,
+            },
+          },
+        ],
       }),
       headers: {
         "Content-Type": "application/json",
@@ -827,7 +830,7 @@ describe("useLlm_call", () => {
       ...mockState,
       provider: "xai.chat" as LlmProvider,
     };
-    
+
     const mock_options = {
       jsonSchema: {
         type: "object",
@@ -838,7 +841,7 @@ describe("useLlm_call", () => {
     };
 
     await useLlm_call(mockStateXai, mockMessages, mock_options as any);
-    
+
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -863,25 +866,25 @@ describe("useLlm_call", () => {
       ...mockState,
       provider: "xai.chat" as LlmProvider,
     };
-    
+
     const mock_options = {
       functionCall: { name: "getWeather" },
       functions: [
         {
-          name: "getWeather", 
+          name: "getWeather",
           description: "Get weather info",
           parameters: {
             type: "object",
             properties: {
-              location: { type: "string" }
-            }
-          }
-        }
-      ]
+              location: { type: "string" },
+            },
+          },
+        },
+      ],
     };
 
     await useLlm_call(mockStateXai, mockMessages, mock_options as any);
-    
+
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -893,11 +896,14 @@ describe("useLlm_call", () => {
             function: {
               name: "getWeather",
               description: "Get weather info",
-              parameters: cleanJsonSchemaFor(mock_options.functions[0].parameters, "xai.chat"),
-              strict: false
-            }
-          }
-        ]
+              parameters: cleanJsonSchemaFor(
+                mock_options.functions[0].parameters,
+                "xai.chat"
+              ),
+              strict: false,
+            },
+          },
+        ],
       }),
       headers: {
         "Content-Type": "application/json",
@@ -911,10 +917,10 @@ describe("useLlm_call", () => {
       prompt: mockMessages,
       response_format: {
         type: "json_object",
-        existing_property: "should_preserve"
-      }
+        existing_property: "should_preserve",
+      },
     });
-    
+
     const mock_options = {
       jsonSchema: {
         type: "object",
@@ -922,11 +928,11 @@ describe("useLlm_call", () => {
           name: { type: "string" },
         },
       },
-      functionCallStrictInput: true
+      functionCallStrictInput: true,
     };
 
     await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
-    
+
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
       body: JSON.stringify({
@@ -953,7 +959,7 @@ describe("useLlm_call", () => {
       key: "other.provider.v1" as LlmProviderKey,
       provider: "other.provider" as LlmProvider,
     };
-    
+
     const mock_options = {
       jsonSchema: {
         type: "object",
@@ -964,7 +970,7 @@ describe("useLlm_call", () => {
     };
 
     await useLlm_call(mockStateOther, mockMessages, mock_options as any);
-    
+
     // Should not have response_format since provider doesn't match the supported list
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
@@ -979,7 +985,7 @@ describe("useLlm_call", () => {
 
   it("should handle string messages input", async () => {
     const stringMessage = "Hello, this is a simple string message";
-    
+
     const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
     mockConfig.transformResponse.mockReturnValueOnce(mockOutputResult);
     const mockBaseLlmOutputReturn = "stringMessageOutput";
@@ -991,7 +997,7 @@ describe("useLlm_call", () => {
       ...mockState,
       prompt: stringMessage,
     });
-    
+
     expect(apiRequestMock).toHaveBeenCalledWith(
       "http://api.test/endpoint",
       expect.objectContaining({
@@ -1004,7 +1010,7 @@ describe("useLlm_call", () => {
         },
       })
     );
-    
+
     expect(result).toBe(mockBaseLlmOutputReturn);
   });
 
@@ -1014,44 +1020,47 @@ describe("useLlm_call", () => {
       transformResponse: undefined,
       options: {
         model: {
-          default: "test-model"
-        }
-      }
+          default: "test-model",
+        },
+      },
     };
-    
+
     getLlmConfigMock.mockReturnValue(mockConfigNoOutput);
-    
-    const mockApiResponse = { 
+
+    const mockApiResponse = {
       text: "response text",
       output_tokens: 10,
       input_tokens: 5,
-      stopReason: "complete"
+      stopReason: "complete",
     };
     apiRequestMock.mockResolvedValue(mockApiResponse);
-    
+
     const mockOutputDefaultResult = {
       name: "test-model",
       usage: {
         output_tokens: 10,
         input_tokens: 5,
-        total_tokens: 15
+        total_tokens: 15,
       },
       stopReason: "complete",
-      content: [{ type: "text", text: "response text" }]
+      content: [{ type: "text", text: "response text" }],
     };
     OutputDefaultMock.mockReturnValue(mockOutputDefaultResult);
-    
+
     const mockBaseLlmOutputReturn = "defaultParsedOutput";
     BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
-    
+
     const result = await useLlm_call(mockState, mockMessages);
-    
+
     // Should call OutputDefault when no output function is provided
-    expect(OutputDefaultMock).toHaveBeenCalledWith(mockApiResponse, mockConfigNoOutput);
-    
+    expect(OutputDefaultMock).toHaveBeenCalledWith(
+      mockApiResponse,
+      mockConfigNoOutput
+    );
+
     // Should pass the result from OutputDefault to BaseLlmOutput
     expect(BaseLlmOutputMock).toHaveBeenCalledWith(mockOutputDefaultResult);
-    
+
     expect(result).toBe(mockBaseLlmOutputReturn);
   });
 });
