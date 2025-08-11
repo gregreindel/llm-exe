@@ -71,17 +71,17 @@ const providerModels = getProviders();
 
 @media (max-width: 900px) {
   .hero-code-wrapper {
-    width: 100vw !important;
-    position: static !important;
-    margin-left: -16px;
-    margin-right: -16px;
+    width: 100% !important;
+    position: relative !important;
+    margin-left: 0;
+    margin-right: 0;
   }
-  
+
   .hero-code-container {
     width: 100% !important;
     max-width: none !important;
   }
-  
+
   .hero-code-container :deep(.provider-tabs) {
     display: flex;
     justify-content: flex-start;
@@ -98,7 +98,7 @@ const providerModels = getProviders();
     margin: 0;
     border-radius: 0;
   }
-  
+
   .hero-code-container :deep(.provider-tab) {
     flex: 0 0 auto;
     min-width: 100px;
@@ -107,17 +107,17 @@ const providerModels = getProviders();
     justify-content: center;
     padding: 6px 10px;
   }
-  
+
   .hero-code-container :deep(.provider-logo) {
     display: flex;
     align-items: center;
     margin-right: 6px;
   }
-  
+
   .hero-code-container :deep(.provider-name) {
     line-height: 1;
   }
-  
+
   .hero-code-container :deep(.code-block) {
     text-align: left !important;
     padding: 12px;

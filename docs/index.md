@@ -570,6 +570,7 @@ No magic. Just clean composition.
     align-items: center;
     justify-content: center;
     height: 100%;
+    margin:0!important
 }
 
 .HomeAfterIntro {
