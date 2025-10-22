@@ -544,7 +544,15 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.gpt-4o-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
-  // Claude 3.7 Sonnet (hybrid reasoning model)
+
+  "anthropic.claude-sonnet-4-0": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+
+  "anthropic.claude-opus-4-0": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -571,21 +579,34 @@ export type AllUseLlmOptions = AllLlm & {
   };
   "google.gemini-2.5-pro-exp-03-25": {
     input: Omit<GeminiRequest, "model">;
-    // output: OpenAiRequest;
   };
   "google.gemini-2.0-flash": {
     input: Omit<GeminiRequest, "model">;
-    // output: OpenAiRequest;
   };
   "google.gemini-2.0-flash-lite": {
     input: Omit<GeminiRequest, "model">;
-    // output: OpenAiRequest;
   };
+
+  "google.gemini-2.5-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.5-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+
   "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
-    // output: OpenAiRequest;
+  };
+  "google.gemini-2.5-pro": {
+    input: Omit<GeminiRequest, "model">;
   };
   "xai.grok-2": {
+    input: OpenAiRequest;
+  };
+  "xai.grok-3": {
+    input: OpenAiRequest;
+  };
+  "xai.grok-4": {
     input: OpenAiRequest;
   };
   "ollama.deepseek-r1": {

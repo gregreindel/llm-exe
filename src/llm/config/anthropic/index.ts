@@ -84,7 +84,8 @@ export const anthropic = {
     anthropicChatV1,
     "claude-3-5-haiku-latest"
   ),
-  // Claude 3 models (previous generation)
+
+  // Deprecated
   "anthropic.claude-3-opus": withDefaultModel(
     anthropicChatV1,
     "claude-3-opus-20240229"

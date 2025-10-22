@@ -122,4 +122,76 @@ describe("parseHeaders", () => {
 
     expect(headers).toEqual(payload.headers);
   });
+
+  it("Should throw an error when headers contain invalid JSON", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('{"Authorization": invalid json}');
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      /Failed to parse headers configuration: .* Headers template: "{"Authorization": "Bearer {{token}}"}". After replacement: "{"Authorization": invalid json}"/
+    );
+  });
+
+  it("Should throw an error when headers parse to an array", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('["header1", "header2"]');
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      'Failed to parse headers configuration: Headers must be a JSON object. ' +
+      'Headers template: "{"Authorization": "Bearer {{token}}"}". ' +
+      'After replacement: "["header1", "header2"]"'
+    );
+  });
+
+  it("Should throw an error when headers parse to null", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('null');
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      'Failed to parse headers configuration: Headers must be a JSON object. ' +
+      'Headers template: "{"Authorization": "Bearer {{token}}"}". ' +
+      'After replacement: "null"'
+    );
+  });
+
+  it("Should throw an error when headers parse to a primitive value", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('"just a string"');
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      'Failed to parse headers configuration: Headers must be a JSON object. ' +
+      'Headers template: "{"Authorization": "Bearer {{token}}"}". ' +
+      'After replacement: ""just a string""'
+    );
+  });
+
+  it("Should throw an error when headers parse to a number", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('123');
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      'Failed to parse headers configuration: Headers must be a JSON object. ' +
+      'Headers template: "{"Authorization": "Bearer {{token}}"}". ' +
+      'After replacement: "123"'
+    );
+  });
+
+  it("Should handle nested JSON objects correctly", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('{"Authorization": "Bearer test", "X-Custom": {"nested": "value"}}');
+    config.provider = "openai.chat";
+
+    const headers = await parseHeaders(config, replacements, payload);
+
+    expect(headers).toEqual({
+      'User-Agent': 'test-agent',
+      'Authorization': 'Bearer test',
+      'X-Custom': { nested: 'value' }
+    });
+  });
+
+  it("Should handle empty JSON object", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('{}');
+    config.provider = "openai.chat";
+
+    const headers = await parseHeaders(config, replacements, payload);
+
+    expect(headers).toEqual({
+      'User-Agent': 'test-agent'
+    });
+  });
 });
