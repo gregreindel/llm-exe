@@ -116,8 +116,8 @@ export interface Claude3Response {
       }
   )[];
   model: string;
-  stop_reason: "end_turn" | "tool_use";
-  stop_sequence: null;
+  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal";
+  stop_sequence: null | string;
   usage: {
     input_tokens: number;
     output_tokens: number;
@@ -187,7 +187,7 @@ export interface OllamaResponse {
  * Amazon Titan
  */
 
-export interface AmazonTitalRequest {
+export interface AmazonTitanRequest {
   inputText: string;
   textGenerationConfig: {
     temperature: number;
@@ -461,6 +461,12 @@ export interface AmazonBedrockRequest extends GenericLLm {
 export interface AnthropicRequest extends GenericLLm {
   model: string;
   anthropicApiKey?: string;
+  // Anthropic-specific parameters
+  topK?: number; // Only sample from the top K options for each subsequent token
+  metadata?: {
+    user_id?: string;
+  };
+  serviceTier?: "auto" | "standard_only"; // Determines whether to use priority capacity
 }
 
 export interface GeminiRequest extends GenericLLm {
@@ -550,16 +556,25 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
+  // Claude 4 models (latest generation)
+  "anthropic.claude-sonnet-4": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-opus-4": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  // Claude 3.5 models
   "anthropic.claude-3-5-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
+  "anthropic.claude-3-5-haiku": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  // Claude 3 models (previous generation)
   "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-3-sonnet": {
-    input: Omit<AnthropicRequest, "model">;
-  };
-  "anthropic.claude-3-5-haiku": {
+  "anthropic.claude-3-haiku": {
     input: Omit<AnthropicRequest, "model">;
   };
   "google.gemini-2.5-pro-exp-03-25": {
