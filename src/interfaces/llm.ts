@@ -16,6 +16,8 @@ interface OutputOpenAIChatChoiceBase {
         }[];
   };
   finish_reason: "tool_calls" | "stop";
+
+  reasoning_effort: "minimal" | "low" | "medium" | "high";
 }
 
 export interface OutputOpenAIChatChoiceFunction
@@ -381,6 +383,10 @@ export interface BaseLlmOptions {
   numOfAttempts?: number;
   jitter?: "none" | "full";
   promptType?: PromptType;
+
+  // New options for custom endpoints
+  endpoint?: string;
+  headers?: Record<string, string>;
 }
 
 export interface GenericEmbeddingOptions extends BaseLlmOptions {
@@ -440,6 +446,8 @@ export interface GenericLLm extends BaseLlmOptions {
   streamOptions?: Record<string, any>;
   maxTokens?: number;
   stopSequences?: string[];
+
+  effort?: "minimal" | "low" | "medium" | "high";
 }
 
 export interface OpenAiRequest extends GenericLLm {
