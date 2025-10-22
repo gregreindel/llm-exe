@@ -2,7 +2,7 @@ import { BaseStateItem, Dialogue, createDialogue } from "@/state";
 import { IChatUserMessage } from "@/types";
 import { assert } from "@/utils/modules/assert";
 import { mockOutputResultObject } from "../../utils/mock.helpers";
-import { BaseLlmOutput2 } from "@/llm/output/base";
+import { BaseLlmOutput } from "@/llm/output/base";
 
 /**
  * Tests Dialogue
@@ -603,7 +603,7 @@ describe("llm-exe:state/Dialogue", () => {
       const result = mockOutputResultObject([
         { type: "text", text: "Wrapped response" },
       ]);
-      const wrapped = BaseLlmOutput2(result);
+      const wrapped = BaseLlmOutput(result);
 
       dialogue.addFromOutput(wrapped);
 
@@ -703,6 +703,30 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history[3].role).toEqual("function_call");
       assert(history[3].role === "function_call");
       expect(history[3].function_call?.name).toEqual("fn2");
+    });
+
+    it("handles null output gracefully", () => {
+      const dialogue = new Dialogue("main");
+      const result = dialogue.addFromOutput(null as any);
+      
+      expect(result).toBe(dialogue); // Should return this
+      expect(dialogue.getHistory()).toHaveLength(0); // No messages added
+    });
+
+    it("handles non-object output gracefully", () => {
+      const dialogue = new Dialogue("main");
+      const result = dialogue.addFromOutput("not an object" as any);
+      
+      expect(result).toBe(dialogue); // Should return this
+      expect(dialogue.getHistory()).toHaveLength(0); // No messages added
+    });
+
+    it("handles undefined output gracefully", () => {
+      const dialogue = new Dialogue("main");
+      const result = dialogue.addFromOutput(undefined as any);
+      
+      expect(result).toBe(dialogue); // Should return this
+      expect(dialogue.getHistory()).toHaveLength(0); // No messages added
     });
   });
 });

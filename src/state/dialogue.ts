@@ -194,6 +194,11 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
    * @returns this for chaining
    */
   addFromOutput(output: OutputResult | BaseLlCall) {
+    // Handle null/undefined/non-object inputs
+    if (!output || typeof output !== "object") {
+      return this;
+    }
+    
     // Handle both raw OutputResult and the wrapped BaseLlCall
     const result = "getResult" in output ? output.getResult() : output;
 

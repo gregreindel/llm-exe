@@ -1,6 +1,6 @@
-import { IChatMessages } from "@/types";
+import { IChatMessages, Config } from "@/types";
 import { getLlmConfig } from "@/llm/config";
-import { useLlm } from "@/llm/llm";
+import { useLlm, useLlmConfiguration } from "@/llm/llm";
 import { useLlm_call } from "@/llm/llm.call";
 
 jest.mock("@/llm/config", () => ({
@@ -83,6 +83,104 @@ describe("useLlm", () => {
     const { call } = useLlm(mockProvider);
 
     await call(mockMessages);
+
+    expect(useLlm_call).toHaveBeenCalledWith(
+      expect.anything(),
+      mockMessages,
+      undefined
+    );
+  });
+});
+
+describe("useLlmConfiguration", () => {
+  const mockConfig: Config<any> = {
+    key: "openai.custom" as any,
+    provider: "openai.chat",
+    endpoint: "https://api.openai.com/v1/chat/completions",
+    method: "POST",
+    headers: `{"Authorization":"Bearer {{apiKey}}", "Content-Type": "application/json"}`,
+    mapBody: {
+      prompt: { key: "messages" },
+      model: { key: "model" },
+    },
+    options: {
+      model: {
+        default: "gpt-4",
+      },
+    },
+    transformResponse: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should return a function that creates an LLM instance", () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+    expect(typeof llmFactory).toBe("function");
+  });
+
+  it("should create an LLM instance with call, getTraceId, and getMetadata methods", () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+    const llmInstance = llmFactory();
+
+    expect(typeof llmInstance.call).toBe("function");
+    expect(typeof llmInstance.getTraceId).toBe("function");
+    expect(typeof llmInstance.getMetadata).toBe("function");
+  });
+
+  it("should accept options when creating LLM instance", () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+    const options = {
+      model: "gpt-3.5-turbo",
+      temperature: 0.5,
+    };
+    const llmInstance = llmFactory(options);
+
+    expect(llmInstance).toBeDefined();
+    expect(typeof llmInstance.call).toBe("function");
+  });
+
+  it("should create different instances for different option sets", () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+
+    const instance1 = llmFactory({ traceId: "trace-1" });
+    const instance2 = llmFactory({ traceId: "trace-2" });
+
+    expect(instance1.getTraceId()).toBe("trace-1");
+    expect(instance2.getTraceId()).toBe("trace-2");
+  });
+
+  it("should work with empty options", () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+    const llmInstance = llmFactory({});
+
+    expect(typeof llmInstance.call).toBe("function");
+    expect(typeof llmInstance.getTraceId).toBe("function");
+    expect(typeof llmInstance.getMetadata).toBe("function");
+  });
+
+  it("should work without any options (undefined)", () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+    const llmInstance = llmFactory();
+
+    expect(typeof llmInstance.call).toBe("function");
+    expect(typeof llmInstance.getTraceId).toBe("function");
+    expect(typeof llmInstance.getMetadata).toBe("function");
+  });
+
+  it("should allow calling the created LLM instance", async () => {
+    const llmFactory = useLlmConfiguration(mockConfig);
+    const llmInstance = llmFactory({ model: "custom-model" });
+
+    const mockMessages = [
+      {
+        role: "user",
+        content: "Hello from configuration",
+      },
+    ] as IChatMessages;
+
+    await llmInstance.call(mockMessages);
 
     expect(useLlm_call).toHaveBeenCalledWith(
       expect.anything(),

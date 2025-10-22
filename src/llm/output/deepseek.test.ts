@@ -26,39 +26,38 @@ describe("llm-exe:output/OutputDeepSeekChat", () => {
       },
     ],
   };
-  it("creates class with expected properties", () => {
-    const output = OutputDeepSeekChat(mock as any).getResult();
+  it("creates output with expected properties", () => {
+    const output = OutputDeepSeekChat(mock as any);
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
     expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
   });
-  it("creates class with expected properties", () => {
-    const output = OutputDeepSeekChat(mock as any).getResult();
-    expect((output as any).id).toEqual(mock.id);
-    expect((output as any).name).toEqual(mock.model);
-    expect((output as any).created).toEqual(mock.created);
-    expect((output as any).usage).toEqual({
+  it("creates output with correct values", () => {
+    const output = OutputDeepSeekChat(mock as any);
+    expect(output.id).toEqual(mock.id);
+    expect(output.name).toEqual(mock.model);
+    expect(output.created).toEqual(mock.created);
+    expect(output.usage).toEqual({
       input_tokens: mock.usage.prompt_tokens,
       output_tokens: mock.usage.completion_tokens,
       total_tokens: mock.usage.total_tokens,
     });
   });
-  it("creates class with expected methods", () => {
+  it("formats content correctly", () => {
     const output = OutputDeepSeekChat(mock as any);
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultText");
-    expect(typeof output.getResultText).toEqual("function");
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultContent");
-    expect(typeof output.getResultContent).toEqual("function");
+    expect(output.content).toEqual([
+      {
+        type: "text",
+        text: "This is the assistant message content.",
+      },
+    ]);
+    expect(output.stopReason).toEqual("stop");
   });
-  it("getResults gets results", () => {
+  it("returns complete output structure", () => {
     const output = OutputDeepSeekChat(mock as any);
-    expect(output.getResult()).toEqual({
+    expect(output).toEqual({
       content: [
         { text: "This is the assistant message content.", type: "text" },
       ],
@@ -70,40 +69,9 @@ describe("llm-exe:output/OutputDeepSeekChat", () => {
       usage: { input_tokens: 427, output_tokens: 1, total_tokens: 428 },
     });
   });
-  it("getResult gets result", () => {
-    const output = OutputDeepSeekChat(mock as any);
-    expect(output.getResult()).toEqual({
-      content: [
-        {
-          text: "This is the assistant message content.",
-          type: "text",
-        },
-      ],
-      created: mock.created,
-      id: mock.id,
-      name: "gpt-3.5-turbo-0301",
-      options: [],
-      stopReason: "stop",
-      usage: {
-        input_tokens: mock.usage.prompt_tokens,
-        output_tokens: mock.usage.completion_tokens,
-        total_tokens: mock.usage.total_tokens,
-      },
-    });
-  });
-  it("getResultContent gets result", () => {
-    const output = OutputDeepSeekChat(mock as any);
-    expect(output.getResultText()).toEqual(
-      "This is the assistant message content."
-    );
-  });
 
-  it("getResultContent gets [] if not exists", () => {
-    const output = OutputDeepSeekChat(mock as any);
-    expect(output.getResultContent(8)).toEqual([]);
-  });
 
-  it("getResultContent gets tool_calls if content is null", () => {
+  it("handles tool_calls when content is null", () => {
     const output = OutputDeepSeekChat({
       id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
       object: "chat.completion",
@@ -121,6 +89,7 @@ describe("llm-exe:output/OutputDeepSeekChat", () => {
             content: null,
             tool_calls: [
               {
+                id: "call_123",
                 type: "function",
                 function: {
                   name: "test_fn",
@@ -134,8 +103,55 @@ describe("llm-exe:output/OutputDeepSeekChat", () => {
         },
       ],
     } as unknown as OpenAiResponse);
-    expect(output.getResultContent()).toEqual([
-      { input: {}, name: "test_fn", type: "function_use" },
-    ]);
+    expect(output.content).toEqual(
+      [{"functionId": "call_123", "input": {}, "name": "test_fn", "type": "function_use"}]
+    );
+  });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const output = OutputDeepSeekChat(mockWithoutModel as any);
+    expect(output.name).toBe("deepseek.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = {
+      ...mock,
+      model: undefined,
+    };
+    const config = {
+      options: {
+        model: {
+          default: "deepseek-from-config",
+        },
+      },
+    };
+    const output = OutputDeepSeekChat(mockWithoutModel as any, config as any);
+    expect(output.name).toBe("deepseek-from-config");
+  });
+
+  it("handles missing choices array", () => {
+    const mockWithoutChoices = {
+      ...mock,
+      choices: undefined,
+    };
+    const output = OutputDeepSeekChat(mockWithoutChoices as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
+
+  it("handles empty choices array", () => {
+    const mockWithEmptyChoices = {
+      ...mock,
+      choices: [],
+    };
+    const output = OutputDeepSeekChat(mockWithEmptyChoices as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
   });
 });

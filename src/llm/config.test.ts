@@ -20,7 +20,9 @@ describe("configs", () => {
       options: {
         prompt: {},
         topP: {},
-        openAiApiKey: {},
+        openAiApiKey: {
+          default: undefined,
+        },
         useJson: {},
       },
       method: "POST",
@@ -28,7 +30,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function)
+          transform: expect.any(Function),
         },
         model: {
           key: "model",
@@ -38,9 +40,15 @@ describe("configs", () => {
         },
         useJson: {
           key: "response_format.type",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
       },
+      mapOptions: {
+        functionCall: expect.any(Function),
+        functions: expect.any(Function),
+        jsonSchema: expect.any(Function),
+      },
+      transformResponse: expect.any(Function),
     };
     expect(configs["openai.chat.v1"]).toEqual(openaiConfig);
   });
@@ -72,7 +80,7 @@ describe("configs", () => {
         },
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function)
+          transform: expect.any(Function),
         },
         system: {
           key: "system",
@@ -99,6 +107,11 @@ describe("configs", () => {
           key: "service_tier",
         },
       },
+      mapOptions: {
+        functionCall: expect.any(Function),
+        functions: expect.any(Function),
+      },
+      transformResponse: expect.any(Function),
     };
     expect(configs["anthropic.chat.v1"]).toEqual(anthropicConfig);
   });
@@ -124,7 +137,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "messages",
-          sanitize: expect.any(Function)
+          transform: expect.any(Function),
         },
         topP: {
           key: "top_p",
@@ -138,6 +151,11 @@ describe("configs", () => {
           default: "bedrock-2023-05-31",
         },
       },
+      mapOptions: {
+        functionCall: expect.any(Function),
+        functions: expect.any(Function),
+      },
+      transformResponse: expect.any(Function),
     };
     expect(configs["amazon:anthropic.chat.v1"]).toEqual(amazonAnthropicConfig);
   });
@@ -163,7 +181,7 @@ describe("configs", () => {
       mapBody: {
         prompt: {
           key: "prompt",
-          sanitize: expect.any(Function),
+          transform: expect.any(Function),
         },
         topP: {
           key: "top_p",
@@ -176,17 +194,22 @@ describe("configs", () => {
           default: 2048,
         },
       },
+      transformResponse: expect.any(Function),
     };
     expect(configs["amazon:meta.chat.v1"]).toEqual(amazonMetaConfig);
   });
 
-  it("should have valid amazon:meta.chat.v1 sanitize prompt", () => {
+  it("should have valid amazon:meta.chat.v1 transform prompt", () => {
     const config = configs["amazon:meta.chat.v1"];
-    const sanitize = config.mapBody["prompt"].sanitize!;
-    expect(typeof sanitize).toEqual("function");
+    const transform = config.mapBody["prompt"].transform!;
+    expect(typeof transform).toEqual("function");
 
-    const sanitized = sanitize([{ role: "assistant", content: "Hello World" }], {}, {});
-    expect(sanitized.trim()).toEqual(`Assistant: Hello World`);
+    const transformed = transform(
+      [{ role: "assistant", content: "Hello World" }],
+      {},
+      {}
+    );
+    expect(transformed.trim()).toEqual(`Assistant: Hello World`);
   });
 });
 
@@ -199,7 +222,9 @@ describe("getLlmConfig", () => {
 
   it("should throw an error for an invalid provider", () => {
     const provider: any = "invalid";
-    expect(() => getLlmConfig(provider)).toThrow(`Invalid provider: ${provider}`);
+    expect(() => getLlmConfig(provider)).toThrow(
+      `Invalid provider: ${provider}`
+    );
   });
 
   it("should throw an error when provider is undefined", () => {

@@ -1,39 +1,15 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
-import { openaiPromptSanitize } from "./promptSanitize";
+import { OutputOpenAIChat } from "@/llm/output/openai";
+import { createOpenAiCompatibleConfiguration } from "./compatible";
 
-const openAiChatV1: Config = {
+const openAiChatV1: Config = createOpenAiCompatibleConfiguration({
   key: "openai.chat.v1",
   provider: "openai.chat",
   endpoint: `https://api.openai.com/v1/chat/completions`,
-  options: {
-    prompt: {},
-    topP: {},
-    useJson: {},
-    openAiApiKey: {
-      default: getEnvironmentVariable("OPENAI_API_KEY"),
-    },
-  },
-  method: "POST",
-  headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
-  mapBody: {
-    prompt: {
-      key: "messages",
-      sanitize: openaiPromptSanitize,
-    },
-    model: {
-      key: "model",
-    },
-    topP: {
-      key: "top_p",
-    },
-    useJson: {
-      key: "response_format.type",
-      sanitize: (v) => (v ? "json_object" : "text"),
-    },
-  },
-};
+  apiKeyMapping: ["openAiApiKey", "OPENAI_API_KEY"],
+});
 
 const openAiChatMockV1: Config = {
   key: "openai.chat-mock.v1",
@@ -61,9 +37,10 @@ const openAiChatMockV1: Config = {
     },
     useJson: {
       key: "response_format.type",
-      sanitize: (v) => (v ? "json_object" : "text"),
+      transform: (v) => (v ? "json_object" : "text"),
     },
   },
+  transformResponse: OutputOpenAIChat,
 };
 
 export const openai = {

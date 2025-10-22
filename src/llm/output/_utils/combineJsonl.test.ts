@@ -81,4 +81,43 @@ describe("combineJsonl", () => {
     expect(result.result.model).toBe("first-done");
     expect(result.result.message.content).toBe("First Second");
   });
+
+  it("handles missing message property with empty string", () => {
+    const jsonl = `
+      {"created_at":"2023-01-01T09:00:00Z","done":false}
+      {"created_at":"2023-01-02T10:00:00Z","done":true,"model":"test-model"}
+    `;
+    const result = combineJsonl(jsonl);
+    expect(result.content.text).toBe("");
+  });
+
+  it("handles message with null content", () => {
+    const jsonl = `
+      {"created_at":"2023-01-01T09:00:00Z","done":false,"message":{"content":null}}
+      {"created_at":"2023-01-02T10:00:00Z","done":true,"model":"test-model","message":{"content":null}}
+    `;
+    const result = combineJsonl(jsonl);
+    expect(result.content.text).toBe("");
+  });
+
+  it("handles message with undefined content (missing property)", () => {
+    const jsonl = `
+      {"created_at":"2023-01-01T09:00:00Z","done":false,"message":{"role":"assistant"}}
+      {"created_at":"2023-01-02T10:00:00Z","done":true,"model":"test-model","message":{"role":"assistant"}}
+    `;
+    const result = combineJsonl(jsonl);
+    expect(result.content.text).toBe("");
+  });
+
+  it("combines mixed null, undefined, and valid content", () => {
+    const jsonl = `
+      {"created_at":"2023-01-01T09:00:00Z","done":false,"message":{"content":"Hello "}}
+      {"created_at":"2023-01-02T10:00:00Z","done":false,"message":{"content":null}}
+      {"created_at":"2023-01-03T11:00:00Z","done":false,"message":{}}
+      {"created_at":"2023-01-04T12:00:00Z","done":false}
+      {"created_at":"2023-01-05T13:00:00Z","done":true,"message":{"content":"World"}}
+    `;
+    const result = combineJsonl(jsonl);
+    expect(result.content.text).toBe("Hello World");
+  });
 });

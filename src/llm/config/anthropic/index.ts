@@ -2,6 +2,8 @@ import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { anthropicPromptSanitize } from "./promptSanitize";
+import { OutputAnthropicClaude3Chat } from "@/llm/output/claude";
+import { cleanJsonSchemaFor } from "@/llm/output/_utils/cleanJsonSchemaFor";
 
 const ANTHROPIC_VERSION = "2023-06-01";
 
@@ -34,7 +36,7 @@ const anthropicChatV1: Config = {
     },
     prompt: {
       key: "messages",
-      sanitize: anthropicPromptSanitize,
+      transform: anthropicPromptSanitize,
     },
     temperature: {
       key: "temperature",
@@ -58,6 +60,25 @@ const anthropicChatV1: Config = {
       key: "service_tier", // Map camelCase to snake_case
     },
   },
+  mapOptions: {
+    functionCall: (call, _options) => {
+      // Anthropic handles "none" by clearing functions array
+      if (call === "none") return { _clearFunctions: true };
+      if (call === "auto" || call === "any") {
+        return { tool_choice: { type: call } };
+      }
+      return { tool_choice: call };
+    },
+
+    functions: (functions) => ({
+      tools: functions.map((f) => ({
+        name: f.name,
+        description: f.description,
+        input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
+      })),
+    }),
+  },
+  transformResponse: OutputAnthropicClaude3Chat,
 };
 
 export const anthropic = {

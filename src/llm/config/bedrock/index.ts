@@ -2,9 +2,12 @@ import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { anthropicPromptSanitize } from "../anthropic/promptSanitize";
 import { Config } from "@/types";
+import { OutputAnthropicClaude3Chat } from "@/llm/output/claude";
+import { OutputMetaLlama3Chat } from "@/llm/output/llama";
+import { cleanJsonSchemaFor } from "@/llm/output/_utils/cleanJsonSchemaFor";
 // import { amazonNovaPromptSanitize } from "./prompt.nova";
 
-const ANTORPIC_BEDROCK_VERSION = "bedrock-2023-05-31";
+const ANTHROPIC_BEDROCK_VERSION = "bedrock-2023-05-31";
 
 const amazonAnthropicChatV1: Config = {
   key: "amazon:anthropic.chat.v1",
@@ -26,7 +29,7 @@ const amazonAnthropicChatV1: Config = {
   mapBody: {
     prompt: {
       key: "messages",
-      sanitize: anthropicPromptSanitize,
+      transform: anthropicPromptSanitize,
     },
     topP: {
       key: "top_p",
@@ -37,9 +40,28 @@ const amazonAnthropicChatV1: Config = {
     },
     anthropic_version: {
       key: "anthropic_version",
-      default: ANTORPIC_BEDROCK_VERSION,
+      default: ANTHROPIC_BEDROCK_VERSION,
     },
   },
+  mapOptions: {
+    functionCall: (call, _options) => {
+      // Anthropic handles "none" by clearing functions array
+      if (call === "none") return { _clearFunctions: true };
+      if (call === "auto" || call === "any") {
+        return { tool_choice: { type: call } };
+      }
+      return { tool_choice: call };
+    },
+
+    functions: (functions) => ({
+      tools: functions.map((f) => ({
+        name: f.name,
+        description: f.description,
+        input_schema: cleanJsonSchemaFor(f.parameters, "anthropic.chat"),
+      })),
+    }),
+  },
+  transformResponse: OutputAnthropicClaude3Chat,
 };
 
 const amazonMetaChatV1: Config = {
@@ -62,7 +84,7 @@ const amazonMetaChatV1: Config = {
   mapBody: {
     prompt: {
       key: "prompt",
-      sanitize: (messages: any) => {
+      transform: (messages: any) => {
         if (typeof messages === "string") {
           return messages;
         } else {
@@ -83,8 +105,8 @@ const amazonMetaChatV1: Config = {
       default: 2048,
     },
   },
+  transformResponse: OutputMetaLlama3Chat,
 };
-
 
 // const amazonAmazonNovaChatV1: Config = {
 //   key: "amazon:nova.chat.v1",
@@ -106,7 +128,7 @@ const amazonMetaChatV1: Config = {
 //   mapBody: {
 //     prompt: {
 //       key: "messages",
-//       sanitize: amazonNovaPromptSanitize,
+//       transform: amazonNovaPromptSanitize,
 //     },
 //   },
 // };

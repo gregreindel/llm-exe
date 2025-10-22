@@ -24,35 +24,80 @@ describe("llm-exe:output/OutputOllamaChat", () => {
 {"model":"${model}","created_at":"2025-03-08T16:58:04.313535Z","message":{"role":"assistant","content":" 😊"},"done":false}
 {"model":"${model}","created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true,"total_duration":1014197584,"load_duration":25932875,"prompt_eval_count":5,"prompt_eval_duration":419000000,"eval_count":16,"eval_duration":568000000}`;
   
-it("creates class with expected properties", () => {
-    const output = OutputOllamaChat(mock).getResult();
+it("creates output with expected properties", () => {
+    const output = OutputOllamaChat(mock);
     expect(output).toHaveProperty("id");
     expect(output).toHaveProperty("name");
     expect(output).toHaveProperty("created");
     expect(output).toHaveProperty("content");
     expect(output).toHaveProperty("usage");
   });
-  it("creates class with expected properties", () => {
-    const output = OutputOllamaChat(mock as any).getResult();
-    expect((output as any).id).toEqual(`${model}.${created_at}`);
-    expect((output as any).name).toEqual(model);
-    expect((output as any).created).toEqual(new Date(created_at).getTime());
-    expect((output as any).usage).toEqual({
+  it("creates output with correct values", () => {
+    const output = OutputOllamaChat(mock as any);
+    expect(output.id).toEqual(`${model}.${created_at}`);
+    expect(output.name).toEqual(model);
+    expect(output.created).toEqual(new Date(created_at).getTime());
+    expect(output.usage).toEqual({
       input_tokens: 0,
       output_tokens: 0,
       total_tokens: 0,
     });
   });
 
-  it("creates class with expected methods", () => {
+  it("formats content correctly", () => {
     const output = OutputOllamaChat(mock as any);
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultText");
-    expect(typeof output.getResultText).toEqual("function");
-    expect(output).toHaveProperty("getResult");
-    expect(typeof output.getResult).toEqual("function");
-    expect(output).toHaveProperty("getResultContent");
-    expect(typeof output.getResultContent).toEqual("function");
+    expect(output.content).toEqual([
+      {
+        type: "text",
+        text: "<think>\n\n</think>\n\nHello! How can I assist you today? 😊",
+      },
+    ]);
+    expect(output.stopReason).toEqual("stop");
+  });
+
+  it("uses default model name when model is undefined and no config", () => {
+    const mockWithoutModel = `
+{"created_at":"${created_at}","message":{"role":"assistant","content":"Hello"},"done":false}
+{"created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true}`;
+    const output = OutputOllamaChat(mockWithoutModel);
+    expect(output.name).toBe("ollama.unknown");
+  });
+
+  it("uses config default model when model is undefined", () => {
+    const mockWithoutModel = `
+{"created_at":"${created_at}","message":{"role":"assistant","content":"Hello"},"done":false}
+{"created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true}`;
+    const config = {
+      options: {
+        model: {
+          default: "ollama-from-config",
+        },
+      },
+    };
+    const output = OutputOllamaChat(mockWithoutModel, config as any);
+    expect(output.name).toBe("ollama-from-config");
+  });
+
+  it("uses model from response when available", () => {
+    const mockWithModel = `
+{"model":"llama2","created_at":"${created_at}","message":{"role":"assistant","content":"Hi"},"done":false}
+{"model":"llama2","created_at":"${created_at}","message":{"role":"assistant","content":""},"done_reason":"stop","done":true}`;
+    const config = {
+      options: {
+        model: {
+          default: "ollama-from-config",
+        },
+      },
+    };
+    const output = OutputOllamaChat(mockWithModel, config as any);
+    expect(output.name).toBe("llama2");
+  });
+
+  it("handles missing done_reason", () => {
+    const mockWithoutDoneReason = `
+{"model":"${model}","created_at":"${created_at}","message":{"role":"assistant","content":"Hello"},"done":false}
+{"model":"${model}","created_at":"${created_at}","message":{"role":"assistant","content":""},"done":true}`;
+    const output = OutputOllamaChat(mockWithoutDoneReason);
+    expect(output.stopReason).toBe("stop");
   });
 });

@@ -1,11 +1,13 @@
-import { BaseLlmOutput2 } from "./base";
-import { MetaLlama2Response, OutputResultsText } from "@/types";
+import { Config, MetaLlama2Response, OutputResultsText } from "@/types";
+import { uuid } from "@/utils/modules/uuid";
 
 export function OutputMetaLlama3Chat(
   result: MetaLlama2Response,
-  _config?: { model?: string }
+  _config?: Config<any>
 ) {
-  const name = _config?.model || "meta";
+  const id = uuid();
+  const name = _config?.options?.model?.default || "meta";
+  const created = new Date().getTime();
   const stopReason = result.stop_reason;
 
   const content: OutputResultsText[] = [
@@ -18,10 +20,13 @@ export function OutputMetaLlama3Chat(
     total_tokens: result?.generation_token_count + result?.prompt_token_count,
   };
 
-  return BaseLlmOutput2({
+  return {
+    id,
     name,
+    created,
     usage,
     stopReason,
     content,
-  });
+    options: [],
+  };
 }

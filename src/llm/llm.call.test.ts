@@ -1,6 +1,5 @@
 import { apiRequest } from "@/utils/modules/request";
 import { replaceTemplateStringSimple } from "@/utils/modules/replaceTemplateStringSimple";
-import { normalizeLlmOutputToInternalFormat } from "@/llm/output";
 import {
   GenericLLm,
   IChatMessages,
@@ -14,6 +13,11 @@ import { mapBody } from "@/llm/_utils.mapBody";
 import { parseHeaders } from "@/llm/_utils.parseHeaders";
 import { useLlm_call } from "@/llm/llm.call";
 import { cleanJsonSchemaFor } from "./output/_utils/cleanJsonSchemaFor";
+import { BaseLlmOutput } from "./output/base";
+import { OutputDefault } from "./output/default";
+import { anthropic } from "./config/anthropic";
+import { google } from "./config/google";
+import { createOpenAiCompatibleConfiguration } from "./config/openai/compatible";
 
 jest.mock("@/utils/modules/request", () => ({
   apiRequest: jest.fn(),
@@ -31,12 +35,16 @@ jest.mock("@/llm/_utils.parseHeaders", () => ({
   parseHeaders: jest.fn(),
 }));
 
-jest.mock("@/llm/output", () => ({
-  normalizeLlmOutputToInternalFormat: jest.fn(),
+jest.mock("@/llm/output/base", () => ({
+  BaseLlmOutput: jest.fn(),
 }));
 
 jest.mock("@/llm/config", () => ({
   getLlmConfig: jest.fn(),
+}));
+
+jest.mock("@/llm/output/default", () => ({
+  OutputDefault: jest.fn(),
 }));
 
 describe("useLlm_call", () => {
@@ -46,8 +54,8 @@ describe("useLlm_call", () => {
   const mapBodyMock = mapBody as jest.Mock;
   const parseHeadersMock = parseHeaders as jest.Mock;
   const apiRequestMock = apiRequest as jest.Mock;
-  const normalizeLlmOutputToInternalFormatMock =
-    normalizeLlmOutputToInternalFormat as jest.Mock;
+  const BaseLlmOutputMock = BaseLlmOutput as jest.Mock;
+  const OutputDefaultMock = OutputDefault as jest.Mock;
 
   const mockState = {
     key: "openai.chat-mock.v1",
@@ -80,18 +88,70 @@ describe("useLlm_call", () => {
     },
   ] as IChatMessages;
   const mockOptions = {} as LlmExecutorWithFunctionsOptions;
-  const mockConfig = {
+
+  // Create mock configs for different providers
+  const mockOpenAiConfig = {
+    ...createOpenAiCompatibleConfiguration({
+      key: "openai.chat.v1",
+      provider: "openai.chat",
+      endpoint: "http://api.test/endpoint",
+      apiKeyMapping: ["openAiApiKey", "OPENAI_API_KEY"],
+      transformResponse: jest.fn(),
+    }),
+    mapBody: jest.fn(),
+    transformResponse: jest.fn(),
+  };
+
+  const mockAnthropicConfig = {
+    ...anthropic["anthropic.chat.v1"],
     endpoint: "http://api.test/endpoint",
     mapBody: jest.fn(),
-    method: "POST",
-    provider: "openai.chat",
-    key: "openai.chat.v1",
+    transformResponse: jest.fn(),
   };
+
+  const mockGoogleConfig = {
+    ...google["google.chat.v1"],
+    endpoint: "http://api.test/endpoint",
+    mapBody: jest.fn(),
+    transformResponse: jest.fn(),
+  };
+
+  // Variable to hold the current mock config for tests
+  let mockConfig = mockOpenAiConfig;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetAllMocks();
-    getLlmConfigMock.mockReturnValue(mockConfig);
+
+    // Return different configs based on the provider key
+    getLlmConfigMock.mockImplementation((key) => {
+      if (key === "anthropic.chat.v1") {
+        return mockAnthropicConfig;
+      } else if (key === "google.chat.v1") {
+        return mockGoogleConfig;
+      } else if (key === "deepseek.chat.v1") {
+        // DeepSeek uses OpenAI-compatible config
+        return {
+          ...mockOpenAiConfig,
+          provider: "deepseek.chat",
+        };
+      } else if (key === "xai.chat.v1") {
+        // xAI uses OpenAI-compatible config
+        return {
+          ...mockOpenAiConfig,
+          provider: "xai.chat",
+        };
+      } else if (key === "openai.chat.v1" || key === "openai.chat-mock.v1") {
+        // Return OpenAI config for OpenAI providers
+        return mockOpenAiConfig;
+      }
+      // For unknown providers, return config without mapOptions
+      return {
+        ...mockOpenAiConfig,
+        mapOptions: undefined,
+      };
+    });
+
     replaceTemplateStringSimpleMock.mockReturnValue("http://api.test/endpoint");
     mapBodyMock.mockReturnValue({
       prompt: mockMessages,
@@ -99,13 +159,16 @@ describe("useLlm_call", () => {
     parseHeadersMock.mockResolvedValue({
       "Content-Type": "application/json",
     });
-    apiRequestMock.mockResolvedValueOnce({
+    apiRequestMock.mockResolvedValue({
       data: "response",
     });
   });
 
   it("should call all necessary functions and return parsed output", async () => {
-    normalizeLlmOutputToInternalFormatMock.mockReturnValueOnce("parsedOutput");
+    const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
+    mockConfig.transformResponse.mockReturnValueOnce(mockOutputResult);
+    const mockBaseLlmOutputReturn = "parsedOutput";
+    BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
     const result = await useLlm_call(mockState, mockMessages, mockOptions);
 
@@ -140,14 +203,15 @@ describe("useLlm_call", () => {
         },
       })
     );
-    expect(normalizeLlmOutputToInternalFormat).toHaveBeenCalledWith(
-      { key: mockState.key, provider: mockState.provider },
+    expect(mockConfig.transformResponse).toHaveBeenCalledWith(
       {
         data: "response",
-      }
+      },
+      mockConfig
     );
+    expect(BaseLlmOutput).toHaveBeenCalledWith(mockOutputResult);
 
-    expect(result).toBe("parsedOutput");
+    expect(result).toBe(mockBaseLlmOutputReturn);
   });
 
   it("should handle an error in apiRequest", async () => {
@@ -160,7 +224,7 @@ describe("useLlm_call", () => {
     ).rejects.toThrow("API Request Failed");
   });
 
-  it("should anthropic and functionCall is none, remove functions", async () => {
+  it("should handle anthropic with functionCall 'none' by clearing functions", async () => {
     const mock_options = {
       functionCall: "none",
       functions: [{ name: "something", description: "", parameters: {} }],
@@ -180,7 +244,7 @@ describe("useLlm_call", () => {
     );
   });
 
-  it("should anthropic and functionCall is none, remove functions", async () => {
+  it("should handle anthropic with functionCall 'auto' and set tool_choice", async () => {
     const mock_options = {
       functionCall: "auto" as GenericFunctionCall,
       functions: [{ name: "something", description: "", parameters: {} }],
@@ -206,7 +270,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should anthropic and functionCall is none, remove functions", async () => {
+  it("should handle anthropic with functionCall 'any' and set tool_choice", async () => {
     const mock_options = {
       functionCall: "any" as GenericFunctionCall,
       functions: [{ name: "something", description: "", parameters: {} }],
@@ -232,7 +296,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should anthropic and functionCall is none, remove functions", async () => {
+  it("should handle anthropic with specific function call object", async () => {
     const mock_options = {
       functionCall: { name: "something" },
       functions: [{ name: "something", description: "", parameters: {} }],
@@ -258,7 +322,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and functionCall is none, remove functions", async () => {
+  it("should handle openai with functionCall 'any' and normalize to 'required'", async () => {
     const mock_options = {
       functionCall: "any" as GenericFunctionCall,
       functions: [{ name: "something", description: "", parameters: {} }],
@@ -288,7 +352,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and response_format ", async () => {
+  it("should handle openai with jsonSchema option", async () => {
     const mock_options = {
       jsonSchema: {
         type: "object",
@@ -321,7 +385,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and response_format with no options passed", async () => {
+  it("should handle openai with no options passed", async () => {
     await useLlm_call(mockStateOpenAi, mockMessages, undefined as any);
     expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
       method: mockConfig.method,
@@ -335,7 +399,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and response_format with functionCallStrictInput", async () => {
+  it("should handle openai jsonSchema with functionCallStrictInput true", async () => {
     const mock_options = {
       functionCallStrictInput: true,
       jsonSchema: {
@@ -368,7 +432,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and response_format with functionCallStrictInput as true", async () => {
+  it("should handle openai jsonSchema with functionCallStrictInput explicitly true", async () => {
     const mock_options = {
       functionCallStrictInput: true,
       jsonSchema: {
@@ -401,7 +465,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and response_format with functionCallStrictInput as undefined", async () => {
+  it("should handle openai jsonSchema with functionCallStrictInput undefined (defaults to false)", async () => {
     const mock_options = {
       functionCallStrictInput: undefined,
       jsonSchema: {
@@ -434,7 +498,7 @@ describe("useLlm_call", () => {
     });
   });
 
-  it("should openai and response_format with no strict property with functionCallStrictInput as false", async () => {
+  it("should handle openai jsonSchema with functionCallStrictInput false", async () => {
     const mock_options = {
       functionCallStrictInput: false,
       jsonSchema: {
@@ -476,23 +540,25 @@ describe("useLlm_call", () => {
       provider: LlmProvider;
     };
 
-    getLlmConfigMock.mockReturnValue({
+    const mockConfigForMock = {
       ...mockConfig,
       provider: "openai.chat-mock",
-    });
+    };
 
-    normalizeLlmOutputToInternalFormatMock.mockReturnValueOnce(
-      "mockParsedOutput"
-    );
+    getLlmConfigMock.mockReturnValue(mockConfigForMock);
+
+    const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
+    mockConfigForMock.transformResponse.mockReturnValueOnce(mockOutputResult);
+    const mockBaseLlmOutputReturn = "mockParsedOutput";
+    BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
 
     const result = await useLlm_call(mockStateMock, mockMessages, mockOptions);
 
     // Mock provider doesn't call apiRequest
     expect(apiRequestMock).not.toHaveBeenCalled();
 
-    // But it should call normalizeLlmOutputToInternalFormat with the mock response
-    expect(normalizeLlmOutputToInternalFormat).toHaveBeenCalledWith(
-      { key: mockStateMock.key, provider: mockStateMock.provider },
+    // But it should call transformResponse with the mock response
+    expect(mockConfigForMock.transformResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "0123-45-6789",
         model: "model",
@@ -506,10 +572,12 @@ describe("useLlm_call", () => {
             },
           },
         ],
-      })
+      }),
+      mockConfigForMock
     );
+    expect(BaseLlmOutput).toHaveBeenCalledWith(mockOutputResult);
 
-    expect(result).toBe("mockParsedOutput");
+    expect(result).toBe(mockBaseLlmOutputReturn);
   });
 
   describe("Google provider", () => {
@@ -522,10 +590,7 @@ describe("useLlm_call", () => {
     };
 
     beforeEach(() => {
-      getLlmConfigMock.mockReturnValue({
-        ...mockConfig,
-        provider: "google.chat",
-      });
+      getLlmConfigMock.mockReturnValue(mockGoogleConfig);
     });
 
     it("should handle Google provider with function call", async () => {
@@ -670,5 +735,332 @@ describe("useLlm_call", () => {
         },
       });
     });
+  });
+
+  it("should handle deepseek provider with jsonSchema", async () => {
+    const mockStateDeepseek = {
+      ...mockState,
+      provider: "deepseek.chat" as LlmProvider,
+    };
+
+    const mock_options = {
+      jsonSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+        },
+      },
+    };
+
+    await useLlm_call(mockStateDeepseek, mockMessages, mock_options as any);
+
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "output",
+            strict: false,
+            schema: mock_options.jsonSchema,
+          },
+        },
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("should handle deepseek provider with functions", async () => {
+    const mockStateDeepseek = {
+      ...mockState,
+      provider: "deepseek.chat" as LlmProvider,
+    };
+
+    const mock_options = {
+      functionCall: "auto" as GenericFunctionCall,
+      functions: [
+        {
+          name: "searchDatabase",
+          description: "Search the database",
+          parameters: {
+            type: "object",
+            properties: {
+              query: { type: "string" },
+            },
+            required: ["query"],
+          },
+        },
+      ],
+      functionCallStrictInput: true,
+    };
+
+    await useLlm_call(mockStateDeepseek, mockMessages, mock_options);
+
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        tool_choice: "auto",
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "searchDatabase",
+              description: "Search the database",
+              parameters: cleanJsonSchemaFor(
+                mock_options.functions[0].parameters,
+                "deepseek.chat"
+              ),
+              strict: true,
+            },
+          },
+        ],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("should handle xai provider with jsonSchema", async () => {
+    const mockStateXai = {
+      ...mockState,
+      provider: "xai.chat" as LlmProvider,
+    };
+
+    const mock_options = {
+      jsonSchema: {
+        type: "object",
+        properties: {
+          result: { type: "boolean" },
+        },
+      },
+    };
+
+    await useLlm_call(mockStateXai, mockMessages, mock_options as any);
+
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "output",
+            strict: false,
+            schema: mock_options.jsonSchema,
+          },
+        },
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("should handle xai provider with functions", async () => {
+    const mockStateXai = {
+      ...mockState,
+      provider: "xai.chat" as LlmProvider,
+    };
+
+    const mock_options = {
+      functionCall: { name: "getWeather" },
+      functions: [
+        {
+          name: "getWeather",
+          description: "Get weather info",
+          parameters: {
+            type: "object",
+            properties: {
+              location: { type: "string" },
+            },
+          },
+        },
+      ],
+    };
+
+    await useLlm_call(mockStateXai, mockMessages, mock_options as any);
+
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        tool_choice: { name: "getWeather" },
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "getWeather",
+              description: "Get weather info",
+              parameters: cleanJsonSchemaFor(
+                mock_options.functions[0].parameters,
+                "xai.chat"
+              ),
+              strict: false,
+            },
+          },
+        ],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("should merge response_format when input already has response_format", async () => {
+    // Setup mapBody to return input with existing response_format
+    mapBodyMock.mockReturnValueOnce({
+      prompt: mockMessages,
+      response_format: {
+        type: "json_object",
+        existing_property: "should_preserve",
+      },
+    });
+
+    const mock_options = {
+      jsonSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+        },
+      },
+      functionCallStrictInput: true,
+    };
+
+    await useLlm_call(mockStateOpenAi, mockMessages, mock_options as any);
+
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+        response_format: {
+          type: "json_schema",
+          existing_property: "should_preserve",
+          json_schema: {
+            name: "output",
+            strict: true,
+            schema: mock_options.jsonSchema,
+          },
+        },
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("should not add response_format for provider that doesn't support jsonSchema", async () => {
+    const mockStateOther = {
+      ...mockState,
+      key: "other.provider.v1" as LlmProviderKey,
+      provider: "other.provider" as LlmProvider,
+    };
+
+    const mock_options = {
+      jsonSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+        },
+      },
+    };
+
+    await useLlm_call(mockStateOther, mockMessages, mock_options as any);
+
+    // Should not have response_format since provider doesn't match the supported list
+    expect(apiRequestMock).toHaveBeenCalledWith("http://api.test/endpoint", {
+      method: mockConfig.method,
+      body: JSON.stringify({
+        prompt: mockMessages,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  });
+
+  it("should handle string messages input", async () => {
+    const stringMessage = "Hello, this is a simple string message";
+
+    const mockOutputResult = { content: [], usage: {}, stopReason: "stop" };
+    mockConfig.transformResponse.mockReturnValueOnce(mockOutputResult);
+    const mockBaseLlmOutputReturn = "stringMessageOutput";
+    BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
+
+    const result = await useLlm_call(mockState, stringMessage, mockOptions);
+
+    expect(mapBody).toHaveBeenCalledWith(mockConfig.mapBody, {
+      ...mockState,
+      prompt: stringMessage,
+    });
+
+    expect(apiRequestMock).toHaveBeenCalledWith(
+      "http://api.test/endpoint",
+      expect.objectContaining({
+        method: mockConfig.method,
+        body: JSON.stringify({
+          prompt: mockMessages, // This is from the mock mapBody return value
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+
+    expect(result).toBe(mockBaseLlmOutputReturn);
+  });
+
+  it("should use default output when config has no output function", async () => {
+    const mockConfigNoOutput = {
+      ...mockConfig,
+      transformResponse: undefined,
+      options: {
+        model: {
+          default: "test-model",
+        },
+      },
+    };
+
+    getLlmConfigMock.mockReturnValue(mockConfigNoOutput);
+
+    const mockApiResponse = {
+      text: "response text",
+      output_tokens: 10,
+      input_tokens: 5,
+      stopReason: "complete",
+    };
+    apiRequestMock.mockResolvedValue(mockApiResponse);
+
+    const mockOutputDefaultResult = {
+      name: "test-model",
+      usage: {
+        output_tokens: 10,
+        input_tokens: 5,
+        total_tokens: 15,
+      },
+      stopReason: "complete",
+      content: [{ type: "text", text: "response text" }],
+    };
+    OutputDefaultMock.mockReturnValue(mockOutputDefaultResult);
+
+    const mockBaseLlmOutputReturn = "defaultParsedOutput";
+    BaseLlmOutputMock.mockReturnValueOnce(mockBaseLlmOutputReturn);
+
+    const result = await useLlm_call(mockState, mockMessages);
+
+    // Should call OutputDefault when no output function is provided
+    expect(OutputDefaultMock).toHaveBeenCalledWith(
+      mockApiResponse,
+      mockConfigNoOutput
+    );
+
+    // Should pass the result from OutputDefault to BaseLlmOutput
+    expect(BaseLlmOutputMock).toHaveBeenCalledWith(mockOutputDefaultResult);
+
+    expect(result).toBe(mockBaseLlmOutputReturn);
   });
 });

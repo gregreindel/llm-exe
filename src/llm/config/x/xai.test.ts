@@ -8,9 +8,7 @@ describe("openai configuration", () => {
     it("should have the correct key, provider, endpoint, and method", () => {
       expect(xAiChatV1.key).toBe("xai.chat.v1");
       expect(xAiChatV1.provider).toBe("xai.chat");
-      expect(xAiChatV1.endpoint).toBe(
-        "https://api.x.ai/v1/chat/completions"
-      );
+      expect(xAiChatV1.endpoint).toBe("https://api.x.ai/v1/chat/completions");
       expect(xAiChatV1.method).toBe("POST");
     });
 
@@ -20,25 +18,24 @@ describe("openai configuration", () => {
       );
     });
 
-    it("should sanitize the prompt correctly", () => {
-      const sanitizePrompt = xAiChatV1.mapBody.prompt.sanitize as (
+    it("should transform the prompt correctly", () => {
+      const transformPrompt = xAiChatV1.mapBody.prompt.transform as (
         v: any
       ) => any;
-      expect(sanitizePrompt("Hello")).toEqual([
+      expect(transformPrompt("Hello")).toEqual([
         { role: "user", content: "Hello" },
       ]);
-      expect(sanitizePrompt([{ role: "user", content: "Hello" }])).toEqual([
+      expect(transformPrompt([{ role: "user", content: "Hello" }])).toEqual([
         { role: "user", content: "Hello" },
       ]);
     });
 
-    it("should sanitize useJson correctly", () => {
-      const sanitizeUseJson = xAiChatV1.mapBody.useJson.sanitize as (
+    it("should transform useJson correctly", () => {
+      const transformUseJson = xAiChatV1.mapBody.useJson.transform as (
         v: any
       ) => any;
-      expect(sanitizeUseJson(true)).toBe("json_object");
-      expect(sanitizeUseJson(false)).toBe("text");
+      expect(transformUseJson(true)).toBe("json_object");
+      expect(transformUseJson(false)).toBe("text");
     });
   });
-
 });

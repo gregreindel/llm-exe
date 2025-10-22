@@ -24,7 +24,7 @@ describe("anthropic config", () => {
           system: expect.any(Object),
           prompt: expect.objectContaining({
             key: "messages",
-            sanitize: anthropicPromptSanitize,
+            transform: anthropicPromptSanitize,
           }),
         }),
       })
