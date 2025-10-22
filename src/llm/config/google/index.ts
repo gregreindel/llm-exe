@@ -27,7 +27,6 @@ const googleGeminiChatV1: Config = {
     effort: {
       key: "config.thinkingConfig.thinkingBudget",
       transform: (v, _s) => {
-        console.log("here", v);
         if (
           // only supported reasoning models
           ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-light"].includes(
@@ -47,10 +46,6 @@ const googleGeminiChatV1: Config = {
         return undefined;
       },
     },
-    //1,024, 8,192, and 24,576
-    // topP: {
-    //   key: "top_p",
-    // }
   },
   mapOptions: {
     functionCall: (call) => ({
