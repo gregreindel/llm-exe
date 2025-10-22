@@ -8,8 +8,9 @@ type JSONSchema = {
 
 // List of keys to be removed for each provider
 const providerFieldExclusions: Record<string, string[]> = {
-  "openai.chat": ["default"], // fields to exclude for openai.chat
-  "anthropic.chat": [], // fields to exclude for openai.chat
+  "openai.chat": ["default"], // fields to exclude for openai.chat, xai, deepseek
+  "anthropic.chat": [],
+  "google.chat": ["additionalProperties"],
 };
 
 export function cleanJsonSchemaFor(
