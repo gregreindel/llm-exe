@@ -54,6 +54,17 @@
   opacity: 0.25;
 }
 
+.marker-highlight.marker-highlight-yellow::after {
+  opacity: 1;
+  background: linear-gradient(to right, #fbbf24, #fbbf24);
+  transform: skewY(-0.5deg);
+}
+
+.marker-highlight.marker-highlight-yellow:hover::after {
+  height: 0.3em;
+  opacity: 1;
+}
+
 /* Alternative with more highlight effect */
 .marker-highlight-full {
   position: relative;
