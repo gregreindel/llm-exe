@@ -1,14 +1,14 @@
-import { GoogleGeminiResponse } from "@/types";
-import { BaseLlmOutput2 } from "../base";
+import { Config, GoogleGeminiResponse } from "@/types";
 import { formatOptions } from "../_util";
 import { formatResult } from "./formatResult";
 
 export function OutputGoogleGeminiChat(
   result: GoogleGeminiResponse,
-  _config?: { model?: string }
+  _config?: Config<any>
 ) {
   const id = result.responseId;
-  const name = result.modelVersion || _config?.model || "gemini";
+  const name =
+    result.modelVersion || _config?.options.model?.default || "gemini";
   const created = new Date().getTime();
 
   const [_content, ..._options] = result?.candidates || [];
@@ -22,7 +22,7 @@ export function OutputGoogleGeminiChat(
     total_tokens: result?.usageMetadata?.totalTokenCount,
   };
 
-  return BaseLlmOutput2({
+  return {
     id,
     name,
     created,
@@ -30,5 +30,5 @@ export function OutputGoogleGeminiChat(
     stopReason,
     content,
     options,
-  });
+  };
 }

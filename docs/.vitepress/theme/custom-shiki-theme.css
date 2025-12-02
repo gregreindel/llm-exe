@@ -1,0 +1,24 @@
+
+/* Super strong selector for spans with the problematic color */
+:root:not(.dark) .switcher-root span[style*="color:#E1E4E8"],
+:root:not(.dark) .hero-code-container span[style*="color:#E1E4E8"],
+:root:not(.dark) .vp-doc div[class*="language-"] span[style*="color:#E1E4E8"] {
+  color: #1F2328 !important;
+}
+
+:root:not(.dark) .switcher-root span[style*="color:#B392F0"],
+:root:not(.dark) .hero-code-container span[style*="color:#B392F0"],
+:root:not(.dark) .vp-doc div[class*="language-"] span[style*="color:#B392F0"] {
+  color: #8250DF !important;
+}
+
+:root:not(.dark) .switcher-root span[style*="color:#79B8FF"],
+:root:not(.dark) .hero-code-container span[style*="color:#79B8FF"],
+:root:not(.dark) .vp-doc div[class*="language-"] span[style*="color:#79B8FF"] {
+  color: #0550AE !important;
+}
+:root:not(.dark) .switcher-root span[style*="color:#9ECBFF"],
+:root:not(.dark) .hero-code-container span[style*="color:#9ECBFF"],
+:root:not(.dark) .vp-doc div[class*="language-"] span[style*="color:#9ECBFF"] {
+  color: #0550AE !important;
+}

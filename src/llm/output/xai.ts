@@ -2,8 +2,8 @@ import {
   XAiResponse,
   OutputOpenAIChatChoice,
   OutputResultContent,
+  Config,
 } from "@/types";
-import { BaseLlmOutput2 } from "./base";
 import { formatOptions } from "./_util";
 import { maybeParseJSON } from "@/utils";
 
@@ -31,12 +31,10 @@ function formatResult(result: OutputOpenAIChatChoice): OutputResultContent[] {
   return out;
 }
 
-export function OutputXAIChat(
-  result: XAiResponse,
-  _config?: { model?: string }
-) {
+export function OutputXAIChat(result: XAiResponse, _config?: Config<any>) {
   const id = result.id;
-  const name = result.model || _config?.model || "openai.unknown";
+  const name =
+    result.model || _config?.options.model?.default || "xai.unknown";
   const created = result.created;
 
   const [_content, ..._options] = result?.choices || [];
@@ -51,7 +49,7 @@ export function OutputXAIChat(
     total_tokens: result?.usage?.total_tokens,
   };
 
-  return BaseLlmOutput2({
+  return {
     id,
     name,
     created,
@@ -59,5 +57,5 @@ export function OutputXAIChat(
     stopReason,
     content,
     options,
-  });
+  };
 }

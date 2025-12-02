@@ -15,17 +15,15 @@ const replaceTemplateStringMock = replaceTemplateString as jest.Mock;
 const anthropicPromptSanitizeMock = anthropicPromptSanitize as jest.Mock;
 
 describe("bedrock configuration", () => {
-
   const OLD_ENV = process.env;
 
   beforeEach(() => {
-    process.env = { ...OLD_ENV,  AWS_REGION: "us-west-2" }  
+    process.env = { ...OLD_ENV, AWS_REGION: "us-west-2" };
   });
 
   afterAll(() => {
     process.env = OLD_ENV;
   });
-
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -46,14 +44,14 @@ describe("bedrock configuration", () => {
         bedrock["amazon:anthropic.chat.v1"].mapBody.anthropic_version.default
       ).toBe("bedrock-2023-05-31");
     });
-    it("should sanitize prompt using anthropicPromptSanitize", () => {
+    it("should transform prompt using anthropicPromptSanitize", () => {
       const messages = "test message";
-      anthropicPromptSanitizeMock.mockReturnValue("sanitized message");
+      anthropicPromptSanitizeMock.mockReturnValue("transformd message");
       const cn = bedrock["amazon:anthropic.chat.v1"];
-      const sanitized = cn?.mapBody?.prompt?.sanitize
-        ? cn?.mapBody?.prompt?.sanitize(messages, {}, {})
+      const transformd = cn?.mapBody?.prompt?.transform
+        ? cn?.mapBody?.prompt?.transform(messages, {}, {})
         : () => {};
-      expect(sanitized).toBe("sanitized message");
+      expect(transformd).toBe("transformd message");
       expect(anthropicPromptSanitizeMock).toHaveBeenCalledWith(
         messages,
         {},
@@ -75,22 +73,22 @@ describe("bedrock configuration", () => {
       );
     });
 
-    it("should sanitize prompt appropriately", () => {
+    it("should transform prompt appropriately", () => {
       const stringPrompt = "test string message";
       const objectMessages = [{ msg: "message1" }, { msg: "message2" }];
       const replacedString = "replaced string";
 
       replaceTemplateStringMock.mockReturnValue(replacedString);
       const fn1 = bedrock["amazon:meta.chat.v1"];
-      const sanitizeString = fn1.mapBody.prompt.sanitize
-        ? fn1.mapBody.prompt.sanitize(stringPrompt, {}, {})
+      const transformString = fn1.mapBody.prompt.transform
+        ? fn1.mapBody.prompt.transform(stringPrompt, {}, {})
         : () => {};
-      expect(sanitizeString).toBe(stringPrompt);
+      expect(transformString).toBe(stringPrompt);
       const fn2 = bedrock["amazon:meta.chat.v1"];
-      const sanitizeObject = fn2?.mapBody?.prompt?.sanitize
-        ? fn2?.mapBody?.prompt?.sanitize(objectMessages, {}, {})
+      const transformObject = fn2?.mapBody?.prompt?.transform
+        ? fn2?.mapBody?.prompt?.transform(objectMessages, {}, {})
         : () => {};
-      expect(sanitizeObject).toBe(replacedString);
+      expect(transformObject).toBe(replacedString);
       expect(replaceTemplateStringMock).toHaveBeenCalledWith(
         "{{>DialogueHistory key='messages'}}",
         { messages: objectMessages }

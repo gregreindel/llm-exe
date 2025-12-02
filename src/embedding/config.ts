@@ -1,5 +1,7 @@
 import { Config, EmbeddingProviderKey } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
+import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
 
 export const embeddingConfigs: {
   [key in EmbeddingProviderKey]: Config<EmbeddingProviderKey>;
@@ -13,11 +15,11 @@ export const embeddingConfigs: {
     options: {
       input: {},
       dimensions: {
-        default: 1536
+        default: 1536,
       },
       encodingFormat: {},
       openAiApiKey: {
-        default: getEnvironmentVariable("OPENAI_API_KEY")
+        default: getEnvironmentVariable("OPENAI_API_KEY"),
       },
     },
     mapBody: {
@@ -34,6 +36,7 @@ export const embeddingConfigs: {
         key: "encoding_format",
       },
     },
+    transformResponse: OpenAiEmbedding as any,
   },
 
   "amazon.embedding.v1": {
@@ -45,7 +48,7 @@ export const embeddingConfigs: {
     options: {
       input: {},
       dimensions: {
-        default: 512
+        default: 512,
       },
       awsRegion: {
         default: getEnvironmentVariable("AWS_REGION"),
@@ -62,11 +65,12 @@ export const embeddingConfigs: {
         key: "dimensions",
       },
     },
+    transformResponse: AmazonTitanEmbedding as any,
   },
 };
 
 export function getEmbeddingConfig(provider: EmbeddingProviderKey) {
-  if(!provider){
+  if (!provider) {
     throw new Error(`Missing provider`);
   }
   const pick = embeddingConfigs[provider];

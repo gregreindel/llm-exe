@@ -17,10 +17,10 @@ export function mapBody(
       let valueForThisKey = body[genericInputKey];
 
       if (
-        providerSpecificSettings.sanitize &&
-        typeof providerSpecificSettings.sanitize === "function"
+        providerSpecificSettings.transform &&
+        typeof providerSpecificSettings.transform === "function"
       ) {
-        valueForThisKey = providerSpecificSettings.sanitize(
+        valueForThisKey = providerSpecificSettings.transform(
           valueForThisKey,
           Object.freeze({ ...body }),
           output

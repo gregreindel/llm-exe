@@ -1,4 +1,5 @@
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
+import { maskApiKeys } from "./maskApiKeysInDebug";
 
 export function debug(...args: any[]) {
   const debugValue = getEnvironmentVariable("LLM_EXE_DEBUG");
@@ -25,7 +26,17 @@ export function debug(...args: any[]) {
         logs.push(arg.toString());
       } else {
         try {
-          logs.push(JSON.stringify(arg, null, 2));
+          let shouldMask = false;
+          if (arg.headers && arg.headers.Authorization) {
+            shouldMask = true;
+          }
+          let str = JSON.stringify(arg, null, 2);
+
+          if (shouldMask) {
+            str = maskApiKeys(str);
+          }
+
+          logs.push(str);
         } catch (error) {
           console.error("Error parsing object:", error);
         }

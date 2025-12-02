@@ -148,4 +148,50 @@ expect.any(Error)
 // No final push for console.debug on the circular object value
 expect(consoleDebugSpy).toHaveBeenCalledWith();
 });
+
+it("masks API keys when object has Authorization header", () => {
+process.env.LLM_EXE_DEBUG = "true";
+const objWithAuth = {
+  headers: {
+    Authorization: "Bearer sk-123456789abcdef01234567890123456",
+    "Content-Type": "application/json"
+  },
+  data: {
+    apiKey: "sk-987654321fedcba98765432109876543"
+  }
+};
+debug(objWithAuth);
+// debug logs a single argument, so get the first call's first argument
+const loggedString = consoleDebugSpy.mock.calls[0][0];
+// The logged string should be masked
+expect(loggedString).toContain("Bear**********************************3456");
+expect(loggedString).toContain("sk-9***************************6543");
+expect(loggedString).not.toContain("sk-123456789abcdef01234567890123456");
+expect(loggedString).not.toContain("sk-987654321fedcba98765432109876543");
+});
+
+it("handles object with headers but no Authorization", () => {
+process.env.LLM_EXE_DEBUG = "true";
+const objWithHeaders = {
+  headers: {
+    "Content-Type": "application/json",
+    "X-Custom": "value"
+  },
+  data: "some data"
+};
+debug(objWithHeaders);
+// Should not mask anything since no Authorization header
+expect(consoleDebugSpy).toHaveBeenCalledWith(JSON.stringify(objWithHeaders, null, 2));
+});
+
+it("handles object without headers property", () => {
+process.env.LLM_EXE_DEBUG = "true";
+const objNoHeaders = {
+  data: "some data",
+  status: 200
+};
+debug(objNoHeaders);
+// Should not mask anything since no headers
+expect(consoleDebugSpy).toHaveBeenCalledWith(JSON.stringify(objNoHeaders, null, 2));
+});
 });
