@@ -22,7 +22,7 @@ export function googleGeminiPromptMessageCallback(_message: IChatMessage) {
   // do gemini-specific transformations
   let { role, ...payload } = message;
 
-  if (typeof payload.content === "string") {
+  if (typeof payload.content === "string" && message.role !== "function") {
     parts.push({ text: message.content });
   }
 

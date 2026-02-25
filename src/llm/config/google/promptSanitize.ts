@@ -1,6 +1,37 @@
 import { IChatMessages } from "@/types";
 import { googleGeminiPromptMessageCallback } from "./promptSanitizeMessageCallback";
 
+/**
+ * Merge consecutive messages with the same role by combining their parts arrays.
+ * This handles parallel tool calls (multiple model functionCall parts) and
+ * parallel tool results (multiple user functionResponse parts) which Gemini
+ * requires to be a single message with combined parts.
+ */
+function mergeConsecutiveSameRole(
+  messages: Record<string, any>[]
+): Record<string, any>[] {
+  if (messages.length <= 1) return messages;
+
+  const merged: Record<string, any>[] = [messages[0]];
+
+  for (let i = 1; i < messages.length; i++) {
+    const prev = merged[merged.length - 1];
+    const curr = messages[i];
+
+    if (
+      curr.role === prev.role &&
+      Array.isArray(prev.parts) &&
+      Array.isArray(curr.parts)
+    ) {
+      prev.parts = [...prev.parts, ...curr.parts];
+    } else {
+      merged.push(curr);
+    }
+  }
+
+  return merged;
+}
+
 export function googleGeminiPromptSanitize(
   _messages: string | IChatMessages,
   _inputBodyObj: Record<string, any>,
@@ -43,10 +74,14 @@ export function googleGeminiPromptSanitize(
         })),
       };
 
-      return withoutSystemInstructions.map(googleGeminiPromptMessageCallback);
+      const result = withoutSystemInstructions.map(
+        googleGeminiPromptMessageCallback
+      );
+      return mergeConsecutiveSameRole(result);
     }
 
-    return _messages.map(googleGeminiPromptMessageCallback);
+    const result = _messages.map(googleGeminiPromptMessageCallback);
+    return mergeConsecutiveSameRole(result);
   }
 
   throw new Error("Invalid messages format");

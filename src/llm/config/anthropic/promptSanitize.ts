@@ -1,6 +1,37 @@
 import { IChatMessage, IChatMessages } from "@/types";
 import { anthropicPromptMessageCallback } from "./promptSanitizeMessageCallback";
 
+/**
+ * Merge consecutive messages with the same role when both have array content.
+ * This handles parallel tool calls (multiple assistant tool_use blocks) and
+ * parallel tool results (multiple user tool_result blocks) which Anthropic
+ * requires to be a single message with combined content arrays.
+ */
+function mergeConsecutiveSameRole(
+  messages: Record<string, any>[]
+): Record<string, any>[] {
+  if (messages.length <= 1) return messages;
+
+  const merged: Record<string, any>[] = [messages[0]];
+
+  for (let i = 1; i < messages.length; i++) {
+    const prev = merged[merged.length - 1];
+    const curr = messages[i];
+
+    if (
+      curr.role === prev.role &&
+      Array.isArray(prev.content) &&
+      Array.isArray(curr.content)
+    ) {
+      prev.content = [...prev.content, ...curr.content];
+    } else {
+      merged.push(curr);
+    }
+  }
+
+  return merged;
+}
+
 export function anthropicPromptSanitize(
   _messages: string | IChatMessages,
   _inputBodyObj: Record<string, any>,
@@ -30,7 +61,7 @@ export function anthropicPromptSanitize(
   //   - and return the rest of the messages
   if (first.role === "system" && messages.length > 0) {
     _outputObj.system = first.content;
-    return (
+    const result = (
       messages.map((m) => {
         if (m.role === "system") {
           return { ...m, role: "user" };
@@ -38,10 +69,11 @@ export function anthropicPromptSanitize(
         return m;
       }) as IChatMessage[]
     ).map(anthropicPromptMessageCallback);
+    return mergeConsecutiveSameRole(result);
   }
 
   // otherwise, don't make assumptions?
-  return (
+  const result = (
     [
       first,
       ...messages.map((m) => {
@@ -52,4 +84,5 @@ export function anthropicPromptSanitize(
       }),
     ] as IChatMessage[]
   ).map(anthropicPromptMessageCallback);
+  return mergeConsecutiveSameRole(result);
 }
