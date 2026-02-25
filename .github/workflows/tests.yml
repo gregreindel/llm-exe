@@ -36,6 +36,6 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: Coverage
-        if: ${{ matrix.node-version == '22.x' }}
-        uses: coverallsapp/github-action@v1
+      # - name: Coverage
+      #   if: ${{ matrix.node-version == '22.x' }}
+      #   uses: coverallsapp/github-action@v1

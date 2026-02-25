@@ -10,7 +10,7 @@ export class NumberParser extends BaseParser<number> {
     super("number", options);
   }
   parse(text: string) {
-    const match = text.match(/\d/g);
+    const match = text.match(/-?\d+(\.\d+)?/);
     return match && isFinite(toNumber(match[0])) ? toNumber(match[0]) : -1;
   }
 }
