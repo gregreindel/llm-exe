@@ -6,7 +6,7 @@
  * making real API calls.
  */
 import { useLlm } from "@/llm";
-import { createChatPrompt, createPrompt } from "@/prompt";
+import { createChatPrompt } from "@/prompt";
 import { createParser, createCustomParser } from "@/parser";
 import { JsonParser } from "@/parser";
 import {
@@ -18,24 +18,12 @@ import { BaseLlmOutput } from "@/llm/output/base";
 import { defineSchema } from "@/utils/modules/defineSchema";
 
 import {
-  mockOutputResult,
   SIMPLE_TEXT,
-  TEXT_WITH_JSON,
-  TEXT_WITH_JSON_ARRAY,
-  TEXT_WITH_CODE_BLOCK,
-  TEXT_BOOLEAN_TRUE,
-  TEXT_BOOLEAN_FALSE,
-  TEXT_NUMBER,
-  TEXT_LIST,
   TEXT_EMPTY,
-  TEXT_WHITESPACE,
   SINGLE_FUNCTION_CALL,
   PARALLEL_FUNCTION_CALLS,
-  FUNCTION_CALL_COMPLEX_INPUT,
   TEXT_THEN_FUNCTION,
-  TEXT_FUNCTION_TEXT,
   INTERLEAVED_MIXED,
-  STOP_MAX_TOKENS,
   HIGH_TOKEN_USAGE,
   RESPONSE_WITH_OPTIONS,
   CONVERSATION_SIMPLE,
@@ -393,7 +381,7 @@ describe("Scenario: Parser with mock outputs", () => {
     const parser = createCustomParser("upper", (input: string) =>
       input.toUpperCase()
     );
-    expect(parser.parse("hello world")).toEqual("HELLO WORLD");
+    expect(parser.parse("hello world", {} as any)).toEqual("HELLO WORLD");
   });
 });
 
