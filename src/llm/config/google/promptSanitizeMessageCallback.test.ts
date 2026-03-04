@@ -90,9 +90,6 @@ describe("googleGeminiPromptMessageCallback", () => {
         role: "user",
         parts: [
           {
-            text: "Function result",
-          },
-          {
             functionResponse: {
               name: "testFunction",
               response: {
@@ -117,9 +114,6 @@ describe("googleGeminiPromptMessageCallback", () => {
       expect(result).toEqual({
         role: "user",
         parts: [
-          {
-            text: "Function result",
-          },
           {
             functionResponse: {
               name: "testFunction",
@@ -274,7 +268,6 @@ describe("googleGeminiPromptMessageCallback", () => {
       expect(result).toEqual({
         role: "model",
         parts: [
-          { text: "result" },
           {
             functionResponse: {
               name: "funcName",

@@ -64,7 +64,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
   }
 
   setToolMessage(content: string, name: string, id?: string) {
-    this.setFunctionMessage(content, name, id);
+    return this.setFunctionMessage(content, name, id);
   }
 
   setFunctionMessage(content: string, name: string, id?: string) {
@@ -83,7 +83,7 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
    * Set
    */
   setToolCallMessage(input: { name: string; arguments: string; id?: string }) {
-    this.setFunctionCallMessage(input);
+    return this.setFunctionCallMessage(input);
   }
 
   setFunctionCallMessage(
