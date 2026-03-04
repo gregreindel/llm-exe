@@ -35,9 +35,9 @@ describe("llmUsingToolsSimple", () => {
   itWithUseLlmMocked(
     "handle this simple instruction",
     [
-      "anthropic.claude-3-7-sonnet",
-      "google.gemini-2.0-flash",
-      "xai.grok-2",
+      "anthropic.claude-opus-4",
+      "google.gemini-2.5-flash",
+      "xai.grok-3",
       "deepseek.chat",
     ],
     async (config: any) => {
