@@ -132,16 +132,16 @@ const codeBlock = computed(() => {
 
   const defaultModels = {
     openai: "gpt-4o",
-    anthropic: "claude-3-5-sonnet-latest",
-    google: "gemini-1.5-pro",
+    anthropic: "claude-opus-4",
+    google: "gemini-2.5-flash",
     deepseek: "deepseek-chat",
-    xai: "grok-2-latest",
+    xai: "grok-3",
     ollama: "deepseek-r1",
     bedrock: "claude-3-sonnet-20240229-v1:0"
   };
 
   if (model === "chat.v1") {
-    const defaultModel = defaultModels[provider] || "model-name";
+    const defaultModel = defaultModels[provider as keyof typeof defaultModels] || "model-name";
 
     if (provider === "bedrock") {
       code = code.replace(
@@ -209,7 +209,7 @@ const codeBlock = computed(() => {
   }
 
   if (code.includes("${apiKeyProp}") || code.includes("${apiKeyEnv}")) {
-    const apiKey = apiKeyMap[provider] || { prop: "apiKey", env: "API_KEY" };
+    const apiKey = apiKeyMap[provider as keyof typeof apiKeyMap] || { prop: "apiKey", env: "API_KEY" };
     code = code
       .replace(/\$\{apiKeyProp\}/g, apiKey.prop)
       .replace(/\$\{apiKeyEnv\}/g, apiKey.env);
@@ -243,10 +243,10 @@ async function updateHighlight() {
           },
           {
             name: "compact-lines",
-            preprocess(code) {
+            preprocess(code: any) {
               return code;
             },
-            postprocess(html) {
+            postprocess(html: any) {
               let processedHtml = html.replace(
                 "<pre",
                 '<pre data-compact="true"'
@@ -290,10 +290,10 @@ async function updateHighlight() {
           },
           {
             name: "compact-lines",
-            preprocess(code) {
+            preprocess(code: any) {
               return code;
             },
-            postprocess(html) {
+            postprocess(html: any) {
               let processedHtml = html.replace(
                 "<pre",
                 '<pre data-compact="true"'
