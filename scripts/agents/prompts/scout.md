@@ -34,17 +34,25 @@ Check the official docs/changelogs for each provider llm-exe supports:
 
 1. Read CLAUDE.md to understand our principles — especially Feature Evaluation.
 
-2. Read `src/llm/` to understand what models and providers we currently support. Check the shorthand definitions.
+2. Orient yourself on the current release:
+   ```
+   node -p "require('./package.json').version"
+   gh release list --limit 5
+   gh api repos/:owner/:repo/milestones --jq '.[].title'
+   ```
+   Know what version is out and what milestones exist so you assign issues to the right ones.
 
-3. Check what's already been reported — read ALL open issues, not just the first page:
+3. Read `src/llm/` to understand what models and providers we currently support. Check the shorthand definitions.
+
+4. Check what's already been reported — read ALL open issues, not just the first page:
    ```
    gh issue list --state open --limit 100
    ```
    Know what's already tracked before you do anything.
 
-4. Fetch the provider docs listed above. For each provider, compare what they offer against what we support.
+5. Fetch the provider docs listed above. For each provider, compare what they offer against what we support.
 
-5. For each finding, decide how to handle it:
+6. For each finding, decide how to handle it:
 
    **If an open issue already covers it:**
    - Add a comment with the update — new info, changed timeline, link to the announcement
@@ -53,15 +61,15 @@ Check the official docs/changelogs for each provider llm-exe supports:
 
    **If it's new and actionable:**
    - File an issue. Be specific — include the model ID, link to docs, what we'd need to change.
-   - **New model to add**: label `enhancement`
+   - **New model to add**: label `enhancement`, assign to the next minor milestone
    - **Deprecation warning**: label `bug` — and tag @gregreindel if the deprecation date is < 3 months out
    - **API change worth discussing**: label `needs-discussion`
-   - **Breaking change**: label `bug`, tag @gregreindel — this is urgent
+   - **Breaking change**: label `breaking`, assign to the next major milestone, tag @gregreindel — this is urgent
 
    **If it's new but minor:**
    - Still file it, but be clear it's low priority. Not everything needs to be done now.
 
-6. Use judgment on urgency:
+7. Use judgment on urgency:
    - Breaking change or imminent deprecation → tag @gregreindel in the issue body
    - New popular model everyone's talking about → file it, note the demand
    - Niche model nobody uses → skip it or mention it in your log, don't file an issue

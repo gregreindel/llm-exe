@@ -1,0 +1,102 @@
+name: Agent Digest
+
+on:
+  schedule:
+    - cron: "0 11 * * 1"  # Monday 11am UTC (6am EST)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  id-token: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Generate digest
+        uses: anthropics/claude-code-action@v1
+        id: digest
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          prompt: |
+            Generate a weekly digest for the llm-exe project. Write the digest as an HTML email body (no <html>/<body> tags, just the content).
+
+            Gather this info:
+            1. Run: gh issue list --state all --since "$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)" --limit 50
+            2. Run: gh pr list --state all --limit 20
+            3. Read the agent log files in scripts/agents/logs/ from the past week
+            4. Run: gh release list --limit 3
+
+            Write a concise, scannable digest with these sections:
+            - **What shipped** — PRs merged, releases cut
+            - **Open PRs** — waiting for review
+            - **Issues filed** — new bugs, enhancements, breaking changes
+            - **Agent activity** — what each agent did this week (from logs)
+            - **Needs attention** — anything urgent, blocked, or stale
+
+            Keep it short. Use bullet points. Link to issues/PRs with full GitHub URLs.
+
+            Write ONLY the HTML content to a file at /tmp/digest.html. Nothing else.
+          claude_args: |
+            --allowedTools "Bash,Read,Glob,Grep,Write"
+            --max-turns 15
+            --model claude-sonnet-4-6
+
+      - name: Get access token
+        id: auth
+        run: |
+          token=$(curl -s -X POST "https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -d "scope=https://graph.microsoft.com/.default" \
+            -d "grant_type=client_credentials" | jq -r '.access_token')
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Send digest email
+        run: |
+          BODY=$(cat /tmp/digest.html | jq -Rs .)
+
+          # Build recipients array
+          IFS=',' read -ra EMAILS <<< "${{ secrets.MARKETING_EMAILS }}"
+          TO_RECIPIENTS=""
+          for email in "${EMAILS[@]}"; do
+            email=$(echo "$email" | xargs)  # trim whitespace
+            if [ -n "$TO_RECIPIENTS" ]; then
+              TO_RECIPIENTS="${TO_RECIPIENTS},"
+            fi
+            TO_RECIPIENTS="${TO_RECIPIENTS}{\"emailAddress\":{\"address\":\"${email}\"}}"
+          done
+
+          curl -s -X POST "https://graph.microsoft.com/v1.0/users/${{ secrets.SMTP_USERNAME }}/sendMail" \
+            -H "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"message\": {
+                \"subject\": \"llm-exe weekly digest — $(date +%b\ %d)\",
+                \"body\": {
+                  \"contentType\": \"HTML\",
+                  \"content\": $BODY
+                },
+                \"toRecipients\": [${TO_RECIPIENTS}]
+              }
+            }"

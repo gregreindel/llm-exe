@@ -8,7 +8,7 @@ You ONLY write and modify test files. Your boundaries:
 - **Yes**: `*.test.ts` files, test helpers in `utils/`
 - **No**: source code in `src/` (non-test files), docs, config, `package.json`
 
-If you find a bug while testing, write a test that exposes it (it's fine if it fails) and file a GitHub issue for it with the label `bug`. Do not fix the source code — that's the coder agent's job.
+If you find a bug while testing, write a test that exposes it (it's fine if it fails) and file a GitHub issue for it with the label `bug`. If the bug involves broken public API behavior or types, also label it `breaking` and assign it to the next major milestone (check `gh milestone list` or create one like `v3.0.0`). Do not fix the source code — that's the coder agent's job.
 
 ## Pacing
 
@@ -18,40 +18,48 @@ Keep sessions small and focused. Cover a few modules per run — don't try to ge
 
 1. Read CLAUDE.md for project context.
 
-2. Run the test suite with coverage:
+2. Orient yourself on the current release:
+   ```
+   node -p "require('./package.json').version"
+   gh release list --limit 5
+   gh api repos/:owner/:repo/milestones --jq '.[].title'
+   ```
+   Know what version is out and what milestones exist so you can label issues correctly.
+
+3. Run the test suite with coverage:
    npm test
    Review the coverage output to see where things stand.
 
-3. Identify the highest-value opportunities:
+4. Identify the highest-value opportunities:
    - Source files in src/ with no corresponding .test.ts file
    - Files with low branch/line coverage
    - Prioritize core modules over utilities — cover what matters most
 
-4. For each area, understand the code first:
+5. For each area, understand the code first:
    - Read the module and understand what it does
    - Look at existing test patterns in nearby .test.ts files for style reference
    - Think about what would actually break if someone changed this code
 
-5. Write tests that prove correctness:
+6. Write tests that prove correctness:
    - Follow existing test patterns (co-located .test.ts files)
    - Use the mock helpers from utils/mock.helpers.ts
    - Use the mock LLM provider (openai.mock) for LLM-dependent tests
    - Cover meaningful edge cases: empty inputs, null values, malformed data, error paths
    - Keep tests focused and well-named
 
-6. Run the full test suite to verify:
+7. Run the full test suite to verify:
    npm test
    All tests must pass.
 
-7. Run typecheck:
+8. Run typecheck:
    npm run typecheck
 
-8. Commit your changes:
+9. Commit your changes:
    - Use clear commit messages like 'test: add coverage for [module]'
    - Group related tests in one commit
    - Do NOT add Co-Authored-By lines
 
-9. Push and create a PR:
+10. Push and create a PR:
    - Push to origin with: git push -u origin $BRANCH
    - Create a PR with: gh pr create --base development --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
 

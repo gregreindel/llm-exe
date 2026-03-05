@@ -1,0 +1,97 @@
+name: Marketing Ideas
+
+on:
+  schedule:
+    - cron: "0 14 * * 2,4"  # Tuesday & Thursday 2pm UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  id-token: write
+
+jobs:
+  brainstorm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Generate ideas
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          prompt: |
+            You're a developer advocate for llm-exe, a TypeScript toolkit for building LLM-powered apps.
+
+            Read CLAUDE.md and the README to understand the project. Check recent PRs and issues for what's new:
+              gh pr list --state merged --limit 10
+              gh issue list --state all --limit 20
+
+            Then brainstorm 3-5 marketing content ideas. For each idea, include:
+            - **Format**: tweet, blog post, short tutorial, code snippet, etc.
+            - **Hook**: the first line / attention grabber
+            - **Draft**: a rough draft of the content (ready to post or close to it)
+            - **Why now**: what makes this timely (new feature, trending topic, common pain point)
+
+            Mix it up — some quick tweets, some longer pieces. Focus on things that would resonate with TypeScript developers building AI features. Be specific to llm-exe, not generic AI hype.
+
+            Write the output as a nicely formatted HTML email body to /tmp/marketing.html. No <html>/<body> tags, just content.
+          claude_args: |
+            --allowedTools "Bash,Read,Glob,Grep,Write,WebSearch"
+            --max-turns 15
+            --model claude-sonnet-4-6
+
+      - name: Get access token
+        id: auth
+        run: |
+          token=$(curl -s -X POST "https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -d "scope=https://graph.microsoft.com/.default" \
+            -d "grant_type=client_credentials" \
+            | jq -r '.access_token')
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Send marketing email
+        run: |
+          BODY=$(cat /tmp/marketing.html | jq -Rs .)
+
+          IFS=',' read -ra EMAILS <<< "${{ secrets.MARKETING_EMAILS }}"
+          TO_RECIPIENTS=""
+          for email in "${EMAILS[@]}"; do
+            email=$(echo "$email" | xargs)
+            if [ -n "$TO_RECIPIENTS" ]; then
+              TO_RECIPIENTS="${TO_RECIPIENTS},"
+            fi
+            TO_RECIPIENTS="${TO_RECIPIENTS}{\"emailAddress\":{\"address\":\"${email}\"}}"
+          done
+
+          curl -s -X POST "https://graph.microsoft.com/v1.0/users/${{ secrets.SMTP_USERNAME }}/sendMail" \
+            -H "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"message\": {
+                \"subject\": \"llm-exe marketing ideas — $(date +%b\ %d)\",
+                \"body\": {
+                  \"contentType\": \"HTML\",
+                  \"content\": $BODY
+                },
+                \"toRecipients\": [${TO_RECIPIENTS}]
+              }
+            }"

@@ -105,6 +105,21 @@ npm run build:ci        # tsup (CJS/ESM/DTS)
 - Tool calls are normalized internally so application code uses one shape regardless of provider
 - Branch naming: `agent/<role>/<date>` for automated maintenance
 
+## Versioning & Releases
+
+We follow [semver](https://semver.org/). Check current version with `node -p "require('./package.json').version"` and recent releases with `gh release list --limit 5`.
+
+- **patch** (2.3.x) — bug fixes, no API changes. Most fixes are patches.
+- **minor** (2.x.0) — new features that are fully backwards-compatible. New parsers, new provider support, new options on existing APIs.
+- **major** (x.0.0) — breaking changes. Rare. Changing return types, removing/renaming exports, altering behavior that existing users depend on.
+
+When filing an issue:
+- If the fix changes public API behavior or types that consumers rely on, label it `breaking` and assign it to the next major milestone (create one if it doesn't exist, e.g. `v3.0.0`).
+- Non-breaking bugs/features get the current minor or patch milestone.
+- When in doubt, it's probably not breaking. Only label `breaking` if existing user code would need to change.
+
+The maintainer decides when to cut releases. Agents organize — the human ships.
+
 ## PR Guidelines
 
 - Run `npm test` and `npm run typecheck` before submitting
