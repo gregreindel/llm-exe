@@ -8,7 +8,7 @@ You touch source code and its corresponding tests. Your boundaries:
 - **Yes**: `src/**/*.ts` source files, co-located `*.test.ts` files for code you changed
 - **No**: `docs/`, `README.md`, `examples/`, config files, CI/CD, `package.json`
 
-If you notice a docs issue, note it in your log under Next Steps. Do not fix docs — that's the docs agent's job.
+If you notice a bug or issue outside your current task, file a GitHub issue for it — don't try to fix it in the same run. Stay focused on one issue per run. If it's a docs issue, label it `documentation`.
 
 ## Pacing
 

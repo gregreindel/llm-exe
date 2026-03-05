@@ -17,22 +17,32 @@ on:
           - enterprise
           - personas
           - curator
+          - scout
           - all
+      instructions:
+        description: "Extra instructions for the agent (optional)"
+        required: false
+        type: string
   schedule:
-    - cron: "0 6 * * *" # 6am UTC daily
+    - cron: "0 6 * * 1-5"   # docs — 6am UTC weekdays
+    - cron: "0 8 * * 1-5"   # tester — 8am UTC weekdays
+    - cron: "0 10 * * 1-5"  # coder — 10am UTC weekdays
+    - cron: "0 14 * * 2,5"  # personas + curator — 2pm UTC Tue/Fri
+    - cron: "0 12 * * 1"    # scout — noon UTC Monday
 
 concurrency:
-  group: agent-${{ github.event.inputs.agent || 'scheduled' }}
+  group: agent-${{ github.event.inputs.agent || github.event.schedule }}
   cancel-in-progress: false
 
 jobs:
   run-agent:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 30
 
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+      AGENT_INSTRUCTIONS: ${{ github.event.inputs.instructions }}
 
     steps:
       - name: Checkout (full history)
@@ -58,16 +68,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Pick agent for scheduled runs
+        if: github.event_name == 'schedule'
+        id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 6 * * 1-5")   echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
+            "0 8 * * 1-5")   echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
+            "0 10 * * 1-5")  echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
+            "0 14 * * 2,5")  echo "agent=all" >> "$GITHUB_OUTPUT" ;;
+            "0 12 * * 1")    echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Run agent
         run: |
+          agent="${{ github.event.inputs.agent || steps.pick.outputs.agent }}"
           chmod +x ./scripts/maintain.sh
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            for agent in all docs tester coder; do
-              echo "========================================="
-              echo "  Running: $agent"
-              echo "========================================="
-              ./scripts/maintain.sh "$agent" || true
-            done
-          else
-            ./scripts/maintain.sh "${{ github.event.inputs.agent }}"
-          fi
+          ./scripts/maintain.sh "$agent"
