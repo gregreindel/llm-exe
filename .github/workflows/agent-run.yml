@@ -46,16 +46,23 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout (full history)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.MY_GITHUB_TOKEN }}
+          token: ${{ steps.bot-token.outputs.token }}
 
       - name: Configure git
         run: |
-          git config user.name "llm-exe-bot"
-          git config user.email "llm-exe-bot@users.noreply.github.com"
+          git config user.name "llm-exe-bot[bot]"
+          git config user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -145,7 +152,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.MY_GITHUB_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
           display_report: "false"
           prompt: |
             Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
@@ -158,7 +165,7 @@ jobs:
         if: steps.prompt.outputs.use_action == 'false'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
         run: |
           npm install -g @anthropic-ai/claude-code
           chmod +x ./scripts/maintain.sh
