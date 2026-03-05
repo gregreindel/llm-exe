@@ -15,9 +15,13 @@ export class ListToJsonParser<
     const lines = text.split("\n");
     const output: any = {};
     lines.forEach((line) => {
-      const [key, value] = line.split(":");
-      if (value) {
-        output[camelCase(key)] = value.trim();
+      const colonIndex = line.indexOf(":");
+      if (colonIndex !== -1) {
+        const key = line.slice(0, colonIndex);
+        const value = line.slice(colonIndex + 1).trim();
+        if (value) {
+          output[camelCase(key)] = value;
+        }
       }
     });
     if (this.schema) {
