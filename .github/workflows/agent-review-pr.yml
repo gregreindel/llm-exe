@@ -18,11 +18,18 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.MY_GITHUB_TOKEN }}
+          token: ${{ steps.bot-token.outputs.token }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -46,13 +53,14 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.MY_GITHUB_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
           display_report: "false"
           prompt: |
             Read the file /tmp/review-prompt.txt for your full instructions. Follow them exactly.
           claude_args: |
             --allowedTools "Bash,Read,Glob,Grep,WebFetch"
             --max-turns 30
+            --model claude-opus-4-6
 
       - name: Clock out
         if: always()
