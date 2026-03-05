@@ -34,15 +34,16 @@ concurrency:
   group: agent-${{ github.event.inputs.agent || github.event.schedule }}
   cancel-in-progress: false
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
 jobs:
   run-agent:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
-    env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-      AGENT_INSTRUCTIONS: ${{ github.event.inputs.instructions }}
 
     steps:
       - name: Checkout (full history)
@@ -55,9 +56,6 @@ jobs:
         run: |
           git config user.name "llm-exe-bot"
           git config user.email "llm-exe-bot@users.noreply.github.com"
-
-      - name: Install Claude CLI
-        run: npm install -g @anthropic-ai/claude-code
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -80,8 +78,95 @@ jobs:
             "0 12 * * 1")    echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
           esac
 
-      - name: Run agent
+      - name: Build prompt
+        id: prompt
+        env:
+          AGENT_INSTRUCTIONS: ${{ github.event.inputs.instructions }}
         run: |
           agent="${{ github.event.inputs.agent || steps.pick.outputs.agent }}"
+          echo "agent=$agent" >> "$GITHUB_OUTPUT"
+
           chmod +x ./scripts/maintain.sh
-          ./scripts/maintain.sh "$agent"
+          source ./scripts/agents/config.sh
+
+          # Create branch and log file
+          branch=$(create_agent_branch "$agent")
+          log_file=$(clock_in "$agent" "$branch")
+
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+          # Build the prompt
+          prompt_file="./scripts/agents/prompts/${agent}.md"
+
+          if [[ "$agent" == "all" || "$agent" == "personas" ]]; then
+            # For 'all' and 'personas', we need maintain.sh to handle the loop
+            # Fall back to CLI mode for these
+            echo "use_action=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$agent" =~ ^(beginner|harsh-critic|speed-runner|enterprise)$ ]]; then
+            # Persona agent
+            base_file="./scripts/agents/prompts/_persona.md"
+            persona_file="./scripts/agents/prompts/personas/${agent}.md"
+            persona_block=$(<"$persona_file")
+            prompt=$(<"$base_file")
+            prompt=$(echo "$prompt" | sed "s|\$LOG_FILE|$log_file|g")
+            prompt="${prompt/\$PERSONA/$persona_block}"
+            echo "use_action=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$agent" == "curator" ]]; then
+            prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
+            echo "use_action=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$agent" == "review" ]]; then
+            echo "use_action=false" >> "$GITHUB_OUTPUT"
+          else
+            # Task agent (docs, tester, coder, scout)
+            prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
+            prior_context=$(build_prior_context "$agent" "$log_file" 2>/dev/null || true)
+            prompt="${prompt}${prior_context}"
+            echo "use_action=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Add time budget
+          deadline="$(date -u -d "+600 seconds" +%H:%M)"
+          prompt="${prompt}
+
+          ## Time Budget
+          You started at $(date -u +%H:%M) UTC. You have 10 minutes — wrap up by ${deadline} UTC.
+          Run \`date -u +%H:%M\` periodically to check how much time you have left.
+          If you're running low on time, commit what you have, update your log file, and stop. A partial result is better than getting killed mid-work."
+
+          # Add maintainer instructions if provided
+          if [[ -n "${AGENT_INSTRUCTIONS:-}" ]]; then
+            prompt="${prompt}
+
+          ## Additional Instructions from Maintainer
+          ${AGENT_INSTRUCTIONS}"
+          fi
+
+          # Write prompt to file (too large for env vars)
+          echo "$prompt" > /tmp/agent-prompt.md
+
+      - name: Run agent (action)
+        if: steps.prompt.outputs.use_action == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.MY_GITHUB_TOKEN }}
+          prompt_file: /tmp/agent-prompt.md
+          max_turns: 50
+          timeout_minutes: 10
+          allowedTools: "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+
+      - name: Run agent (CLI fallback for multi-agent commands)
+        if: steps.prompt.outputs.use_action == 'false'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          ./scripts/maintain.sh "${{ steps.prompt.outputs.agent }}"
+
+      - name: Clock out
+        if: always()
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
