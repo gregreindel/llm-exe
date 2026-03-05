@@ -3,7 +3,7 @@
 
 # Repository settings
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-DEFAULT_BRANCH="main"
+DEFAULT_BRANCH="development"
 GITHUB_REMOTE="origin"
 
 # Agent settings

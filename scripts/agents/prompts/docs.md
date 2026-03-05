@@ -43,7 +43,7 @@ Keep sessions small and focused. Pick a few doc files to improve per run — don
 
 7. Push the branch and create a PR:
    - Push to origin with: git push -u origin $BRANCH
-   - Create a PR with: gh pr create --title 'docs: update documentation to match current API' --body 'Documentation improvements by the docs agent.'
+   - Create a PR with: gh pr create --base development --title 'docs: update documentation to match current API' --body 'Documentation improvements by the docs agent.'
 
 If documentation is already solid, note what you verified and move on. Don't manufacture changes for the sake of it.
 
