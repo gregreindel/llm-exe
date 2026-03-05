@@ -39,6 +39,7 @@ Keep sessions small and focused. Pick a few doc files to improve per run — don
 6. Commit your changes:
    - Use clear, descriptive commit messages
    - One commit per logical change
+   - Do NOT add Co-Authored-By lines
 
 7. Push the branch and create a PR:
    - Push to origin with: git push -u origin $BRANCH

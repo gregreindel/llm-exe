@@ -49,6 +49,7 @@ Keep sessions small and focused. Cover a few modules per run — don't try to ge
 8. Commit your changes:
    - Use clear commit messages like 'test: add coverage for [module]'
    - Group related tests in one commit
+   - Do NOT add Co-Authored-By lines
 
 9. Push and create a PR:
    - Push to origin with: git push -u origin $BRANCH
