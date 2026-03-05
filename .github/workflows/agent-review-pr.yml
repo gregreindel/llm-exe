@@ -1,0 +1,45 @@
+name: Agent Review PR
+
+on:
+  pull_request:
+    types: [opened]
+    branches: [main, development]
+
+jobs:
+  review:
+    if: startsWith(github.head_ref, 'agent/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "llm-exe-bot"
+          git config user.email "llm-exe-bot@users.noreply.github.com"
+
+      - name: Install Claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Review PR
+        run: |
+          chmod +x ./scripts/maintain.sh
+          ./scripts/maintain.sh review ${{ github.event.pull_request.number }}
