@@ -14,7 +14,7 @@ export class BooleanParser extends BaseParser<boolean> {
       `Invalid input. Expected string. Received ${typeof text}.`
     );
     const clean = text.toLowerCase().trim();
-    if (clean === "true") {
+    if (clean === "true" || clean === "yes" || clean === "y" || clean === "1") {
       return true;
     }
     return false;

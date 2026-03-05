@@ -234,8 +234,11 @@ export function createParser<
     case "stringExtract":
       return new StringExtractParser(options);
     case "string":
-    default:
       return new StringParser();
+    default:
+      throw new Error(
+        `Invalid parser type: "${type}". Valid types are: json, string, boolean, number, stringExtract, listToArray, listToJson, listToKeyValue, replaceStringTemplate, markdownCodeBlock, markdownCodeBlocks`
+      );
   }
 }
 
