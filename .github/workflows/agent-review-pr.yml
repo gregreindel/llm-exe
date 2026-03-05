@@ -39,7 +39,7 @@ jobs:
           source ./scripts/agents/config.sh
           log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number }}")
           prompt=$(sed -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" -e "s|\$LOG_FILE|$log_file|g" ./scripts/agents/prompts/reviewer.md)
-          echo "$prompt" > /tmp/review-prompt.md
+          echo "$prompt" > /tmp/review-prompt.txt
           echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
 
       - name: Review PR
@@ -47,10 +47,12 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.MY_GITHUB_TOKEN }}
-          prompt_file: /tmp/review-prompt.md
-          max_turns: 30
-          timeout_minutes: 10
-          allowedTools: "Bash,Read,Glob,Grep,WebFetch"
+          display_report: "false"
+          prompt: |
+            Read the file /tmp/review-prompt.txt for your full instructions. Follow them exactly.
+          claude_args: |
+            --allowedTools "Bash,Read,Glob,Grep,WebFetch"
+            --max-turns 30
 
       - name: Clock out
         if: always()
