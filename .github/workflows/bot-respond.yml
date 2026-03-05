@@ -1,0 +1,59 @@
+name: Bot Respond
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  respond:
+    if: |
+      contains(github.event.comment.body, '@llm-exe-bot') &&
+      github.event.comment.user.login != 'llm-exe-bot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Respond
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          prompt: |
+            You are llm-exe-bot, a helpful assistant for the llm-exe TypeScript package. You've been mentioned in a GitHub issue comment.
+
+            Read CLAUDE.md for project context. You can read any source code in the repo to answer questions.
+
+            Be conversational and helpful. You're talking to the maintainer (@gregreindel) or a contributor. Keep responses concise and specific. Reference actual code when relevant (file paths, line numbers).
+
+            You can run tests and typecheck to verify things, but do NOT make any changes to the codebase. Do NOT create commits, branches, or PRs. Read and run — don't write.
+          claude_args: |
+            --allowedTools "Bash,Read,Glob,Grep,WebFetch,WebSearch"
+            --max-turns 10
+            --model claude-sonnet-4-6
