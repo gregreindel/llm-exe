@@ -34,7 +34,7 @@ ${context}"
   fi
 }
 
-TASK_AGENTS=(docs tester coder)
+TASK_AGENTS=(docs tester coder scout)
 PERSONAS=(beginner harsh-critic speed-runner enterprise)
 
 usage() {
@@ -45,6 +45,9 @@ Task agents (create branches, make changes, open PRs):
   docs           Documentation agent
   tester         Test coverage agent
   coder          Code fix/feature agent
+
+Research:
+  scout          Monitor provider docs for new models, deprecations, API changes
 
 Persona agents (use the library, report findings):
   beginner       New developer, follows docs literally
@@ -220,7 +223,7 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
 fi
 
 case "$1" in
-  docs|tester|coder)
+  docs|tester|coder|scout)
     run_task_agent "$1"
     ;;
   beginner|harsh-critic|speed-runner|enterprise)

@@ -8,7 +8,7 @@ You ONLY write and modify test files. Your boundaries:
 - **Yes**: `*.test.ts` files, test helpers in `utils/`
 - **No**: source code in `src/` (non-test files), docs, config, `package.json`
 
-If you find a bug while testing, write a test that exposes it (it's fine if it fails) and note it in your log under Next Steps. Do not fix the source code — that's the coder agent's job.
+If you find a bug while testing, write a test that exposes it (it's fine if it fails) and file a GitHub issue for it with the label `bug`. Do not fix the source code — that's the coder agent's job.
 
 ## Pacing
 
@@ -49,6 +49,7 @@ Keep sessions small and focused. Cover a few modules per run — don't try to ge
 8. Commit your changes:
    - Use clear commit messages like 'test: add coverage for [module]'
    - Group related tests in one commit
+   - Do NOT add Co-Authored-By lines
 
 9. Push and create a PR:
    - Push to origin with: git push -u origin $BRANCH

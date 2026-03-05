@@ -32,6 +32,16 @@ describe("llm-exe:parser/ListToJsonParser", () => {
     const input = `Name: Greg\nOccupation: developer`
     expect(parser.parse(input)).toEqual({ name: "Greg", occupation: "developer"})
   });
+  it('preserves colons in values (URLs)', () => {
+    const parser = new ListToJsonParser()
+    const input = `URL: https://example.com\nName: Greg`
+    expect(parser.parse(input)).toEqual({ url: "https://example.com", name: "Greg"})
+  });
+  it('preserves colons in values (timestamps)', () => {
+    const parser = new ListToJsonParser()
+    const input = `Time: 10:30:00\nEvent: meeting`
+    expect(parser.parse(input)).toEqual({ time: "10:30:00", event: "meeting"})
+  });
   it('parses schema with error when set', () => {
     const schema = defineSchema({
       type: "object",
