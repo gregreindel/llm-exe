@@ -11,8 +11,9 @@ The state module consists of 3 concepts:
 
 Dialogues are a place to store conversation history, internal dialogues, really any conversation that is taking place with an LLM. You can have one or many dialogues. When you create a new dialogue, you should provide a key, which allows you to access the dialogue from the state later if needed.
 
-TODO:
-Describe Context & Attributes. In summary, attributes are meant to be a basic object, context can more robust classes.
+**Context** items are instances of `BaseStateItem` — typed classes with `getValue()`, `setValue()`, and `resetValue()` methods. Use context for structured, typed data that needs its own lifecycle (e.g., extracted entities, session config). Create context items with `createStateItem(name, defaultValue)` and add them via `state.createContextItem(item)`.
+
+**Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
 
 State has a `saveState()` method that can be customized to save the state to a database.
 

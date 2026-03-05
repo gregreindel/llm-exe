@@ -47,7 +47,7 @@ In addition to the generic options, the following options are Deepseek-specific 
 
 | Option           | Type    | Default     | Description                                                    |
 | ---------------- | ------- | ----------- | -------------------------------------------------------------- |
-| model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See Deepseek Docs |
+| model            | string  | deepseek-chat | The model to use. Can be any valid chat model. See Deepseek Docs |
 | deepseekApiKey     | string  | undefined   | API key for Deepseek. See [authentication](/llm/deepseek#authentication)   |
 | temperature      | number  | undefined   | Maps to temperature.*                          |
 | maxTokens        | number  | undefined   | Maps to max_tokens. See Deepseek Docs                            |
