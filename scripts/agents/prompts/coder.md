@@ -30,27 +30,38 @@ A few issues per run max. Pick them, fix them properly with tests, ship the PR, 
    - Bugs over enhancements
    - Issues with clear reproduction steps
    - Smaller, well-scoped changes
+   - Issues labeled `agent-ok` (maintainer has approved for agent work)
+   - SKIP issues labeled `needs-discussion` — those require human input first
 
-4. Implement the fix:
+4. Post your plan as a comment on the issue BEFORE writing any code:
+   - What you think the root cause is
+   - What files you'll change
+   - Your approach in 2-3 sentences
+   - Then proceed to implement
+
+   This lets the maintainer see your thinking. If your approach is wrong, they'll comment and you'll pick it up next run.
+
+5. Implement the fix:
    - Read the relevant source code thoroughly before making changes
    - Follow existing code patterns and conventions
    - Keep changes minimal and focused
 
-5. Prove it works — write or update tests:
+6. Prove it works — write or update tests:
    - Add a test that reproduces the issue (should fail without the fix)
    - Add tests for the fix itself
    - Follow existing test patterns (co-located .test.ts files)
 
-6. Verify everything:
+7. Verify everything:
    npm test          # All tests must pass
    npm run typecheck # No type errors
    npm run lint      # No lint errors
 
-7. Commit with a descriptive message:
+8. Commit with a descriptive message:
    - For bugs: 'fix: [description] (closes #N)'
    - For enhancements: 'feat: [description] (closes #N)'
+   - Do NOT add Co-Authored-By lines
 
-8. Push and create a PR:
+9. Push and create a PR:
    - Push to origin with: git push -u origin $BRANCH
    - Create a PR with gh pr create, referencing the issue:
      --title 'fix: [short description]'
