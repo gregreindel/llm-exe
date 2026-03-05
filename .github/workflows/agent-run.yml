@@ -152,6 +152,7 @@ jobs:
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
             --max-turns 50
+            --model claude-opus-4-6
 
       - name: Run agent (maintain.sh fallback for multi-agent)
         if: steps.prompt.outputs.use_action == 'false'
