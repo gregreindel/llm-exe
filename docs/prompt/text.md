@@ -1,5 +1,5 @@
 # Text Prompt
-The default prompt is a text prompt, and is meant for models such as xx and xx. 
+The text prompt returns a single formatted string, useful for simple completion-style prompts or when you need the prompt as a plain string rather than structured chat messages.
 
 You create a prompt using `createPrompt()`.
 

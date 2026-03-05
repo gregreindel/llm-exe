@@ -12,7 +12,7 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 | jitter        | "none" \| "full" | none    | Used for retry back-off.                                                                                   |
 | temperature   | number           | 0       | Used by model.                                                                                             |
 | maxTokens     | number           | 500     | Used by model.                                                                                             |
-| stream        | boolean \| null  | null    | Note: Not supported 
+| stream        | boolean \| null  | null    | Note: Not supported yet.                                                                                   |
 
 > [!NOTE]
 > Different vendors will allow (and may require) additional options.

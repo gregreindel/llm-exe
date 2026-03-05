@@ -1,6 +1,6 @@
 # OpenAI Embeddings
 
-When using OpenAi models, llm-exe will make POST requests to `https://api.openai.com/v1/chat/completions`. All models are supported if you pass `openai.chat.v1` as the first argument, and then specify a model in the options.
+When using OpenAI embeddings, llm-exe will make POST requests to `https://api.openai.com/v1/embeddings`.
 
 ## Basic Usage
 
