@@ -99,7 +99,7 @@ npm run build:ci        # tsup (CJS/ESM/DTS)
 ## Conventions
 
 - Tests are co-located: `[file].test.ts` next to implementation
-- Mock LLM providers: `openai.chat-mock` / `openai.mock` (echo input back)
+- Mock LLM providers: `openai.chat-mock.v1` (echo input back)
 - Mock helper: `mockOutputResultObject(content[], options?)` in `utils/mock.helpers.ts`
 - All LLM responses normalize to `OutputResult` with `content: OutputResultContent[]` — this normalization layer is how we stay provider-agnostic
 - Tool calls are normalized internally so application code uses one shape regardless of provider
