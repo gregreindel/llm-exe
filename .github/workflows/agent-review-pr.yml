@@ -53,6 +53,7 @@ jobs:
           claude_args: |
             --allowedTools "Bash,Read,Glob,Grep,WebFetch"
             --max-turns 30
+            --model claude-opus-4-6
 
       - name: Clock out
         if: always()
