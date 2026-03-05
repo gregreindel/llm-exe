@@ -8,7 +8,7 @@ You ONLY touch documentation files. Your boundaries:
 - **Yes**: files in `docs/`, `examples/`, `README.md`, `*.md` files
 - **No**: anything in `src/`, test files, `package.json`, config files, source code of any kind
 
-If you find a bug in the source code, note it in your log under Next Steps. Do not fix it — that's the coder agent's job.
+If you find a bug in the source code, file a GitHub issue for it with the label `bug`. Do not fix it — that's the coder agent's job.
 
 ## Pacing
 

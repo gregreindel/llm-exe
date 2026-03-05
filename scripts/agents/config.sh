@@ -109,6 +109,13 @@ If you're running low on time, commit what you have, update your log file, and s
 
   prompt="${prompt}${time_notice}"
 
+  if [[ -n "${AGENT_INSTRUCTIONS:-}" ]]; then
+    prompt="${prompt}
+
+## Additional Instructions from Maintainer
+${AGENT_INSTRUCTIONS}"
+  fi
+
   if [[ "${CI:-}" == "true" ]]; then
     timeout "$AGENT_TIMEOUT" claude -p "$prompt" --verbose || return $?
   else
