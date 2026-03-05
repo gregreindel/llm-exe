@@ -11,24 +11,26 @@ on:
           - docs
           - tester
           - coder
+          - scout
           - beginner
           - harsh-critic
           - speed-runner
           - enterprise
-          - personas
           - curator
-          - scout
-          - all
       instructions:
         description: "Extra instructions for the agent (optional)"
         required: false
         type: string
   schedule:
-    - cron: "0 6 * * 1-5"   # docs — 6am UTC weekdays
-    - cron: "0 8 * * 1-5"   # tester — 8am UTC weekdays
-    - cron: "0 10 * * 1-5"  # coder — 10am UTC weekdays
-    - cron: "0 14 * * 2,5"  # personas + curator — 2pm UTC Tue/Fri
-    - cron: "0 12 * * 1"    # scout — noon UTC Monday
+    - cron: "0 6 * * 1-5"    # docs — 6am UTC weekdays
+    - cron: "0 8 * * 1-5"    # tester — 8am UTC weekdays
+    - cron: "0 10 * * 1-5"   # coder — 10am UTC weekdays
+    - cron: "0 12 * * 1"     # scout — noon UTC Monday
+    - cron: "0 14 * * 2,5"   # beginner — 2pm UTC Tue/Fri
+    - cron: "0 15 * * 2,5"   # harsh-critic — 3pm UTC Tue/Fri
+    - cron: "0 16 * * 2,5"   # speed-runner — 4pm UTC Tue/Fri
+    - cron: "0 17 * * 2,5"   # enterprise — 5pm UTC Tue/Fri
+    - cron: "0 18 * * 2,5"   # curator — 6pm UTC Tue/Fri (after personas)
 
 concurrency:
   group: agent-${{ github.event.inputs.agent || github.event.schedule }}
@@ -78,11 +80,15 @@ jobs:
         id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "0 6 * * 1-5")   echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
-            "0 8 * * 1-5")   echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
-            "0 10 * * 1-5")  echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
-            "0 14 * * 2,5")  echo "agent=all" >> "$GITHUB_OUTPUT" ;;
-            "0 12 * * 1")    echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
+            "0 6 * * 1-5")    echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
+            "0 8 * * 1-5")    echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
+            "0 10 * * 1-5")   echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
+            "0 12 * * 1")     echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
+            "0 14 * * 2,5")   echo "agent=beginner" >> "$GITHUB_OUTPUT" ;;
+            "0 15 * * 2,5")   echo "agent=harsh-critic" >> "$GITHUB_OUTPUT" ;;
+            "0 16 * * 2,5")   echo "agent=speed-runner" >> "$GITHUB_OUTPUT" ;;
+            "0 17 * * 2,5")   echo "agent=enterprise" >> "$GITHUB_OUTPUT" ;;
+            "0 18 * * 2,5")   echo "agent=curator" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Build prompt
@@ -94,14 +100,6 @@ jobs:
           echo "agent=$agent" >> "$GITHUB_OUTPUT"
 
           source ./scripts/agents/config.sh
-
-          # For multi-agent commands, use maintain.sh directly
-          if [[ "$agent" == "all" || "$agent" == "personas" ]]; then
-            echo "use_action=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "use_action=true" >> "$GITHUB_OUTPUT"
 
           # Create branch and log file
           branch=$(create_agent_branch "$agent")
@@ -128,13 +126,12 @@ jobs:
 
           # Add time budget
           deadline="$(date -u -d "+600 seconds" +%H:%M)"
-          time_notice="
+          prompt="${prompt}
 
           ## Time Budget
           You started at $(date -u +%H:%M) UTC. You have 10 minutes — wrap up by ${deadline} UTC.
           Run \`date -u +%H:%M\` periodically to check how much time you have left.
           If you're running low on time, commit what you have, update your log file, and stop. A partial result is better than getting killed mid-work."
-          prompt="${prompt}${time_notice}"
 
           # Add maintainer instructions if provided
           if [[ -n "${AGENT_INSTRUCTIONS:-}" ]]; then
@@ -144,11 +141,10 @@ jobs:
           ${AGENT_INSTRUCTIONS}"
           fi
 
-          # Write prompt to file (too large for GITHUB_OUTPUT)
+          # Write prompt to file
           echo "$prompt" > /tmp/agent-prompt.txt
 
-      - name: Run agent (action)
-        if: steps.prompt.outputs.use_action == 'true'
+      - name: Run agent
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -161,18 +157,8 @@ jobs:
             --max-turns 50
             --model claude-opus-4-6
 
-      - name: Run agent (maintain.sh fallback for multi-agent)
-        if: steps.prompt.outputs.use_action == 'false'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
-        run: |
-          npm install -g @anthropic-ai/claude-code
-          chmod +x ./scripts/maintain.sh
-          ./scripts/maintain.sh "${{ steps.prompt.outputs.agent }}"
-
       - name: Clock out
-        if: always() && steps.prompt.outputs.use_action == 'true'
+        if: always()
         run: |
           source ./scripts/agents/config.sh
           clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"

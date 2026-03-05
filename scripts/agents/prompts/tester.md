@@ -53,7 +53,7 @@ Keep sessions small and focused. Cover a few modules per run — don't try to ge
 
 9. Push and create a PR:
    - Push to origin with: git push -u origin $BRANCH
-   - Create a PR with: gh pr create --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
+   - Create a PR with: gh pr create --base development --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
 
 Quality over quantity. A few well-written tests for critical paths beat a pile of shallow ones.
 
