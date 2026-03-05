@@ -13,4 +13,4 @@ Embeddings is a wrapper around various embeddings providers, making your functio
 - Amazon Embedding
 
 ## Adding Custom Providers
-If you need to register additional embeddings's to be used, you can...
+Custom embedding providers are not currently supported. If you need an embedding provider that isn't listed above, please open an issue.

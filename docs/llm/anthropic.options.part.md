@@ -8,4 +8,4 @@
 | stream          | boolean | null              | Note: Not supported yet.                                                         |
 | stop            | ?       | null              | Maps to stop_sequences. See Anthropic Docs                                       |
 
-Anthropic Docs: [link](https://platform.openai.com/docs/api-reference/completions)
+Anthropic Docs: [link](https://docs.anthropic.com/en/api/messages)
