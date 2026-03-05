@@ -5,15 +5,17 @@ on:
     types: [opened]
     branches: [main, development]
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
 jobs:
   review:
     if: startsWith(github.head_ref, 'agent/')
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
-    env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
     steps:
       - name: Checkout
@@ -21,14 +23,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.MY_GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config user.name "llm-exe-bot"
-          git config user.email "llm-exe-bot@users.noreply.github.com"
-
-      - name: Install Claude CLI
-        run: npm install -g @anthropic-ai/claude-code
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,7 +33,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Review PR
+      - name: Build review prompt
+        id: prompt
         run: |
-          chmod +x ./scripts/maintain.sh
-          ./scripts/maintain.sh review ${{ github.event.pull_request.number }}
+          source ./scripts/agents/config.sh
+          log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number }}")
+          prompt=$(sed -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" -e "s|\$LOG_FILE|$log_file|g" ./scripts/agents/prompts/reviewer.md)
+          echo "$prompt" > /tmp/review-prompt.md
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+      - name: Review PR
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.MY_GITHUB_TOKEN }}
+          prompt_file: /tmp/review-prompt.md
+          max_turns: 30
+          timeout_minutes: 10
+          allowedTools: "Bash,Read,Glob,Grep,WebFetch"
+
+      - name: Clock out
+        if: always()
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
