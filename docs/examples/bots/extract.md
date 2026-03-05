@@ -79,7 +79,7 @@ chatHistory.push({
     content: "I'm going to be in berlin"
 });
 
-const response2 = await identifyIntent().execute({
+const response2 = await extractInformation({
     input: "I get there the 14th and leave the 18th",
     chatHistory
 }, schema);

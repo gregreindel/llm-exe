@@ -44,7 +44,7 @@ In addition to the generic options, the following options are xAI-specific and c
 
 | Option           | Type    | Default     | Description                                                 |
 | ---------------- | ------- | ----------- | ----------------------------------------------------------- |
-| model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See xAI Docs |
+| model            | string  | —           | The model to use. Must be specified. See xAI Docs               |
 | xAiApiKey        | string  | undefined   | API key for xAI.                                            |
 | temperature      | number  | undefined   | Maps to temperature.\*                                      |
 | maxTokens        | number  | undefined   | Maps to max_tokens. See xAI Docs                            |
