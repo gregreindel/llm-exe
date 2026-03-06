@@ -32,7 +32,7 @@ describe("asyncCallWithTimeout", () => {
     const resultPromise = asyncCallWithTimeout(asyncPromise, 1000);
     jest.advanceTimersByTime(1000);
     await expect(resultPromise).rejects.toThrow(
-      "Unable to perform action. Try again, or use another action."
+      "LLM call timed out after 1000ms"
     );
   });
 
@@ -93,7 +93,7 @@ describe("asyncCallWithTimeout", () => {
     const resultPromise = asyncCallWithTimeout(asyncPromise);
     jest.advanceTimersByTime(10000);
     await expect(resultPromise).rejects.toThrow(
-      "Unable to perform action. Try again, or use another action."
+      "LLM call timed out after 10000ms"
     );
   });
 

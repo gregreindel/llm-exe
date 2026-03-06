@@ -151,7 +151,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   }
 
   /**
-   * addFunctionMessage Helper to add an assistant message to the prompt.
+   * addFunctionMessage Helper to add a function message to the prompt.
    * @param content The message content.
    * @return ChatPrompt so it can be chained.
    */
@@ -169,7 +169,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     return this;
   }
   /**
-   * addFunctionCallMessage Helper to add an assistant message to the prompt.
+   * addFunctionCallMessage Helper to add a function call message to the prompt.
    * @param content The message content.
    * @return ChatPrompt so it can be chained.
    */
