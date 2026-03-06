@@ -1,0 +1,192 @@
+name: Personas Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many personas to run (randomly picked)"
+        required: true
+        type: choice
+        options:
+          - "2"
+          - "1"
+          - "3"
+          - "4"
+  schedule:
+    - cron: "0 14 * * 2,5"  # Tue/Fri 2pm UTC — run all 4 + curator
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  pick-personas:
+    runs-on: ubuntu-latest
+    outputs:
+      personas: ${{ steps.pick.outputs.personas }}
+    steps:
+      - name: Pick personas
+        id: pick
+        run: |
+          count=${{ inputs.count || '4' }}
+          personas=$(printf '%s\n' beginner harsh-critic speed-runner enterprise | shuf | head -n "$count" | jq -R . | jq -sc .)
+          echo "personas=$personas" >> "$GITHUB_OUTPUT"
+
+  run-persona:
+    needs: pick-personas
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        persona: ${{ fromJson(needs.pick-personas.outputs.personas) }}
+      max-parallel: 1
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "llm-exe-bot[bot]"
+          git config user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build prompt
+        id: prompt
+        run: |
+          agent="${{ matrix.persona }}"
+          source ./scripts/agents/config.sh
+
+          branch=$(create_agent_branch "$agent")
+          log_file=$(clock_in "$agent" "$branch")
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+          base_file="./scripts/agents/prompts/_persona.md"
+          persona_file="./scripts/agents/prompts/personas/${agent}.md"
+          persona_block=$(<"$persona_file")
+          prompt=$(<"$base_file")
+          prompt=$(echo "$prompt" | sed "s|\$LOG_FILE|$log_file|g")
+          prompt="${prompt/\$PERSONA/$persona_block}"
+
+          deadline="$(date -u -d "+600 seconds" +%H:%M)"
+          prompt="${prompt}
+
+          ## Time Budget
+          You started at $(date -u +%H:%M) UTC. You have 10 minutes — wrap up by ${deadline} UTC.
+          Run \`date -u +%H:%M\` periodically to check how much time you have left.
+          If you're running low on time, commit what you have, update your log file, and stop."
+
+          echo "$prompt" > /tmp/agent-prompt.txt
+
+      - name: Run persona
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          prompt: |
+            Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
+          claude_args: |
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+            --max-turns 50
+            --model claude-opus-4-6
+
+      - name: Clock out
+        if: always()
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
+
+  run-curator:
+    needs: run-persona
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "llm-exe-bot[bot]"
+          git config user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build prompt
+        id: prompt
+        run: |
+          source ./scripts/agents/config.sh
+
+          branch=$(create_agent_branch "curator")
+          log_file=$(clock_in "curator" "$branch")
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+          prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "./scripts/agents/prompts/curator.md")
+
+          deadline="$(date -u -d "+600 seconds" +%H:%M)"
+          prompt="${prompt}
+
+          ## Time Budget
+          You started at $(date -u +%H:%M) UTC. You have 10 minutes — wrap up by ${deadline} UTC.
+          Run \`date -u +%H:%M\` periodically to check how much time you have left.
+          If you're running low on time, commit what you have, update your log file, and stop."
+
+          echo "$prompt" > /tmp/agent-prompt.txt
+
+      - name: Run curator
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          prompt: |
+            Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
+          claude_args: |
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+            --max-turns 50
+            --model claude-opus-4-6
+
+      - name: Clock out
+        if: always()
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
