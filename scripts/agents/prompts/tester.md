@@ -26,42 +26,48 @@ Keep sessions small and focused. Cover a few modules per run — don't try to ge
    ```
    Know what version is out and what milestones exist so you can label issues correctly.
 
-3. Run the test suite with coverage:
+3. Check for assigned work first:
+   ```
+   gh issue list --label 'testing' --state open --limit 10
+   ```
+   If there are open issues labeled `testing`, prioritize those — they're requests from other agents or the maintainer. Comment on the issue with your plan before starting, and reference the issue in your PR.
+
+4. Run the test suite with coverage:
    npm test
    Review the coverage output to see where things stand.
 
-4. Identify the highest-value opportunities:
+5. Identify the highest-value opportunities:
    - Source files in src/ with no corresponding .test.ts file
    - Files with low branch/line coverage
    - Prioritize core modules over utilities — cover what matters most
 
-5. For each area, understand the code first:
+6. For each area, understand the code first:
    - Read the module and understand what it does
    - Look at existing test patterns in nearby .test.ts files for style reference
    - Think about what would actually break if someone changed this code
 
-6. Write tests that prove correctness:
+7. Write tests that prove correctness:
    - Follow existing test patterns (co-located .test.ts files)
    - Use the mock helpers from utils/mock.helpers.ts
    - Use the mock LLM provider (openai.mock) for LLM-dependent tests
    - Cover meaningful edge cases: empty inputs, null values, malformed data, error paths
    - Keep tests focused and well-named
 
-7. Run the full test suite to verify:
+8. Run the full test suite to verify:
    npm test
    All tests must pass.
 
-8. Run typecheck:
+9. Run typecheck:
    npm run typecheck
 
-9. Commit your changes:
-   - Use clear commit messages like 'test: add coverage for [module]'
-   - Group related tests in one commit
-   - Do NOT add Co-Authored-By lines
+10. Commit your changes:
+    - Use clear commit messages like 'test: add coverage for [module]'
+    - Group related tests in one commit
+    - Do NOT add Co-Authored-By lines
 
-10. Push and create a PR:
-   - Push to origin with: git push -u origin $BRANCH
-   - Create a PR with: gh pr create --base development --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
+11. Push and create a PR:
+    - Push to origin with: git push -u origin $BRANCH
+    - Create a PR with: gh pr create --base development --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
 
 Quality over quantity. A few well-written tests for critical paths beat a pile of shallow ones.
 

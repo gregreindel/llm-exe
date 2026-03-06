@@ -34,8 +34,8 @@ To authenticate, you need to provide an xAI API Key. You can provide the API key
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
 ```ts
-// given array of chat messages, calls chat completion
-await llm.chat([]);
+// call the LLM directly with a prompt
+await llm.call(prompt);
 ```
 
 ## xAI-Specific Options

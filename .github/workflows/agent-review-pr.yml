@@ -55,6 +55,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.bot-token.outputs.token }}
           display_report: "false"
+          allowed_bots: "llm-exe-bot[bot]"
           prompt: |
             Read the file /tmp/review-prompt.txt for your full instructions. Follow them exactly.
           claude_args: |

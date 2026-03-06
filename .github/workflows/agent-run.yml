@@ -12,25 +12,15 @@ on:
           - tester
           - coder
           - scout
-          - beginner
-          - harsh-critic
-          - speed-runner
-          - enterprise
-          - curator
       instructions:
         description: "Extra instructions for the agent (optional)"
         required: false
         type: string
   schedule:
-    - cron: "0 6 * * 1-5"    # docs — 6am UTC weekdays
-    - cron: "0 8 * * 1-5"    # tester — 8am UTC weekdays
-    - cron: "0 10 * * 1-5"   # coder — 10am UTC weekdays
-    - cron: "0 12 * * 1"     # scout — noon UTC Monday
-    - cron: "0 14 * * 2,5"   # beginner — 2pm UTC Tue/Fri
-    - cron: "0 15 * * 2,5"   # harsh-critic — 3pm UTC Tue/Fri
-    - cron: "0 16 * * 2,5"   # speed-runner — 4pm UTC Tue/Fri
-    - cron: "0 17 * * 2,5"   # enterprise — 5pm UTC Tue/Fri
-    - cron: "0 18 * * 2,5"   # curator — 6pm UTC Tue/Fri (after personas)
+    - cron: "0 8 * * *"     # coder — 2am CT daily
+    - cron: "0 9 * * *"     # tester — 3am CT daily
+    - cron: "0 10 * * *"    # docs — 4am CT daily
+    - cron: "0 11 * * 1,4"  # scout — 5am CT Mon/Thu
 
 concurrency:
   group: agent-${{ github.event.inputs.agent || github.event.schedule }}
@@ -84,11 +74,6 @@ jobs:
             "0 8 * * 1-5")    echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
             "0 10 * * 1-5")   echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
             "0 12 * * 1")     echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
-            "0 14 * * 2,5")   echo "agent=beginner" >> "$GITHUB_OUTPUT" ;;
-            "0 15 * * 2,5")   echo "agent=harsh-critic" >> "$GITHUB_OUTPUT" ;;
-            "0 16 * * 2,5")   echo "agent=speed-runner" >> "$GITHUB_OUTPUT" ;;
-            "0 17 * * 2,5")   echo "agent=enterprise" >> "$GITHUB_OUTPUT" ;;
-            "0 18 * * 2,5")   echo "agent=curator" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Build prompt
@@ -107,22 +92,11 @@ jobs:
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
           echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
 
-          # Build the prompt based on agent type
-          if [[ "$agent" =~ ^(beginner|harsh-critic|speed-runner|enterprise)$ ]]; then
-            base_file="./scripts/agents/prompts/_persona.md"
-            persona_file="./scripts/agents/prompts/personas/${agent}.md"
-            persona_block=$(<"$persona_file")
-            prompt=$(<"$base_file")
-            prompt=$(echo "$prompt" | sed "s|\$LOG_FILE|$log_file|g")
-            prompt="${prompt/\$PERSONA/$persona_block}"
-          elif [[ "$agent" == "curator" ]]; then
-            prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "./scripts/agents/prompts/curator.md")
-          else
-            prompt_file="./scripts/agents/prompts/${agent}.md"
-            prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
-            prior_context=$(build_prior_context "$agent" "$log_file" 2>/dev/null || true)
-            prompt="${prompt}${prior_context}"
-          fi
+          # Build the prompt
+          prompt_file="./scripts/agents/prompts/${agent}.md"
+          prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
+          prior_context=$(build_prior_context "$agent" "$log_file" 2>/dev/null || true)
+          prompt="${prompt}${prior_context}"
 
           # Add time budget
           deadline="$(date -u -d "+600 seconds" +%H:%M)"

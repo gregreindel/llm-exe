@@ -18,30 +18,36 @@ Keep sessions small and focused. Pick a few doc files to improve per run — don
 
 1. Read CLAUDE.md for project context.
 
-2. Understand the public API surface:
+2. Check for assigned work first:
+   ```
+   gh issue list --label 'documentation' --state open --limit 10
+   ```
+   If there are open issues labeled `documentation`, prioritize those — they're requests from other agents or the maintainer. Comment on the issue with your plan before starting, and reference the issue in your PR.
+
+3. Understand the public API surface:
    - Read src/index.ts to see all exports
    - For each exported module, read the source to understand the current API
 
-3. Review existing docs:
+4. Review existing docs:
    - Read all files in docs/
    - Check examples/ for any documentation there
 
-4. Bring everything up to standard:
+5. Bring everything up to standard:
    - Ensure every exported function/class/type has clear documentation
    - Make sure examples use current API patterns and actually work
    - Fill in any missing parameter descriptions
    - Keep the same style and format as existing docs
 
-5. Verify your changes:
+6. Verify your changes:
    - Run npm run typecheck to ensure any TypeScript examples are valid
    - Make sure doc links are consistent
 
-6. Commit your changes:
+7. Commit your changes:
    - Use clear, descriptive commit messages
    - One commit per logical change
    - Do NOT add Co-Authored-By lines
 
-7. Push the branch and create a PR:
+8. Push the branch and create a PR:
    - Push to origin with: git push -u origin $BRANCH
    - Create a PR with: gh pr create --base development --title 'docs: update documentation to match current API' --body 'Documentation improvements by the docs agent.'
 
