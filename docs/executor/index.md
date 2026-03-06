@@ -58,7 +58,7 @@ const executor = createLlmExecutor(
     prompt,
     parser,
   },
-  hooks
+  { hooks }
 );
 
 executor.on("onComplete", () => {});
