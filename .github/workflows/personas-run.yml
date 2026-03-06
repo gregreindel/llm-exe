@@ -13,7 +13,7 @@ on:
           - "3"
           - "4"
   schedule:
-    - cron: "0 14 * * 2,5"  # Tue/Fri 2pm UTC — run all 4 + curator
+    - cron: "0 6 * * *"   # 12am CT daily — all 4 personas + curator
 
 permissions:
   contents: write

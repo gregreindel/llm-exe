@@ -17,10 +17,10 @@ on:
         required: false
         type: string
   schedule:
-    - cron: "0 6 * * 1-5"    # docs — 6am UTC weekdays
-    - cron: "0 8 * * 1-5"    # tester — 8am UTC weekdays
-    - cron: "0 10 * * 1-5"   # coder — 10am UTC weekdays
-    - cron: "0 12 * * 1"     # scout — noon UTC Monday
+    - cron: "0 8 * * *"     # coder — 2am CT daily
+    - cron: "0 9 * * *"     # tester — 3am CT daily
+    - cron: "0 10 * * *"    # docs — 4am CT daily
+    - cron: "0 11 * * 1,4"  # scout — 5am CT Mon/Thu
 
 concurrency:
   group: agent-${{ github.event.inputs.agent || github.event.schedule }}
