@@ -12,8 +12,7 @@ export const asyncCallWithTimeout = async <T = any>(
     }, timeLimit);
   });
 
-  return Promise.race([asyncPromise, timeoutPromise]).then((result) => {
+  return Promise.race([asyncPromise, timeoutPromise]).finally(() => {
     clearTimeout(timeoutHandle);
-    return result;
   }) as Promise<T>;
 };

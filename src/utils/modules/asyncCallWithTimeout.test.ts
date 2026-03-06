@@ -1,6 +1,14 @@
 import { asyncCallWithTimeout } from "@/utils/modules/asyncCallWithTimeout";
 
 describe("asyncCallWithTimeout", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("should resolve if asyncPromise resolves within timeLimit", async () => {
     const asyncPromise = new Promise<number>((resolve) => {
       setTimeout(() => {
@@ -8,7 +16,9 @@ describe("asyncCallWithTimeout", () => {
       }, 1000);
     });
 
-    const result = await asyncCallWithTimeout(asyncPromise, 2000);
+    const resultPromise = asyncCallWithTimeout(asyncPromise, 2000);
+    jest.advanceTimersByTime(1000);
+    const result = await resultPromise;
     expect(result).toBe(42);
   });
 
@@ -19,7 +29,9 @@ describe("asyncCallWithTimeout", () => {
       }, 2000);
     });
 
-    await expect(asyncCallWithTimeout(asyncPromise, 1000)).rejects.toThrow(
+    const resultPromise = asyncCallWithTimeout(asyncPromise, 1000);
+    jest.advanceTimersByTime(1000);
+    await expect(resultPromise).rejects.toThrow(
       "Unable to perform action. Try again, or use another action."
     );
   });
@@ -38,7 +50,9 @@ describe("asyncCallWithTimeout", () => {
       }, 1000);
     });
 
-    const result = await asyncCallWithTimeout(asyncPromise, 1010);
+    const resultPromise = asyncCallWithTimeout(asyncPromise, 1010);
+    jest.advanceTimersByTime(1000);
+    const result = await resultPromise;
     expect(result).toBe(42);
   });
 
@@ -49,7 +63,9 @@ describe("asyncCallWithTimeout", () => {
       }, 500);
     });
 
-    await expect(asyncCallWithTimeout(asyncPromise, 1000)).rejects.toThrow(
+    const resultPromise = asyncCallWithTimeout(asyncPromise, 1000);
+    jest.advanceTimersByTime(500);
+    await expect(resultPromise).rejects.toThrow(
       "Async promise error"
     );
   });
@@ -61,9 +77,11 @@ describe("asyncCallWithTimeout", () => {
       }, 5000);
     });
 
-    const result = await asyncCallWithTimeout(asyncPromise);
+    const resultPromise = asyncCallWithTimeout(asyncPromise);
+    jest.advanceTimersByTime(5000);
+    const result = await resultPromise;
     expect(result).toBe(42);
-  }, 7000);
+  });
 
   it("should reject if asyncPromise takes longer than default timeLimit", async () => {
     const asyncPromise = new Promise<number>((resolve) => {
@@ -72,10 +90,12 @@ describe("asyncCallWithTimeout", () => {
       }, 11000);
     });
 
-    await expect(asyncCallWithTimeout(asyncPromise)).rejects.toThrow(
+    const resultPromise = asyncCallWithTimeout(asyncPromise);
+    jest.advanceTimersByTime(10000);
+    await expect(resultPromise).rejects.toThrow(
       "Unable to perform action. Try again, or use another action."
     );
-  }, 13000);
+  });
 
   it("should reject if asyncPromise rejects immediately", async () => {
     const asyncPromise = Promise.reject(new Error("Async promise error"));
