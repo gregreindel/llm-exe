@@ -70,10 +70,10 @@ jobs:
         id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "0 6 * * 1-5")    echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
-            "0 8 * * 1-5")    echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
-            "0 10 * * 1-5")   echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
-            "0 12 * * 1")     echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
+            "0 8 * * *")      echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
+            "0 9 * * *")      echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
+            "0 10 * * *")     echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
+            "0 11 * * 1,4")   echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Build prompt
