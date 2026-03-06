@@ -34,16 +34,9 @@ To authenticate, you need to provide an OpenAi API Key. You can provide the API 
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
 ```ts
-// given array of chat messages, calls chat completion
-await llm.chat([]);
-
-// given string prompt, calls completion
-await llm.completion("");
+// call the LLM directly with a prompt
+await llm.call(prompt);
 ```
-
-::: tip
-Note: The `OpenAILlm` checks to make sure you are using the correct prompt type when using chat vs completion, and will throw an error if you try to use the wrong prompt type with the wrong model.
-:::
 
 ## OpenAi-Specific Options
 
