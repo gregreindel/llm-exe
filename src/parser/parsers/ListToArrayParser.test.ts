@@ -32,5 +32,25 @@ describe("llm-exe:parser/ListToArrayParser", () => {
     const input = `- Greg\n- Occupation: software - developer`
     expect(parser.parse(input)).toEqual(["Greg", "Occupation: software - developer"])
   });
+  it('strips numbered list prefixes with dot', () => {
+    const parser = new ListToArrayParser()
+    const input = `1. First\n2. Second\n3. Third`
+    expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
+  });
+  it('strips numbered list prefixes with parenthesis', () => {
+    const parser = new ListToArrayParser()
+    const input = `1) First\n2) Second\n3) Third`
+    expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
+  });
+  it('strips asterisk list prefixes', () => {
+    const parser = new ListToArrayParser()
+    const input = `* First\n* Second\n* Third`
+    expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
+  });
+  it('does not strip numbers that are not list prefixes', () => {
+    const parser = new ListToArrayParser()
+    const input = `1. Buy 2 apples\n2. Get 3 oranges`
+    expect(parser.parse(input)).toEqual(["Buy 2 apples", "Get 3 oranges"])
+  });
 });
 
