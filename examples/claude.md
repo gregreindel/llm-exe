@@ -86,13 +86,16 @@ const prompt = createChatPrompt<{ items: Item[]; config: Config }>(`
 Choose the right parser for the output:
 
 ```typescript
-// JSON with schema validation
-const jsonParser = createParser("json", {
-  schema: z.object({
-    result: z.string(),
-    confidence: z.number(),
-  }),
-});
+// JSON with schema validation (uses JSON Schema via defineSchema)
+const schema = defineSchema({
+  type: "object",
+  properties: {
+    result: { type: "string" },
+    confidence: { type: "number" },
+  },
+  required: ["result", "confidence"],
+} as const);
+const jsonParser = createParser("json", { schema });
 
 // Enum extraction
 const enumParser = createParser("stringExtract", {
@@ -100,12 +103,9 @@ const enumParser = createParser("stringExtract", {
 });
 
 // Custom parser for complex logic
-const customParser = createParser({
-  name: "customParser",
-  parse: (input: string) => {
-    // Validation and transformation logic
-    return parsedResult;
-  },
+const customParser = createCustomParser("customParser", (input: string) => {
+  // Validation and transformation logic
+  return parsedResult;
 });
 ```
 
@@ -140,7 +140,7 @@ describe("executor", () => {
 
 ```typescript
 // Use the built-in mock provider
-const llm = useLlm("openai.mock");
+const llm = useLlm("openai.chat-mock.v1");
 // Configure mock responses for deterministic testing
 ```
 
