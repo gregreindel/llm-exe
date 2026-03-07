@@ -47,10 +47,19 @@ describe("llm-exe:parser/ListToArrayParser", () => {
     const input = `* First\n* Second\n* Third`
     expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
   });
+  it('handles mixed list formats consistently', () => {
+    const parser = new ListToArrayParser()
+    const input = `- Dash item\n* Asterisk item\n1. Numbered item`
+    expect(parser.parse(input)).toEqual(["Dash item", "Asterisk item", "Numbered item"])
+  });
   it('does not strip numbers that are not list prefixes', () => {
     const parser = new ListToArrayParser()
     const input = `1. Buy 2 apples\n2. Get 3 oranges`
     expect(parser.parse(input)).toEqual(["Buy 2 apples", "Get 3 oranges"])
   });
+  it('preserves decimal numbers in values', () => {
+    const parser = new ListToArrayParser()
+    const input = `1. Buy 3.5 kg of flour\n2. Mix for 10 minutes`
+    expect(parser.parse(input)).toEqual(["Buy 3.5 kg of flour", "Mix for 10 minutes"])
+  });
 });
-
