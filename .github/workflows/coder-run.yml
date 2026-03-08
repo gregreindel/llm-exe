@@ -1,29 +1,9 @@
-name: Agent Run
+name: Coder Run
 
 on:
   workflow_dispatch:
-    inputs:
-      agent:
-        description: "Agent to run"
-        required: true
-        type: choice
-        options:
-          - docs
-          - tester
-          - coder
-          - scout
-      instructions:
-        description: "Extra instructions for the agent (optional)"
-        required: false
-        type: string
   schedule:
-    - cron: "0 9 * * *"     # tester — 3am CT daily
-    - cron: "0 10 * * *"    # docs — 4am CT daily
-    - cron: "0 11 * * 1,4"  # scout — 5am CT Mon/Thu
-
-concurrency:
-  group: agent-${{ github.event.inputs.agent || github.event.schedule }}
-  cancel-in-progress: false
+    - cron: "0 8 * * *"  # 2am CT daily
 
 permissions:
   contents: write
@@ -32,9 +12,45 @@ permissions:
   id-token: write
 
 jobs:
-  run-agent:
+  find-issues:
+    runs-on: ubuntu-latest
+    outputs:
+      issues: ${{ steps.list.outputs.issues }}
+      count: ${{ steps.list.outputs.count }}
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: List open issues for coder
+        id: list
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          # Get open bugs and enhancements, skip breaking and needs-discussion
+          issues=$(gh issue list --repo ${{ github.repository }} --state open --json number,labels --limit 50 \
+            | jq -c '[.[] | select(
+                (.labels | map(.name) | any(. == "bug" or . == "enhancement" or . == "agent-ok"))
+                and (.labels | map(.name) | any(. == "breaking" or . == "needs-discussion" or . == "on-hold") | not)
+              ) | .number] | if length > 5 then .[:5] else . end')
+
+          count=$(echo "$issues" | jq 'length')
+          echo "issues=$issues" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Found $count issues to work on"
+
+  run-coder:
+    needs: find-issues
+    if: needs.find-issues.outputs.count != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      matrix:
+        issue: ${{ fromJson(needs.find-issues.outputs.issues) }}
+      max-parallel: 1
 
     steps:
       - name: Generate bot token
@@ -44,7 +60,7 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Checkout (full history)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -64,59 +80,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Pick agent for scheduled runs
-        if: github.event_name == 'schedule'
-        id: pick
-        run: |
-          case "${{ github.event.schedule }}" in
-            "0 9 * * *")      echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
-            "0 10 * * *")     echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
-            "0 11 * * 1,4")   echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
-          esac
-
       - name: Build prompt
         id: prompt
-        env:
-          AGENT_INSTRUCTIONS: ${{ github.event.inputs.instructions }}
         run: |
-          agent="${{ github.event.inputs.agent || steps.pick.outputs.agent }}"
-          echo "agent=$agent" >> "$GITHUB_OUTPUT"
-
           source ./scripts/agents/config.sh
 
-          # Create branch and log file
-          branch=$(create_agent_branch "$agent")
-          log_file=$(clock_in "$agent" "$branch")
+          branch=$(create_agent_branch "coder")
+          log_file=$(clock_in "coder" "$branch")
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
           echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
 
-          # Build the prompt
-          prompt_file="./scripts/agents/prompts/${agent}.md"
+          prompt_file="./scripts/agents/prompts/coder.md"
           prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
-          prior_context=$(build_prior_context "$agent" "$log_file" 2>/dev/null || true)
+          prior_context=$(build_prior_context "coder" "$log_file" 2>/dev/null || true)
           prompt="${prompt}${prior_context}"
 
-          # Add time budget
           deadline="$(date -u -d "+600 seconds" +%H:%M)"
           prompt="${prompt}
 
           ## Time Budget
           You started at $(date -u +%H:%M) UTC. You have 10 minutes — wrap up by ${deadline} UTC.
           Run \`date -u +%H:%M\` periodically to check how much time you have left.
-          If you're running low on time, commit what you have, update your log file, and stop. A partial result is better than getting killed mid-work."
+          If you're running low on time, commit what you have, update your log file, and stop.
 
-          # Add maintainer instructions if provided
-          if [[ -n "${AGENT_INSTRUCTIONS:-}" ]]; then
-            prompt="${prompt}
+          ## Assigned Issue
+          You MUST work on issue #${{ matrix.issue }}. Do not pick a different issue. Read it with:
+          gh issue view ${{ matrix.issue }}"
 
-          ## Additional Instructions from Maintainer
-          ${AGENT_INSTRUCTIONS}"
-          fi
-
-          # Write prompt to file
           echo "$prompt" > /tmp/agent-prompt.txt
 
-      - name: Run agent
+      - name: Run coder
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

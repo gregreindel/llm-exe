@@ -41,6 +41,7 @@ A few issues per run max. Pick them, fix them properly with tests, ship the PR, 
    - Issues labeled `agent-ok` (maintainer has approved for agent work)
    - SKIP issues labeled `needs-discussion` — those require human input first
    - SKIP issues labeled `breaking` — those are parked for the next major release
+   - SKIP issues labeled `on-hold` — the maintainer has parked these for now
 
 5. Post your plan as a comment on the issue BEFORE writing any code:
    - What you think the root cause is
