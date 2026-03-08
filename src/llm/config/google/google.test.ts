@@ -34,6 +34,112 @@ describe("google configuration", () => {
     });
   });
 
+  describe("google.chat.v1 effort transform", () => {
+    const effortTransform = googleChatV1.mapBody.effort.transform as (
+      v: any,
+      s: any
+    ) => any;
+
+    it("should return 1024 for 'low' on a supported model", () => {
+      expect(effortTransform("low", { model: "gemini-2.5-pro" })).toBe(1024);
+    });
+
+    it("should return 1024 for 'minimal' on a supported model", () => {
+      expect(effortTransform("minimal", { model: "gemini-2.5-flash" })).toBe(
+        1024
+      );
+    });
+
+    it("should return 8192 for 'medium' on a supported model", () => {
+      expect(effortTransform("medium", { model: "gemini-2.5-pro" })).toBe(
+        8192
+      );
+    });
+
+    it("should return 24576 for 'high' on a supported model", () => {
+      expect(effortTransform("high", { model: "gemini-2.5-flash" })).toBe(
+        24576
+      );
+    });
+
+    it("should return undefined for unsupported model", () => {
+      expect(effortTransform("high", { model: "gemini-2.0-flash" })).toBe(
+        undefined
+      );
+    });
+
+    it("should return undefined for non-string value", () => {
+      expect(effortTransform(123, { model: "gemini-2.5-pro" })).toBe(
+        undefined
+      );
+    });
+
+    it("should return undefined for unsupported effort level", () => {
+      expect(effortTransform("max", { model: "gemini-2.5-pro" })).toBe(
+        undefined
+      );
+    });
+
+    it("should work with gemini-2.5-light model", () => {
+      expect(effortTransform("medium", { model: "gemini-2.5-light" })).toBe(
+        8192
+      );
+    });
+  });
+
+  describe("google.chat.v1 mapOptions", () => {
+    it("should transform functionCall 'any' correctly", () => {
+      const result = googleChatV1.mapOptions!.functionCall!("any", {});
+      expect(result).toEqual({
+        toolConfig: { functionCallingConfig: { mode: "any" } },
+      });
+    });
+
+    it("should transform functionCall 'none' correctly", () => {
+      const result = googleChatV1.mapOptions!.functionCall!("none", {});
+      expect(result).toEqual({
+        toolConfig: { functionCallingConfig: { mode: "none" } },
+      });
+    });
+
+    it("should transform functionCall 'auto' correctly", () => {
+      const result = googleChatV1.mapOptions!.functionCall!("auto", {});
+      expect(result).toEqual({
+        toolConfig: { functionCallingConfig: { mode: "auto" } },
+      });
+    });
+
+    it("should transform functions to google format", () => {
+      const functions = [
+        {
+          name: "search",
+          description: "Search the web",
+          parameters: {
+            type: "object",
+            properties: { query: { type: "string" } },
+          },
+        },
+      ];
+      const result = googleChatV1.mapOptions!.functions!(functions, {});
+      expect(result).toEqual({
+        tools: [
+          {
+            functionDeclarations: [
+              {
+                name: "search",
+                description: "Search the web",
+                parameters: expect.objectContaining({
+                  type: "object",
+                  properties: { query: { type: "string" } },
+                }),
+              },
+            ],
+          },
+        ],
+      });
+    });
+  });
+
   describe("gemini-2.0-flash", () => {
     it("should be based on googleChatV1 configuration", () => {
       expect(googleGemini2Flash.endpoint).toEqual(googleChatV1.endpoint);

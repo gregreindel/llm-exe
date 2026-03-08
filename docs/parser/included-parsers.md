@@ -217,7 +217,7 @@ function subtract(a: number, b: number){
 
 ## Replace String Template
 
-`replaceTemplateString`
+`replaceStringTemplate`
 Uses handlebars to parse the output.
 Returns string.
 

@@ -34,8 +34,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
 
   /**
    * @property parseUserTemplates - Whether or not to allow parsing
-   * user messages with the template engine. This could be a risk,
-   * so we only parse user messages if explicitly set.
+   * user messages with the template engine. Defaults to true.
+   * Set `allowUnsafeUserTemplate: false` in options to disable.
    */
   private parseUserTemplates = true;
 
@@ -151,7 +151,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
   }
 
   /**
-   * addFunctionMessage Helper to add an assistant message to the prompt.
+   * addFunctionMessage Helper to add a function message to the prompt.
    * @param content The message content.
    * @return ChatPrompt so it can be chained.
    */
@@ -169,7 +169,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     return this;
   }
   /**
-   * addFunctionCallMessage Helper to add an assistant message to the prompt.
+   * addFunctionCallMessage Helper to add a function_call message to the prompt.
    * @param content The message content.
    * @return ChatPrompt so it can be chained.
    */
