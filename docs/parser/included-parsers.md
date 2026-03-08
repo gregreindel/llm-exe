@@ -20,6 +20,50 @@ This is an example input message.
 
 :::
 
+## Number Parser
+
+`number`
+Extracts a number from the LLM response.
+Returns: number
+
+```ts
+const parser = createParser("number");
+```
+
+::: code-group
+
+```[Parser Output]
+42
+```
+
+```[LLM Response]
+The answer is 42.
+```
+
+:::
+
+## Boolean Parser
+
+`boolean`
+Parses a boolean value from the LLM response. Recognizes common truthy/falsy patterns like "true", "false", "yes", "no".
+Returns: boolean
+
+```ts
+const parser = createParser("boolean");
+```
+
+::: code-group
+
+```[Parser Output]
+true
+```
+
+```[LLM Response]
+Yes, that is correct.
+```
+
+:::
+
 ## String Extractor Parser
 
 `stringExtract`
@@ -86,7 +130,7 @@ const parser = createParser("listToArray");
 ## List to Key/Value[]
 
 `listToKeyValue`
-Converts a
+Converts a list of `key: value` pairs (separated by newlines) to an array of key/value objects.
 Returns Array<{ key: string; value: string; }>
 
 ::: code-group
@@ -173,7 +217,7 @@ function subtract(a: number, b: number){
 
 ## Replace String Template
 
-`replaceTemplateString`
+`replaceStringTemplate`
 Uses handlebars to parse the output.
 Returns string.
 

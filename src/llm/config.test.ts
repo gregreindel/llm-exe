@@ -24,6 +24,7 @@ describe("configs", () => {
           default: undefined,
         },
         useJson: {},
+        effort: {},
       },
       method: "POST",
       headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
@@ -40,6 +41,10 @@ describe("configs", () => {
         },
         useJson: {
           key: "response_format.type",
+          transform: expect.any(Function),
+        },
+        effort: {
+          key: "reasoning_effort",
           transform: expect.any(Function),
         },
       },

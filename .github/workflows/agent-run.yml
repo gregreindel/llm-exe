@@ -1,0 +1,138 @@
+name: Agent Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent:
+        description: "Agent to run"
+        required: true
+        type: choice
+        options:
+          - docs
+          - tester
+          - coder
+          - scout
+      instructions:
+        description: "Extra instructions for the agent (optional)"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 8 * * *"     # coder — 2am CT daily
+    - cron: "0 9 * * *"     # tester — 3am CT daily
+    - cron: "0 10 * * *"    # docs — 4am CT daily
+    - cron: "0 11 * * 1,4"  # scout — 5am CT Mon/Thu
+
+concurrency:
+  group: agent-${{ github.event.inputs.agent || github.event.schedule }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "llm-exe-bot[bot]"
+          git config user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pick agent for scheduled runs
+        if: github.event_name == 'schedule'
+        id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 8 * * *")      echo "agent=coder" >> "$GITHUB_OUTPUT" ;;
+            "0 9 * * *")      echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
+            "0 10 * * *")     echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
+            "0 11 * * 1,4")   echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Build prompt
+        id: prompt
+        env:
+          AGENT_INSTRUCTIONS: ${{ github.event.inputs.instructions }}
+        run: |
+          agent="${{ github.event.inputs.agent || steps.pick.outputs.agent }}"
+          echo "agent=$agent" >> "$GITHUB_OUTPUT"
+
+          source ./scripts/agents/config.sh
+
+          # Create branch and log file
+          branch=$(create_agent_branch "$agent")
+          log_file=$(clock_in "$agent" "$branch")
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+          # Build the prompt
+          prompt_file="./scripts/agents/prompts/${agent}.md"
+          prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
+          prior_context=$(build_prior_context "$agent" "$log_file" 2>/dev/null || true)
+          prompt="${prompt}${prior_context}"
+
+          # Add time budget
+          deadline="$(date -u -d "+600 seconds" +%H:%M)"
+          prompt="${prompt}
+
+          ## Time Budget
+          You started at $(date -u +%H:%M) UTC. You have 10 minutes — wrap up by ${deadline} UTC.
+          Run \`date -u +%H:%M\` periodically to check how much time you have left.
+          If you're running low on time, commit what you have, update your log file, and stop. A partial result is better than getting killed mid-work."
+
+          # Add maintainer instructions if provided
+          if [[ -n "${AGENT_INSTRUCTIONS:-}" ]]; then
+            prompt="${prompt}
+
+          ## Additional Instructions from Maintainer
+          ${AGENT_INSTRUCTIONS}"
+          fi
+
+          # Write prompt to file
+          echo "$prompt" > /tmp/agent-prompt.txt
+
+      - name: Run agent
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          prompt: |
+            Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
+          claude_args: |
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+            --max-turns 50
+            --model claude-opus-4-6
+
+      - name: Clock out
+        if: always()
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"

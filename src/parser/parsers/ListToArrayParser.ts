@@ -7,7 +7,7 @@ export class ListToArrayParser extends BaseParser<string[]> {
   parse(text: string) {
     const lines = text
       .split("\n")
-      .map((s) => s.replace(/^- /, "").replace(/'/g, "'").trim());
+      .map((s) => s.replace(/^(?:[-*] |\d+\. )/, "").replace(/'/g, "\u2019").trim());
     return lines;
   }
 }

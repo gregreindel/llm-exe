@@ -100,5 +100,20 @@ describe("llm-exe:parser/createParser", () => {
     expect(parser).toHaveProperty("name")
     expect(parser.name).toEqual("markdownCodeBlock")
   })
+  it('throws error for invalid parser type', () => {
+    expect(() => createParser("xml" as any)).toThrow(
+      'Invalid parser type: "xml"'
+    );
+  })
+  it('throws error for typo in parser type', () => {
+    expect(() => createParser("jsonn" as any)).toThrow(
+      'Invalid parser type: "jsonn"'
+    );
+  })
+  it('throws error message includes valid types', () => {
+    expect(() => createParser("invalid" as any)).toThrow(
+      "Valid types are:"
+    );
+  })
 });
 

@@ -4,7 +4,7 @@ When using Google Gemini models, llm-exe will make POST requests to `https://gen
 
 ## Basic Usage
 
-### Google Gemini Chat
+### Gemini Chat
 
 ```ts
 const llm = useLlm("google.chat.v1", {
@@ -12,7 +12,7 @@ const llm = useLlm("google.chat.v1", {
 });
 ```
 
-### Google Gemini Chat By Model
+### Gemini Chat By Model
 
 ```ts
 const llm = useLlm("google.gemini-2.0-flash", {
@@ -34,16 +34,13 @@ To authenticate, you need to provide an Google Gemini API Key. You can provide t
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
 ```ts
-// given array of chat messages, calls chat completion
-await llm.chat([]);
-
-// given string prompt, calls completion
-await llm.completion("");
+// call the LLM directly with a prompt
+await llm.call(prompt);
 ```
 
 ## Gemini-Specific Options
 
-In addition to the generic options, the following options are Google Gemini specific and can be passed in when creating a llm function.
+In addition to the generic options, the following options are Gemini-specific and can be passed in when creating a llm function.
 
 | Option       | Type   | Default          | Description                                                          |
 | ------------ | ------ | ---------------- | -------------------------------------------------------------------- |

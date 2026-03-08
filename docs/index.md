@@ -5,7 +5,7 @@ layout: home
 hero:
   name: llm-exe
   # text: "Stop fighting with LLM APIs."
-  tagline: A TypeScript package that provides simplified base components that make building and maintaining LLM-powered applications easier.
+  tagline: Build type-safe LLM agents and AI functions with modular TypeScript components. Works with any provider, no framework lock-in.
   image:
     src: https://assets.llm-exe.com/logo.png
     alt: llm-exe
@@ -31,15 +31,15 @@ features:
     details: Chain executors like building blocks. Each piece does one thing well and combines naturally.
   - title: Powerful Parsers
     details: Extract exactly what you need - JSON, lists, regex, markdown blocks. Guaranteed output format or throw.
-  - title: LLMs Can Call Your Code
-    details: Turn any function into an LLM-callable tool. Let AI use your database, APIs, or business logic safely.
+  - title: Build Smart Agents
+    details: Create autonomous agents with built-in state management, tool calling, and dialogue tracking. Turn any function into an agent capability.
 ---
 
 <HomeAfterIntro>
 
 <div class="home-blocks">
 <div class="home-block-left">
- <div class="home-block-title">You've Seen This <span class="marker-highlight">Nightmare</span></div>
+ <div class="home-block-title"><span class="marker-highlight">Every</span> LLM API Works Differently</div>
     <div class="home-block-description">Every LLM project starts like this: debugging JSON errors, writing boilerplate retries, juggling timeouts, and praying your parse didn’t break. It sucks.</div>
       <ul class="home-block-description-list">
   <li>JSON.parse() with fingers crossed</li>
@@ -215,12 +215,12 @@ analyst.on("complete", (result) => {
 <!-- -->
 <div class="home-blocks">
 <div class="home-block-left">
- <div class="home-block-title">Functions Become <span class="marker-highlight">AI Tools</span></div>
-    <div class="home-block-description">Turn any function into an LLM-callable tool—even with models that don't support function calling. The LLM figures out what to do, <span class="marker-underline">you control execution</span>. Works with every model, not just the fancy ones.</div>
+ <div class="home-block-title">Build <span class="marker-highlight">Agents</span> with Your Functions</div>
+    <div class="home-block-description">Transform any function into an agent capability. Build autonomous AI agents that can use your database, APIs, and business logic—even with models that don't natively support function calling. <span class="marker-underline">You control what agents can do</span>.</div>
   <ul class="home-block-description-list">
   <li>Works with ALL models, even without native function calling</li>
   <li>The LLM plans what to do, you control execution</li>
-  <li>No special agent framework needed</li>
+  <li>Build agents without complex frameworks</li>
   <li>You control the execution flow and security</li>
   </ul>
 
@@ -298,20 +298,21 @@ const llm = useLlm("openai.gpt-4o");
 </div>
 </div>
 
-<!-- ---
+<!--
 
 ## Build a Reasoning Agent in 200 Lines
 
-Want to see something incredible? Check out our [reasoning agent example](/examples#reasoning-agent) that:
+Create powerful AI agents with llm-exe's composable architecture:
 
-- Thinks step-by-step through problems
-- Uses tools to gather information
-- Provides both answers AND reasoning traces
-- Works with ANY LLM provider
+- **Autonomous decision-making** with tool selection
+- **Memory and state** through dialogue tracking
+- **Multi-step reasoning** with execution traces
+- **Provider agnostic** - works with any LLM
 
-No magic. Just clean composition.
+No complex agent frameworks. Just clean TypeScript composition.
 
---- -->
+[See Agent Examples →](/examples#reasoning-agent)
+-->
 
 ## <span class="testimonials-title">Why Developers Love llm-exe</span>
 

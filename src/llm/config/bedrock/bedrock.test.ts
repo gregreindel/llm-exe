@@ -60,6 +60,60 @@ describe("bedrock configuration", () => {
     });
   });
 
+  describe("amazon:anthropic.chat.v1 mapOptions", () => {
+    it("should handle functionCall 'none' by returning _clearFunctions", () => {
+      const mapOptions = bedrock["amazon:anthropic.chat.v1"].mapOptions!;
+      const result = mapOptions.functionCall!("none", {});
+      expect(result).toEqual({ _clearFunctions: true });
+    });
+
+    it("should handle functionCall 'auto'", () => {
+      const mapOptions = bedrock["amazon:anthropic.chat.v1"].mapOptions!;
+      const result = mapOptions.functionCall!("auto", {});
+      expect(result).toEqual({ tool_choice: { type: "auto" } });
+    });
+
+    it("should handle functionCall 'any'", () => {
+      const mapOptions = bedrock["amazon:anthropic.chat.v1"].mapOptions!;
+      const result = mapOptions.functionCall!("any", {});
+      expect(result).toEqual({ tool_choice: { type: "any" } });
+    });
+
+    it("should handle specific functionCall value", () => {
+      const mapOptions = bedrock["amazon:anthropic.chat.v1"].mapOptions!;
+      const specificCall = { type: "tool", name: "my_tool" };
+      const result = mapOptions.functionCall!(specificCall as any, {});
+      expect(result).toEqual({ tool_choice: specificCall });
+    });
+
+    it("should transform functions to anthropic tools format", () => {
+      const mapOptions = bedrock["amazon:anthropic.chat.v1"].mapOptions!;
+      const functions = [
+        {
+          name: "get_weather",
+          description: "Get weather data",
+          parameters: {
+            type: "object",
+            properties: { city: { type: "string" } },
+          },
+        },
+      ];
+      const result = mapOptions.functions!(functions, {});
+      expect(result).toEqual({
+        tools: [
+          {
+            name: "get_weather",
+            description: "Get weather data",
+            input_schema: expect.objectContaining({
+              type: "object",
+              properties: { city: { type: "string" } },
+            }),
+          },
+        ],
+      });
+    });
+  });
+
   describe("amazon:meta.chat.v1 configuration", () => {
     it("should have the correct endpoint with AWS region placeholder", () => {
       expect(bedrock["amazon:meta.chat.v1"].endpoint).toBe(

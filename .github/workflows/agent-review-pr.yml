@@ -1,0 +1,70 @@
+name: Agent Review PR
+
+on:
+  pull_request:
+    types: [opened]
+    branches: [main, development]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    if: startsWith(github.head_ref, 'agent/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build review prompt
+        id: prompt
+        run: |
+          source ./scripts/agents/config.sh
+          log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number }}")
+          prompt=$(sed -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" -e "s|\$LOG_FILE|$log_file|g" ./scripts/agents/prompts/reviewer.md)
+          echo "$prompt" > /tmp/review-prompt.txt
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+      - name: Review PR
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          allowed_bots: "llm-exe-bot[bot]"
+          prompt: |
+            Read the file /tmp/review-prompt.txt for your full instructions. Follow them exactly.
+          claude_args: |
+            --allowedTools "Bash,Read,Glob,Grep,WebFetch"
+            --max-turns 30
+            --model claude-opus-4-6
+
+      - name: Clock out
+        if: always()
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"

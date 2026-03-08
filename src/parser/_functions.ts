@@ -66,7 +66,7 @@ export type ParserMap<S extends JSONSchema | undefined = undefined> = {
  * Creates a parser based on the given type.
  * @template S - JSON schema type.
  * @param type - The type of parser to create.
- * @returns An instance of ListToKeyValueParser.
+ * @returns An instance of MarkdownCodeBlocksParser.
  */
 export function createParser<
   T extends Extract<CreateParserType, "markdownCodeBlocks">,
@@ -76,7 +76,7 @@ export function createParser<
  * Creates a parser based on the given type.
  * @template S - JSON schema type.
  * @param type - The type of parser to create.
- * @returns An instance of ListToKeyValueParser.
+ * @returns An instance of MarkdownCodeBlockParser.
  */
 export function createParser<
   T extends Extract<CreateParserType, "markdownCodeBlock">,
@@ -234,8 +234,11 @@ export function createParser<
     case "stringExtract":
       return new StringExtractParser(options);
     case "string":
-    default:
       return new StringParser();
+    default:
+      throw new Error(
+        `Invalid parser type: "${type}". Valid types are: json, string, boolean, number, stringExtract, listToArray, listToJson, listToKeyValue, replaceStringTemplate, markdownCodeBlock, markdownCodeBlocks`
+      );
   }
 }
 

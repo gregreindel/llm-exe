@@ -13,25 +13,23 @@ This example does not use llm-exe
 
 This example uses the OpenAi nodejs package directly. Its likely where you'd start. It works, but as I'll explain below, its more of a proof of concept.
 ```typescript
-const { Configuration, OpenAIApi } = require("openai");
+import OpenAI from "openai";
 
-const openAiClient = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  })
-);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function YesOrNoBot(
   question: string
 ): Promise<{ response: string }> {
   const model = "gpt-4o-mini";
 
-  const messages = [
+  const messages: OpenAI.ChatCompletionMessageParam[] = [
     {
       role: "system",
-      content: `You are not an assistant, I need you to reply with only 
-  'yes' or 'no' as an answer to the question below. Do not explain yourself 
-  or ask questions. Answer with only yes or no.`;,
+      content: `You are not an assistant, I need you to reply with only
+  'yes' or 'no' as an answer to the question below. Do not explain yourself
+  or ask questions. Answer with only yes or no.`,
     },
     {
       role: "user",
@@ -43,18 +41,16 @@ export async function YesOrNoBot(
     },
   ];
 
-  const response = await openAiClient.createChatCompletion({
+  const response = await openai.chat.completions.create({
     model: model,
     messages,
     temperature: 0,
     max_tokens: 160,
   });
 
-  const { data } = response;
-  const [choice] = data.choices;
-  const { message, finish_reason } = choice;
-  const { content = "" } = message;
-  if (finish_reason !== "stop") {
+  const [choice] = response.choices;
+  const content = choice.message?.content ?? "";
+  if (choice.finish_reason !== "stop") {
     console.log("error finish reason");
   }
   let cleanResponse = content.trim();

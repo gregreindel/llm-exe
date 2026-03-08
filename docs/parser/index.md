@@ -55,7 +55,7 @@ const parsed = parser.parse(exampleOutputFromLlm);
 When instructing the LLM to respond with json or a format that can be parsed to json, it can be helpful to define schema. This allows you to validate, provide default values, and have a fully-typed response. In fact, the JSON Schema you define can be really useful (and re-used!) in your prompt. [See tips](/examples/concepts/working-with-json) for working with JSON.
 
 ```ts
-import { utils, createParser } from "unnamed-package";
+import { utils, createParser } from "llm-exe";
 
 const schema = utils.defineSchema({
   type: "object",
@@ -67,7 +67,7 @@ const schema = utils.defineSchema({
   required: ["statement", "answer", "confidence"],
 });
 
-const parser = createParser("listToJson", schema);
+const parser = createParser("listToJson", { schema });
 
 const exampleOutputFromLlm = `Statement: The included document contains PII\nAnswer: No\nConfidence: 90`;
 

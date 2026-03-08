@@ -28,11 +28,8 @@ const llm = useLlm("ollama.deepseek-r1", {
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
 ```ts
-// given array of chat messages, calls chat completion
-await llm.chat([]);
-
-// given string prompt, calls completion
-await llm.completion("");
+// call the LLM directly with a prompt
+await llm.call(prompt);
 ```
 
 ## Ollama-Specific Options
@@ -41,7 +38,7 @@ In addition to the generic options, the following options are Ollama-specific an
 
 | Option           | Type    | Default     | Description                                                    |
 | ---------------- | ------- | ----------- | -------------------------------------------------------------- |
-| model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See Ollama Docs |
+| model            | string  | —           | The model to use. Must be specified. See Ollama Docs             |
 | temperature      | number  | undefined   | Maps to temperature.*                          |
 | maxTokens        | number  | undefined   | Maps to max_tokens. See Ollama Docs                            |
 | topP             | number  | undefined   | Maps to top_p. See Ollama Docs                                 |

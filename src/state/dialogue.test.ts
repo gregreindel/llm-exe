@@ -328,6 +328,43 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history[0].content).toEqual("Tool response");
       expect(history[0].id).toEqual(undefined);
     });
+
+    it("setToolMessage is chainable", () => {
+      const dialogue = new Dialogue("main");
+      const result = dialogue.setToolMessage("response", "testTool");
+      expect(result).toBe(dialogue);
+      expect(result).toBeInstanceOf(Dialogue);
+    });
+
+    it("setToolCallMessage is chainable", () => {
+      const dialogue = new Dialogue("main");
+      const result = dialogue.setToolCallMessage({
+        name: "testTool",
+        arguments: "{}",
+      });
+      expect(result).toBe(dialogue);
+      expect(result).toBeInstanceOf(Dialogue);
+    });
+
+    it("tool methods support fluent chaining", () => {
+      const dialogue = new Dialogue("main");
+      dialogue
+        .setUserMessage("Call a tool")
+        .setToolCallMessage({
+          name: "myTool",
+          arguments: '{"key":"val"}',
+          id: "call-1",
+        })
+        .setToolMessage('{"result":"ok"}', "myTool", "call-1")
+        .setAssistantMessage("Done!");
+
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(4);
+      expect(history[0].role).toEqual("user");
+      expect(history[1].role).toEqual("function_call");
+      expect(history[2].role).toEqual("function");
+      expect(history[3].role).toEqual("assistant");
+    });
   });
 
   describe("Error handling", () => {

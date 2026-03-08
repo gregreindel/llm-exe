@@ -21,6 +21,7 @@ export function createOpenAiCompatibleConfiguration<
     endpoint: overrides.endpoint,
     options: {
       prompt: {},
+      effort: {},
       topP: {},
       useJson: {},
       [apiKeyPropertyKey]: {
@@ -43,6 +44,20 @@ export function createOpenAiCompatibleConfiguration<
       useJson: {
         key: "response_format.type",
         transform: (v) => (v ? "json_object" : "text"),
+      },
+      effort: {
+        key: "reasoning_effort",
+        transform: (v, _s) => {
+          if (
+            // only supported reasoning models
+            ["gpt-5"].includes(_s.model) &&
+            typeof v === "string" &&
+            ["minimal", "low", "medium", "high"].includes(v)
+          ) {
+            return v;
+          }
+          return undefined;
+        },
       },
     },
     mapOptions: {

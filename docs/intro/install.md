@@ -10,7 +10,7 @@ import llmExe from "llm-exe"
 
 // or 
 
-import { /* specific modules */ } from from "llm-exe"
+import { /* specific modules */ } from "llm-exe"
 ```
 
 ## Basic Example
@@ -18,7 +18,8 @@ Below is simple example:
 ```js
 import {
   useLlm,
-  createChatPrompt
+  createChatPrompt,
+  createLlmExecutor
 } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");

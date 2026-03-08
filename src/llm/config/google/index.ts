@@ -10,6 +10,7 @@ const googleGeminiChatV1: Config = {
   provider: "google.chat",
   endpoint: `https://generativelanguage.googleapis.com/v1beta/models/{{model}}:generateContent?key={{geminiApiKey}}`,
   options: {
+    effort: {},
     prompt: {},
     // topP: {},
     geminiApiKey: {
@@ -23,9 +24,28 @@ const googleGeminiChatV1: Config = {
       key: "contents",
       transform: googleGeminiPromptSanitize,
     },
-    // topP: {
-    //   key: "top_p",
-    // }
+    effort: {
+      key: "config.thinkingConfig.thinkingBudget",
+      transform: (v, _s) => {
+        if (
+          // only supported reasoning models
+          ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-light"].includes(
+            _s.model
+          ) &&
+          typeof v === "string" &&
+          ["minimal", "low", "medium", "high"].includes(v)
+        ) {
+          if (v === "low" || v === "minimal") {
+            return 1024;
+          } else if (v === "medium") {
+            return 8192;
+          } else if (v === "high") {
+            return 24576;
+          }
+        }
+        return undefined;
+      },
+    },
   },
   mapOptions: {
     functionCall: (call) => ({

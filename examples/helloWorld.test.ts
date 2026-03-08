@@ -29,10 +29,10 @@ describe("helloWorld", () => {
   itWithUseLlmMocked(
     "handle this simple instruction",
     [
-      "anthropic.claude-3-5-sonnet",
+      "anthropic.claude-sonnet-4",
       "openai.gpt-4o-mini",
-      "google.gemini-2.0-flash",
-      "xai.grok-2",
+      "google.gemini-2.5-flash",
+      "xai.grok-3",
       "deepseek.chat",
     ],
     async (config: any) => {
