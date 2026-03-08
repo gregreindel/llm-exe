@@ -43,6 +43,135 @@ describe("openai configuration", () => {
     });
   });
 
+  describe("openai.chat.v1 effort transform", () => {
+    const effortTransform = openAiChatV1.mapBody.effort.transform as (
+      v: any,
+      s: any
+    ) => any;
+
+    it("should return the value for supported model and valid effort", () => {
+      expect(effortTransform("low", { model: "gpt-5" })).toBe("low");
+      expect(effortTransform("medium", { model: "gpt-5" })).toBe("medium");
+      expect(effortTransform("high", { model: "gpt-5" })).toBe("high");
+      expect(effortTransform("minimal", { model: "gpt-5" })).toBe("minimal");
+    });
+
+    it("should return undefined for unsupported model", () => {
+      expect(effortTransform("high", { model: "gpt-4o" })).toBe(undefined);
+    });
+
+    it("should return undefined for non-string value", () => {
+      expect(effortTransform(123, { model: "gpt-5" })).toBe(undefined);
+    });
+
+    it("should return undefined for unsupported effort level", () => {
+      expect(effortTransform("max", { model: "gpt-5" })).toBe(undefined);
+    });
+  });
+
+  describe("openai.chat.v1 mapOptions", () => {
+    it("should transform functionCall 'any' to 'required'", () => {
+      const result = openAiChatV1.mapOptions!.functionCall!("any", {});
+      expect(result).toEqual({ tool_choice: "required" });
+    });
+
+    it("should transform functionCall 'none'", () => {
+      const result = openAiChatV1.mapOptions!.functionCall!("none", {});
+      expect(result).toEqual({ tool_choice: "none" });
+    });
+
+    it("should transform functionCall 'auto'", () => {
+      const result = openAiChatV1.mapOptions!.functionCall!("auto", {});
+      expect(result).toEqual({ tool_choice: "auto" });
+    });
+
+    it("should pass through specific function call value", () => {
+      const specific = { type: "function", function: { name: "my_fn" } };
+      const result = openAiChatV1.mapOptions!.functionCall!(
+        specific as any,
+        {}
+      );
+      expect(result).toEqual({ tool_choice: specific });
+    });
+
+    it("should transform functions to openai tools format", () => {
+      const functions = [
+        {
+          name: "calculate",
+          description: "Do math",
+          parameters: {
+            type: "object",
+            properties: { expr: { type: "string" } },
+          },
+        },
+      ];
+      const result = openAiChatV1.mapOptions!.functions!(functions, {});
+      expect(result).toEqual({
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "calculate",
+              description: "Do math",
+              parameters: expect.objectContaining({
+                type: "object",
+                properties: { expr: { type: "string" } },
+              }),
+              strict: false,
+            },
+          },
+        ],
+      });
+    });
+
+    it("should set strict to true when functionCallStrictInput is enabled", () => {
+      const functions = [
+        {
+          name: "test",
+          description: "Test",
+          parameters: { type: "object", properties: {} },
+        },
+      ];
+      const result = openAiChatV1.mapOptions!.functions!(functions, {
+        functionCallStrictInput: true,
+      });
+      expect(result.tools[0].function.strict).toBe(true);
+    });
+
+    it("should transform jsonSchema correctly", () => {
+      const schema = {
+        type: "object",
+        properties: { name: { type: "string" } },
+      };
+      const result = openAiChatV1.mapOptions!.jsonSchema!(schema, {}, {});
+      expect(result).toEqual({
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "output",
+            strict: false,
+            schema: expect.objectContaining({
+              type: "object",
+              properties: { name: { type: "string" } },
+            }),
+          },
+        },
+      });
+    });
+
+    it("should merge with existing response_format in currentInput", () => {
+      const schema = { type: "object", properties: {} };
+      const currentInput = { response_format: { existing: true } };
+      const result = openAiChatV1.mapOptions!.jsonSchema!(
+        schema,
+        {},
+        currentInput
+      );
+      expect(result.response_format.existing).toBe(true);
+      expect(result.response_format.type).toBe("json_schema");
+    });
+  });
+
   describe("openai.chat-mock.v1", () => {
     it("should have the correct key, provider, endpoint, and method", () => {
       expect(openAiChatMockV1.key).toBe("openai.chat-mock.v1");
