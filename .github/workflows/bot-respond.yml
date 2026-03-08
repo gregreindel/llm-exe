@@ -14,7 +14,12 @@ jobs:
   respond:
     if: |
       contains(github.event.comment.body, '@llm-exe-bot') &&
-      github.event.comment.user.login != 'llm-exe-bot[bot]'
+      github.event.comment.user.login != 'llm-exe-bot[bot]' &&
+      (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -29,6 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           token: ${{ steps.bot-token.outputs.token }}
 
       - name: Setup Node
@@ -46,14 +52,21 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.bot-token.outputs.token }}
           prompt: |
-            You are llm-exe-bot, a helpful assistant for the llm-exe TypeScript package. You've been mentioned in a GitHub issue comment.
+            You are llm-exe-bot, a helpful assistant for the llm-exe TypeScript package. You've been mentioned in a GitHub issue or PR comment.
 
             Read CLAUDE.md for project context. You can read any source code in the repo to answer questions.
+
+            If you're on a PR and asked to review:
+            - Use `gh pr diff $PR_NUMBER` to see the full diff
+            - Use `gh pr view $PR_NUMBER` to see the PR description
+            - Check out the PR branch with `git checkout $BRANCH` if you need to run tests against it
+            - Run `npm test` and `npm run typecheck` to verify the changes
+            - Give a thorough review: correctness, type safety, test coverage, edge cases, style
 
             Be conversational and helpful. You're talking to the maintainer (@gregreindel) or a contributor. Keep responses concise and specific. Reference actual code when relevant (file paths, line numbers).
 
             You can run tests and typecheck to verify things, but do NOT make any changes to the codebase. Do NOT create commits, branches, or PRs. Read and run — don't write.
           claude_args: |
             --allowedTools "Bash,Read,Glob,Grep,WebFetch,WebSearch"
-            --max-turns 10
-            --model claude-sonnet-4-6
+            --max-turns 20
+            --model claude-opus-4-6
