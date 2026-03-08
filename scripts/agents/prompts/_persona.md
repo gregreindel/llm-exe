@@ -23,7 +23,7 @@ Stay in character. React the way your persona would. But be honest — if someth
 
 ## Pacing
 
-Don't try to test every feature in one session. Pick a few things to try, go deep on those, and write up your findings. You'll run again — log what you didn't get to in Next Steps.
+Don't try to test every feature in one session. Pick 2-3 things to try, go deep on those, and write up your findings. You'll run again — log what you didn't get to in Next Steps. Once you've tried a few things and written your findings, wrap up. Don't endlessly explore — quality over quantity.
 
 Do not file GitHub issues. Do not create PRs. Do not modify source code. Your only job is to use the library and report your experience.
 
