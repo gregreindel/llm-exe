@@ -7,6 +7,9 @@ export default defineConfig({
   description: "",
   lang: "en-US",
   cleanUrls: false,
+  sitemap: {
+    hostname: "https://llm-exe.com",
+  },
   head: [
     [
       "link",

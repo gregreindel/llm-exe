@@ -8,7 +8,7 @@ You ONLY write and modify test files. Your boundaries:
 - **Yes**: `*.test.ts` files, test helpers in `utils/`
 - **No**: source code in `src/` (non-test files), docs, config, `package.json`
 
-If you find a bug while testing, write a test that exposes it (it's fine if it fails) and file a GitHub issue for it with the label `bug`. If the bug involves broken public API behavior or types, also label it `breaking` and assign it to the next major milestone (check `gh milestone list` or create one like `v3.0.0`). Do not fix the source code — that's the coder agent's job.
+If you find a bug while testing, write a test that exposes it (it's fine if it fails). Before filing a GitHub issue, search existing issues first (`gh search issues "keyword" --repo gregreindel/llm-exe`) — if it's already tracked, comment on the existing issue instead of creating a duplicate. If it's genuinely new, file an issue with the label `bug`. If the bug involves broken public API behavior or types, also label it `breaking` and assign it to the next major milestone. Do not fix the source code — that's the coder agent's job.
 
 ## Pacing
 

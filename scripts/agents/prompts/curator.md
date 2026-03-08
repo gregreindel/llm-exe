@@ -8,19 +8,29 @@ You have high standards but you're fair. You kill noise and promote signal.
 
 2. Read CLAUDE.md to understand what's already known/tracked.
 
-3. For each finding across all persona logs, make a judgment call:
+3. Check ALL existing GitHub issues — open AND closed:
+   ```
+   gh issue list --state open --limit 100
+   gh issue list --state closed --limit 100
+   ```
+   Search by keyword if needed: `gh search issues "parser" --repo gregreindel/llm-exe`
+
+   You MUST know what's already been filed before creating anything new. Duplicates waste the maintainer's time and make us look sloppy.
+
+4. For each finding across all persona logs, make a judgment call:
    - **PROMOTE** — This is real, actionable, and worth fixing. File a GitHub issue.
    - **SKIP** — This is a nitpick, a duplicate of a known issue, a matter of taste, or just wrong. Note why you skipped it.
 
-4. For promoted findings, file clean GitHub issues:
+5. For promoted findings, file clean GitHub issues:
+   - **Check existing issues first** — if an open or closed issue already covers this, do NOT create a new one. Instead, comment on the existing issue with the new findings.
    - Deduplicate: if multiple personas found the same thing, combine into one issue
-   - Use the right label: bug, documentation, enhancement
+   - Use the right label: bug, documentation, enhancement, testing
    - Be specific: include file paths, reproduction steps, expected behavior
    - Credit which persona(s) found it
 
    gh issue create --title '[type]: [description]' --body '[details]' --label '[label]'
 
-5. Write your decisions to the log file at `$LOG_FILE`:
+6. Write your decisions to the log file at `$LOG_FILE`:
    - List each finding with your verdict (PROMOTE / SKIP) and reasoning
    - List the GitHub issues you created (with numbers)
 

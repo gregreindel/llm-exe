@@ -1,6 +1,6 @@
 {
   "name": "llm-exe",
-  "version": "2.3.5",
+  "version": "2.3.3",
   "description": "Simplify building LLM-powered apps with easy-to-use base components, supporting text and chat-based prompts with handlebars template engine, output parsers, and flexible function calling capabilities.",
   "keywords": [
     "ai",
@@ -46,7 +46,7 @@
     "build:package": "tsup src/index.ts --format cjs,esm --dts --clean --external jsonschema,json-schema-to-ts,exponential-backoff,@aws-sdk/credential-providers,@aws-crypto/sha256-js,@smithy/protocol-http,@smithy/signature-v4",
     "build:docs-examples": "./node_modules/.bin/esbuild examples/prompt/index.ts examples/state/index.ts --bundle --outdir=docs/.vitepress/components/examples  --platform=node --target=es6 --format=esm",
     "build:watch:docs-examples": "./node_modules/.bin/esbuild  examples/prompt/index.ts examples/state/index.ts  --watch --bundle --outdir=docs/.vitepress/components/examples  --platform=node --target=es6 --format=esm",
-    "predocs:build": "npm run build:docs-examples",
+    "predocs:build": "npm run build:docs-examples && bash scripts/generate-llms-txt.sh",
     "docs:dev": "eval $(cat docs/.env) && concurrently \"vitepress dev docs\" \"npm run build:watch:docs-examples\"",
     "docs:build": "eval $(cat docs/.env) && vitepress build docs",
     "docs:update-providers": "node docs/.vitepress/scripts/updateProviders.js",
