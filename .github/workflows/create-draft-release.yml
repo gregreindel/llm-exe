@@ -2,8 +2,11 @@ name: Create Draft Release
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [pr-merged-to-main]
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
 
 permissions:
   id-token: write
@@ -13,12 +16,10 @@ jobs:
   update-draft-releases:
     name: "Delete old drafts and create new draft release"
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'repository_dispatch' && github.event.action == 'pr-merged-to-main')
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
 
     steps:
     - uses: actions/checkout@v4
@@ -67,31 +68,46 @@ jobs:
             "draft": true,
             "generate_release_notes": true
           }')
-        release_url=$(echo $response | jq -r '.html_url')
-        release_id=$(echo $response | jq -r '.id')
-        body=$(echo "$response" | jq -r '.body')
-        release_body=$(echo "$response" | jq -r '.body | tostring' | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-        release_tag_name=$(echo "$response" | jq -r '.tag_name')
-        release_author_avatar=$(echo "$response" | jq -r '.author.avatar_url')
-        echo "release_url=${release_url}" >> $GITHUB_OUTPUT
-        echo "release_id=${release_id}" >> $GITHUB_OUTPUT
-        echo "release_body=${release_body}" >> $GITHUB_OUTPUT
-        echo "release_tag_name=${release_tag_name}" >> $GITHUB_OUTPUT
-        echo "release_author_avatar=${release_author_avatar}" >> $GITHUB_OUTPUT
-        echo "$body" > release_body.txt
+
+        # Check if release creation succeeded
+        if echo "$response" | jq -e '.id' > /dev/null; then
+          release_url=$(echo $response | jq -r '.html_url')
+          release_id=$(echo $response | jq -r '.id')
+          body=$(echo "$response" | jq -r '.body')
+
+          echo "release_url=${release_url}" >> $GITHUB_OUTPUT
+          echo "release_id=${release_id}" >> $GITHUB_OUTPUT
+          echo "$body" > release_body.txt
+
+          echo "✅ Draft release created: ${release_url}"
+        else
+          echo "❌ Failed to create draft release"
+          echo "$response" | jq '.'
+          exit 1
+        fi
 
     - name: Clean up release notes
       id: clean_release_notes
       run: |
-        CLEANED_BODY=$(sed '/Bump Version/d; /Draft PR/d' release_body.txt)
+        # Remove automation-related commits (chore: bump version, Draft PR for release, Bump Version on PR to Main) and remove "by @username in" from PR references
+        CLEANED_BODY=$(sed '/chore: bump version/Id; /Draft PR for release/Id; /Bump Version on PR to Main/Id' release_body.txt | sed -E 's/ by @[^ ]+ in/ /g')
         echo "$CLEANED_BODY" > cleaned_body.txt
+        echo "📝 Cleaned release notes:"
         cat cleaned_body.txt
 
     - name: Update Draft Release with cleaned notes
       run: |
         CLEANED_BODY=$(jq -Rs '.' < cleaned_body.txt)
-        curl -s -X PATCH \
+        response=$(curl -s -X PATCH \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }} \
-          -d "{\"tag_name\": \"${NEW_VERSION}\", \"target_commitish\": \"main\", \"body\": ${CLEANED_BODY}}"
+          -d "{\"tag_name\": \"${NEW_VERSION}\", \"target_commitish\": \"main\", \"body\": ${CLEANED_BODY}}")
+
+        if echo "$response" | jq -e '.id' > /dev/null; then
+          echo "✅ Release notes updated successfully"
+          echo "🎯 Draft release ready: ${{ steps.create_release.outputs.release_url }}"
+        else
+          echo "⚠️  Warning: Failed to update release notes"
+          echo "$response" | jq '.'
+        fi

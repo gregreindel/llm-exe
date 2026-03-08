@@ -31,7 +31,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+        
+      - name: Validate Publisher
+        run: |
+          ALLOWED_PUBLISHERS="gregreindel"
+          if [[ ! ",$ALLOWED_PUBLISHERS," =~ ",${{ github.actor }}," ]]; then
+            echo "Error: User ${{ github.actor }} is not authorized to publish packages"
+            echo "Allowed publishers: $ALLOWED_PUBLISHERS"
+            exit 1
+          fi
+          echo "User ${{ github.actor }} is authorized to publish"
+      
       - name: Setup Node.js environment
         uses: ./.github/actions/setup-node
 
@@ -43,10 +53,6 @@ jobs:
 
       - name: Build package
         run: npm run build:package
-
-      - name: Add NPM Token
-        run: |
-          printf "//`node -p \"require('url').parse( 'https://registry.npmjs.org').host\"`/:_authToken=${{secrets.NPM_TOKEN}}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\nalways-auth=true\n" >> .npmrc
 
       - name: Publish Main/Beta Package version
         run: |
