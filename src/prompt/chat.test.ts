@@ -174,6 +174,13 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
+  it("parses user message templates by default without allowUnsafeUserTemplate option", () => {
+    const prompt = new ChatPrompt("");
+    prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
+    const format = prompt.format({ replaceWithWorld: "World" });
+    expect(format).toEqual([{ content: "Hello World", role: "user" }]);
+  });
+
   it("does allow template rendering in user messages with allowUnsafeUserTemplate", () => {
     const prompt = new ChatPrompt("", { allowUnsafeUserTemplate: true });
     prompt.addUserMessage(`Hello {{replaceWithWorld}}`);
