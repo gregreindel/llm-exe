@@ -37,7 +37,7 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
    * user messages with the template engine. This could be a risk,
    * so we only parse user messages if explicitly set.
    */
-  private parseUserTemplates = true;
+  private parseUserTemplates = false;
 
   /**
    * new `ChatPrompt`
