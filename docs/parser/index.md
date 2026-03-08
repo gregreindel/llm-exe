@@ -67,7 +67,7 @@ const schema = utils.defineSchema({
   required: ["statement", "answer", "confidence"],
 });
 
-const parser = createParser("listToJson", schema);
+const parser = createParser("listToJson", { schema });
 
 const exampleOutputFromLlm = `Statement: The included document contains PII\nAnswer: No\nConfidence: 90`;
 
