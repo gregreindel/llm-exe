@@ -223,7 +223,7 @@ jobs:
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
         run: |
           PR_NUMBER=$(gh pr list --state open --head bump-version-branch --json number --jq '.[0].number')
-          gh pr merge $PR_NUMBER --admin --merge --delete-branch
+          gh pr merge $PR_NUMBER --admin --squash --delete-branch
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
