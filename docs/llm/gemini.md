@@ -4,7 +4,7 @@ When using Google Gemini models, llm-exe will make POST requests to `https://gen
 
 ## Basic Usage
 
-### Google Gemini Chat
+### Gemini Chat
 
 ```ts
 const llm = useLlm("google.chat.v1", {
@@ -12,7 +12,7 @@ const llm = useLlm("google.chat.v1", {
 });
 ```
 
-### Google Gemini Chat By Model
+### Gemini Chat By Model
 
 ```ts
 const llm = useLlm("google.gemini-2.0-flash", {
