@@ -17,7 +17,8 @@ permissions:
 
 jobs:
   draft-dev-to-main-pr:
-    if: ${{ !(github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') || github.event_name == 'release' }}
+    # Run for release events OR when a PR is merged to development (except version bump PRs)
+    if: ${{ github.event_name == 'release' || !(github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') }}
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
@@ -102,30 +103,66 @@ jobs:
             echo "PR_EXISTS=true" >> $GITHUB_ENV
             echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get the last two merge commits
-        if: env.PR_EXISTS == 'true'
-        id: last_merge
+      - name: Get merged PR titles for release
+        id: get_pr_titles
         run: |
-          MERGE_COMMITS=$(git log --merges -2 --pretty=format:%H)
-          LAST_MERGE_COMMIT=$(echo "$MERGE_COMMITS" | head -n 1)
-          SECOND_LAST_MERGE_COMMIT=$(echo "$MERGE_COMMITS" | tail -n 1)
-          echo "LAST_MERGE_COMMIT=${LAST_MERGE_COMMIT}" >> $GITHUB_ENV
-          echo "SECOND_LAST_MERGE_COMMIT=${SECOND_LAST_MERGE_COMMIT}" >> $GITHUB_ENV
-
-      - name: Get commit messages since the second last merge
-        if: env.PR_EXISTS == 'true' && github.event_name != 'release'
-        id: get_commit_messages
-        run: |
-          COMMIT_MESSAGES=$(git log ${SECOND_LAST_MERGE_COMMIT}..HEAD --pretty=format:"%s" | tr '\n' ', ')
-          echo "COMMIT_MESSAGES=${COMMIT_MESSAGES}" >> $GITHUB_ENV
+          # Fetch branches with error handling
+          echo "Fetching branches..."
+          if ! git fetch origin main development; then
+            echo "Error: Failed to fetch branches"
+            exit 1
+          fi
+          
+          # Find the merge base between main and development
+          MERGE_BASE=$(git merge-base origin/main origin/development)
+          echo "Merge base: $MERGE_BASE"
+          
+          # Get PR numbers from merge commits
+          PR_NUMBERS=$(git log $MERGE_BASE..origin/development --merges --pretty=format:"%s" | grep -oP 'Merge pull request #\K[0-9]+') || true
+          
+          # Initialize PR_TITLES
+          PR_TITLES=""
+          
+          # Fetch PR details for each PR number
+          if [ -n "$PR_NUMBERS" ]; then
+            while IFS= read -r pr_num; do
+              if [ -n "$pr_num" ]; then
+                # Fetch PR info with error handling
+                if pr_info=$(gh pr view "$pr_num" --json number,title --jq '"- #\(.number): \(.title)"' 2>/dev/null); then
+                  PR_TITLES="${PR_TITLES}${pr_info}\n"
+                else
+                  echo "Warning: Could not fetch details for PR #$pr_num"
+                fi
+              fi
+            done <<< "$PR_NUMBERS"
+          fi
+          
+          # Count PRs for logging
+          if [ -n "$PR_TITLES" ]; then
+            PR_COUNT=$(echo -e "$PR_TITLES" | grep -c "^- #" || echo "0")
+            echo "Found $PR_COUNT PRs to include in release"
+          else
+            echo "No PRs found between main and development"
+            PR_COUNT=0
+          fi
+          
+          # Always set PR_TITLES (even if empty) to avoid undefined variable issues
+          echo "PR_TITLES<<EOF" >> $GITHUB_ENV
+          echo -e "$PR_TITLES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          echo "PR_COUNT=$PR_COUNT" >> $GITHUB_ENV
 
       - name: Check for new commits between branches
         id: check_new_commits
         run: |
-          git fetch origin main development
+          # Branches already fetched in previous step, verify they exist
+          if ! git rev-parse origin/main origin/development >/dev/null 2>&1; then
+            echo "Error: Required branches not found"
+            exit 1
+          fi
+          
           if git rev-list --count origin/main..origin/development | grep -q '^0$'; then
             echo "No new commits to create a PR."
             echo "NEW_COMMITS=false" >> $GITHUB_ENV
@@ -186,7 +223,7 @@ jobs:
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
         run: |
           PR_NUMBER=$(gh pr list --state open --head bump-version-branch --json number --jq '.[0].number')
-          gh pr merge $PR_NUMBER --admin --squash --delete-branch
+          gh pr merge $PR_NUMBER --admin --merge --delete-branch
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
@@ -194,24 +231,46 @@ jobs:
       - name: Create or update draft pull request
         if: env.NEW_COMMITS == 'true'
         run: |
+          # Build PR body with proper formatting using $'...' for escape sequences
+          # PR_COUNT is already calculated and set in the "Get merged PR titles for release" step
+          if [ "$PR_COUNT" -gt 0 ]; then
+            PR_BODY=$'## 📦 Changes in this release:\n\n'"${PR_TITLES}"$'\n\nThis release includes '"${PR_COUNT}"$' merged pull request(s) from the development branch.'
+          else
+            PR_BODY=$'## 📦 Changes in this release:\n\nThis release includes changes from the development branch.'
+          fi
+          
+          # Check PR body length and truncate if necessary
+          if [ ${#PR_BODY} -gt 65000 ]; then
+            echo "⚠️  PR body too long (${#PR_BODY} characters), truncating..."
+            PR_BODY="${PR_BODY:0:65000}"$'\n\n... (truncated due to length)'
+          fi
+          
           if [ "$PR_EXISTS" = "true" ]; then
             echo "A PR already exists: $PR_URL"
-            if [ -n "$COMMIT_MESSAGES" ]; then
-              NEW_COMMIT_MESSAGES=$(echo "$COMMIT_MESSAGES" | tr ',' '\n')
-              gh pr comment $PR_URL --body "$NEW_COMMIT_MESSAGES"
+            echo "Updating PR title and body..."
+            
+            # Update PR with new title and body
+            if gh pr edit "$PR_URL" --title "Draft PR for release version $NEW_VERSION" --body "$PR_BODY"; then
+              echo "✅ Updated PR successfully"
             else
-              echo "No new commits to add as comments."
+              echo "Error: Failed to update PR"
+              exit 1
             fi
-            echo "Updating the PR title to version $NEW_VERSION"
-            gh pr edit $PR_URL --title "Draft PR for release version $NEW_VERSION"
           else
             echo "Creating a new draft PR..."
-            gh pr create \
+            
+            # Create new PR with body
+            if gh pr create \
               --base main \
               --head development \
               --title "Draft PR for release version $NEW_VERSION" \
-              --draft \
-              --fill-verbose
+              --body "$PR_BODY" \
+              --draft; then
+              echo "✅ Created draft PR successfully"
+            else
+              echo "Error: Failed to create PR"
+              exit 1
+            fi
           fi
         env:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
