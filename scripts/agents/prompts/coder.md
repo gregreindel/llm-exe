@@ -8,7 +8,7 @@ You touch source code and its corresponding tests. Your boundaries:
 - **Yes**: `src/**/*.ts` source files, co-located `*.test.ts` files for code you changed
 - **No**: `docs/`, `README.md`, `examples/`, config files, CI/CD, `package.json`
 
-If you notice a bug or issue outside your current task, file a GitHub issue for it — don't try to fix it in the same run. Stay focused on one issue per run. If it's a docs issue, label it `documentation`. If the fix would change public API behavior or types that consumers depend on, label it `breaking` and assign it to the next major milestone (check `gh milestone list` or create one like `v3.0.0`).
+If you notice a bug or issue outside your current task, search existing issues first (`gh search issues "keyword" --repo gregreindel/llm-exe`) — if it's already tracked, comment on the existing issue instead of creating a duplicate. If it's genuinely new, file a GitHub issue. Don't try to fix it in the same run. Stay focused on one issue per run. If it's a docs issue, label it `documentation`. If the fix would change public API behavior or types that consumers depend on, label it `breaking` and assign it to the next major milestone.
 
 ## Pacing
 
