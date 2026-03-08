@@ -142,4 +142,53 @@ describe("parseHeaders", () => {
 
     expect(headers).toEqual(payload.headers);
   });
+
+  it("Should throw an error when headers template produces invalid JSON", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue("not valid json");
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      /Failed to parse headers configuration/
+    );
+  });
+
+  it("Should throw an error with detailed context when JSON parsing fails", async () => {
+    config.headers = '{"broken": {{token}}}';
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue(
+      '{"broken": test-token}'
+    );
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      /After replacement/
+    );
+  });
+
+  it("Should throw an error when parsed headers is an array", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('[1, 2, 3]');
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      /Headers must be a JSON object/
+    );
+  });
+
+  it("Should throw an error when parsed headers is null", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue("null");
+
+    await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+      /Headers must be a JSON object/
+    );
+  });
+
+  it("Should call getAwsAuthorizationHeaders when provider starts with amazon.", async () => {
+    config.provider = "amazon.nova.chat" as any;
+    const expectedHeaders = { Authorization: "AWS4-HMAC-SHA256" };
+
+    (getAwsAuthorizationHeaders as jest.Mock).mockResolvedValue(
+      expectedHeaders
+    );
+
+    const headers = await parseHeaders(config, replacements, payload);
+
+    expect(getAwsAuthorizationHeaders).toHaveBeenCalled();
+    expect(headers).toEqual(expectedHeaders);
+  });
 });
