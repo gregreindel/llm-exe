@@ -32,5 +32,25 @@ describe("llm-exe:parser/ListToArrayParser", () => {
     const input = `- Greg\n- Occupation: software - developer`
     expect(parser.parse(input)).toEqual(["Greg", "Occupation: software - developer"])
   });
+  it('removes numbered list prefixes', () => {
+    const parser = new ListToArrayParser()
+    const input = `1. First\n2. Second\n3. Third`
+    expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
+  });
+  it('removes asterisk list prefixes', () => {
+    const parser = new ListToArrayParser()
+    const input = `* First\n* Second\n* Third`
+    expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
+  });
+  it('handles mixed list formats', () => {
+    const parser = new ListToArrayParser()
+    const input = `- First\n* Second\n3. Third`
+    expect(parser.parse(input)).toEqual(["First", "Second", "Third"])
+  });
+  it('preserves asterisks that are not list prefixes', () => {
+    const parser = new ListToArrayParser()
+    const input = `* bold text * here\n* another item`
+    expect(parser.parse(input)).toEqual(["bold text * here", "another item"])
+  });
 });
 
