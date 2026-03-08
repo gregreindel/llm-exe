@@ -34,8 +34,8 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
 
   /**
    * @property parseUserTemplates - Whether or not to allow parsing
-   * user messages with the template engine. This could be a risk,
-   * so we only parse user messages if explicitly set.
+   * user messages with the template engine. Defaults to true.
+   * Set `allowUnsafeUserTemplate: false` in options to disable.
    */
   private parseUserTemplates = true;
 
