@@ -1,0 +1,3 @@
+# Prevent changes to the '.github/' files without approval from any of the specified owners
+
+.github/ @gregreindel @devfrankduah
