@@ -44,10 +44,6 @@ jobs:
       - name: Build package
         run: npm run build:package
 
-      - name: Add NPM Token
-        run: |
-          printf "//`node -p \"require('url').parse( 'https://registry.npmjs.org').host\"`/:_authToken=${{secrets.NPM_TOKEN}}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\nalways-auth=true\n" >> .npmrc
-
       - name: Publish Main/Beta Package version
         run: |
           version=$(node -p "require('./package.json').version")
