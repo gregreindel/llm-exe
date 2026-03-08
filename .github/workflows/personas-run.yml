@@ -109,7 +109,7 @@ jobs:
             Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
-            --max-turns 50
+            --max-turns 40
             --model claude-opus-4-6
 
       - name: Clock out
@@ -120,6 +120,7 @@ jobs:
 
   run-curator:
     needs: run-persona
+    if: always() && needs.run-persona.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -182,7 +183,7 @@ jobs:
             Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
-            --max-turns 50
+            --max-turns 40
             --model claude-opus-4-6
 
       - name: Clock out
