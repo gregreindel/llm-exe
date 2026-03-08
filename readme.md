@@ -41,6 +41,8 @@ const llmExe = require("llm-exe");
 ## Overview
 
 ```ts
+import { useLlm, createChatPrompt, createParser, createLlmExecutor, defineSchema } from "llm-exe";
+
 // Prompt
 const prompt = createChatPrompt("You are a support agent. Help the user.");
 prompt.addUserMessage("I need help with my order.");
@@ -48,8 +50,16 @@ prompt.addUserMessage("I need help with my order.");
 // LLM
 const llm = useLlm("openai.gpt-4o");
 
-// Parser
-const parser = createParser("json", { schema: mySchema });
+// Parser — schema uses JSON Schema (via defineSchema)
+const schema = defineSchema({
+  type: "object",
+  properties: {
+    answer: { type: "string" },
+    action: { type: "string" },
+  },
+  required: ["answer", "action"],
+} as const);
+const parser = createParser("json", { schema });
 
 // Executor
 const executor = createLlmExecutor({ llm, prompt, parser });
@@ -71,11 +81,17 @@ Welcome back!
 #### Built-In Parsers
 
 ```ts
-createParser("stringExtract", { enum: ["yes", "no"] });
-createParser("listToJson");
-createParser("listToArray");
-createParser("markdownCodeBlock");
-// ...etc
+createParser("string");              // pass-through, returns string
+createParser("json", { schema });    // JSON with optional schema validation
+createParser("boolean");             // extracts boolean from response
+createParser("number");              // extracts number from response
+createParser("stringExtract", { enum: ["yes", "no"] }); // match one of the enum values
+createParser("listToArray");         // newline-separated list → string[]
+createParser("listToJson");          // key: value list → object (with optional schema)
+createParser("listToKeyValue");      // key: value list → Array<{ key, value }>
+createParser("markdownCodeBlock");   // single code block → { code, language }
+createParser("markdownCodeBlocks");  // multiple code blocks → Array<{ code, language }>
+createParser("replaceStringTemplate"); // handlebars-based output templating
 ```
 
 #### Custom Parsers
