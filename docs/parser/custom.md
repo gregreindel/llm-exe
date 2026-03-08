@@ -39,7 +39,7 @@ const parse = customParser.parse(``);
 
 // or in an LLM executor
 const executor = createLlmExecutor({
-  llm: useLlm("openai", { model: "model-name" }),
+  llm: useLlm("openai.chat.v1", { model: "gpt-4o-mini" }),
   prompt: createChatPrompt(`You are a customer support agent.`),
   parser: customParser, // use the custom parser
 });

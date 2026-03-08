@@ -57,6 +57,8 @@ jobs:
             ATTEMPT=$((ATTEMPT + 1))
             sleep 30
           done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check all PR checks state
         id: pr-checks
@@ -76,6 +78,8 @@ jobs:
             echo "Checks passed"
           fi
         continue-on-error: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR to Main
         if: env.PR_NUMBER != ''
