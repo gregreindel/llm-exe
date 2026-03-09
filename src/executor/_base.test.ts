@@ -326,17 +326,29 @@ describe("llm-exe:executor/BaseExecutor", () => {
     it("should properly handle once wrapper removal", async () => {
       const executor = new MockExecutor();
       let callCount = 0;
-      
+
       executor.once("onComplete", () => callCount++);
-      
+
       expect(executor.getHookCount("onComplete")).toBe(1);
-      
+
       await executor.execute({});
       expect(callCount).toBe(1);
       expect(executor.getHookCount("onComplete")).toBe(0);
-      
+
       await executor.execute({});
       expect(callCount).toBe(1); // Should not increment again
+    });
+
+    it("should initialize hooks array when once is called for uninitialized event", () => {
+      const executor = new MockExecutor();
+      // Manually delete an event's hooks array to simulate uninitialized state
+      delete executor.hooks.onSuccess;
+      expect(executor.hooks.onSuccess).toBeUndefined();
+
+      executor.once("onSuccess", () => {});
+
+      // The hooks array should have been created and the hook added
+      expect(executor.hooks.onSuccess).toHaveLength(1);
     });
   });
 

@@ -168,7 +168,7 @@ describe("runWithTemporaryEnv", () => {
 
   it("should handle errors in env setup and still restore environment", async () => {
     const original = process.env.SETUP_ERROR_VAR;
-    
+
     await expect(
       runWithTemporaryEnv(
         () => {
@@ -183,5 +183,28 @@ describe("runWithTemporaryEnv", () => {
 
     // Environment should still be restored even if setup throws
     expect(process.env.SETUP_ERROR_VAR).toBe(original);
+  });
+
+  it("should restore deleted environment variables when env setup throws", async () => {
+    // Set a value that will be deleted during setup
+    process.env.SETUP_DELETE_VAR = "should-be-restored";
+
+    await expect(
+      runWithTemporaryEnv(
+        () => {
+          delete process.env.SETUP_DELETE_VAR;
+          throw new Error("Setup error after delete");
+        },
+        async () => {
+          return "should not reach here";
+        }
+      )
+    ).rejects.toThrow("Setup error after delete");
+
+    // The deleted variable should be restored to its original value
+    expect(process.env.SETUP_DELETE_VAR).toBe("should-be-restored");
+
+    // Clean up
+    delete process.env.SETUP_DELETE_VAR;
   });
 });
