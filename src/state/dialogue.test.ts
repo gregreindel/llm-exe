@@ -761,9 +761,32 @@ describe("llm-exe:state/Dialogue", () => {
     it("handles undefined output gracefully", () => {
       const dialogue = new Dialogue("main");
       const result = dialogue.addFromOutput(undefined as any);
-      
+
       expect(result).toBe(dialogue); // Should return this
       expect(dialogue.getHistory()).toHaveLength(0); // No messages added
+    });
+
+    it("handles BaseLlCall wrapper returning invalid result", () => {
+      const dialogue = new Dialogue("main");
+      // Simulate a BaseLlCall wrapper where getResult() returns null
+      const wrappedWithInvalidResult = {
+        getResult: () => null,
+      };
+      const result = dialogue.addFromOutput(wrappedWithInvalidResult as any);
+
+      expect(result).toBe(dialogue);
+      expect(dialogue.getHistory()).toHaveLength(0);
+    });
+
+    it("handles BaseLlCall wrapper returning non-object result", () => {
+      const dialogue = new Dialogue("main");
+      const wrappedWithStringResult = {
+        getResult: () => "not an object",
+      };
+      const result = dialogue.addFromOutput(wrappedWithStringResult as any);
+
+      expect(result).toBe(dialogue);
+      expect(dialogue.getHistory()).toHaveLength(0);
     });
   });
 });
