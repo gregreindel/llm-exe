@@ -26,7 +26,8 @@ err()   { echo -e "${RED}[error]${NC} $*"; }
 # Helper: create a fresh branch from the default branch
 create_agent_branch() {
   local role="$1"
-  local branch="agent/${role}/${DATE_STAMP}"
+  local suffix="${2:-$(date +%H%M%S)}"
+  local branch="agent/${role}/${DATE_STAMP}-${suffix}"
 
   cd "$REPO_ROOT" || exit 1
   git checkout "$DEFAULT_BRANCH" &>/dev/null
