@@ -196,11 +196,20 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   }
 
   /**
-   * validate description
+   * validate Ensures the prompt template has valid structure.
+   * Checks that the prompt has at least one message and all messages
+   * have non-empty content.
    * @return {boolean} Returns false if the template is not valid.
    */
   validate(): boolean {
-    // add validation for missing tokens, etc
+    if (this.messages.length === 0) {
+      return false;
+    }
+    for (const message of this.messages) {
+      if (!message.content || (typeof message.content === "string" && message.content.trim() === "")) {
+        return false;
+      }
+    }
     return true;
   }
 }

@@ -138,8 +138,12 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(textPrompt.helpers[0]).toEqual(helper);
   });
 
-  test("validate", () => {
+  test("validate returns false for empty prompt", () => {
     const textPrompt = new TextPrompt();
+    expect(textPrompt.validate()).toBe(false);
+  });
+  test("validate returns true for prompt with message", () => {
+    const textPrompt = new TextPrompt("Hello");
     expect(textPrompt.validate()).toBe(true);
   });
 
