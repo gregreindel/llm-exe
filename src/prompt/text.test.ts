@@ -138,9 +138,18 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(textPrompt.helpers[0]).toEqual(helper);
   });
 
-  test("validate", () => {
-    const textPrompt = new TextPrompt();
+  test("validate returns true for prompt with messages", () => {
+    const textPrompt = new TextPrompt("Hello");
     expect(textPrompt.validate()).toBe(true);
+  });
+  test("validate returns false for prompt with no messages", () => {
+    const textPrompt = new TextPrompt();
+    expect(textPrompt.validate()).toBe(false);
+  });
+  test("validate returns false when a message has empty content", () => {
+    const textPrompt = new TextPrompt("Hello");
+    textPrompt.messages.push({ role: "system", content: "" });
+    expect(textPrompt.validate()).toBe(false);
   });
 
   it("can add pre filters that run _before_ replacements", () => {
