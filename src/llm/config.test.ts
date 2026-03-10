@@ -228,8 +228,43 @@ describe("getLlmConfig", () => {
   it("should throw an error for an invalid provider", () => {
     const provider: any = "invalid";
     expect(() => getLlmConfig(provider)).toThrow(
-      `Invalid provider: ${provider}`
+      `Invalid provider: ${provider}.`
     );
+  });
+
+  it("should suggest close matches for a mistyped provider", () => {
+    const provider: any = "openai.gpt4o";
+    expect(() => getLlmConfig(provider)).toThrow("Did you mean:");
+  });
+
+  it("should suggest providers with matching prefix", () => {
+    const provider: any = "openai.nonexistent-model-xyz";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.message).toContain("Invalid provider: openai.nonexistent-model-xyz.");
+      // Should suggest openai.* providers via prefix matching
+      expect(e.context.resolution).toContain("openai.");
+    }
+  });
+
+  it("should include suggestions in error context", () => {
+    const provider: any = "openai.chat.v";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.context.resolution).toMatch(/Did you mean:/);
+      expect(e.context.resolution).toContain("openai.chat.v1");
+    }
+  });
+
+  it("should not suggest when input is completely unrelated", () => {
+    const provider: any = "zzzzzzzzzzzzzzzzzzzzzzz";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.context.resolution).toBe("Provide a valid provider");
+    }
   });
 
   it("should throw an error when provider is undefined", () => {
