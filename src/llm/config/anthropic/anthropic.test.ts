@@ -47,4 +47,30 @@ describe("anthropic config", () => {
       expect.arrayContaining([true, "maxTokens required"])
     );
   });
+
+  describe("model shorthands", () => {
+    it.each([
+      ["anthropic.claude-haiku-4-5", "claude-haiku-4-5-20251001"],
+      ["anthropic.claude-opus-4-5", "claude-opus-4-5-20251101"],
+      ["anthropic.claude-sonnet-4-5", "claude-sonnet-4-5-20250929"],
+      ["anthropic.claude-opus-4-1", "claude-opus-4-1-20250805"],
+      ["anthropic.claude-opus-4-6", "claude-opus-4-6"],
+      ["anthropic.claude-sonnet-4-6", "claude-sonnet-4-6"],
+      ["anthropic.claude-sonnet-4", "claude-sonnet-4-0"],
+      ["anthropic.claude-opus-4", "claude-opus-4-0"],
+      ["anthropic.claude-3-7-sonnet", "claude-3-7-sonnet-20250219"],
+      ["anthropic.claude-3-5-sonnet", "claude-3-5-sonnet-latest"],
+      ["anthropic.claude-3-5-haiku", "claude-3-5-haiku-latest"],
+      ["anthropic.claude-3-opus", "claude-3-opus-20240229"],
+      ["anthropic.claude-3-haiku", "claude-3-haiku-20240307"],
+    ] as const)(
+      "%s should map to model %s",
+      (shorthand, expectedModel) => {
+        const shorthandConfig =
+          anthropic[shorthand as keyof typeof anthropic];
+        expect(shorthandConfig).toBeDefined();
+        expect(shorthandConfig.mapBody.model.default).toBe(expectedModel);
+      }
+    );
+  });
 });
