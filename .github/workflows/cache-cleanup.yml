@@ -13,10 +13,14 @@ jobs:
   cleanup:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-      GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
     steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Install GH Actions Cache Extension
         run: gh extension install actions/gh-actions-cache
 
@@ -57,3 +61,5 @@ jobs:
           fi
         env:
           REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
