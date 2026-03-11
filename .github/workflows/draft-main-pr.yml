@@ -20,12 +20,17 @@ jobs:
     # Run for release events OR when a PR is merged to development (except version bump PRs)
     if: ${{ github.event_name == 'release' || !(github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') }}
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Get the latest release version
         id: latest_release
@@ -208,16 +213,16 @@ jobs:
         run: |
           git push origin bump-version-branch || (echo "Retrying with force push..." && git push --force origin bump-version-branch)
         env:
-          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Create PR
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
         run: |
           gh pr create --title "Bump Version on PR to Main" --body "This PR bumps the version number" --base development --head bump-version-branch
         env:
-          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Auto merge the pull request
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
@@ -225,8 +230,8 @@ jobs:
           PR_NUMBER=$(gh pr list --state open --head bump-version-branch --json number --jq '.[0].number')
           gh pr merge $PR_NUMBER --admin --squash --delete-branch
         env:
-          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Create or update draft pull request
         if: env.NEW_COMMITS == 'true'
@@ -273,5 +278,5 @@ jobs:
             fi
           fi
         env:
-          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
