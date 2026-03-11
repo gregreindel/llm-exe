@@ -23,6 +23,9 @@ jobs:
 
       - name: Install GH Actions Cache Extension
         run: gh extension install actions/gh-actions-cache
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Cleanup Caches
         run: |
