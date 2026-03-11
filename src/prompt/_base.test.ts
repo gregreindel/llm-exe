@@ -110,7 +110,7 @@ describe("llm-exe:prompt/TextPrompt", () => {
         }, 200);
       });
     }
-  
+
     const textPrompt = new MockPrompt(undefined, {});
 
     textPrompt.messages = [{invalid: "message"}]as any
@@ -118,5 +118,19 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(formatted).toEqual("");
   });
 
+  test("validate returns true when prompt has messages", () => {
+    const prompt = new MockPrompt("Hello");
+    expect(prompt.validate()).toBe(true);
+  });
+  test("validate returns false when prompt has no messages", () => {
+    const prompt = new MockPrompt();
+    expect(prompt.validate()).toBe(false);
+  });
+  test("validate returns true after adding messages", () => {
+    const prompt = new MockPrompt();
+    expect(prompt.validate()).toBe(false);
+    prompt.addSystemMessage("Hello");
+    expect(prompt.validate()).toBe(true);
+  });
 
 })
