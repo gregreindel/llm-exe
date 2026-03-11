@@ -20,7 +20,7 @@ You can attach hooks:
 const hooks = { onComplete: logFunction, onError: logFunctionError };
 const llm = useLlm("openai.mock", {});
 const prompt = createChatPrompt("This is a prompt.");
-const executor = new LlmExecutor({ llm, prompt }, { hooks });
+const executor = createLlmExecutor({ llm, prompt }, { hooks });
 ```
 
 #### Adding hooks after initialization:
@@ -37,7 +37,7 @@ function logFunctionError() {
 // You can also use on to listen
 const llm = useLlm("openai.mock", {});
 const prompt = createChatPrompt("This is a prompt.");
-const executor = new LlmExecutor({ llm, prompt });
+const executor = createLlmExecutor({ llm, prompt });
 executor.on("onComplete", logFunction);
 executor.on("onError", logFunctionError);
 return executor.execute({});
@@ -49,7 +49,7 @@ You can also use `.once` to add a hook that get executed exactly once
 // You can also use once to listen once
 const llm = useLlm("openai.mock", {});
 const prompt = createChatPrompt("This is a prompt.");
-const executor = new LlmExecutor({ llm, prompt });
+const executor = createLlmExecutor({ llm, prompt });
 executor.once("onComplete", logFunction);
 return executor.execute({});
 ```
