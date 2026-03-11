@@ -108,6 +108,9 @@ jobs:
             echo "PR_EXISTS=true" >> $GITHUB_ENV
             echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           fi
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Get merged PR titles for release
         id: get_pr_titles
@@ -158,6 +161,9 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
           
           echo "PR_COUNT=$PR_COUNT" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Check for new commits between branches
         id: check_new_commits
@@ -174,6 +180,9 @@ jobs:
           else
             echo "NEW_COMMITS=true" >> $GITHUB_ENV
           fi
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Bump version number (patch increment)
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
@@ -201,12 +210,18 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add package.json
           git commit -m "chore: bump version number on PR to main"
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Create or update branch
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
         run: |
           git checkout -b bump-version-branch || git checkout bump-version-branch
           git pull origin bump-version-branch || echo "Branch does not exist remotely."
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Push changes to remote
         if: env.BUMP_VERSION == 'true' && env.NEW_COMMITS == 'true'
