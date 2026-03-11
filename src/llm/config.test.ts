@@ -232,6 +232,32 @@ describe("getLlmConfig", () => {
     );
   });
 
+  it("should suggest similar providers for typos", () => {
+    const provider: any = "openai.gpt4o";
+    expect(() => getLlmConfig(provider)).toThrow("Did you mean:");
+    expect(() => getLlmConfig(provider)).toThrow("openai.gpt-4o");
+  });
+
+  it("should suggest prefix-matched providers", () => {
+    const provider: any = "deepseek.invalid";
+    expect(() => getLlmConfig(provider)).toThrow("Did you mean:");
+    expect(() => getLlmConfig(provider)).toThrow("deepseek.chat");
+  });
+
+  it("should suggest close matches by Levenshtein distance", () => {
+    const provider: any = "openai.gpt-4o-mni";
+    expect(() => getLlmConfig(provider)).toThrow("openai.gpt-4o-mini");
+  });
+
+  it("should not suggest anything for completely unrelated input", () => {
+    const provider: any = "zzzzzzzzzzzzzzzzz";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.message).not.toContain("Did you mean");
+    }
+  });
+
   it("should throw an error when provider is undefined", () => {
     const provider: any = undefined;
     expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
