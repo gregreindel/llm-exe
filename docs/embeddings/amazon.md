@@ -3,11 +3,21 @@
 
 When using Amazon embeddings, llm-exe will make POST requests to the AWS Bedrock endpoint for your configured region.
 
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `model` | `string` | — | The Bedrock model ID (e.g., `amazon.titan-embed-text-v2:0`) |
+| `dimensions` | `number` | `512` | The number of dimensions for the output embedding |
+| `awsRegion` | `string` | `AWS_REGION` env var | The AWS region for the Bedrock endpoint (required) |
+| `awsSecretKey` | `string` | — | AWS secret key (if not using default credentials) |
+| `awsAccessKey` | `string` | — | AWS access key (if not using default credentials) |
+
 ## Basic Usage
 
-### Amazon Embeddings
-
 ```ts
+import { createEmbedding } from "llm-exe";
+
 const embeddings = createEmbedding("amazon.embedding.v1", {
   model: "amazon.titan-embed-text-v2:0",
 });

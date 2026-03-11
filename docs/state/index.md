@@ -13,6 +13,24 @@ Dialogues are a place to store conversation history, internal dialogues, really 
 
 **Context** items are instances of `BaseStateItem` — typed classes with `getValue()`, `setValue()`, and `resetValue()` methods. Use context for structured, typed data that needs its own lifecycle (e.g., extracted entities, session config). Create context items with `createStateItem(name, defaultValue)` and add them via `state.createContextItem(item)`.
 
+```ts
+import { createState, createStateItem } from "llm-exe";
+
+const state = createState();
+
+// Create a typed context item with a name and default value
+const userIntent = createStateItem("userIntent", "unknown");
+
+// Add it to the state
+state.createContextItem(userIntent);
+
+// Use getValue/setValue to manage the item
+userIntent.getValue();    // "unknown"
+userIntent.setValue("booking");
+userIntent.getValue();    // "booking"
+userIntent.resetValue();  // resets to "unknown"
+```
+
 **Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
 
 State has a `saveState()` method that can be customized to save the state to a database.
