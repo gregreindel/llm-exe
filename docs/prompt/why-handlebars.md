@@ -98,7 +98,7 @@ ${studies.map((study) => `- ${study}`).join("\n")}`;
 Handlebars allows you to define **partials** reusable chunks of template. This is great for shared layouts or repeated sections, and is not natively supported by template literals.
 
 ```ts
-utils.registerPartials([name: 'greeting', template: `Hello {{name}}!`])
+utils.registerPartials([{ name: 'greeting', template: `Hello {{name}}!` }])
 
 const instruction = `
 {{> greeting name=userName}}

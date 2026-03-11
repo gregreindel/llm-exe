@@ -2,48 +2,87 @@
 
 You can define a custom parser to have full control over transforming the LLM output into the format you expect.
 
-A custom parser is really just a function that is provided 2 arguments, and is expected to transform/modify before returning the result.
+A custom parser is a function that receives two arguments — the LLM's text response and an executor context object — and returns a transformed result.
 
-When using Typescript, as long as you type things well, the types will get inferred into your LLM executors.
+When using TypeScript, the return type of your parser function flows through to the executor, so `executor.execute()` returns the correct type automatically.
 
 ## Defining a custom parser
 
 ```ts
-function customParserHandler(
-  /* input is the response from the LLM */
-  input: string,
-  /* values is input that gets provided to execute() */
-  values: Record<string, any>
-) {
-  const output = "";
-  /**
-   * parse the input string,
-   * return what you'd like
-   */
-  return output;
-}
+import { createCustomParser } from "llm-exe";
 
-export const customParser = createCustomParser(
-  "customParser", // a name
-  customParserHandler // the parser function
+// The return type of the handler becomes the parser's output type.
+const customParser = createCustomParser(
+  "extractEmails",
+  (text: string, context) => {
+    // text = the raw LLM response string
+    // context = the executor context (input values, metadata)
+    const emails = text.match(/[\w.-]+@[\w.-]+\.\w+/g) || [];
+    return emails; // string[]
+  }
 );
 ```
 
 ## Using a custom parser
 
 ```ts
-import { customParser } from "the-example-above";
+// Use .parse() directly
+const emails = customParser.parse("Contact us at help@example.com", {} as any);
+// emails: string[]
 
-// the .parse method on a custom parser is the function you assigned.
-const parse = customParser.parse(``);
-
-// or in an LLM executor
+// Or use it in an executor — the executor infers the return type
 const executor = createLlmExecutor({
   llm: useLlm("openai.chat.v1", { model: "gpt-4o-mini" }),
-  prompt: createChatPrompt(`You are a customer support agent.`),
-  parser: customParser, // use the custom parser
+  prompt: createChatPrompt(`Extract all email addresses from: {{text}}`),
+  parser: customParser,
+});
+
+const result = await executor.execute({ text: "Email me at hello@test.com" });
+// result is typed as string[] — inferred from the parser
+```
+
+## Type inference
+
+The key benefit of custom parsers is that their return type propagates to the executor:
+
+```ts
+// Parser returns a specific interface
+interface SentimentResult {
+  sentiment: "positive" | "negative" | "neutral";
+  confidence: number;
+}
+
+const sentimentParser = createCustomParser(
+  "sentiment",
+  (text: string): SentimentResult => {
+    const parsed = JSON.parse(text);
+    return {
+      sentiment: parsed.sentiment,
+      confidence: parsed.confidence,
+    };
+  }
+);
+
+const executor = createLlmExecutor({
+  llm: useLlm("openai.chat.v1", { model: "gpt-4o-mini" }),
+  prompt: createChatPrompt(`Analyze sentiment of: {{text}}`),
+  parser: sentimentParser,
+});
+
+const result = await executor.execute({ text: "I love this!" });
+// result is typed as SentimentResult
+```
+
+## Using the `CustomParser` class directly
+
+You can also instantiate the `CustomParser` class directly instead of using `createCustomParser`:
+
+```ts
+import { CustomParser } from "llm-exe";
+
+const parser = new CustomParser("myParser", (text: string, context) => {
+  return text.toUpperCase();
 });
 ```
 
-<!-- ## Extending `BaseParser`
-TODO: Add more info. In meantime, check code, it should have comments. -->
+Both approaches produce the same result — `createCustomParser` is a convenience wrapper around `new CustomParser()`.

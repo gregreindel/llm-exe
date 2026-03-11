@@ -11,7 +11,7 @@ An LLM executor's input and output types are determined by the prompt and parser
 
 ## Llm Executor Input
 
-**llm** (required) `instance of BaseLlm`. Use createPrompt or createChatPrompt.
+**llm** (required) `instance of BaseLlm`. Use `useLlm()` to create one.
 
 **prompt** (required) `instance of BasePrompt` Either text or chat, respective of the LLM.
 
@@ -22,7 +22,7 @@ An LLM executor's input and output types are determined by the prompt and parser
 ## Basic Example
 
 ```typescript
-import { useLlm, createChatPrompt, createParser } from "llm-exe";
+import { useLlm, createChatPrompt, createLlmExecutor } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");
 const instruction = `You are a customer support agent. Reply below.`;
@@ -39,7 +39,7 @@ const response = await executor.execute({ input: "Hello!" });
 ## Basic Example with All Options
 
 ```typescript
-import { useLlm, createChatPrompt, createParser } from "llm-exe";
+import { useLlm, createChatPrompt, createParser, createLlmExecutor } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");
 const instruction = `You are a customer support agent. Reply to the user as JSON.`;

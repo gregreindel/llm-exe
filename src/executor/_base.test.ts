@@ -323,20 +323,90 @@ describe("llm-exe:executor/BaseExecutor", () => {
       expect(results.filter(r => r === "new hook")).toHaveLength(1);
     });
 
+    it("should warn when a hook throws an error", async () => {
+      const executor = new MockExecutor();
+      const hookError = new Error("hook failed");
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      executor.on("onSuccess", () => {
+        throw hookError;
+      });
+
+      const result = await executor.execute({ input: "test" });
+
+      expect(result).toEqual({ result: "Success" });
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[llm-exe] Error in "onSuccess" hook:',
+        hookError
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("should warn when onError hook throws an error", async () => {
+      const executor = new MockExecutorThatThrows();
+      const hookError = new Error("onError hook failed");
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      executor.on("onError", () => {
+        throw hookError;
+      });
+
+      await expect(executor.execute({})).rejects.toThrow("Something happened");
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[llm-exe] Error in "onError" hook:',
+        hookError
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("should warn when onComplete hook throws an error", async () => {
+      const executor = new MockExecutor();
+      const hookError = new Error("onComplete hook failed");
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      executor.on("onComplete", () => {
+        throw hookError;
+      });
+
+      await executor.execute({ input: "test" });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[llm-exe] Error in "onComplete" hook:',
+        hookError
+      );
+
+      warnSpy.mockRestore();
+    });
+
     it("should properly handle once wrapper removal", async () => {
       const executor = new MockExecutor();
       let callCount = 0;
-      
+
       executor.once("onComplete", () => callCount++);
-      
+
       expect(executor.getHookCount("onComplete")).toBe(1);
-      
+
       await executor.execute({});
       expect(callCount).toBe(1);
       expect(executor.getHookCount("onComplete")).toBe(0);
-      
+
       await executor.execute({});
       expect(callCount).toBe(1); // Should not increment again
+    });
+
+    it("should initialize hooks array when once is called for uninitialized event", () => {
+      const executor = new MockExecutor();
+      // Manually delete an event's hooks array to simulate uninitialized state
+      delete executor.hooks.onSuccess;
+      expect(executor.hooks.onSuccess).toBeUndefined();
+
+      executor.once("onSuccess", () => {});
+
+      // The hooks array should have been created and the hook added
+      expect(executor.hooks.onSuccess).toHaveLength(1);
     });
   });
 
