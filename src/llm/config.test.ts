@@ -1,4 +1,4 @@
-import { configs, getLlmConfig } from "@/llm/config";
+import { configs, getLlmConfig, getSuggestion } from "@/llm/config";
 import { Config, LlmProviderKey } from "@/types";
 
 describe("configs", () => {
@@ -225,10 +225,10 @@ describe("getLlmConfig", () => {
     expect(config).toEqual(configs[key]);
   });
 
-  it("should throw an error for an invalid provider", () => {
+  it("should throw an error for an invalid provider with valid providers list", () => {
     const provider: any = "invalid";
     expect(() => getLlmConfig(provider)).toThrow(
-      `Invalid provider: ${provider}`
+      /Invalid provider: invalid\. Valid providers:/
     );
   });
 
@@ -317,5 +317,49 @@ describe("getLlmConfig", () => {
     keys.forEach((key) => {
       expect(config).toHaveProperty(key);
     });
+  });
+
+  it("should suggest close match for typo in provider", () => {
+    expect(() => getLlmConfig("openai.chat.v2" as any)).toThrow(
+      /Did you mean "openai\.chat\.v1"/
+    );
+  });
+
+  it("should list valid providers for a known prefix", () => {
+    expect(() => getLlmConfig("openai.gpt4o" as any)).toThrow(
+      /Valid providers for "openai"/
+    );
+  });
+
+  it("should list all valid providers for completely unknown prefix", () => {
+    expect(() => getLlmConfig("foobar" as any)).toThrow(
+      /Valid providers:/
+    );
+  });
+});
+
+describe("getSuggestion", () => {
+  const validKeys = Object.keys(configs);
+
+  it("should suggest a close match for a typo", () => {
+    const result = getSuggestion("openai.chat.v2", validKeys);
+    expect(result).toContain('Did you mean "openai.chat.v1"');
+  });
+
+  it("should list prefix matches when prefix is valid", () => {
+    const result = getSuggestion("openai.something", validKeys);
+    expect(result).toContain('Valid providers for "openai"');
+    expect(result).toContain("openai.chat.v1");
+  });
+
+  it("should list all providers when no prefix matches", () => {
+    const result = getSuggestion("unknown.provider", validKeys);
+    expect(result).toContain("Valid providers:");
+    expect(result).toContain("openai.chat.v1");
+  });
+
+  it("should handle completely unrelated input", () => {
+    const result = getSuggestion("xyz", validKeys);
+    expect(result).toContain("Valid providers:");
   });
 });
