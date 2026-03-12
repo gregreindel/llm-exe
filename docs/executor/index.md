@@ -68,3 +68,20 @@ const response = await executor.execute({ input: "Hello!" });
 ```
 
 `createLlmExecutor` Returns an instance of LlmExecutor.
+
+## Core Executor
+
+If you need to wrap a plain function (no LLM involved) in executor semantics — for example, to compose it alongside LLM executors in a pipeline — use `createCoreExecutor`:
+
+```typescript
+import { createCoreExecutor } from "llm-exe";
+
+const uppercase = createCoreExecutor<{ text: string }, string>(
+  (input) => input.text.toUpperCase()
+);
+
+const result = await uppercase.execute({ text: "hello" });
+// result: "HELLO"
+```
+
+`createCoreExecutor` accepts a handler function and returns an executor with the same `.execute()` interface as `createLlmExecutor`. This is useful when you want a consistent API across LLM and non-LLM steps in a chain.

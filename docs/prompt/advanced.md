@@ -128,7 +128,37 @@ Observation: We sure are!
 
 You can load custom Handlebars partials and helpers a few different ways:
 
-### 1. Pass them in when initializing the prompt
+### 1. Register globally with `registerHelpers` / `registerPartials`
+
+Register helpers and partials once so they're available to all prompts. This is useful when you have shared helpers or partials used across many prompts.
+
+```ts
+import { registerHelpers, registerPartials } from "llm-exe";
+
+registerHelpers([
+  {
+    name: "getTimeOfDay",
+    handler: (date: Date) => "morning",
+  },
+]);
+
+registerPartials([
+  {
+    name: "contactInfo",
+    template: `Phone: 1-800-000-0000
+Support Email: support@example.com`,
+  },
+]);
+```
+
+After registration, use them in any prompt template:
+
+```txt
+Good {{getTimeOfDay}}! Here is our contact information:
+{{> contactInfo}}
+```
+
+### 2. Pass them in when initializing the prompt
 
 ```ts
 // these could be managed elsewhere and imported here
