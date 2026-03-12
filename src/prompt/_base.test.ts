@@ -56,6 +56,21 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(textPrompt.partials[0]).toEqual(partials[0]);
   });
 
+  test("validate returns true when prompt has messages", () => {
+    const prompt = new MockPrompt("Hello");
+    expect(prompt.validate()).toBe(true);
+  });
+  test("validate returns false when prompt has no messages", () => {
+    const prompt = new MockPrompt();
+    expect(prompt.validate()).toBe(false);
+  });
+  test("validate returns true after adding a message", () => {
+    const prompt = new MockPrompt();
+    expect(prompt.validate()).toBe(false);
+    prompt.addSystemMessage("Hello");
+    expect(prompt.validate()).toBe(true);
+  });
+
   test("gets formatAsync", async () => {
     async function getSomethingAsync() {
       return new Promise((resolve) => {
