@@ -140,21 +140,31 @@ describe("google configuration", () => {
     });
   });
 
-  describe("gemini-2.0-flash", () => {
-    it("should be based on googleChatV1 configuration", () => {
-      expect(googleGemini2Flash.endpoint).toEqual(googleChatV1.endpoint);
-      expect(googleGemini2Flash.method).toEqual(googleChatV1.method);
-      expect(googleGemini2Flash.headers).toEqual(googleChatV1.headers);
+  describe("current model shorthands", () => {
+    it.each([
+      ["google.gemini-2.5-flash", "gemini-2.5-flash"],
+      ["google.gemini-2.5-flash-lite", "gemini-2.5-flash-lite"],
+      ["google.gemini-2.5-pro", "gemini-2.5-pro"],
+    ] as const)("%s should set the correct default model", (key, model) => {
+      const config = google[key] as Config;
+      expect(config.mapBody.model).toEqual({ default: model, key: "model" });
+      expect(config.options.model).toEqual({ default: model });
     });
+  });
 
-    it("should override model in mapBody and options as gemini-2.0-flash", () => {
-      expect(googleGemini2Flash.mapBody.model).toEqual({
-        default: "gemini-2.0-flash",
-        key: "model",
-      });
-      expect(googleGemini2Flash.options.model).toEqual({
-        default: "gemini-2.0-flash",
-      });
-    });
+  describe("deprecated model shorthands", () => {
+    it.each([
+      ["google.gemini-2.0-flash", "gemini-2.0-flash"],
+      ["google.gemini-2.0-flash-lite", "gemini-2.0-flash-lite"],
+      ["google.gemini-1.5-pro", "gemini-1.5-pro"],
+    ] as const)(
+      "%s should still be available for backwards compatibility",
+      (key, model) => {
+        const config = google[key] as Config;
+        expect(config.mapBody.model).toEqual({ default: model, key: "model" });
+        expect(config.options.model).toEqual({ default: model });
+        expect(config.endpoint).toEqual(googleChatV1.endpoint);
+      }
+    );
   });
 });
