@@ -120,8 +120,4 @@ export const anthropic = {
     anthropicChatV1,
     "claude-3-opus-20240229"
   ),
-  "anthropic.claude-3-haiku": withDefaultModel(
-    anthropicChatV1,
-    "claude-3-haiku-20240307"
-  ),
 };
