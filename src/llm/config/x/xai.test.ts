@@ -1,8 +1,9 @@
 import { xai } from "@/llm/config/x";
 import { Config } from "@/types";
 
-describe("openai configuration", () => {
+describe("xai configuration", () => {
   const xAiChatV1 = xai["xai.chat.v1"] as Config;
+  const xAiGrok41Fast = xai["xai.grok-4-1-fast"] as Config;
 
   describe("xai.chat.v1", () => {
     it("should have the correct key, provider, endpoint, and method", () => {
@@ -36,6 +37,22 @@ describe("openai configuration", () => {
       ) => any;
       expect(transformUseJson(true)).toBe("json_object");
       expect(transformUseJson(false)).toBe("text");
+    });
+  });
+
+  describe("xai.grok-4-1-fast", () => {
+    it("should be based on xAiChatV1 configuration", () => {
+      expect(xAiGrok41Fast.endpoint).toEqual(xAiChatV1.endpoint);
+      expect(xAiGrok41Fast.method).toEqual(xAiChatV1.method);
+      expect(xAiGrok41Fast.headers).toEqual(xAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as grok-4-1-fast-non-reasoning", () => {
+      expect(xAiGrok41Fast.mapBody.model).toEqual({
+        default: "grok-4-1-fast-non-reasoning",
+        key: "model",
+      });
+      expect(xAiGrok41Fast.options.model).toEqual({ default: "grok-4-1-fast-non-reasoning" });
     });
   });
 });
