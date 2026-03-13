@@ -1,6 +1,6 @@
 # Chat Prompt
 
-The other type of prompt is a chat prompt. The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4(+).
+The other type of prompt is a chat prompt. The chat prompt can be used with chat-based models from any supported provider (OpenAI, Anthropic, Google, etc.).
 
 You create a chat prompt using `createPrompt("chat")` or `createChatPrompt()`.
 
