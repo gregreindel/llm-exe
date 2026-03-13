@@ -624,9 +624,6 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-3-haiku": {
-    input: Omit<AnthropicRequest, "model">;
-  };
 
   // Google
   "google.gemini-2.5-pro-exp-03-25": {
