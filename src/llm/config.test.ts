@@ -1,4 +1,4 @@
-import { configs, getLlmConfig } from "@/llm/config";
+import { configs, getLlmConfig, getSuggestions } from "@/llm/config";
 import { Config, LlmProviderKey } from "@/types";
 
 describe("configs", () => {
@@ -232,6 +232,24 @@ describe("getLlmConfig", () => {
     );
   });
 
+  it("should suggest providers with matching prefix for typos", () => {
+    expect(() => getLlmConfig("openai.gpt4o" as any)).toThrow(
+      /Did you mean one of:.*openai\./
+    );
+  });
+
+  it("should suggest all providers with matching prefix", () => {
+    expect(() => getLlmConfig("xai.invalid" as any)).toThrow(
+      /Did you mean one of:.*xai\./
+    );
+  });
+
+  it("should suggest providers for close misspelling", () => {
+    expect(() => getLlmConfig("openai.chat.v2" as any)).toThrow(
+      /Did you mean.*openai\./
+    );
+  });
+
   it("should throw an error when provider is undefined", () => {
     const provider: any = undefined;
     expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
@@ -317,5 +335,47 @@ describe("getLlmConfig", () => {
     keys.forEach((key) => {
       expect(config).toHaveProperty(key);
     });
+  });
+});
+
+describe("getSuggestions", () => {
+  const validKeys = [
+    "openai.chat.v1",
+    "openai.gpt-4o",
+    "openai.gpt-4o-mini",
+    "anthropic.chat.v1",
+    "anthropic.claude-3-5-sonnet",
+    "xai.chat.v1",
+    "xai.grok-2",
+  ];
+
+  it("should return prefix matches when provider has a known prefix", () => {
+    const result = getSuggestions("openai.invalid", validKeys);
+    expect(result).toEqual([
+      "openai.chat.v1",
+      "openai.gpt-4o",
+      "openai.gpt-4o-mini",
+    ]);
+  });
+
+  it("should return prefix matches for colon-separated providers", () => {
+    const keys = ["amazon:anthropic.chat.v1", "amazon:meta.chat.v1", "openai.chat.v1"];
+    const result = getSuggestions("amazon:invalid", keys);
+    expect(result).toEqual(["amazon:anthropic.chat.v1", "amazon:meta.chat.v1"]);
+  });
+
+  it("should return close Levenshtein matches when no prefix match", () => {
+    const result = getSuggestions("xai.grok-3", validKeys);
+    expect(result).toContain("xai.grok-2");
+  });
+
+  it("should return empty array for completely unrelated input", () => {
+    const result = getSuggestions("zzzzzzzzzzzzzzz", validKeys);
+    expect(result).toEqual([]);
+  });
+
+  it("should be case insensitive for Levenshtein matching", () => {
+    const result = getSuggestions("XAI.CHAT.V1", validKeys);
+    expect(result).toContain("xai.chat.v1");
   });
 });
