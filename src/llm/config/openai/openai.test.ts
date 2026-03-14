@@ -5,6 +5,9 @@ describe("openai configuration", () => {
   const openAiChatV1 = openai["openai.chat.v1"] as Config;
   const openAiChatMockV1 = openai["openai.chat-mock.v1"] as Config;
   const openAiGpt4o = openai["openai.gpt-4o"] as Config;
+  const openAiGpt53 = openai["openai.gpt-5.3"] as Config;
+  const openAiGpt54 = openai["openai.gpt-5.4"] as Config;
+  const openAiO3Pro = openai["openai.o3-pro"] as Config;
 
   describe("openai.chat.v1", () => {
     it("should have the correct key, provider, endpoint, and method", () => {
@@ -192,6 +195,54 @@ describe("openai configuration", () => {
       ) => any;
       expect(transformUseJson(true)).toBe("json_object");
       expect(transformUseJson(false)).toBe("text");
+    });
+  });
+
+  describe("openai.gpt-5.3", () => {
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(openAiGpt53.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(openAiGpt53.method).toEqual(openAiChatV1.method);
+      expect(openAiGpt53.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gpt-5.3", () => {
+      expect(openAiGpt53.mapBody.model).toEqual({
+        default: "gpt-5.3",
+        key: "model",
+      });
+      expect(openAiGpt53.options.model).toEqual({ default: "gpt-5.3" });
+    });
+  });
+
+  describe("openai.gpt-5.4", () => {
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(openAiGpt54.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(openAiGpt54.method).toEqual(openAiChatV1.method);
+      expect(openAiGpt54.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gpt-5.4", () => {
+      expect(openAiGpt54.mapBody.model).toEqual({
+        default: "gpt-5.4",
+        key: "model",
+      });
+      expect(openAiGpt54.options.model).toEqual({ default: "gpt-5.4" });
+    });
+  });
+
+  describe("openai.o3-pro", () => {
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(openAiO3Pro.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(openAiO3Pro.method).toEqual(openAiChatV1.method);
+      expect(openAiO3Pro.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as o3-pro", () => {
+      expect(openAiO3Pro.mapBody.model).toEqual({
+        default: "o3-pro",
+        key: "model",
+      });
+      expect(openAiO3Pro.options.model).toEqual({ default: "o3-pro" });
     });
   });
 
