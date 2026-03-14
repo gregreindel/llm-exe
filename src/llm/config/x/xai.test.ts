@@ -38,4 +38,19 @@ describe("openai configuration", () => {
       expect(transformUseJson(false)).toBe("text");
     });
   });
+
+  describe("xai.grok-4-1-fast", () => {
+    const config = xai["xai.grok-4-1-fast"] as Config;
+
+    it("should have the correct default model", () => {
+      expect(config.options.model.default).toBe("grok-4-1-fast-non-reasoning");
+      expect(config.mapBody.model.default).toBe("grok-4-1-fast-non-reasoning");
+    });
+
+    it("should inherit base xai.chat.v1 configuration", () => {
+      expect(config.provider).toBe("xai.chat");
+      expect(config.endpoint).toBe("https://api.x.ai/v1/chat/completions");
+      expect(config.method).toBe("POST");
+    });
+  });
 });
