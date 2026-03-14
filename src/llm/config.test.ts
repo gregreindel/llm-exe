@@ -232,6 +232,39 @@ describe("getLlmConfig", () => {
     );
   });
 
+  it("should suggest providers with matching prefix for typos", () => {
+    const provider: any = "openai.gpt4o";
+    expect(() => getLlmConfig(provider)).toThrow("Did you mean:");
+    expect(() => getLlmConfig(provider)).toThrow("openai.");
+  });
+
+  it("should suggest close matches using Levenshtein distance", () => {
+    const provider: any = "openai.chat.v2";
+    expect(() => getLlmConfig(provider)).toThrow("Did you mean:");
+    expect(() => getLlmConfig(provider)).toThrow("openai.chat.v1");
+  });
+
+  it("should list all providers with matching prefix", () => {
+    const provider: any = "anthropic.typo";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.message).toContain("Did you mean:");
+      expect(e.message).toContain("anthropic.chat.v1");
+      expect(e.context.resolution).toContain("anthropic.chat.v1");
+    }
+  });
+
+  it("should not suggest anything for completely unrelated input", () => {
+    const provider: any = "zzzzzzzzzzzzz";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.message).toBe("Invalid provider: zzzzzzzzzzzzz");
+      expect(e.context.resolution).toBe("Provide a valid provider.");
+    }
+  });
+
   it("should throw an error when provider is undefined", () => {
     const provider: any = undefined;
     expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
