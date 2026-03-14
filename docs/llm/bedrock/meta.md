@@ -13,3 +13,15 @@ const llm = useLlm("amazon:meta.chat.v1", {
 ```
 
 ## LLama-Specific Options
+
+In addition to the generic options, the following options are available for Meta LLama models on Bedrock.
+
+| Option      | Type   | Default   | Description                                                              |
+| ----------- | ------ | --------- | ------------------------------------------------------------------------ |
+| model       | string | —         | The Bedrock model id. Must be specified. See AWS Bedrock Docs            |
+| temperature | number | undefined | Maps to temperature.                                                     |
+| maxTokens   | number | 2048      | Maps to max_gen_len. See AWS Bedrock Docs                                |
+| topP        | number | undefined | Maps to top_p. See AWS Bedrock Docs                                      |
+| awsRegion   | string | undefined | AWS Region. Can be set via `AWS_REGION` environment variable             |
+| awsSecretKey| string | undefined | AWS Secret Key. Can be set via `AWS_SECRET_ACCESS_KEY` environment variable |
+| awsAccessKey| string | undefined | AWS Access Key. Can be set via `AWS_ACCESS_KEY_ID` environment variable  |
