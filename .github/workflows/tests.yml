@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 19.x, 20.x, 21.x, 22.x, 23.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +36,6 @@ jobs:
       - name: Test
         run: npm run test
 
-      # - name: Coverage
-      #   if: ${{ matrix.node-version == '22.x' }}
-      #   uses: coverallsapp/github-action@v1
+      - name: Coverage
+        if: ${{ matrix.node-version == '24.x' }}
+        uses: coverallsapp/github-action@v1

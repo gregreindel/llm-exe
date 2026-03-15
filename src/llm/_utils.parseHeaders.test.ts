@@ -178,6 +178,20 @@ describe("parseHeaders", () => {
     );
   });
 
+  it("Should include 'Unknown error' in message when catch receives a non-Error value", async () => {
+    (replaceTemplateStringSimple as jest.Mock).mockReturnValue('{"valid": true}');
+    const originalParse = JSON.parse;
+    JSON.parse = () => { throw "string error"; };
+
+    try {
+      await expect(parseHeaders(config, replacements, payload)).rejects.toThrow(
+        /Failed to parse headers configuration: Unknown error/
+      );
+    } finally {
+      JSON.parse = originalParse;
+    }
+  });
+
   it("Should call getAwsAuthorizationHeaders when provider starts with amazon.", async () => {
     config.provider = "amazon.nova.chat" as any;
     const expectedHeaders = { Authorization: "AWS4-HMAC-SHA256" };

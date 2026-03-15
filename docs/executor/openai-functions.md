@@ -1,10 +1,8 @@
-# OpenAi Functions Executor
+# Tool Calling Executor
 
-To take advantage of Tools Calling with OpenAi and Anthropic, You can use an `LlmExecutorWithFunctions`. A LlmExecutorWithFunctions is exactly like a regular [llm executor](/executor/) - in fact, it just extends the class and adds options with some additional type restraints.
+To take advantage of tool calling with OpenAI, Anthropic, and other providers that support it, you can use `createLlmFunctionExecutor` or the `LlmExecutorWithFunctions` class directly. It works exactly like a regular [llm executor](/executor/) — it extends the class and adds options with some additional type constraints.
 
 ## Basic Example
-
-Highlighted below are the few lines that demonstrate the options for a
 
 ```ts{13,14,15,16,17,18,19,20,21,26,27}
 const llm = useLlm("openai.gpt-4o-mini");
@@ -14,10 +12,14 @@ Pick a direction to move.`;
 
 const prompt = createChatPrompt(instruction);
 
-const executor = new LlmExecutorWithFunctions({
+// Using the factory function (recommended)
+const executor = createLlmFunctionExecutor({
   llm,
   prompt,
 })
+
+// Or using the class directly
+// const executor = new LlmExecutorWithFunctions({ llm, prompt })
 
 const functions = [{
     name: "move_left",

@@ -14,8 +14,6 @@ Note: llm-exe utilizes the underlying API's from the various providers. This mea
 - Built-in timeout mechanism for better control when a provider takes too long.
 - Automatic retry with configurable back-off for errors.
 - Use different LLM's with different configurations for different functions.
-- Streaming coming soon.
-
 Note: You can use and call methods on LLM's directly, but they are usually passed to an LLM executor and then called internally.
 
 ## Currently Supported Providers
