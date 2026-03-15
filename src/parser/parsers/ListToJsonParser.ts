@@ -1,5 +1,5 @@
 import { camelCase } from "@/utils/modules/camelCase";
-import { BaseParserOptionsWithSchema, ParserOutput } from "@/types";
+import { ListToJsonParserOptions, ParserOutput } from "@/types";
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
 import { enforceParserSchema, validateParserSchema } from "../_utils";
@@ -8,8 +8,16 @@ import { LlmExeError } from "@/utils/modules/errors";
 export class ListToJsonParser<
   S extends JSONSchema | undefined = undefined
 > extends BaseParserWithJson<S> {
-  constructor(options: BaseParserOptionsWithSchema<S> = {}) {
+  private keyTransform: "camelCase" | "preserve";
+  constructor(options: ListToJsonParserOptions<S> = {}) {
     super("listToJson", options);
+    this.keyTransform = options.keyTransform ?? "camelCase";
+  }
+  private transformKey(key: string): string {
+    if (this.keyTransform === "preserve") {
+      return key.trim();
+    }
+    return camelCase(key);
   }
   parse(text: string): ParserOutput<BaseParserWithJson<S>> {
     const lines = text.split("\n");
@@ -20,7 +28,7 @@ export class ListToJsonParser<
         const key = line.slice(0, colonIndex);
         const value = line.slice(colonIndex + 1).trim();
         if (value) {
-          output[camelCase(key)] = value;
+          output[this.transformKey(key)] = value;
         }
       }
     });
