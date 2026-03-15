@@ -683,6 +683,9 @@ export type AllUseLlmOptions = AllLlm & {
   "deepseek.chat": {
     input: DeepseekRequest;
   };
+  "deepseek.reasoner": {
+    input: Omit<DeepseekRequest, "model">;
+  };
 };
 
 export type LlmProviderKey = keyof AllLlm;
