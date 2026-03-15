@@ -195,6 +195,60 @@ describe("openai configuration", () => {
     });
   });
 
+  describe("openai.gpt-5.4", () => {
+    const config = openai["openai.gpt-5.4"] as Config;
+
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(config.method).toEqual(openAiChatV1.method);
+      expect(config.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gpt-5.4", () => {
+      expect(config.mapBody.model).toEqual({
+        default: "gpt-5.4",
+        key: "model",
+      });
+      expect(config.options.model).toEqual({ default: "gpt-5.4" });
+    });
+  });
+
+  describe("openai.gpt-5.3", () => {
+    const config = openai["openai.gpt-5.3"] as Config;
+
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(config.method).toEqual(openAiChatV1.method);
+      expect(config.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gpt-5.3", () => {
+      expect(config.mapBody.model).toEqual({
+        default: "gpt-5.3",
+        key: "model",
+      });
+      expect(config.options.model).toEqual({ default: "gpt-5.3" });
+    });
+  });
+
+  describe("openai.o3-pro", () => {
+    const config = openai["openai.o3-pro"] as Config;
+
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(config.method).toEqual(openAiChatV1.method);
+      expect(config.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as o3-pro", () => {
+      expect(config.mapBody.model).toEqual({
+        default: "o3-pro",
+        key: "model",
+      });
+      expect(config.options.model).toEqual({ default: "o3-pro" });
+    });
+  });
+
   describe("openai.gpt-4o", () => {
     it("should be based on openAiChatV1 configuration", () => {
       expect(openAiGpt4o.endpoint).toEqual(openAiChatV1.endpoint);
