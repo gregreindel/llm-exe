@@ -4,8 +4,8 @@
 
 ### AWS Bedrock Chat
 ```ts
-const llm = useLlm("amazon:anthropic.chat.v1", { //
-  model: "claude-3-5-sonnet-20240620", // a valid model from bedrock
+const llm = useLlm("amazon:anthropic.chat.v1", {
+  model: "anthropic.claude-sonnet-4-v2:0", // a valid model from bedrock
 
   // optional, see `Authentication` below
   awsRegion: "<Your aws Region>",
@@ -26,7 +26,7 @@ const llm = useLlm("amazon:anthropic.chat.v1", { //
 To authenticate, you need to provide a way to authenticate with AWS. You can provide the API key various ways, depending on your use case. 
 - Pass in as execute options using `awsRegion` | `awsSecretKey` | `awsAccessKey`
 - Pass in as setup options using `awsRegion` | `awsSecretKey` | `awsAccessKey`
-- Use a default key by setting an environment variable of `AWS_REGION` | `AWS_SECRET_ACCESS_KEY` | `AWS_ACCESS_KEY_ID`, respectivly.
+- Use a default key by setting an environment variable of `AWS_REGION` | `AWS_SECRET_ACCESS_KEY` | `AWS_ACCESS_KEY_ID`, respectively.
 
 
 ::: tip
