@@ -28,18 +28,26 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development' || github.event_name == 'pull_request' }}
-    env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Get PR number for development to main
         id: get-pr
         run: |
           PR_INFO=$(gh pr list --base main --head development --state open --json number,isDraft --jq '.[] | select(.isDraft == false) | .number')
           echo "PR_NUMBER=$PR_INFO" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Wait for all checks to complete (excluding this workflow)
         if: env.PR_NUMBER != ''
@@ -58,7 +66,8 @@ jobs:
             sleep 30
           done
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Check all PR checks state
         id: pr-checks
@@ -79,9 +88,13 @@ jobs:
           fi
         continue-on-error: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
       - name: Merge PR to Main
         if: env.PR_NUMBER != ''
         run: |
           gh pr merge ${{ env.PR_NUMBER }} --merge --admin --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
