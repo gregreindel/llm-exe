@@ -544,6 +544,12 @@ export type AllLlm = {
 
 export type AllUseLlmOptions = AllLlm & {
   // OpenAI - GPT-5 family
+  "openai.gpt-5.4": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  "openai.gpt-5.3": {
+    input: Omit<OpenAiRequest, "model">;
+  };
   "openai.gpt-5.2": {
     input: Omit<OpenAiRequest, "model">;
   };
@@ -565,6 +571,9 @@ export type AllUseLlmOptions = AllLlm & {
   };
   // OpenAI - Reasoning models
   "openai.o3": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  "openai.o3-pro": {
     input: Omit<OpenAiRequest, "model">;
   };
   "openai.o4-mini": {
