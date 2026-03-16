@@ -25,8 +25,8 @@ An LLM executor's input and output types are determined by the prompt and parser
 import { useLlm, createChatPrompt, createLlmExecutor } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");
-const instruction = `You are a customer support agent. Reply below.`;
-const prompt = createChatPrompt(instruction);
+const instruction = `You are a customer support agent. Reply to the user's message.\n{{input}}`;
+const prompt = createChatPrompt<{ input: string }>(instruction);
 
 const executor = createLlmExecutor({
   llm,
@@ -42,8 +42,8 @@ const response = await executor.execute({ input: "Hello!" });
 import { useLlm, createChatPrompt, createParser, createLlmExecutor } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");
-const instruction = `You are a customer support agent. Reply to the user as JSON.`;
-const prompt = createChatPrompt(instruction);
+const instruction = `You are a customer support agent. Reply to the user's message as JSON.\n{{input}}`;
+const prompt = createChatPrompt<{ input: string }>(instruction);
 const parser = createParser("json");
 
 const hooks = {

@@ -81,4 +81,113 @@ describe("googleGeminiPromptSanitize", () => {
       { text: "msg2", processed: true },
     ]);
   });
+
+  describe("mergeConsecutiveSameRole", () => {
+    it("should merge consecutive messages with same role and array parts", () => {
+      (googleGeminiPromptMessageCallback as jest.Mock).mockImplementation(
+        (msg) => ({
+          role: msg.role || "model",
+          parts: [{ text: msg.content || msg.text || "" }],
+        })
+      );
+
+      const messages = [
+        { role: "user", content: "msg1" },
+        { role: "user", content: "msg2" },
+      ] as any;
+
+      const result = googleGeminiPromptSanitize(messages, {}, {});
+
+      // Consecutive user messages with array parts should be merged
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe("user");
+      expect(result[0].parts).toHaveLength(2);
+    });
+
+    it("should not merge consecutive messages with different roles", () => {
+      (googleGeminiPromptMessageCallback as jest.Mock).mockImplementation(
+        (msg) => ({
+          role: msg.role === "assistant" ? "model" : msg.role,
+          parts: [{ text: msg.content }],
+        })
+      );
+
+      const messages = [
+        { role: "user", content: "question" },
+        { role: "assistant", content: "answer" },
+      ] as any;
+
+      const result = googleGeminiPromptSanitize(messages, {}, {});
+
+      expect(result).toHaveLength(2);
+    });
+
+    it("should merge consecutive model messages with parts for tool calls", () => {
+      (googleGeminiPromptMessageCallback as jest.Mock).mockImplementation(
+        (msg) => ({
+          role: "model",
+          parts: [{ functionCall: { name: msg.name || "fn", args: {} } }],
+        })
+      );
+
+      const messages = [
+        { role: "assistant", content: "call1" },
+        { role: "assistant", content: "call2" },
+      ] as any;
+
+      const result = googleGeminiPromptSanitize(messages, {}, {});
+
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe("model");
+      expect(result[0].parts).toHaveLength(2);
+    });
+
+    it("should handle system messages with merge in remaining messages", () => {
+      (googleGeminiPromptMessageCallback as jest.Mock).mockImplementation(
+        (msg) => ({
+          role: msg.role === "assistant" ? "model" : msg.role,
+          parts: [{ text: msg.content }],
+        })
+      );
+
+      const out: Record<string, any> = {};
+      const messages = [
+        { role: "system", content: "System prompt" },
+        { role: "user", content: "msg1" },
+        { role: "user", content: "msg2" },
+      ] as any;
+
+      const result = googleGeminiPromptSanitize(messages, {}, out);
+
+      expect(out.system_instruction).toEqual({
+        parts: [{ text: "System prompt" }],
+      });
+      // The two consecutive user messages should be merged
+      expect(result).toHaveLength(1);
+      expect(result[0].parts).toHaveLength(2);
+    });
+
+    it("should handle multiple system messages", () => {
+      (googleGeminiPromptMessageCallback as jest.Mock).mockImplementation(
+        (msg) => ({
+          role: msg.role === "assistant" ? "model" : msg.role,
+          parts: [{ text: msg.content }],
+        })
+      );
+
+      const out: Record<string, any> = {};
+      const messages = [
+        { role: "system", content: "System 1" },
+        { role: "system", content: "System 2" },
+        { role: "user", content: "Hello" },
+      ] as any;
+
+      const result = googleGeminiPromptSanitize(messages, {}, out);
+
+      expect(out.system_instruction).toEqual({
+        parts: [{ text: "System 1" }, { text: "System 2" }],
+      });
+      expect(result).toHaveLength(1);
+    });
+  });
 });

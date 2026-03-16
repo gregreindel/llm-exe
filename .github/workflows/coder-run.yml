@@ -85,7 +85,7 @@ jobs:
         run: |
           source ./scripts/agents/config.sh
 
-          branch=$(create_agent_branch "coder")
+          branch=$(create_agent_branch "coder" "issue-${{ matrix.issue }}")
           log_file=$(clock_in "coder" "$branch")
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
           echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
