@@ -73,7 +73,7 @@ describe("configs", () => {
           required: [true, "maxTokens required"],
         },
         anthropicApiKey: {
-          default: undefined,
+          default: "",
         },
       },
       mapBody: {
@@ -133,7 +133,7 @@ describe("configs", () => {
         topP: {},
         maxTokens: {},
         awsRegion: {
-          default: undefined,
+          default: "",
           required: [true, "aws region is required"],
         },
         awsSecretKey: {},
@@ -177,7 +177,7 @@ describe("configs", () => {
         maxTokens: {},
         temperature: {},
         awsRegion: {
-          default: undefined,
+          default: "",
         },
         awsSecretKey: {},
         awsAccessKey: {},
