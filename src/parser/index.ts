@@ -4,6 +4,7 @@ import { BooleanParser } from "./parsers/BooleanParser";
 import { NumberParser } from "./parsers/NumberParser";
 import { JsonParser } from "./parsers/JsonParser";
 import { ListToJsonParser } from "./parsers/ListToJsonParser";
+import type { ListToJsonParserOptions } from "./parsers/ListToJsonParser";
 import { ListToKeyValueParser } from "./parsers/ListToKeyValueParser";
 import { CustomParser } from "./parsers/CustomParser";
 import { ListToArrayParser } from "./parsers/ListToArrayParser";
@@ -24,6 +25,7 @@ export {
   NumberParser,
   JsonParser,
   ListToJsonParser,
+  type ListToJsonParserOptions,
   ListToKeyValueParser,
   ListToArrayParser,
   ReplaceStringTemplateParser,
