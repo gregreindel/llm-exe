@@ -67,7 +67,7 @@ Yes, that is correct.
 ## String Extractor Parser
 
 `stringExtract`
-Use this parser to ensure the response is one of many specific strings you define. This parser doe not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
+Use this parser to ensure the response is one of many specific strings you define. This parser does not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
 
 Returns: string
 
@@ -78,6 +78,12 @@ const parser = createParser("stringExtract", {
   enum: ["stop", "go forward", "turn left", "turn right"],
 });
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `enum` | `string[]` | `[]` | The list of allowed values to match against. |
+| `ignoreCase` | `boolean` | `false` | When `true`, matching is case-insensitive. |
 
 ::: code-group
 

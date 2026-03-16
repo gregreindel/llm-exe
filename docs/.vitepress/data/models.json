@@ -1,17 +1,29 @@
 {
   "openai": {
     "name": "OpenAI",
-    "models": ["gpt-4o", "gpt-4o-mini"]
+    "models": [
+      "gpt-5.2",
+      "gpt-5-mini",
+      "gpt-5-nano",
+      "gpt-4.1",
+      "gpt-4.1-mini",
+      "gpt-4.1-nano",
+      "o3",
+      "o4-mini",
+      "gpt-4o",
+      "gpt-4o-mini"
+    ]
   },
   "anthropic": {
     "name": "Anthropic",
     "models": [
-      "claude-opus-4-0",
-      "claude-sonnet-4-0",
+      "claude-opus-4-6",
+      "claude-sonnet-4-6",
+      "claude-sonnet-4",
+      "claude-opus-4",
       "claude-3-7-sonnet",
       "claude-3-5-sonnet",
-      "claude-3-5-haiku",
-      "claude-3-opus"
+      "claude-3-5-haiku"
     ]
   },
   "google": {
@@ -30,8 +42,8 @@
     "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq"]
   },
   "xai": {
-    "name": "XAi",
-    "models": ["grok-2", "grok-3", "grok-4"]
+    "name": "xAI",
+    "models": ["grok-2", "grok-3", "grok-3-mini", "grok-4", "grok-4-fast"]
   },
   "amazon:anthropic": {
     "name": "Amazon Bedrock - Anthropic",
