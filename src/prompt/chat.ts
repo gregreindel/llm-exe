@@ -356,52 +356,6 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                 replacements
               )
             );
-            /* istanbul ignore next */
-            // const { key = "", user } = data;
-            // const history: IChatMessages = get(replacements, key, []);
-            // if (history && Array.isArray(history)) {
-            //   for (const message of history) {
-            //     switch (message.role) {
-            //       case "user": {
-            //         const m = pick(message, ["role", "content", "name"]);
-            //         if (user) {
-            //           m["name"] = user;
-            //         }
-            //         messagesOut.push(m);
-            //         break;
-            //       }
-
-            //       case "assistant": {
-            //         if (message.function_call) {
-            //           messagesOut.push({
-            //             role: "assistant",
-            //             content: null,
-            //             function_call: message.function_call,
-            //           });
-            //         } else if (message?.content) {
-            //           messagesOut.push({
-            //             role: "assistant",
-            //             content: message.content,
-            //           });
-            //         }
-            //         break;
-            //       }
-            //       case "function":
-            //         messagesOut.push({
-            //           role: "function",
-            //           name: message.name,
-            //           content: message.content,
-            //         });
-            //         break;
-            //       case "system":
-            //         messagesOut.push({
-            //           role: "system",
-            //           content: message.content,
-            //         });
-            //         break;
-            //     }
-            //   }
-            // }
             break;
           }
           case ">SingleChatMessage": {
@@ -552,18 +506,10 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
                   }
 
                   case "assistant": {
-                    // if (message.function_call) {
-                    //   messagesOut.push({
-                    //     role: "assistant",
-                    //     content: null,
-                    //     function_call: message.function_call,
-                    //   });
-                    // } else if (message?.content) {
                     messagesOut.push({
                       role: "assistant",
                       content: message.content,
                     });
-                    // }
                     break;
                   }
                   case "function_call":
