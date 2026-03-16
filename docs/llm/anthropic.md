@@ -8,7 +8,7 @@ When using Anthropic models, llm-exe will make POST requests to `https://api.ant
 
 ```ts
 const llm = useLlm("anthropic.chat.v1", {
-  model: "claude-sonnet-4-6-20250514", // specify a model
+  model: "claude-sonnet-4-6", // specify a model
 });
 ```
 

@@ -155,6 +155,8 @@ Setting Up Your Account: To set up your account, you need to...
 ## Markdown Code Block
 
 `markdownCodeBlock`
+Extracts a single code block from the LLM response, including the language identifier.
+Returns: { code: string; language: string; }
 
 ::: code-group
 
@@ -188,7 +190,7 @@ Returns Array<{ code: string; language: string; }>
 [{
     "code": "function add(a: number, b: number){\nreturn a + b;\n}",
     "language": "typescript"
-}
+},
 {
     "code": "function subtract(a: number, b: number){\nreturn a - b;\n}",
     "language": "typescript"
@@ -237,7 +239,7 @@ const parser = createParser("listToJson");
 ```[Parser Output]
 {
     "color": "red",
-    "name": "apple"
+    "name": "apple",
     "type": "fruit"
 }
 ```
