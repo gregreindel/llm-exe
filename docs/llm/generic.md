@@ -13,12 +13,17 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 | temperature   | number           | 0       | Used by model.                                                                                             |
 | maxTokens     | number           | 500     | Used by model.                                                                                             |
 | stream        | boolean \| null  | null    | Note: Not supported yet.                                                                                   |
+| effort        | string           | undefined | Reasoning effort level for reasoning models (e.g., o3, o4-mini). One of: "minimal", "low", "medium", "high". |
 
 > [!NOTE]
 > Different vendors will allow (and may require) additional options.
-> - [OpenAi Chat Model Options](/llm/openai#openai-specific-options).
-> - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options).
-> - [Bedrock Chat Model Options](/llm/bedrock/index.html).
+> - [OpenAI Chat Model Options](/llm/openai#openai-specific-options)
+> - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options)
+> - [Google Gemini Chat Model Options](/llm/gemini#gemini-specific-options)
+> - [xAI Chat Model Options](/llm/xai#xai-specific-options)
+> - [Deepseek Chat Model Options](/llm/deepseek#deepseek-specific-options)
+> - [Ollama Chat Model Options](/llm/ollama#ollama-specific-options)
+> - [Bedrock Chat Model Options](/llm/bedrock/index.html)
 
 <!-- 
 | Option           | Type            | Default       | Description                                                                                                                             |

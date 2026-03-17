@@ -287,10 +287,10 @@ const result = await tools.callFunction(plan.action, plan.input);
 ```typescript
 // Change ONE line to switch providers
 const llm = useLlm("openai.gpt-4o");
-// const llm = useLlm("anthropic.claude-3-5-sonnet");
+// const llm = useLlm("anthropic.claude-sonnet-4-6");
 // const llm = useLlm("google.gemini-2.0-flash");
 // const llm = useLlm("xai.grok-2");
-// const llm = useLlm("ollama.llama-3.3-70b");
+// const llm = useLlm("ollama.llama3.3");
 
 // Everything else stays exactly the same ✨
 ```

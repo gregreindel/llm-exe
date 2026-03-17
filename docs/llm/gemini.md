@@ -44,7 +44,7 @@ In addition to the generic options, the following options are Gemini-specific an
 
 | Option       | Type   | Default          | Description                                                          |
 | ------------ | ------ | ---------------- | -------------------------------------------------------------------- |
-| model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See Google Gemini Docs       |
+| model        | string | —                | The model to use. Must be specified when using `google.chat.v1`. See Google Gemini Docs |
 | geminiApiKey | string | undefined        | API key for Google. See [authentication](/llm/gemini#authentication) |
 | temperature  | number | undefined        | Maps to temperature.\*                                               |
 | maxTokens    | number | undefined        | Maps to max_tokens. See Google Gemini Docs                                  |
