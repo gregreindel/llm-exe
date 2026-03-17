@@ -39,7 +39,7 @@ Some core partials are included by default:
 
 ::: code-group
 
-```[Raw Template]
+```[Template]
 {{> MarkdownCode code='const name="Greg";' language='typescript' }}
 ```
 

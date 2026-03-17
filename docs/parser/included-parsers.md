@@ -10,11 +10,11 @@ Returns: string
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 This is an example input message.
 ```
 
-```[LLM Response]
+```[Response]
 This is an example input message.
 ```
 
@@ -32,11 +32,11 @@ const parser = createParser("number");
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 42
 ```
 
-```[LLM Response]
+```[Response]
 The answer is 42.
 ```
 
@@ -54,11 +54,11 @@ const parser = createParser("boolean");
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 true
 ```
 
-```[LLM Response]
+```[Response]
 Yes, that is correct.
 ```
 
@@ -87,11 +87,11 @@ Options:
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 go forward
 ```
 
-```[LLM Response]
+```[Response]
 Go Forward.
 ```
 
@@ -111,7 +111,7 @@ const parser = createParser("listToArray");
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 [
  "Should return the default name if the function argument is null or undefined",
  "Should return function's name if function has a name property",
@@ -122,7 +122,7 @@ const parser = createParser("listToArray");
 ]
 ```
 
-```[LLM Response]
+```[Response]
 - Should return the default name if the function argument is null or undefined
 - Should return function's name if function has a name property
 - Should return the correct name if function is bound to an object
@@ -141,7 +141,7 @@ Returns Array<{ key: string; value: string; }>
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 [{
     "key": "Getting Started",
     "value": "To get started, we need to..."
@@ -151,7 +151,7 @@ Returns Array<{ key: string; value: string; }>
 }]
 ```
 
-```[LLM Response]
+```[Response]
 Getting Started: To get started, we need to...
 Setting Up Your Account: To set up your account, you need to...
 ```
@@ -166,14 +166,14 @@ Returns: { code: string; language: string; }
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 {
     "code": "function add(a: number, b: number){\nreturn a + b;\n}",
     "language": "typescript"
 }
 ```
 
-````[LLM Response]
+````[Response]
 Below is the generated code:
 
 ```typescript
@@ -192,7 +192,7 @@ Returns Array<{ code: string; language: string; }>
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 [{
     "code": "function add(a: number, b: number){\nreturn a + b;\n}",
     "language": "typescript"
@@ -203,7 +203,7 @@ Returns Array<{ code: string; language: string; }>
 }]
 ```
 
-````[LLM Response]
+````[Response]
 Below is the generated code:
 
 ```typescript
@@ -242,7 +242,7 @@ const parser = createParser("listToJson");
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 {
     "color": "red",
     "name": "apple",
@@ -250,7 +250,7 @@ const parser = createParser("listToJson");
 }
 ```
 
-```[LLM Response]
+```[Response]
 Color: Red
 Name: Apple
 Type: Fruit
@@ -265,14 +265,14 @@ Parse an expected stringified json object or array into a valid object. Schema c
 
 ::: code-group
 
-```[Parser Output]
+```[Output]
 {
     "name": "Greg",
     "age": "89"
 }
 ```
 
-```[LLM Response]
+```[Response]
 \`\`\`json
 { "name": "Greg", "age": "89" }
 \`\`\`
