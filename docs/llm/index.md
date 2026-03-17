@@ -1,6 +1,6 @@
 ---
 title: LLMs | Connect and Configure Models in llm-exe
-description: "Use any LLM with a consistent, composable API. llm-exe supports OpenAI, Anthropic, Amazon, and more—giving you full control over model config, retries, and usage patterns with minimal setup."
+description: "Use any LLM with a consistent, composable API. llm-exe supports OpenAI, Anthropic, Google Gemini, xAI, Deepseek, Ollama, AWS Bedrock, and more—giving you full control over model config, retries, and usage patterns with minimal setup."
 ---
 
 # LLM
