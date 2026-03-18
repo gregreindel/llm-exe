@@ -6,10 +6,6 @@ npm i llm-exe
 ```
 
 ```ts
-import llmExe from "llm-exe"
-
-// or 
-
 import { /* specific modules */ } from "llm-exe"
 ```
 
