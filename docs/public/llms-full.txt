@@ -10,10 +10,6 @@ npm i llm-exe
 ```
 
 ```ts
-import llmExe from "llm-exe"
-
-// or 
-
 import { /* specific modules */ } from "llm-exe"
 ```
 
@@ -251,8 +247,6 @@ Note: llm-exe utilizes the underlying API's from the various providers. This mea
 - Built-in timeout mechanism for better control when a provider takes too long.
 - Automatic retry with configurable back-off for errors.
 - Use different LLM's with different configurations for different functions.
-- Streaming coming soon.
-
 Note: You can use and call methods on LLM's directly, but they are usually passed to an LLM executor and then called internally.
 
 ## Currently Supported Providers
@@ -283,7 +277,7 @@ See the [Custom Provider Configuration](/llm/custom.html) guide for details.
 
 # Generic Options
 
-llm-exe attempts to normalize the inputs for various llm vendors, providing a single interface that can be used to interact with different models. While this is not always possible, since certain vendors may implement seatures that others don't support, either way only the allowed options make it to the respective api calls.
+llm-exe attempts to normalize the inputs for various llm vendors, providing a single interface that can be used to interact with different models. While this is not always possible, since certain vendors may implement features that others don't support, either way only the allowed options make it to the respective api calls.
 
 ## Options
 
@@ -299,9 +293,13 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 
 > [!NOTE]
 > Different vendors will allow (and may require) additional options.
-> - [OpenAi Chat Model Options](/llm/openai#openai-specific-options).
-> - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options).
-> - [Bedrock Chat Model Options](/llm/bedrock/index.html).
+> - [OpenAI Chat Model Options](/llm/openai#openai-specific-options)
+> - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options)
+> - [Google Gemini Chat Model Options](/llm/gemini#gemini-specific-options)
+> - [xAI Chat Model Options](/llm/xai#xai-specific-options)
+> - [Deepseek Chat Model Options](/llm/deepseek#deepseek-specific-options)
+> - [Ollama Chat Model Options](/llm/ollama#ollama-specific-options)
+> - [Bedrock Chat Model Options](/llm/bedrock/index.html)
 
 <!-- 
 | Option           | Type            | Default       | Description                                                                                                                             |
@@ -394,16 +392,16 @@ When using Anthropic models, llm-exe will make POST requests to `https://api.ant
 
 ```ts
 const llm = useLlm("anthropic.chat.v1", {
-  model: "claude-3-5-sonnet-20240620", // specify a model
+  model: "claude-sonnet-4-6", // specify a model
 });
 ```
 
 ### Anthropic Chat By Model
 
 ```ts
-const llm = useLlm("anthropic.claude-3-5-sonnet-latest", {
+const llm = useLlm("anthropic.claude-sonnet-4-6", {
   // other options,
-  // no model needed, using claude-3-5-sonnet
+  // no model needed, using claude-sonnet-4-6
 });
 ```
 
@@ -441,7 +439,7 @@ When using Google Gemini models, llm-exe will make POST requests to `https://gen
 
 ## Basic Usage
 
-### Google Gemini Chat
+### Gemini Chat
 
 ```ts
 const llm = useLlm("google.chat.v1", {
@@ -449,7 +447,7 @@ const llm = useLlm("google.chat.v1", {
 });
 ```
 
-### Google Gemini Chat By Model
+### Gemini Chat By Model
 
 ```ts
 const llm = useLlm("google.gemini-2.0-flash", {
@@ -497,8 +495,8 @@ In addition to the generic options, the following options are Gemini-specific an
 
 ### AWS Bedrock Chat
 ```ts
-const llm = useLlm("amazon:anthropic.chat.v1", { //
-  model: "claude-3-5-sonnet-20240620", // a valid model from bedrock
+const llm = useLlm("amazon:anthropic.chat.v1", {
+  model: "anthropic.claude-sonnet-4-v2:0", // a valid model from bedrock
 
   // optional, see `Authentication` below
   awsRegion: "<Your aws Region>",
@@ -519,7 +517,7 @@ const llm = useLlm("amazon:anthropic.chat.v1", { //
 To authenticate, you need to provide a way to authenticate with AWS. You can provide the API key various ways, depending on your use case. 
 - Pass in as execute options using `awsRegion` | `awsSecretKey` | `awsAccessKey`
 - Pass in as setup options using `awsRegion` | `awsSecretKey` | `awsAccessKey`
-- Use a default key by setting an environment variable of `AWS_REGION` | `AWS_SECRET_ACCESS_KEY` | `AWS_ACCESS_KEY_ID`, respectivly.
+- Use a default key by setting an environment variable of `AWS_REGION` | `AWS_SECRET_ACCESS_KEY` | `AWS_ACCESS_KEY_ID`, respectively.
 
 
 ::: tip
@@ -542,7 +540,7 @@ When using Anthropic models via AWS Bedrock, llm-exe will make POST requests to 
 
 ```ts
 const llm = useLlm("amazon:anthropic.chat.v1", {
-  model: "claude-3-sonnet-20240229-v1:0",  // This is the model id from Bedrock
+  model: "anthropic.claude-sonnet-4-v2:0",  // This is the model id from Bedrock
 });
 ```
 
@@ -566,6 +564,18 @@ const llm = useLlm("amazon:meta.chat.v1", {
 ```
 
 ## LLama-Specific Options
+
+In addition to the generic options, the following options are available for Meta LLama models on Bedrock.
+
+| Option      | Type   | Default   | Description                                                              |
+| ----------- | ------ | --------- | ------------------------------------------------------------------------ |
+| model       | string | —         | The Bedrock model id. Must be specified. See AWS Bedrock Docs            |
+| temperature | number | undefined | Maps to temperature.                                                     |
+| maxTokens   | number | 2048      | Maps to max_gen_len. See AWS Bedrock Docs                                |
+| topP        | number | undefined | Maps to top_p. See AWS Bedrock Docs                                      |
+| awsRegion   | string | undefined | AWS Region. Can be set via `AWS_REGION` environment variable             |
+| awsSecretKey| string | undefined | AWS Secret Key. Can be set via `AWS_SECRET_ACCESS_KEY` environment variable |
+| awsAccessKey| string | undefined | AWS Access Key. Can be set via `AWS_ACCESS_KEY_ID` environment variable  |
 ---
 
 # xAI
@@ -1243,7 +1253,7 @@ For advanced uses and working with custom helpers/partials, [see here](/prompt/a
 
 # Chat Prompt
 
-The other type of prompt is a chat prompt. The chat prompt can be used with models such as gpt-3.5.turbo and gpt-4(+).
+The other type of prompt is a chat prompt. The chat prompt can be used with chat-based models from any supported provider (OpenAI, Anthropic, Google, etc.).
 
 You create a chat prompt using `createPrompt("chat")` or `createChatPrompt()`.
 
@@ -1741,7 +1751,7 @@ const schema = utils.defineSchema({
   required: ["statement", "answer", "confidence"],
 });
 
-const parser = createParser("listToJson", schema);
+const parser = createParser("listToJson", { schema });
 
 const exampleOutputFromLlm = `Statement: The included document contains PII\nAnswer: No\nConfidence: 90`;
 
@@ -1830,7 +1840,7 @@ Yes, that is correct.
 ## String Extractor Parser
 
 `stringExtract`
-Use this parser to ensure the response is one of many specific strings you define. This parser doe not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
+Use this parser to ensure the response is one of many specific strings you define. This parser does not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
 
 Returns: string
 
@@ -1841,6 +1851,12 @@ const parser = createParser("stringExtract", {
   enum: ["stop", "go forward", "turn left", "turn right"],
 });
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `enum` | `string[]` | `[]` | The list of allowed values to match against. |
+| `ignoreCase` | `boolean` | `false` | When `true`, matching is case-insensitive. |
 
 ::: code-group
 
@@ -1918,6 +1934,8 @@ Setting Up Your Account: To set up your account, you need to...
 ## Markdown Code Block
 
 `markdownCodeBlock`
+Extracts a single code block from the LLM response, including the language identifier.
+Returns: { code: string; language: string; }
 
 ::: code-group
 
@@ -1951,7 +1969,7 @@ Returns Array<{ code: string; language: string; }>
 [{
     "code": "function add(a: number, b: number){\nreturn a + b;\n}",
     "language": "typescript"
-}
+},
 {
     "code": "function subtract(a: number, b: number){\nreturn a - b;\n}",
     "language": "typescript"
@@ -1980,7 +1998,7 @@ function subtract(a: number, b: number){
 
 ## Replace String Template
 
-`replaceTemplateString`
+`replaceStringTemplate`
 Uses handlebars to parse the output.
 Returns string.
 
@@ -2000,7 +2018,7 @@ const parser = createParser("listToJson");
 ```[Output]
 {
     "color": "red",
-    "name": "apple"
+    "name": "apple",
     "type": "fruit"
 }
 ```
@@ -2046,51 +2064,90 @@ or
 
 You can define a custom parser to have full control over transforming the LLM output into the format you expect.
 
-A custom parser is really just a function that is provided 2 arguments, and is expected to transform/modify before returning the result.
+A custom parser is a function that receives two arguments — the LLM's text response and an executor context object — and returns a transformed result.
 
-When using Typescript, as long as you type things well, the types will get inferred into your LLM executors.
+When using TypeScript, the return type of your parser function flows through to the executor, so `executor.execute()` returns the correct type automatically.
 
 ## Defining a custom parser
 
 ```ts
-function customParserHandler(
-  /* input is the response from the LLM */
-  input: string,
-  /* values is input that gets provided to execute() */
-  values: Record<string, any>
-) {
-  const output = "";
-  /**
-   * parse the input string,
-   * return what you'd like
-   */
-  return output;
-}
+import { createCustomParser } from "llm-exe";
 
-export const customParser = createCustomParser(
-  "customParser", // a name
-  customParserHandler // the parser function
+// The return type of the handler becomes the parser's output type.
+const customParser = createCustomParser(
+  "extractEmails",
+  (text: string, context) => {
+    // text = the raw LLM response string
+    // context = the executor context (input values, metadata)
+    const emails = text.match(/[\w.-]+@[\w.-]+\.\w+/g) || [];
+    return emails; // string[]
+  }
 );
 ```
 
 ## Using a custom parser
 
 ```ts
-import { customParser } from "the-example-above";
+// Use .parse() directly
+const emails = customParser.parse("Contact us at help@example.com", {} as any);
+// emails: string[]
 
-// the .parse method on a custom parser is the function you assigned.
-const parse = customParser.parse(``);
-
-// or in an LLM executor
+// Or use it in an executor — the executor infers the return type
 const executor = createLlmExecutor({
-  llm: useLlm("openai", { model: "model-name" }),
-  prompt: createChatPrompt(`You are a customer support agent.`),
-  parser: customParser, // use the custom parser
+  llm: useLlm("openai.chat.v1", { model: "gpt-4o-mini" }),
+  prompt: createChatPrompt(`Extract all email addresses from: {{text}}`),
+  parser: customParser,
+});
+
+const result = await executor.execute({ text: "Email me at hello@test.com" });
+// result is typed as string[] — inferred from the parser
+```
+
+## Type inference
+
+The key benefit of custom parsers is that their return type propagates to the executor:
+
+```ts
+// Parser returns a specific interface
+interface SentimentResult {
+  sentiment: "positive" | "negative" | "neutral";
+  confidence: number;
+}
+
+const sentimentParser = createCustomParser(
+  "sentiment",
+  (text: string): SentimentResult => {
+    const parsed = JSON.parse(text);
+    return {
+      sentiment: parsed.sentiment,
+      confidence: parsed.confidence,
+    };
+  }
+);
+
+const executor = createLlmExecutor({
+  llm: useLlm("openai.chat.v1", { model: "gpt-4o-mini" }),
+  prompt: createChatPrompt(`Analyze sentiment of: {{text}}`),
+  parser: sentimentParser,
+});
+
+const result = await executor.execute({ text: "I love this!" });
+// result is typed as SentimentResult
+```
+
+## Using the `CustomParser` class directly
+
+You can also instantiate the `CustomParser` class directly instead of using `createCustomParser`:
+
+```ts
+import { CustomParser } from "llm-exe";
+
+const parser = new CustomParser("myParser", (text: string, context) => {
+  return text.toUpperCase();
 });
 ```
 
-<!-- ## Extending `BaseParser`
-TODO: Add more info. In meantime, check code, it should have comments. -->
+Both approaches produce the same result — `createCustomParser` is a convenience wrapper around `new CustomParser()`.
 
 ---
 
@@ -2108,6 +2165,24 @@ The state module consists of 3 concepts:
 Dialogues are a place to store conversation history, internal dialogues, really any conversation that is taking place with an LLM. You can have one or many dialogues. When you create a new dialogue, you should provide a key, which allows you to access the dialogue from the state later if needed.
 
 **Context** items are instances of `BaseStateItem` — typed classes with `getValue()`, `setValue()`, and `resetValue()` methods. Use context for structured, typed data that needs its own lifecycle (e.g., extracted entities, session config). Create context items with `createStateItem(name, defaultValue)` and add them via `state.createContextItem(item)`.
+
+```ts
+import { createState, createStateItem } from "llm-exe";
+
+const state = createState();
+
+// Create a typed context item with a name and default value
+const userIntent = createStateItem("userIntent", "unknown");
+
+// Add it to the state
+state.createContextItem(userIntent);
+
+// Use getValue/setValue to manage the item
+userIntent.getValue();    // "unknown"
+userIntent.setValue("booking");
+userIntent.getValue();    // "booking"
+userIntent.resetValue();  // resets to "unknown"
+```
 
 **Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
 
@@ -2142,7 +2217,84 @@ await state.saveState()
 ---
 
 # Dialogue
-Internally, `state` uses the `Dialogue` class to manage dialogues, and you can use it independently too if you'd like.
+
+The `Dialogue` class manages conversation history for multi-turn LLM interactions. It's used internally by `state`, but you can also use it independently with `createDialogue`.
+
+## Creating a dialogue
+
+```ts
+import { createDialogue } from "llm-exe";
+
+const dialogue = createDialogue("chat");
+```
+
+## Adding messages
+
+All message methods return `this` for chaining:
+
+```ts
+dialogue
+  .setSystemMessage("You are a helpful assistant.")
+  .setUserMessage("What is TypeScript?")
+  .setAssistantMessage("TypeScript is a typed superset of JavaScript.");
+```
+
+### Available methods
+
+| Method | Description |
+|--------|-------------|
+| `setUserMessage(content, name?)` | Add a user message. Content can be a string or detailed content array. |
+| `setAssistantMessage(content)` | Add an assistant message. Accepts a string or `OutputResultsText`. |
+| `setSystemMessage(content)` | Add a system message. |
+| `setToolMessage(content, name, id?)` | Add a tool/function result message. |
+| `setToolCallMessage({ name, arguments, id? })` | Add a tool call (function invocation) message. |
+| `setFunctionCallMessage(input)` | Add a function call message (legacy format also supported). |
+| `setMessageTurn(user, assistant, system?)` | Add a complete turn (user + assistant + optional system). |
+| `setHistory(messages)` | Load an array of messages into the dialogue. |
+| `getHistory()` | Get all messages as an `IChatMessages` array. |
+| `addFromOutput(output)` | Add messages from an LLM `OutputResult` or `BaseLlCall`. |
+
+## Adding LLM output directly
+
+After making an LLM call, you can add the response to dialogue history automatically:
+
+```ts
+const output = await llm.call(prompt);
+dialogue.addFromOutput(output);
+```
+
+This handles both text responses and tool/function calls, adding them in the order they were returned.
+
+## Loading existing history
+
+Use `setHistory` to load a full conversation from an array:
+
+```ts
+dialogue.setHistory([
+  { role: "user", content: "Hi" },
+  { role: "assistant", content: "Hello! How can I help?" },
+  { role: "user", content: "Tell me a joke" },
+]);
+```
+
+## Using with state
+
+Dialogues integrate with the state module:
+
+```ts
+import { createState } from "llm-exe";
+
+const state = createState();
+const chatHistory = state.createDialogue("chatHistory");
+
+chatHistory.setUserMessage("Hello!");
+chatHistory.setAssistantMessage("Hi there!");
+
+// Retrieve later
+const history = state.getDialogue("chatHistory").getHistory();
+```
+
+## Examples
 
 <GenericOutput example="state.dialogue.basic.exampleOne">
 
@@ -2180,8 +2332,8 @@ An LLM executor's input and output types are determined by the prompt and parser
 import { useLlm, createChatPrompt, createLlmExecutor } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");
-const instruction = `You are a customer support agent. Reply below.`;
-const prompt = createChatPrompt(instruction);
+const instruction = `You are a customer support agent. Reply to the user's message.\n{{input}}`;
+const prompt = createChatPrompt<{ input: string }>(instruction);
 
 const executor = createLlmExecutor({
   llm,
@@ -2197,8 +2349,8 @@ const response = await executor.execute({ input: "Hello!" });
 import { useLlm, createChatPrompt, createParser, createLlmExecutor } from "llm-exe";
 
 const llm = useLlm("openai.gpt-4o-mini");
-const instruction = `You are a customer support agent. Reply to the user as JSON.`;
-const prompt = createChatPrompt(instruction);
+const instruction = `You are a customer support agent. Reply to the user's message as JSON.\n{{input}}`;
+const prompt = createChatPrompt<{ input: string }>(instruction);
 const parser = createParser("json");
 
 const hooks = {
@@ -2226,13 +2378,11 @@ const response = await executor.execute({ input: "Hello!" });
 
 ---
 
-# OpenAi Functions Executor
+# Tool Calling Executor
 
-To take advantage of Tools Calling with OpenAi and Anthropic, You can use an `LlmExecutorWithFunctions`. A LlmExecutorWithFunctions is exactly like a regular [llm executor](/executor/) - in fact, it just extends the class and adds options with some additional type restraints.
+To take advantage of tool calling with OpenAI, Anthropic, and other providers that support it, you can use `createLlmFunctionExecutor` or the `LlmExecutorWithFunctions` class directly. It works exactly like a regular [llm executor](/executor/) — it extends the class and adds options with some additional type constraints.
 
 ## Basic Example
-
-Highlighted below are the few lines that demonstrate the options for a
 
 ```ts{13,14,15,16,17,18,19,20,21,26,27}
 const llm = useLlm("openai.gpt-4o-mini");
@@ -2242,10 +2392,14 @@ Pick a direction to move.`;
 
 const prompt = createChatPrompt(instruction);
 
-const executor = new LlmExecutorWithFunctions({
+// Using the factory function (recommended)
+const executor = createLlmFunctionExecutor({
   llm,
   prompt,
 })
+
+// Or using the class directly
+// const executor = new LlmExecutorWithFunctions({ llm, prompt })
 
 const functions = [{
     name: "move_left",
@@ -2287,7 +2441,7 @@ You can attach hooks:
 ```typescript{2,5}:no-line-numbers
 // You can pass in hooks object
 const hooks = { onComplete: logFunction, onError: logFunctionError };
-const llm = useLlm("openai.mock", {});
+const llm = useLlm("openai.chat-mock.v1", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = createLlmExecutor({ llm, prompt }, { hooks });
 ```
@@ -2304,7 +2458,7 @@ function logFunctionError() {
 }
 
 // You can also use on to listen
-const llm = useLlm("openai.mock", {});
+const llm = useLlm("openai.chat-mock.v1", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = createLlmExecutor({ llm, prompt });
 executor.on("onComplete", logFunction);
@@ -2316,7 +2470,7 @@ You can also use `.once` to add a hook that get executed exactly once
 
 ```typescript{5}:no-line-numbers
 // You can also use once to listen once
-const llm = useLlm("openai.mock", {});
+const llm = useLlm("openai.chat-mock.v1", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = createLlmExecutor({ llm, prompt });
 executor.once("onComplete", logFunction);
@@ -2398,9 +2552,39 @@ Embeddings is a wrapper around various embeddings providers, making your functio
 - Automatic retry with configurable back-off for errors.
 - Use different LLM's with different configurations for different functions.
 
+## Basic Usage
+
+Use `createEmbedding` to create an embedding instance for a supported provider, then call it with the text you want to embed:
+
+```ts
+import { createEmbedding } from "llm-exe";
+
+const embeddings = createEmbedding("openai.embedding.v1", {
+  model: "text-embedding-3-small",
+});
+
+const embedding = await embeddings.call("The text you want to embed");
+const vector = embedding.getEmbedding();
+// Returns a number[] representing the embedding vector
+```
+
+### Parameters
+
+`createEmbedding(provider, options)` accepts:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `provider` | `EmbeddingProviderKey` | The embedding provider key (see supported providers below) |
+| `options` | `object` | Provider-specific options including `model` |
+
+The returned object has a `.call(input)` method that returns a promise. The resolved result has a `.getEmbedding()` method that returns the embedding vector as `number[]`.
+
 ## Supported Embedding Providers
-- OpenAi
-- Amazon Embedding
+
+| Provider | Key | Details |
+|----------|-----|---------|
+| OpenAI | `openai.embedding.v1` | [OpenAI Embeddings](./openai.md) |
+| Amazon Titan | `amazon.embedding.v1` | [Amazon Embeddings](./amazon.md) |
 
 ## Adding Custom Providers
 Custom embedding providers are not currently supported. If you need an embedding provider that isn't listed above, please open an issue.
@@ -2411,11 +2595,20 @@ Custom embedding providers are not currently supported. If you need an embedding
 
 When using OpenAI embeddings, llm-exe will make POST requests to `https://api.openai.com/v1/embeddings`.
 
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `model` | `string` | — | The OpenAI embedding model to use (e.g., `text-embedding-3-small`) |
+| `dimensions` | `number` | `1536` | The number of dimensions for the output embedding |
+| `encodingFormat` | `string` | — | The encoding format (e.g., `float`, `base64`) |
+| `openAiApiKey` | `string` | `OPENAI_API_KEY` env var | Your OpenAI API key |
+
 ## Basic Usage
 
-### OpenAi Embeddings
-
 ```ts
+import { createEmbedding } from "llm-exe";
+
 const embeddings = createEmbedding("openai.embedding.v1", {
     model: "text-embedding-3-small",
 });
@@ -2431,6 +2624,15 @@ console.log(vector);
 // ]
 ```
 
+## Custom Dimensions
+
+```ts
+const embeddings = createEmbedding("openai.embedding.v1", {
+    model: "text-embedding-3-small",
+    dimensions: 512,
+});
+```
+
 ---
 
 
@@ -2438,11 +2640,21 @@ console.log(vector);
 
 When using Amazon embeddings, llm-exe will make POST requests to the AWS Bedrock endpoint for your configured region.
 
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `model` | `string` | — | The Bedrock model ID (e.g., `amazon.titan-embed-text-v2:0`) |
+| `dimensions` | `number` | `512` | The number of dimensions for the output embedding |
+| `awsRegion` | `string` | `AWS_REGION` env var | The AWS region for the Bedrock endpoint (required) |
+| `awsSecretKey` | `string` | — | AWS secret key (if not using default credentials) |
+| `awsAccessKey` | `string` | — | AWS access key (if not using default credentials) |
+
 ## Basic Usage
 
-### Amazon Embeddings
-
 ```ts
+import { createEmbedding } from "llm-exe";
+
 const embeddings = createEmbedding("amazon.embedding.v1", {
   model: "amazon.titan-embed-text-v2:0",
 });
@@ -2462,7 +2674,125 @@ console.log(vector);
 
 ## Callable Executor Wrapper
 
-If you want an LLM to call other 'tools' or functions, then we provide a simple wrapper to assist. 
+When building LLM agents that need to call tools or functions, `createCallableExecutor` wraps your executors (or plain functions) into a standardized interface. Use `useExecutors` to group them into a collection you can query and invoke by name.
+
+### Creating a callable executor
+
+Use `createCallableExecutor` to wrap a handler function or an existing executor:
+
+```ts
+import { createCallableExecutor, createLlmExecutor, useLlm, createChatPrompt, createParser } from "llm-exe";
+
+// Wrap a plain function
+const searchCallable = createCallableExecutor({
+  name: "searchInternet",
+  description: "Search the internet for information",
+  input: JSON.stringify({
+    type: "object",
+    properties: {
+      query: { type: "string", description: "The search query" },
+    },
+  }),
+  handler: async (input: { query: string }) => {
+    // your search logic here
+    return { results: [`Result for: ${input.query}`] };
+  },
+});
+
+// Or wrap an existing LlmExecutor
+const summarizeExecutor = createLlmExecutor({
+  llm: useLlm("openai.chat.v1", { model: "gpt-4o-mini" }),
+  prompt: createChatPrompt("Summarize: {{input}}"),
+  parser: createParser("string"),
+});
+
+const summarizeCallable = createCallableExecutor({
+  name: "summarize",
+  description: "Summarize the given text",
+  input: JSON.stringify({
+    type: "object",
+    properties: {
+      input: { type: "string", description: "Text to summarize" },
+    },
+  }),
+  handler: summarizeExecutor,
+});
+```
+
+### Grouping with `useExecutors`
+
+`useExecutors` groups callables into a collection with lookup and invocation methods:
+
+```ts
+import { useExecutors } from "llm-exe";
+
+const executors = useExecutors([
+  searchCallable,
+  summarizeCallable,
+]);
+
+// Check if a function exists
+executors.hasFunction("searchInternet"); // true
+
+// Get a function by name
+const fn = executors.getFunction("searchInternet");
+
+// Call a function by name — input is parsed from a JSON string
+const result = await executors.callFunction(
+  "searchInternet",
+  JSON.stringify({ query: "llm-exe docs" })
+);
+// result: { result: any, attributes: any }
+
+// Get all functions (useful for building tool lists)
+const allFunctions = executors.getFunctions();
+```
+
+### Optional features
+
+**Visibility handler** — conditionally show/hide functions based on context:
+
+```ts
+const adminCallable = createCallableExecutor({
+  name: "deleteUser",
+  description: "Delete a user account",
+  input: "...",
+  handler: async (input) => { /* ... */ },
+  visibilityHandler: (input, context, attributes) => {
+    return attributes?.role === "admin";
+  },
+});
+
+// Only returns functions visible for the given context
+const visible = executors.getVisibleFunctions(input, { role: "admin" });
+```
+
+**Input validation** — validate input before execution:
+
+```ts
+const callable = createCallableExecutor({
+  name: "sendEmail",
+  description: "Send an email",
+  input: "...",
+  handler: async (input) => { /* ... */ },
+  validateInput: async (input) => {
+    if (!input.to) {
+      return { result: false, attributes: { error: "Missing 'to' field" } };
+    }
+    return { result: true, attributes: {} };
+  },
+});
+
+const validation = await executors.validateFunctionInput(
+  "sendEmail",
+  JSON.stringify({ subject: "Hi" })
+);
+// validation: { result: false, attributes: { error: "Missing 'to' field" } }
+```
+
+### Using with an LLM agent loop
+
+A typical agent pattern: the LLM decides which function to call, and you execute it:
 
 ```ts
 const executors = useExecutors([
@@ -2479,7 +2809,6 @@ const functionWithCallableExecutors = async (input: {
 }) => {
   return executors.callFunction(input.action, input.input);
 };
-
 ```
 ---
 
