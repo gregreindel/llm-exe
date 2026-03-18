@@ -4,6 +4,7 @@ import { Config } from "@/types";
 describe("deepseek configuration", () => {
   const deepseekChatV1 = deepseek["deepseek.chat.v1"] as Config;
   const deepseekChat = deepseek["deepseek.chat"] as Config;
+  const deepseekReasoner = deepseek["deepseek.reasoner"] as Config;
 
   describe("deepseek.chat.v1", () => {
     it("should have the correct key, provider, endpoint, and method", () => {
@@ -55,6 +56,24 @@ describe("deepseek configuration", () => {
         key: "model",
       });
       expect(deepseekChat.options.model).toEqual({ default: "deepseek-chat" });
+    });
+  });
+
+  describe("deepseek.reasoner", () => {
+    it("should be based on deepseekChatV1 configuration", () => {
+      expect(deepseekReasoner.endpoint).toEqual(deepseekChatV1.endpoint);
+      expect(deepseekReasoner.method).toEqual(deepseekChatV1.method);
+      expect(deepseekReasoner.headers).toEqual(deepseekChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as deepseek-reasoner", () => {
+      expect(deepseekReasoner.mapBody.model).toEqual({
+        default: "deepseek-reasoner",
+        key: "model",
+      });
+      expect(deepseekReasoner.options.model).toEqual({
+        default: "deepseek-reasoner",
+      });
     });
   });
 });
