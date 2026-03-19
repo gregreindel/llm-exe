@@ -137,9 +137,11 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     assistantMessage: string,
     systemMessage: string = ""
   ) {
+    if (systemMessage) {
+      this.setSystemMessage(systemMessage);
+    }
     this.setUserMessage(userMessage);
     this.setAssistantMessage(assistantMessage);
-    this.setSystemMessage(systemMessage);
     return this;
   }
 
