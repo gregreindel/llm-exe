@@ -47,4 +47,33 @@ describe("anthropic config", () => {
       expect.arrayContaining([true, "maxTokens required"])
     );
   });
+
+  describe("model shorthands", () => {
+    it("should have active model shorthands", () => {
+      expect(anthropic["anthropic.claude-opus-4-6"]).toBeDefined();
+      expect(anthropic["anthropic.claude-sonnet-4-6"]).toBeDefined();
+      expect(anthropic["anthropic.claude-sonnet-4"]).toBeDefined();
+      expect(anthropic["anthropic.claude-opus-4"]).toBeDefined();
+    });
+
+    it("should have deprecated model shorthands that still resolve", () => {
+      expect(anthropic["anthropic.claude-3-7-sonnet"]).toBeDefined();
+      expect(anthropic["anthropic.claude-3-7-sonnet"].mapBody.model.default).toBe(
+        "claude-3-7-sonnet-20250219"
+      );
+
+      expect(anthropic["anthropic.claude-3-5-sonnet"]).toBeDefined();
+      expect(anthropic["anthropic.claude-3-5-sonnet"].mapBody.model.default).toBe(
+        "claude-3-5-sonnet-latest"
+      );
+
+      expect(anthropic["anthropic.claude-3-5-haiku"]).toBeDefined();
+      expect(anthropic["anthropic.claude-3-5-haiku"].mapBody.model.default).toBe(
+        "claude-3-5-haiku-latest"
+      );
+
+      expect(anthropic["anthropic.claude-3-opus"]).toBeDefined();
+      expect(anthropic["anthropic.claude-3-haiku"]).toBeDefined();
+    });
+  });
 });
