@@ -658,6 +658,9 @@ export type AllUseLlmOptions = AllLlm & {
   "xai.grok-4-fast": {
     input: Omit<OpenAiRequest, "model">;
   };
+  "xai.grok-4-1-fast": {
+    input: Omit<OpenAiRequest, "model">;
+  };
 
   // Ollama
   "ollama.deepseek-r1": {
