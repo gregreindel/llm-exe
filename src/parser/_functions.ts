@@ -4,6 +4,7 @@ import {
   BaseParserOptionsWithSchema,
   CreateParserType,
   ExecutorContext,
+  ListToJsonParserOptions,
 } from "@/types";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
@@ -27,7 +28,7 @@ export type ParserOptions<
 > = T extends "json"
   ? BaseParserOptionsWithSchema<S>
   : T extends "listToJson"
-    ? BaseParserOptionsWithSchema<S>
+    ? ListToJsonParserOptions<S>
     : T extends "stringExtract"
       ? StringExtractParserOptions
       : T extends "markdownCodeBlocks"
@@ -167,7 +168,7 @@ export function createParser<
 export function createParser<
   T extends Extract<CreateParserType, "listToJson">,
   S extends JSONSchema | undefined = undefined,
->(type: T, options?: BaseParserOptionsWithSchema<S>): ListToJsonParser<S>;
+>(type: T, options?: ListToJsonParserOptions<S>): ListToJsonParser<S>;
 
 /**
  * Creates a parser based on the given type and schema.
