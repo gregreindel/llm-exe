@@ -68,3 +68,5 @@ const response = await executor.execute({ input: "Hello!" });
 ```
 
 `createLlmExecutor` Returns an instance of LlmExecutor.
+
+For tool/function calling support, see [`createLlmFunctionExecutor`](/executor/openai-functions.html).

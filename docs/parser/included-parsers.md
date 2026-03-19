@@ -180,7 +180,7 @@ Below is the generated code:
 function add(a: number, b: number){
     return a + b;
 }
-``'
+```
 ````
 
 :::
@@ -210,7 +210,7 @@ Below is the generated code:
 function add(a: number, b: number){
     return a + b;
 }
-``'
+```
 
 And the next:
 
@@ -218,7 +218,7 @@ And the next:
 function subtract(a: number, b: number){
     return a - b;
 }
-``'
+```
 ````
 
 :::

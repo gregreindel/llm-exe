@@ -51,7 +51,7 @@ In addition to the generic options, the following options are OpenAi-specific an
 | topP             | number  | undefined   | Maps to top_p. See OpenAI Docs                                 |
 | n                | number  | undefined   | Maps to n. See OpenAI Docs                                     |
 | stream           | boolean | undefined   | See OpenAI Docs. Note: Not supported yet.                      |
-| stop             | ?       | undefined   | Maps to stop. See OpenAI Docs                                  |
+| stop             | string \| string[] | undefined   | Maps to stop. See OpenAI Docs                       |
 | presencePenalty  | number  | undefined   | Maps to presence_penalty. See OpenAI Docs                      |
 | frequencyPenalty | number  | undefined   | Maps to frequency_penalty. See OpenAI Docs                     |
 | logitBias        | object  | undefined   | Maps to logit_bias. See OpenAI Docs                            |
