@@ -24,6 +24,11 @@ export function createOpenAiCompatibleConfiguration<
       effort: {},
       topP: {},
       useJson: {},
+      temperature: {},
+      maxTokens: {},
+      stopSequences: {},
+      frequencyPenalty: {},
+      logitBias: {},
       [apiKeyPropertyKey]: {
         default: getEnvironmentVariable(apiKeyPropertyValue),
       },
@@ -44,6 +49,21 @@ export function createOpenAiCompatibleConfiguration<
       useJson: {
         key: "response_format.type",
         transform: (v) => (v ? "json_object" : "text"),
+      },
+      temperature: {
+        key: "temperature",
+      },
+      maxTokens: {
+        key: "max_tokens",
+      },
+      stopSequences: {
+        key: "stop",
+      },
+      frequencyPenalty: {
+        key: "frequency_penalty",
+      },
+      logitBias: {
+        key: "logit_bias",
       },
       effort: {
         key: "reasoning_effort",

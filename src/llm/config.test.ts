@@ -25,6 +25,11 @@ describe("configs", () => {
         },
         useJson: {},
         effort: {},
+        temperature: {},
+        maxTokens: {},
+        stopSequences: {},
+        frequencyPenalty: {},
+        logitBias: {},
       },
       method: "POST",
       headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
@@ -38,6 +43,21 @@ describe("configs", () => {
         },
         topP: {
           key: "top_p",
+        },
+        temperature: {
+          key: "temperature",
+        },
+        maxTokens: {
+          key: "max_tokens",
+        },
+        stopSequences: {
+          key: "stop",
+        },
+        frequencyPenalty: {
+          key: "frequency_penalty",
+        },
+        logitBias: {
+          key: "logit_bias",
         },
         useJson: {
           key: "response_format.type",

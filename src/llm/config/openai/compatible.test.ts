@@ -120,6 +120,26 @@ describe("createOpenAiCompatibleConfiguration", () => {
     expect(config.options).toHaveProperty("effort");
     expect(config.options).toHaveProperty("topP");
     expect(config.options).toHaveProperty("useJson");
+    expect(config.options).toHaveProperty("temperature");
+    expect(config.options).toHaveProperty("maxTokens");
+    expect(config.options).toHaveProperty("stopSequences");
+    expect(config.options).toHaveProperty("frequencyPenalty");
+    expect(config.options).toHaveProperty("logitBias");
+  });
+
+  it("should have correct mapBody keys for standard parameters", () => {
+    const config = createOpenAiCompatibleConfiguration({
+      key: "custom.chat.v1",
+      provider: "custom.chat",
+      endpoint: "https://api.custom.com/v1/chat",
+      apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
+    });
+
+    expect(config.mapBody.temperature.key).toBe("temperature");
+    expect(config.mapBody.maxTokens.key).toBe("max_tokens");
+    expect(config.mapBody.stopSequences.key).toBe("stop");
+    expect(config.mapBody.frequencyPenalty.key).toBe("frequency_penalty");
+    expect(config.mapBody.logitBias.key).toBe("logit_bias");
   });
 
   describe("effort transform", () => {
