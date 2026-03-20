@@ -1,4 +1,5 @@
 import { assert } from "@/utils/modules/assert";
+import { LlmExeError } from "@/utils/modules/errors";
 import { BaseParser } from "../_base";
 import { BaseParserOptions } from "@/types";
 
@@ -33,6 +34,14 @@ export class StringExtractParser extends BaseParser<string> {
         return option;
       }
     }
-    return "";
+    throw new LlmExeError(
+      `No matching value found. Expected one of: ${this.enum.join(", ")}`,
+      "parser",
+      {
+        parser: "stringExtract",
+        output: text,
+        error: `No matching value found. Expected one of: ${this.enum.join(", ")}`,
+      }
+    );
   }
 }
