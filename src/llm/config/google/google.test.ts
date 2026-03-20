@@ -157,4 +157,28 @@ describe("google configuration", () => {
       });
     });
   });
+
+  describe.each([
+    ["google.gemini-3-flash-preview", "gemini-3-flash-preview"],
+    ["google.gemini-3.1-pro-preview", "gemini-3.1-pro-preview"],
+    ["google.gemini-3.1-flash-lite-preview", "gemini-3.1-flash-lite-preview"],
+  ])("%s", (key, modelId) => {
+    const config = google[key as keyof typeof google] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(googleChatV1.endpoint);
+      expect(config.method).toEqual(googleChatV1.method);
+      expect(config.headers).toEqual(googleChatV1.headers);
+    });
+
+    it(`should override model in mapBody and options as ${modelId}`, () => {
+      expect(config.mapBody.model).toEqual({
+        default: modelId,
+        key: "model",
+      });
+      expect(config.options.model).toEqual({
+        default: modelId,
+      });
+    });
+  });
 });
