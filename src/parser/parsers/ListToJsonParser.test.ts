@@ -42,6 +42,35 @@ describe("llm-exe:parser/ListToJsonParser", () => {
     const input = `Time: 10:30:00\nEvent: meeting`
     expect(parser.parse(input)).toEqual({ time: "10:30:00", event: "meeting"})
   });
+  it('preserves keys when keyTransform is "preserve"', () => {
+    const parser = new ListToJsonParser({ keyTransform: "preserve" })
+    const input = `First Name: John\nLast Name: Doe`
+    expect(parser.parse(input)).toEqual({ "First Name": "John", "Last Name": "Doe"})
+  });
+  it('camelCases keys by default', () => {
+    const parser = new ListToJsonParser()
+    const input = `First Name: John\nLast Name: Doe`
+    expect(parser.parse(input)).toEqual({ firstName: "John", lastName: "Doe"})
+  });
+  it('camelCases keys when keyTransform is "camelCase"', () => {
+    const parser = new ListToJsonParser({ keyTransform: "camelCase" })
+    const input = `First Name: John\nLast Name: Doe`
+    expect(parser.parse(input)).toEqual({ firstName: "John", lastName: "Doe"})
+  });
+  it('preserves keys with schema when keyTransform is "preserve"', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        "First Name": { type: "string" },
+        "Last Name": { type: "string" },
+      },
+      required: ["First Name", "Last Name"],
+      additionalProperties: false,
+    });
+    const parser = new ListToJsonParser({ schema, keyTransform: "preserve" })
+    const input = `First Name: John\nLast Name: Doe`
+    expect(parser.parse(input)).toEqual({ "First Name": "John", "Last Name": "Doe"})
+  });
   it('parses schema with error when set', () => {
     const schema = defineSchema({
       type: "object",
