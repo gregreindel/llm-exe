@@ -468,10 +468,12 @@ describe("llm-exe:state/Dialogue", () => {
       dialogue.setMessageTurn("User msg", "Assistant msg", "System msg");
       const history = dialogue.getHistory();
       expect(history).toHaveLength(3);
-      expect(history[0].content).toEqual("User msg");
-      expect(history[1].content).toEqual("Assistant msg");
-      expect(history[2].content).toEqual("System msg");
-      expect(history[2].role).toEqual("system");
+      expect(history[0].role).toEqual("system");
+      expect(history[0].content).toEqual("System msg");
+      expect(history[1].role).toEqual("user");
+      expect(history[1].content).toEqual("User msg");
+      expect(history[2].role).toEqual("assistant");
+      expect(history[2].content).toEqual("Assistant msg");
     });
 
     it("does not set function message with empty content", () => {
