@@ -118,5 +118,32 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(formatted).toEqual("");
   });
 
+  describe("getReplacements", () => {
+    it("throws a descriptive error when format() is called without arguments", () => {
+      const prompt = new MockPrompt("Hello {{name}}");
+      expect(() => (prompt as any).format()).toThrow(
+        "format() requires an input object"
+      );
+    });
 
+    it("throws a descriptive error when format() is called with null", () => {
+      const prompt = new MockPrompt("Hello {{name}}");
+      expect(() => (prompt as any).format(null)).toThrow(
+        "format() requires an input object"
+      );
+    });
+
+    it("throws a descriptive error when formatAsync() is called without arguments", async () => {
+      const prompt = new MockPrompt("Hello {{name}}");
+      await expect((prompt as any).formatAsync()).rejects.toThrow(
+        "format() requires an input object"
+      );
+    });
+
+    it("works normally when format() is called with a valid object", () => {
+      const prompt = new MockPrompt("Hello {{name}}");
+      const result = prompt.format({ name: "World" });
+      expect(result).toEqual("Hello World");
+    });
+  });
 })
