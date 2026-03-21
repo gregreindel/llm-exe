@@ -140,6 +140,38 @@ describe("google configuration", () => {
     });
   });
 
+  describe("shorthand configs", () => {
+    const shorthands = [
+      { key: "google.gemini-2.0-flash", model: "gemini-2.0-flash" },
+      { key: "google.gemini-2.0-flash-lite", model: "gemini-2.0-flash-lite" },
+      { key: "google.gemini-2.5-flash", model: "gemini-2.5-flash" },
+      { key: "google.gemini-2.5-flash-lite", model: "gemini-2.5-flash-lite" },
+      { key: "google.gemini-1.5-pro", model: "gemini-1.5-pro" },
+      { key: "google.gemini-2.5-pro", model: "gemini-2.5-pro" },
+      { key: "google.gemini-3-flash-preview", model: "gemini-3-flash-preview" },
+      { key: "google.gemini-3.1-pro-preview", model: "gemini-3.1-pro-preview" },
+      { key: "google.gemini-3.1-flash-lite-preview", model: "gemini-3.1-flash-lite-preview" },
+    ] as const;
+
+    it.each(shorthands)(
+      "should register $key with default model $model",
+      ({ key, model }) => {
+        const config = google[key] as Config;
+        expect(config).toBeDefined();
+        expect(config.endpoint).toEqual(googleChatV1.endpoint);
+        expect(config.method).toEqual(googleChatV1.method);
+        expect(config.headers).toEqual(googleChatV1.headers);
+        expect(config.mapBody.model).toEqual({
+          default: model,
+          key: "model",
+        });
+        expect(config.options.model).toEqual({
+          default: model,
+        });
+      }
+    );
+  });
+
   describe("gemini-2.0-flash", () => {
     it("should be based on googleChatV1 configuration", () => {
       expect(googleGemini2Flash.endpoint).toEqual(googleChatV1.endpoint);
