@@ -21,3 +21,9 @@ export interface BaseParserOptionsWithSchema<
   schema?: S;
   validateSchema?: boolean;
 }
+
+export interface ListToJsonParserOptions<
+  S extends JSONSchema | undefined = undefined
+> extends BaseParserOptionsWithSchema<S> {
+  keyTransform?: "camelCase" | "preserve";
+}
