@@ -69,6 +69,11 @@ describe("createOpenAiCompatibleConfiguration", () => {
     expect(config.mapBody.model.key).toBe("model");
     expect(config.mapBody.topP.key).toBe("top_p");
     expect(config.mapBody.useJson.key).toBe("response_format.type");
+    expect(config.mapBody.temperature.key).toBe("temperature");
+    expect(config.mapBody.maxTokens.key).toBe("max_tokens");
+    expect(config.mapBody.stopSequences.key).toBe("stop");
+    expect(config.mapBody.frequencyPenalty.key).toBe("frequency_penalty");
+    expect(config.mapBody.logitBias.key).toBe("logit_bias");
   });
 
   it("should transform useJson correctly", () => {
@@ -120,6 +125,11 @@ describe("createOpenAiCompatibleConfiguration", () => {
     expect(config.options).toHaveProperty("effort");
     expect(config.options).toHaveProperty("topP");
     expect(config.options).toHaveProperty("useJson");
+    expect(config.options).toHaveProperty("temperature");
+    expect(config.options).toHaveProperty("maxTokens");
+    expect(config.options).toHaveProperty("stopSequences");
+    expect(config.options).toHaveProperty("frequencyPenalty");
+    expect(config.options).toHaveProperty("logitBias");
   });
 
   describe("effort transform", () => {
