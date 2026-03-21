@@ -161,8 +161,12 @@ Setting Up Your Account: To set up your account, you need to...
 ## Markdown Code Block
 
 `markdownCodeBlock`
-Extracts a single code block from the LLM response, including the language identifier.
+Extracts the first code block from the LLM response, including the language identifier. If the response contains multiple code blocks, only the first one is returned. Use [`markdownCodeBlocks`](#markdown-code-blocks) (plural) to extract all blocks.
 Returns: { code: string; language: string; }
+
+```ts
+const parser = createParser("markdownCodeBlock");
+```
 
 ::: code-group
 
@@ -188,7 +192,12 @@ function add(a: number, b: number){
 ## Markdown Code Blocks
 
 `markdownCodeBlocks`
-Returns Array<{ code: string; language: string; }>
+Extracts all code blocks from the LLM response, including their language identifiers. Use [`markdownCodeBlock`](#markdown-code-block) (singular) if you only need the first block.
+Returns: Array<{ code: string; language: string; }>
+
+```ts
+const parser = createParser("markdownCodeBlocks");
+```
 
 ::: code-group
 

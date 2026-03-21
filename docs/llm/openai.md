@@ -42,19 +42,12 @@ await llm.call(prompt);
 
 In addition to the generic options, the following options are OpenAi-specific and can be passed in when creating a llm function.
 
-| Option           | Type    | Default     | Description                                                    |
-| ---------------- | ------- | ----------- | -------------------------------------------------------------- |
-| model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See OpenAI Docs |
-| openAIApiKey     | string  | undefined   | API key for OpenAi. See [authentication](/llm/openai#authentication)   |
-| temperature      | number  | undefined   | Maps to temperature.*                          |
-| maxTokens        | number  | undefined   | Maps to max_tokens. See OpenAI Docs                            |
-| topP             | number  | undefined   | Maps to top_p. See OpenAI Docs                                 |
-| n                | number  | undefined   | Maps to n. See OpenAI Docs                                     |
-| stream           | boolean | undefined   | See OpenAI Docs. Note: Not supported yet.                      |
-| stop             | ?       | undefined   | Maps to stop. See OpenAI Docs                                  |
-| presencePenalty  | number  | undefined   | Maps to presence_penalty. See OpenAI Docs                      |
-| frequencyPenalty | number  | undefined   | Maps to frequency_penalty. See OpenAI Docs                     |
-| logitBias        | object  | undefined   | Maps to logit_bias. See OpenAI Docs                            |
-| user             | string  | undefined   | Maps to user. See OpenAI Docs                                  |
+| Option       | Type    | Default     | Description                                                          |
+| ------------ | ------- | ----------- | -------------------------------------------------------------------- |
+| model        | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See OpenAI Docs*      |
+| openAIApiKey | string  | undefined   | API key for OpenAi. See [authentication](/llm/openai#authentication) |
+| topP         | number  | undefined   | Maps to `top_p`. See OpenAI Docs*                                    |
+| useJson      | boolean | undefined   | Sets `response_format.type` to `json_object` when `true`             |
+| effort       | string  | undefined   | Maps to `reasoning_effort` for supported models (e.g. gpt-5). Values: `minimal`, `low`, `medium`, `high` |
 
 \* OpenAI Docs: [link](https://platform.openai.com/docs/api-reference/chat)
