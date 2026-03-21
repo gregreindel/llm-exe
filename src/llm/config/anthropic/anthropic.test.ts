@@ -47,4 +47,23 @@ describe("anthropic config", () => {
       expect.arrayContaining([true, "maxTokens required"])
     );
   });
+
+  describe("deprecated model shorthands", () => {
+    it.each([
+      ["anthropic.claude-3-7-sonnet", "claude-3-7-sonnet-20250219"],
+      ["anthropic.claude-3-5-sonnet", "claude-3-5-sonnet-latest"],
+      ["anthropic.claude-3-5-haiku", "claude-3-5-haiku-latest"],
+      ["anthropic.claude-3-opus", "claude-3-opus-20240229"],
+      ["anthropic.claude-3-haiku", "claude-3-haiku-20240307"],
+    ] as const)(
+      "%s should still resolve with default model %s",
+      (shorthand, expectedModel) => {
+        const shorthandConfig =
+          anthropic[shorthand as keyof typeof anthropic];
+        expect(shorthandConfig).toBeDefined();
+        expect(shorthandConfig.options.model.default).toBe(expectedModel);
+        expect(shorthandConfig.provider).toBe("anthropic.chat");
+      }
+    );
+  });
 });
