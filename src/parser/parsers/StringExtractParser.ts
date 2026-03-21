@@ -33,6 +33,8 @@ export class StringExtractParser extends BaseParser<string> {
         return option;
       }
     }
-    return "";
+    throw new Error(
+      `No matching enum value found in input. Expected one of: ${this.enum.join(", ")}`
+    );
   }
 }

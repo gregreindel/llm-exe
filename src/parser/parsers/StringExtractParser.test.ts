@@ -16,9 +16,13 @@ describe("llm-exe:parser/StringExtractParser", () => {
     const parser = new StringExtractParser({enum: ["Hello"]})
     expect(parser.parse("Hello!!")).toEqual("Hello")
   })
-  it('parses simple string correctly', () => {
+  it('throws error when no enum value matches', () => {
     const parser = new StringExtractParser({enum: ["Hello"]})
-    expect(parser.parse("Yo!!")).toEqual("")
+    expect(() => parser.parse("Yo!!")).toThrow("No matching enum value found in input. Expected one of: Hello")
+  })
+  it('throws error with multiple enum values listed', () => {
+    const parser = new StringExtractParser({enum: ["yes", "no"]})
+    expect(() => parser.parse("The answer is maybe")).toThrow("No matching enum value found in input. Expected one of: yes, no")
   })
   it('parses simple string correctly with options.ignoreCase', () => {
     const parser = new StringExtractParser({enum: ["Hello"], ignoreCase: true})
