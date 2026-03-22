@@ -19,12 +19,17 @@ describe("configs", () => {
       endpoint: `https://api.openai.com/v1/chat/completions`,
       options: {
         prompt: {},
+        effort: {},
+        temperature: {},
         topP: {},
+        maxTokens: {},
+        stopSequences: {},
+        frequencyPenalty: {},
+        logitBias: {},
+        useJson: {},
         openAiApiKey: {
           default: undefined,
         },
-        useJson: {},
-        effort: {},
       },
       method: "POST",
       headers: `{"Authorization":"Bearer {{openAiApiKey}}", "Content-Type": "application/json" }`,
@@ -36,8 +41,23 @@ describe("configs", () => {
         model: {
           key: "model",
         },
+        temperature: {
+          key: "temperature",
+        },
         topP: {
           key: "top_p",
+        },
+        maxTokens: {
+          key: "max_tokens",
+        },
+        stopSequences: {
+          key: "stop",
+        },
+        frequencyPenalty: {
+          key: "frequency_penalty",
+        },
+        logitBias: {
+          key: "logit_bias",
         },
         useJson: {
           key: "response_format.type",
