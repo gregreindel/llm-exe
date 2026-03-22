@@ -31,16 +31,28 @@ jobs:
           GH_TOKEN: ${{ steps.bot-token.outputs.token }}
         run: |
           # Get open bugs and enhancements, skip breaking and needs-discussion
-          issues=$(gh issue list --repo ${{ github.repository }} --state open --json number,labels --limit 50 \
+          candidates=$(gh issue list --repo ${{ github.repository }} --state open --json number,labels --limit 50 \
             | jq -c '[.[] | select(
                 (.labels | map(.name) | any(. == "bug" or . == "enhancement" or . == "agent-ok"))
                 and (.labels | map(.name) | any(. == "breaking" or . == "needs-discussion" or . == "on-hold") | not)
-              ) | .number] | if length > 5 then .[:5] else . end')
+              ) | .number]')
+
+          # Get issue numbers that already have an open bot PR (from title or body "closes #N" / "fixes #N")
+          claimed=$(gh pr list --repo ${{ github.repository }} --state open --author "app/llm-exe-bot" \
+            --json title,body --limit 100 \
+            | jq -r '.[] | (.title + " " + .body)' \
+            | { grep -oiE '(closes|fixes|resolves) #[0-9]+' || true; } \
+            | { grep -oE '[0-9]+' || true; } \
+            | jq -Rn '[inputs | tonumber]')
+
+          # Filter out issues that already have a PR
+          issues=$(echo "$candidates" | jq -c --argjson claimed "$claimed" \
+            '[.[] | select(. as $n | $claimed | index($n) | not)] | if length > 5 then .[:5] else . end')
 
           count=$(echo "$issues" | jq 'length')
           echo "issues=$issues" >> "$GITHUB_OUTPUT"
           echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "Found $count issues to work on"
+          echo "Found $count issues to work on (filtered from $(echo "$candidates" | jq 'length') candidates)"
 
   run-coder:
     needs: find-issues
