@@ -771,6 +771,20 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     ]);
   });
 
+  it("throws a descriptive error when format() is called without arguments", () => {
+    const prompt = new ChatPrompt<{ name: string }>("Hello {{name}}");
+    expect(() => (prompt as any).format()).toThrow(
+      "format() requires an input object"
+    );
+  });
+
+  it("throws a descriptive error when format() is called with null", () => {
+    const prompt = new ChatPrompt<{ name: string }>("Hello {{name}}");
+    expect(() => (prompt as any).format(null)).toThrow(
+      "format() requires an input object"
+    );
+  });
+
   it("handles assistant message with function_call but no content", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addFromHistory([
