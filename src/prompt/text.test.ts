@@ -201,4 +201,11 @@ describe("llm-exe:prompt/TextPrompt", () => {
     const format = prompt.format({who: `World`});
     expect(format).toEqual("Hello World")
   });
+
+  it("throws a descriptive error when format() is called without arguments", () => {
+    const prompt = new TextPrompt<{ name: string }>("Hello {{name}}");
+    expect(() => (prompt as any).format()).toThrow(
+      "format() requires an input object"
+    );
+  });
 });

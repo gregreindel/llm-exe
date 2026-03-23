@@ -183,6 +183,11 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   }
 
   getReplacements(values: I) {
+    if (values === undefined || values === null) {
+      throw new Error(
+        "format() requires an input object. Did you forget to pass arguments?"
+      );
+    }
     const { input = "", ...restOfValues } = values;
     const replacements = Object.assign(
       {},
