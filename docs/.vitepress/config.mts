@@ -192,6 +192,11 @@ export default defineConfig({
             link: "/llm/deepseek.html",
             items: [],
           },
+          {
+            text: "Custom Providers",
+            link: "/llm/custom.html",
+            items: [],
+          },
         ],
       },
       {
@@ -272,6 +277,10 @@ export default defineConfig({
           {
             text: "Functions (tools)",
             link: "/executor/openai-functions.html",
+          },
+          {
+            text: "Callable Executors",
+            link: "/callable/index.html",
           },
           {
             text: "Hooks",
