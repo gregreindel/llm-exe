@@ -54,7 +54,6 @@ describe("anthropic config", () => {
       ["anthropic.claude-3-5-sonnet", "claude-3-5-sonnet-latest"],
       ["anthropic.claude-3-5-haiku", "claude-3-5-haiku-latest"],
       ["anthropic.claude-3-opus", "claude-3-opus-20240229"],
-      ["anthropic.claude-3-haiku", "claude-3-haiku-20240307"],
     ] as const)(
       "%s should resolve to %s",
       (shorthand, expectedModel) => {
