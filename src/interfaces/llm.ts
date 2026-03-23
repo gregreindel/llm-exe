@@ -640,6 +640,15 @@ export type AllUseLlmOptions = AllLlm & {
   "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
+  "google.gemini-3-flash-preview": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-3.1-pro-preview": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-3.1-flash-lite-preview": {
+    input: Omit<GeminiRequest, "model">;
+  };
 
   // xAI
   "xai.grok-2": {

@@ -157,4 +157,64 @@ describe("google configuration", () => {
       });
     });
   });
+
+  describe("gemini-3-flash-preview", () => {
+    const config = google["google.gemini-3-flash-preview"] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(googleChatV1.endpoint);
+      expect(config.method).toEqual(googleChatV1.method);
+      expect(config.headers).toEqual(googleChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gemini-3-flash-preview", () => {
+      expect(config.mapBody.model).toEqual({
+        default: "gemini-3-flash-preview",
+        key: "model",
+      });
+      expect(config.options.model).toEqual({
+        default: "gemini-3-flash-preview",
+      });
+    });
+  });
+
+  describe("gemini-3.1-pro-preview", () => {
+    const config = google["google.gemini-3.1-pro-preview"] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(googleChatV1.endpoint);
+      expect(config.method).toEqual(googleChatV1.method);
+      expect(config.headers).toEqual(googleChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gemini-3.1-pro-preview", () => {
+      expect(config.mapBody.model).toEqual({
+        default: "gemini-3.1-pro-preview",
+        key: "model",
+      });
+      expect(config.options.model).toEqual({
+        default: "gemini-3.1-pro-preview",
+      });
+    });
+  });
+
+  describe("gemini-3.1-flash-lite-preview", () => {
+    const config = google["google.gemini-3.1-flash-lite-preview"] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(config.endpoint).toEqual(googleChatV1.endpoint);
+      expect(config.method).toEqual(googleChatV1.method);
+      expect(config.headers).toEqual(googleChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gemini-3.1-flash-lite-preview", () => {
+      expect(config.mapBody.model).toEqual({
+        default: "gemini-3.1-flash-lite-preview",
+        key: "model",
+      });
+      expect(config.options.model).toEqual({
+        default: "gemini-3.1-flash-lite-preview",
+      });
+    });
+  });
 });

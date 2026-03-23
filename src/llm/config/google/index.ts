@@ -97,4 +97,16 @@ export const google = {
     googleGeminiChatV1,
     "gemini-2.5-pro"
   ),
+  "google.gemini-3-flash-preview": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-3-flash-preview"
+  ),
+  "google.gemini-3.1-pro-preview": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-3.1-pro-preview"
+  ),
+  "google.gemini-3.1-flash-lite-preview": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-3.1-flash-lite-preview"
+  ),
 };
