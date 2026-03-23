@@ -1,6 +1,7 @@
 import { assert } from "@/utils/modules/assert";
 import { BaseParser } from "../_base";
 import { BaseParserOptions } from "@/types";
+import { LlmExeError } from "@/utils/modules/errors";
 
 export interface StringExtractParserOptions extends BaseParserOptions {
   enum: string[];
@@ -33,6 +34,14 @@ export class StringExtractParser extends BaseParser<string> {
         return option;
       }
     }
-    return "";
+    throw new LlmExeError(
+      `No matching enum value found in input.`,
+      "parser",
+      {
+        parser: "stringExtract",
+        output: text,
+        error: `No matching enum value found in input. Expected one of: ${this.enum.join(", ")}`,
+      }
+    );
   }
 }
