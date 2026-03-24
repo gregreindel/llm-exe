@@ -602,6 +602,17 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history[2].role).toEqual("assistant");
     });
 
+    it("addMessageTurn without systemMessage uses default empty string", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addMessageTurn("User msg", "Assistant msg");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].role).toEqual("user");
+      expect(history[0].content).toEqual("User msg");
+      expect(history[1].role).toEqual("assistant");
+      expect(history[1].content).toEqual("Assistant msg");
+    });
+
     it("addHistory delegates to setHistory", () => {
       const dialogue = new Dialogue("main");
       dialogue.addHistory([
