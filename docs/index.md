@@ -144,7 +144,7 @@ const summarizer = createLlmExecutor({
 });
 
 const translator = createLlmExecutor({
-  llm: useLlm("anthropic.claude-3-5-haiku"),
+  llm: useLlm("anthropic.claude-sonnet-4-6"),
   prompt: createChatPrompt("Translate to {{language}}: {{text}}"),
   parser: createParser("string"),
 });
@@ -287,7 +287,7 @@ const result = await tools.callFunction(plan.action, plan.input);
 ```typescript
 // Change ONE line to switch providers
 const llm = useLlm("openai.gpt-4o");
-// const llm = useLlm("anthropic.claude-3-5-sonnet");
+// const llm = useLlm("anthropic.claude-sonnet-4-6");
 // const llm = useLlm("google.gemini-2.0-flash");
 // const llm = useLlm("xai.grok-2");
 // const llm = useLlm("ollama.llama-3.3-70b");

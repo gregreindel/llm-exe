@@ -171,7 +171,7 @@ function getHardcodedProviders() {
                 key: 'anthropic',
                 name: 'Anthropic',
                 logo: providerLogos.anthropic,
-                models: ['claude-3-5-sonnet', 'claude-3-5-haiku']
+                models: ['claude-opus-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4', 'claude-opus-4']
             }
         ];
     }
