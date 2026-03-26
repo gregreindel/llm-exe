@@ -193,7 +193,7 @@ export default defineConfig({
             items: [],
           },
           {
-            text: "Custom Provider",
+            text: "Custom Providers",
             link: "/llm/custom.html",
             items: [],
           },
