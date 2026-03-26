@@ -622,22 +622,23 @@ export type AllUseLlmOptions = AllLlm & {
   "google.gemini-2.5-pro-exp-03-25": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.0-flash": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash-lite": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
   "google.gemini-2.5-flash-lite": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-1.5-pro": {
+  "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.5-pro": {
+  // Google - Deprecated
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
 
