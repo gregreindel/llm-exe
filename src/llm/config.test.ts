@@ -1,4 +1,4 @@
-import { configs, getLlmConfig } from "@/llm/config";
+import { configs, getLlmConfig, getSuggestions } from "@/llm/config";
 import { Config, LlmProviderKey } from "@/types";
 
 describe("configs", () => {
@@ -248,8 +248,40 @@ describe("getLlmConfig", () => {
   it("should throw an error for an invalid provider", () => {
     const provider: any = "invalid";
     expect(() => getLlmConfig(provider)).toThrow(
-      `Invalid provider: ${provider}`
+      /Invalid provider: invalid/
     );
+  });
+
+  it("should suggest providers with matching prefix for typos", () => {
+    const provider: any = "openai.gpt4o";
+    expect(() => getLlmConfig(provider)).toThrow(
+      /Did you mean:/
+    );
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.message).toContain("openai.");
+      expect(e.context.resolution).toContain("Did you mean:");
+    }
+  });
+
+  it("should suggest all providers for a known prefix", () => {
+    const provider: any = "xai.unknown";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.message).toContain("Did you mean:");
+      expect(e.message).toContain("xai.");
+    }
+  });
+
+  it("should list all valid providers when no close match exists", () => {
+    const provider: any = "zzzznotareal";
+    try {
+      getLlmConfig(provider);
+    } catch (e: any) {
+      expect(e.context.resolution).toContain("Valid providers:");
+    }
   });
 
   it("should throw an error when provider is undefined", () => {
@@ -337,5 +369,40 @@ describe("getLlmConfig", () => {
     keys.forEach((key) => {
       expect(config).toHaveProperty(key);
     });
+  });
+});
+
+describe("getSuggestions", () => {
+  const validKeys = [
+    "openai.chat.v1",
+    "openai.gpt-4o",
+    "openai.gpt-4o-mini",
+    "anthropic.chat.v1",
+    "xai.chat.v1",
+    "xai.grok-2",
+  ];
+
+  it("should return prefix matches when prefix is valid", () => {
+    const result = getSuggestions("openai.gpt4o", validKeys);
+    expect(result).toEqual(
+      expect.arrayContaining(["openai.gpt-4o", "openai.gpt-4o-mini"])
+    );
+    result.forEach((r) => expect(r).toMatch(/^openai\./));
+  });
+
+  it("should return close Levenshtein matches when no prefix match", () => {
+    const result = getSuggestions("xai.chat.v2", validKeys);
+    expect(result).toContain("xai.chat.v1");
+  });
+
+  it("should return empty array when nothing is close", () => {
+    const result = getSuggestions("zzzznotareal", validKeys);
+    expect(result).toEqual([]);
+  });
+
+  it("should handle prefix-only input", () => {
+    const result = getSuggestions("xai.something", validKeys);
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((r) => expect(r).toMatch(/^xai\./));
   });
 });
