@@ -62,7 +62,7 @@ You can also create a standalone dialogue without state using `createDialogue`. 
 
 ## Saving State
 
-The `DefaultState` class has an abstract `saveState()` method that logs a warning by default. To persist state, extend `DefaultState` and implement your own save logic:
+The `DefaultState` class implements `saveState()` with a warning log by default. To persist state, extend `DefaultState` and override it with your own save logic:
 
 ```ts
 import { DefaultState } from "llm-exe";

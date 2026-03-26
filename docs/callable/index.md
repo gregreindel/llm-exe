@@ -13,7 +13,7 @@ Use `createCallableExecutor` to wrap a handler function or an existing executor.
 | `name` | `string` | Yes | Unique name used to look up and invoke the function |
 | `description` | `string` | Yes | Description of what the function does (shown to the LLM) |
 | `input` | `string` | Yes | JSON-stringified schema describing the expected input shape |
-| `handler` | `function \| BaseExecutor` | Yes | The function to execute, or an existing executor instance |
+| `handler` | `function \| BaseExecutor` | No | The function to execute, or an existing executor instance |
 | `parameters` | `Record<string, any>` | No | Additional static parameters passed alongside the input |
 | `attributes` | `Record<string, any>` | No | Metadata attributes returned with the result |
 | `visibilityHandler` | `function` | No | Controls whether this function is visible in a given context |
