@@ -162,7 +162,7 @@ Setting Up Your Account: To set up your account, you need to...
 
 `markdownCodeBlock`
 Extracts the **first** code block from the LLM response, including the language identifier. If the response contains no code blocks, returns `{ code: "", language: "" }`. For extracting all code blocks, see [`markdownCodeBlocks`](#markdown-code-blocks) below.
-Returns: { code: string; language: string; }
+Returns: `{ code: string; language: string; }`
 
 ```ts
 const parser = createParser("markdownCodeBlock");
