@@ -25,6 +25,9 @@
 - [Deepseek](https://llm-exe.com/llm/deepseek.html)
 - [Custom Provider Configuration](https://llm-exe.com/llm/custom.html)
 
+### Callable Executor
+- [Callable Executor](https://llm-exe.com/callable/index.html)
+
 ### Prompts
 - [Prompt](https://llm-exe.com/prompt/index.html)
 - [Chat Prompt](https://llm-exe.com/prompt/chat.html)
@@ -43,8 +46,10 @@
 
 ### Executor
 - [LLM Executor](https://llm-exe.com/executor/index.html)
-- [OpenAi Functions Executor](https://llm-exe.com/executor/openai-functions.html)
-- [hooks](https://llm-exe.com/executor/hooks.html)
+- [Executor Options](https://llm-exe.com/executor/options.html)
+- [Tool Calling Executor](https://llm-exe.com/executor/openai-functions.html)
+- [Callable Executor](https://llm-exe.com/callable/index.html)
+- [Hooks](https://llm-exe.com/executor/hooks.html)
 
 ### Embeddings
 - [Embeddings](https://llm-exe.com/embeddings/index.html)

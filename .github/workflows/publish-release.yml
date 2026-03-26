@@ -9,7 +9,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   check-release-branch:
@@ -31,7 +31,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        
+
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Validate Publisher
         run: |
           ALLOWED_PUBLISHERS="gregreindel"
@@ -41,7 +48,7 @@ jobs:
             exit 1
           fi
           echo "User ${{ github.actor }} is authorized to publish"
-      
+
       - name: Setup Node.js environment
         uses: ./.github/actions/setup-node
 
@@ -55,6 +62,7 @@ jobs:
         run: npm run build:package
 
       - name: Publish Main/Beta Package version
+        id: npm-publish
         run: |
           version=$(node -p "require('./package.json').version")
           if [[ "$version" == *"beta"* ]]; then
@@ -64,3 +72,37 @@ jobs:
             echo "Publishing main version"
             npm run publish-main
           fi
+
+      - name: Revert release to draft on failure
+        if: failure() && github.event_name == 'release'
+        run: |
+          RELEASE_ID=$(jq -r .release.id "$GITHUB_EVENT_PATH")
+          ORIGINAL_BODY=$(jq -r .release.body "$GITHUB_EVENT_PATH")
+          echo "Publishing failed. Reverting release ID $RELEASE_ID back to draft status..."
+          # Create warning banner and combine with original body
+          cat > release_body.txt <<'EOF'
+          > [!WARNING]
+          > **Release Publishing Failed**
+          > This release has been automatically reverted to draft status because the package failed to publish to npm.
+          > Please review the [workflow logs](WORKFLOW_URL) and address any issues before attempting to publish again.
+          ---
+          EOF
+          # Replace placeholder with actual workflow URL
+          sed -i "s|WORKFLOW_URL|${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|g" release_body.txt
+          # Append original body
+          echo "$ORIGINAL_BODY" >> release_body.txt
+          # Convert to JSON string and update release (same approach as create-draft-release.yml)
+          BODY_JSON=$(jq -Rs '.' < release_body.txt)
+          response=$(curl -s -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ steps.bot-token.outputs.token }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID \
+            -d "{\"draft\": true, \"body\": ${BODY_JSON}}")
+          if echo "$response" | jq -e '.id' > /dev/null; then
+            echo "✅ Release reverted to draft with original notes preserved"
+          else
+            echo "⚠️  Warning: Failed to update release"
+            echo "$response" | jq '.'
+          fi
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}

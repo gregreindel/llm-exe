@@ -275,11 +275,15 @@ export default defineConfig({
             link: "/executor/index.html",
           },
           {
+            text: "Options",
+            link: "/executor/options.html",
+          },
+          {
             text: "Functions (tools)",
             link: "/executor/openai-functions.html",
           },
           {
-            text: "Callable Executors",
+            text: "Callable Executor",
             link: "/callable/index.html",
           },
           {
