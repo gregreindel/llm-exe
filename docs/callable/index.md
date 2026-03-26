@@ -4,7 +4,20 @@ When building LLM agents that need to call tools or functions, `createCallableEx
 
 ### Creating a callable executor
 
-Use `createCallableExecutor` to wrap a handler function or an existing executor:
+Use `createCallableExecutor` to wrap a handler function or an existing executor.
+
+**Config properties:**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | `string` | Yes | Unique name used to look up and invoke the function |
+| `description` | `string` | Yes | Description of what the function does (shown to the LLM) |
+| `input` | `string` | Yes | JSON-stringified schema describing the expected input shape |
+| `handler` | `function \| BaseExecutor` | Yes | The function to execute, or an existing executor instance |
+| `parameters` | `Record<string, any>` | No | Additional static parameters passed alongside the input |
+| `attributes` | `Record<string, any>` | No | Metadata attributes returned with the result |
+| `visibilityHandler` | `function` | No | Controls whether this function is visible in a given context |
+| `validateInput` | `function` | No | Validates input before execution |
 
 ```ts
 import { createCallableExecutor, createLlmExecutor, useLlm, createChatPrompt, createParser } from "llm-exe";
@@ -82,8 +95,13 @@ const allFunctions = executors.getFunctions();
 const adminCallable = createCallableExecutor({
   name: "deleteUser",
   description: "Delete a user account",
-  input: "...",
-  handler: async (input) => { /* ... */ },
+  input: JSON.stringify({
+    type: "object",
+    properties: {
+      userId: { type: "string", description: "The ID of the user to delete" },
+    },
+  }),
+  handler: async (input: { userId: string }) => { /* ... */ },
   visibilityHandler: (input, context, attributes) => {
     return attributes?.role === "admin";
   },
@@ -99,8 +117,15 @@ const visible = executors.getVisibleFunctions(input, { role: "admin" });
 const callable = createCallableExecutor({
   name: "sendEmail",
   description: "Send an email",
-  input: "...",
-  handler: async (input) => { /* ... */ },
+  input: JSON.stringify({
+    type: "object",
+    properties: {
+      to: { type: "string", description: "Recipient email address" },
+      subject: { type: "string", description: "Email subject line" },
+      body: { type: "string", description: "Email body content" },
+    },
+  }),
+  handler: async (input: { to: string; subject: string; body: string }) => { /* ... */ },
   validateInput: async (input) => {
     if (!input.to) {
       return { result: false, attributes: { error: "Missing 'to' field" } };
