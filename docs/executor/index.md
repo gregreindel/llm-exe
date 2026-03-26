@@ -68,3 +68,22 @@ const response = await executor.execute({ input: "Hello!" });
 ```
 
 `createLlmExecutor` Returns an instance of LlmExecutor.
+
+## Core Executor
+
+If you need a typed executor that wraps a plain function (no LLM involved), use `createCoreExecutor`. This is useful for composing non-LLM steps alongside LLM executors in a pipeline — the core executor provides the same `execute` interface, tracing, and hooks as an LLM executor.
+
+```typescript
+import { createCoreExecutor } from "llm-exe";
+
+const executor = createCoreExecutor(
+  async (input: { text: string }) => {
+    return { wordCount: input.text.split(" ").length };
+  }
+);
+
+const result = await executor.execute({ text: "Hello world from llm-exe" });
+// result: { wordCount: 4 }
+```
+
+`createCoreExecutor` Returns an instance of CoreExecutor.

@@ -5,7 +5,7 @@ on:
     types: [created]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
   id-token: write
@@ -21,7 +21,7 @@ jobs:
         github.event.comment.author_association == 'COLLABORATOR'
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
       - name: Generate bot token
@@ -30,6 +30,11 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Configure git
+        run: |
+          git config --global user.name "llm-exe-bot[bot]"
+          git config --global user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,21 +57,43 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.bot-token.outputs.token }}
           prompt: |
-            You are llm-exe-bot, a helpful assistant for the llm-exe TypeScript package. You've been mentioned in a GitHub issue or PR comment.
+            You are llm-exe-bot, a helpful assistant for the llm-exe TypeScript package. You've been mentioned in a GitHub issue or PR comment by a maintainer or collaborator.
 
-            Read CLAUDE.md for project context. You can read any source code in the repo to answer questions.
+            Read CLAUDE.md for project context.
 
-            If you're on a PR and asked to review:
-            - Use `gh pr diff $PR_NUMBER` to see the full diff
-            - Use `gh pr view $PR_NUMBER` to see the PR description
-            - Check out the PR branch with `git checkout $BRANCH` if you need to run tests against it
-            - Run `npm test` and `npm run typecheck` to verify the changes
-            - Give a thorough review: correctness, type safety, test coverage, edge cases, style
+            ## Determine what's being asked
 
-            Be conversational and helpful. You're talking to the maintainer (@gregreindel) or a contributor. Keep responses concise and specific. Reference actual code when relevant (file paths, line numbers).
+            Read the comment that mentioned you carefully. You can be asked to do two kinds of things:
 
-            You can run tests and typecheck to verify things, but do NOT make any changes to the codebase. Do NOT create commits, branches, or PRs. Read and run — don't write.
+            ### 1. Answer questions or review (read-only)
+            If the maintainer is asking a question, requesting a review, or wants your opinion:
+            - Read any relevant source code
+            - Use `gh pr diff` or `gh pr view` to understand PR context
+            - Run `npm test` and `npm run typecheck` if needed to verify things
+            - Reply with a concise, specific answer
+
+            ### 2. Make changes (write mode)
+            If the maintainer is asking you to fix something, revise a PR, address review feedback, or make code changes:
+            - If you're on a PR, check out the PR branch: `gh pr checkout <number>`
+            - Read the PR diff, review comments, and any feedback with:
+              `gh pr diff <number>`
+              `gh pr view <number> --comments`
+              `gh api repos/${{ github.repository }}/pulls/<number>/reviews --jq '.[].body'`
+            - Make the requested changes
+            - Follow existing code patterns and conventions
+            - Run `npm test` and `npm run typecheck` — everything must pass
+            - Commit with a descriptive message (do NOT add Co-Authored-By lines)
+            - Push to the existing PR branch
+            - Reply with a summary of what you changed
+
+            ## Rules
+            - ONLY make changes when the maintainer explicitly asks you to (e.g. "fix this", "address the feedback", "update the PR", "revise", "make these changes")
+            - If the request is ambiguous, ask for clarification — don't guess
+            - Stay scoped to what's asked. Don't refactor, don't "while I'm here" fix other things
+            - Do NOT create new PRs or branches — work on the existing PR branch
+            - Do NOT close issues or PRs unless explicitly told to
+            - Be conversational and concise. Reference actual code (file paths, line numbers) when relevant.
           claude_args: |
-            --allowedTools "Bash,Read,Glob,Grep,WebFetch,WebSearch"
-            --max-turns 20
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+            --max-turns 30
             --model claude-opus-4-6

@@ -42,6 +42,9 @@ A few issues per run max. Pick them, fix them properly with tests, ship the PR, 
    - SKIP issues labeled `needs-discussion` — those require human input first
    - SKIP issues labeled `breaking` — those are parked for the next major release
    - SKIP issues labeled `on-hold` — the maintainer has parked these for now
+   - SKIP issues that already have an open PR. Check with:
+     `gh pr list --state open --search "closes #<issue_number> OR fixes #<issue_number>" --limit 5`
+     If a PR already exists for the issue, move on to the next one. Do NOT create duplicate PRs.
 
 5. Post your plan as a comment on the issue BEFORE writing any code:
    - What you think the root cause is
