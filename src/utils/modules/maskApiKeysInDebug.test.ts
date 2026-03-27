@@ -142,6 +142,26 @@ Line 3: AKIAIOSFODNN7EXAMPLE`;
     });
   });
 
+  describe("short match guard (line 13 branch)", () => {
+    it("should not produce matches <= 8 characters with current regex patterns", () => {
+      // The regex requires: Bearer + 20+ chars, sk- + 20+ chars,
+      // AKIA + 16 chars, or 32+ alphanumeric chars.
+      // All patterns produce matches > 8 chars, making the <= 8 guard
+      // effectively unreachable dead code. This test documents that behavior.
+      const shortInputs = [
+        "sk-abc",
+        "AKIA1234",
+        "Bearer x",
+        "abcd1234",
+        "short",
+      ];
+      for (const input of shortInputs) {
+        // None of these should be masked (they don't match the regex at all)
+        expect(maskApiKeys(input)).toBe(input);
+      }
+    });
+  });
+
   describe("real-world scenarios", () => {
     it("should mask API keys in JSON logs", () => {
       const log = JSON.stringify({

@@ -116,4 +116,43 @@ describe("llm-exe:parser/BaseParser", () => {
     const input = { age: "12", name: "Greg" };
     expect(parser.parse(JSON.stringify(input))).toEqual(input);
   });
+
+  it("sets validateSchema to true when provided", () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new MockParser({ schema, validateSchema: true });
+    expect(parser.validateSchema).toBe(true);
+    expect(parser.schema).toEqual(schema);
+  });
+
+  it("sets validateSchema to false by default", () => {
+    const parser = new MockParser();
+    expect(parser.validateSchema).toBe(false);
+  });
+
+  it("sets validateSchema to false when explicitly false", () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new MockParser({ schema, validateSchema: false });
+    expect(parser.validateSchema).toBe(false);
+  });
+
+  it("handles undefined schema gracefully", () => {
+    const parser = new MockParser({});
+    expect(parser.schema).toBeUndefined();
+    const input = { anything: "works" };
+    expect(parser.parse(JSON.stringify(input))).toEqual(input);
+  });
 });
