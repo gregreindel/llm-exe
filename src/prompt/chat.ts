@@ -659,14 +659,4 @@ export class ChatPrompt<I extends Record<string, any>> extends BasePrompt<I> {
     }
     return messagesOut;
   }
-
-  /**
-   * validate Ensures there are not unresolved tokens in prompt.
-   * @TODO Make this work!
-   * @return Returns false if the template is not valid.
-   */
-  validate(): boolean {
-    // add validation for missing tokens, etc.
-    return true;
-  }
 }

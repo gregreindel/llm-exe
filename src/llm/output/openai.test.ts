@@ -1,145 +1,241 @@
-import { OpenAiResponse } from "@/interfaces";
-import { OutputOpenAIChat } from "@/llm/output/openai";
+import { OutputOpenAIChat } from "./openai";
 
-/**
- * Tests the TextPrompt class
- */
-describe("llm-exe:output/OutputOpenAIChat", () => {
-  const mock = {
-    id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
+describe("OutputOpenAIChat", () => {
+  const baseResponse = {
+    id: "chatcmpl-123",
     object: "chat.completion",
-    created: 1685025755,
-    model: "gpt-3.5-turbo-0301",
-    usage: {
-      prompt_tokens: 427,
-      completion_tokens: 1,
-      total_tokens: 428,
-    },
+    model: "gpt-4o-mini",
+    created: 1700000000,
     choices: [
       {
+        index: 0,
         message: {
           role: "assistant",
-          content: "This is the assistant message content.",
+          content: "Hello, world!",
         },
         finish_reason: "stop",
-        index: 0,
       },
     ],
+    usage: {
+      prompt_tokens: 10,
+      completion_tokens: 5,
+      total_tokens: 15,
+    },
   };
-  it("creates output with expected properties", () => {
-    const output = OutputOpenAIChat(mock as any);
-    expect(output).toHaveProperty("id");
-    expect(output).toHaveProperty("name");
-    expect(output).toHaveProperty("created");
-    expect(output).toHaveProperty("content");
-    expect(output).toHaveProperty("usage");
-  });
-  it("creates output with correct values", () => {
-    const output = OutputOpenAIChat(mock as any);
-    expect(output.id).toEqual(mock.id);
-    expect(output.name).toEqual(mock.model);
-    expect(output.created).toEqual(mock.created);
-    expect(output.usage).toEqual({
-      input_tokens: mock.usage.prompt_tokens,
-      output_tokens: mock.usage.completion_tokens,
-      total_tokens: mock.usage.total_tokens,
-    });
-  });
-  it("formats content correctly", () => {
-    const output = OutputOpenAIChat(mock as any);
-    expect(output.content).toEqual([
-      {
-        type: "text",
-        text: "This is the assistant message content.",
-      },
-    ]);
-    expect(output.stopReason).toEqual("stop");
-  });
-  it("returns complete output structure", () => {
-    const output = OutputOpenAIChat(mock as any);
+
+  it("parses a standard text response", () => {
+    const output = OutputOpenAIChat(baseResponse as any);
     expect(output).toEqual({
-      content: [
-        { text: "This is the assistant message content.", type: "text" },
-      ],
-      created: 1685025755,
-      id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
-      name: "gpt-3.5-turbo-0301",
-      options: [],
+      id: "chatcmpl-123",
+      name: "gpt-4o-mini",
+      created: 1700000000,
       stopReason: "stop",
-      usage: { input_tokens: 427, output_tokens: 1, total_tokens: 428 },
+      content: [{ type: "text", text: "Hello, world!" }],
+      options: [],
+      usage: {
+        input_tokens: 10,
+        output_tokens: 5,
+        total_tokens: 15,
+      },
     });
   });
 
-  it("handles tool_calls when content is null", () => {
-    const output = OutputOpenAIChat({
-      id: "chatcmpl-7KfsdfdsfZj1waHPfsdEZ",
-      object: "chat.completion",
-      created: 1685025755,
-      model: "gpt-3.5-turbo-0301",
-      usage: {
-        prompt_tokens: 427,
-        completion_tokens: 1,
-        total_tokens: 428,
-      },
+  it("parses a response with tool calls", () => {
+    const response = {
+      ...baseResponse,
       choices: [
         {
+          index: 0,
           message: {
             role: "assistant",
             content: null,
             tool_calls: [
               {
-                id: "call_123",
+                id: "call_abc123",
                 type: "function",
                 function: {
-                  name: "test_fn",
-                  arguments: "{}",
+                  name: "get_weather",
+                  arguments: '{"location": "NYC"}',
                 },
               },
             ],
           },
-          finish_reason: "stop",
-          index: 0,
+          finish_reason: "tool_calls",
         },
       ],
-    } as unknown as OpenAiResponse);
-    expect(output.content).toEqual(
-      [{"functionId": "call_123", "input": {}, "name": "test_fn", "type": "function_use"}]
-    );
+    };
+
+    const output = OutputOpenAIChat(response as any);
+    expect(output.content).toEqual([
+      {
+        type: "function_use",
+        functionId: "call_abc123",
+        name: "get_weather",
+        input: { location: "NYC" },
+      },
+    ]);
+    expect(output.stopReason).toBe("tool_calls");
   });
 
-  it("uses default model name when model is undefined and no config", () => {
-    const mockWithoutModel = {
-      ...mock,
-      model: undefined,
+  it("parses a response with both text and tool calls", () => {
+    const response = {
+      ...baseResponse,
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: "assistant",
+            content: "Let me check the weather.",
+            tool_calls: [
+              {
+                id: "call_xyz",
+                type: "function",
+                function: {
+                  name: "get_weather",
+                  arguments: '{"city": "London"}',
+                },
+              },
+            ],
+          },
+          finish_reason: "tool_calls",
+        },
+      ],
     };
-    const output = OutputOpenAIChat(mockWithoutModel as any);
+
+    const output = OutputOpenAIChat(response as any);
+    expect(output.content).toHaveLength(2);
+    expect(output.content[0]).toEqual({
+      type: "text",
+      text: "Let me check the weather.",
+    });
+    expect(output.content[1]).toEqual({
+      type: "function_use",
+      functionId: "call_xyz",
+      name: "get_weather",
+      input: { city: "London" },
+    });
+  });
+
+  it("parses multiple tool calls", () => {
+    const response = {
+      ...baseResponse,
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: "assistant",
+            content: null,
+            tool_calls: [
+              {
+                id: "call_1",
+                type: "function",
+                function: { name: "get_weather", arguments: '{"city": "NYC"}' },
+              },
+              {
+                id: "call_2",
+                type: "function",
+                function: { name: "get_time", arguments: '{"timezone": "EST"}' },
+              },
+            ],
+          },
+          finish_reason: "tool_calls",
+        },
+      ],
+    };
+
+    const output = OutputOpenAIChat(response as any);
+    expect(output.content).toHaveLength(2);
+    expect((output.content[0] as any).name).toBe("get_weather");
+    expect((output.content[1] as any).name).toBe("get_time");
+  });
+
+  it("handles multiple choices (options)", () => {
+    const response = {
+      ...baseResponse,
+      choices: [
+        {
+          index: 0,
+          message: { role: "assistant", content: "First choice" },
+          finish_reason: "stop",
+        },
+        {
+          index: 1,
+          message: { role: "assistant", content: "Second choice" },
+          finish_reason: "stop",
+        },
+      ],
+    };
+
+    const output = OutputOpenAIChat(response as any);
+    expect(output.content).toEqual([{ type: "text", text: "First choice" }]);
+    expect(output.options).toHaveLength(1);
+  });
+
+  it("falls back to config model name when response model is missing", () => {
+    const response = { ...baseResponse, model: undefined };
+    const config = { options: { model: { default: "gpt-4" } } };
+
+    const output = OutputOpenAIChat(response as any, config as any);
+    expect(output.name).toBe("gpt-4");
+  });
+
+  it("falls back to openai.unknown when no model info available", () => {
+    const response = { ...baseResponse, model: undefined };
+    const output = OutputOpenAIChat(response as any);
     expect(output.name).toBe("openai.unknown");
   });
 
-  it("uses config default model when model is undefined", () => {
-    const mockWithoutModel = {
-      ...mock,
-      model: undefined,
-    };
-    const config = {
-      options: {
-        model: {
-          default: "openai-from-config",
-        },
-      },
-    };
-    const output = OutputOpenAIChat(mockWithoutModel as any, config as any);
-    expect(output.name).toBe("openai-from-config");
-  });
-
-  it("handles missing choices array", () => {
-    const mockWithoutChoices = {
-      ...mock,
-      choices: undefined,
-    };
-    const output = OutputOpenAIChat(mockWithoutChoices as any);
+  it("handles empty choices array", () => {
+    const response = { ...baseResponse, choices: [] };
+    const output = OutputOpenAIChat(response as any);
     expect(output.content).toEqual([]);
     expect(output.options).toEqual([]);
-    expect(output.stopReason).toBeUndefined();
+  });
+
+  it("handles missing usage data", () => {
+    const response = { ...baseResponse, usage: undefined };
+    const output = OutputOpenAIChat(response as any);
+    expect(output.usage).toEqual({
+      input_tokens: undefined,
+      output_tokens: undefined,
+      total_tokens: undefined,
+    });
+  });
+
+  it("handles tool call with non-JSON arguments", () => {
+    const response = {
+      ...baseResponse,
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: "assistant",
+            content: null,
+            tool_calls: [
+              {
+                id: "call_1",
+                type: "function",
+                function: { name: "echo", arguments: "plain text not json" },
+              },
+            ],
+          },
+          finish_reason: "tool_calls",
+        },
+      ],
+    };
+
+    const output = OutputOpenAIChat(response as any);
+    expect(output.content[0]).toEqual({
+      type: "function_use",
+      functionId: "call_1",
+      name: "echo",
+      input: {},
+    });
+  });
+
+  it("preserves response id and created timestamp", () => {
+    const output = OutputOpenAIChat(baseResponse as any);
+    expect(output.id).toBe("chatcmpl-123");
+    expect(output.created).toBe(1700000000);
   });
 });
