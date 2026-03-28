@@ -202,6 +202,14 @@ describe("OutputOpenAIChat", () => {
     });
   });
 
+  it("handles undefined choices", () => {
+    const response = { ...baseResponse, choices: undefined };
+    const output = OutputOpenAIChat(response as any);
+    expect(output.content).toEqual([]);
+    expect(output.options).toEqual([]);
+    expect(output.stopReason).toBeUndefined();
+  });
+
   it("handles tool call with non-JSON arguments", () => {
     const response = {
       ...baseResponse,
