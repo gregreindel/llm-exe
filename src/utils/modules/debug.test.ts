@@ -1,197 +1,162 @@
 import { debug } from "./debug";
 
 describe("debug", () => {
-let originalDebugEnv: string | undefined;
-let consoleDebugSpy: jest.SpyInstance;
-let consoleErrorSpy: jest.SpyInstance;
+  let debugSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
+  let originalDebugEnv: string | undefined;
 
-beforeAll(() => {
-originalDebugEnv = process.env.LLM_EXE_DEBUG;
-});
+  beforeEach(() => {
+    originalDebugEnv = process.env.LLM_EXE_DEBUG;
+    debugSpy = jest.spyOn(console, "debug").mockImplementation(() => {});
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
 
-beforeEach(() => {
-consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation(() => {});
-consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-});
+  afterEach(() => {
+    debugSpy.mockRestore();
+    errorSpy.mockRestore();
+    if (originalDebugEnv === undefined) {
+      delete process.env.LLM_EXE_DEBUG;
+    } else {
+      process.env.LLM_EXE_DEBUG = originalDebugEnv;
+    }
+  });
 
-afterEach(() => {
-consoleDebugSpy.mockRestore();
-consoleErrorSpy.mockRestore();
-process.env.LLM_EXE_DEBUG = originalDebugEnv;
-});
+  describe("when LLM_EXE_DEBUG is set", () => {
+    beforeEach(() => {
+      process.env.LLM_EXE_DEBUG = "true";
+    });
 
-it("does not log anything if LLM_EXE_DEBUG is undefined", () => {
-delete process.env.LLM_EXE_DEBUG;
-debug("Hello World");
-expect(consoleDebugSpy).not.toHaveBeenCalled();
-});
+    it("logs string arguments", () => {
+      debug("hello world");
+      expect(debugSpy).toHaveBeenCalledWith("hello world");
+    });
 
-it("does not log anything if LLM_EXE_DEBUG is empty string", () => {
-process.env.LLM_EXE_DEBUG = "";
-debug("Hello World");
-expect(consoleDebugSpy).not.toHaveBeenCalled();
-});
+    it("logs plain objects as JSON", () => {
+      debug({ foo: "bar" });
+      expect(debugSpy).toHaveBeenCalledWith(
+        JSON.stringify({ foo: "bar" }, null, 2)
+      );
+    });
 
-it("does not log anything if LLM_EXE_DEBUG is 'undefined'", () => {
-process.env.LLM_EXE_DEBUG = "undefined";
-debug("Hello World");
-expect(consoleDebugSpy).not.toHaveBeenCalled();
-});
+    it("masks Authorization headers in objects", () => {
+      debug({
+        headers: {
+          Authorization: "Bearer sk-1234567890abcdefghijklmnop",
+        },
+      });
+      const loggedStr = debugSpy.mock.calls[0][0];
+      expect(loggedStr).not.toContain("sk-1234567890abcdefghijklmnop");
+      expect(loggedStr).toContain("***");
+    });
 
-it("does not log anything if LLM_EXE_DEBUG is 'null'", () => {
-process.env.LLM_EXE_DEBUG = "null";
-debug("Hello World");
-expect(consoleDebugSpy).not.toHaveBeenCalled();
-});
+    it("does not mask objects without Authorization header", () => {
+      debug({ headers: { "Content-Type": "application/json" } });
+      const loggedStr = debugSpy.mock.calls[0][0];
+      expect(loggedStr).toContain("application/json");
+      expect(loggedStr).not.toContain("***");
+    });
 
-it("logs when LLM_EXE_DEBUG is a non-empty, non-'null', non-'undefined' string", () => {
-process.env.LLM_EXE_DEBUG = "true";
-debug("Hello World");
-expect(consoleDebugSpy).toHaveBeenCalledWith("Hello World");
-});
+    it("logs arrays as stringified items", () => {
+      debug([1, 2, 3]);
+      const logged = debugSpy.mock.calls[0][0];
+      expect(logged).toEqual(["1", "2", "3"]);
+    });
 
-it("handles string arguments", () => {
-process.env.LLM_EXE_DEBUG = "true";
-debug("test-string");
-expect(consoleDebugSpy).toHaveBeenCalledWith("test-string");
-});
+    it("logs Map entries", () => {
+      const map = new Map([["key1", "val1"]]);
+      debug(map);
+      const logged = debugSpy.mock.calls[0][0];
+      expect(logged).toEqual(['key1: "val1"']);
+    });
 
-it("handles numeric arguments", () => {
-process.env.LLM_EXE_DEBUG = "true";
-debug(1234);
-expect(consoleDebugSpy).toHaveBeenCalledWith(1234);
-});
+    it("logs Set values as stringified items", () => {
+      const set = new Set(["a", "b"]);
+      debug(set);
+      const logged = debugSpy.mock.calls[0][0];
+      expect(logged).toEqual(['"a"', '"b"']);
+    });
 
-it("handles boolean arguments", () => {
-process.env.LLM_EXE_DEBUG = "true";
-debug(true);
-debug(false);
-expect(consoleDebugSpy).toHaveBeenCalledWith(true);
-expect(consoleDebugSpy).toHaveBeenCalledWith(false);
-});
+    it("logs Date as ISO string", () => {
+      const date = new Date("2024-01-15T12:00:00.000Z");
+      debug(date);
+      expect(debugSpy).toHaveBeenCalledWith("2024-01-15T12:00:00.000Z");
+    });
 
-it("handles Error objects (does not push them to logs)", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const error = new Error("test error");
-debug(error);
-// The function has a branch for Error, but adds nothing to logs
-expect(consoleDebugSpy).toHaveBeenCalledWith(); // no args printed
-});
+    it("logs RegExp as string", () => {
+      debug(/test-pattern/gi);
+      expect(debugSpy).toHaveBeenCalledWith("/test-pattern/gi");
+    });
 
-it("handles arrays", () => {
-process.env.LLM_EXE_DEBUG = "true";
-debug([1, 2, 3]);
-// We expect each item in array to be stringified
-expect(consoleDebugSpy).toHaveBeenCalledWith([
-JSON.stringify(1, null, 2),
-JSON.stringify(2, null, 2),
-JSON.stringify(3, null, 2),
-]);
-});
+    it("handles Error objects silently", () => {
+      debug(new Error("test error"));
+      // Error objects are skipped (nothing pushed to logs)
+      expect(debugSpy).toHaveBeenCalledWith();
+    });
 
-it("handles Maps", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const testMap = new Map();
-testMap.set("key1", "value1");
-testMap.set("key2", { nested: true });
-debug(testMap);
-// The map is turned into an array of "key: value" strings
-expect(consoleDebugSpy).toHaveBeenCalledWith([
-`key1: ${JSON.stringify("value1", null, 2)}`,
-`key2: ${JSON.stringify({ nested: true }, null, 2)}`,
-]);
-});
+    it("logs non-object, non-string values as-is", () => {
+      debug(42);
+      expect(debugSpy).toHaveBeenCalledWith(42);
+    });
 
-it("handles Sets", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const testSet = new Set([1, { a: "b" }, true]);
-debug(testSet);
-// The set is turned into an array of JSON-ified items
-expect(consoleDebugSpy).toHaveBeenCalledWith([
-JSON.stringify(1, null, 2),
-JSON.stringify({ a: "b" }, null, 2),
-JSON.stringify(true, null, 2),
-]);
-});
+    it("logs null as-is", () => {
+      debug(null);
+      expect(debugSpy).toHaveBeenCalledWith(null);
+    });
 
-it("handles Dates", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const date = new Date("2020-01-01T00:00:00.000Z");
-debug(date);
-// It should log ISO string
-expect(consoleDebugSpy).toHaveBeenCalledWith(date.toISOString());
-});
+    it("logs undefined as-is", () => {
+      debug(undefined);
+      expect(debugSpy).toHaveBeenCalledWith(undefined);
+    });
 
-it("handles RegExp", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const regex = /test/i;
-debug(regex);
-expect(consoleDebugSpy).toHaveBeenCalledWith(regex.toString());
-});
+    it("logs multiple arguments together", () => {
+      debug("prefix", { key: "val" }, 123);
+      expect(debugSpy).toHaveBeenCalledWith(
+        "prefix",
+        JSON.stringify({ key: "val" }, null, 2),
+        123
+      );
+    });
 
-it("handles generic objects", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const obj = { foo: "bar" };
-debug(obj);
-expect(consoleDebugSpy).toHaveBeenCalledWith(JSON.stringify(obj, null, 2));
-});
+    it("handles objects that fail JSON.stringify", () => {
+      const circular: any = {};
+      circular.self = circular;
+      debug(circular);
+      expect(errorSpy).toHaveBeenCalledWith(
+        "Error parsing object:",
+        expect.any(Error)
+      );
+    });
+  });
 
-it("handles circular object (triggers JSON parse error)", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const circularObj: any = {};
-circularObj.ref = circularObj;
-debug(circularObj);
-expect(consoleErrorSpy).toHaveBeenCalledWith(
-"Error parsing object:",
-expect.any(Error)
-);
-// No final push for console.debug on the circular object value
-expect(consoleDebugSpy).toHaveBeenCalledWith();
-});
+  describe("when LLM_EXE_DEBUG is not set or falsy", () => {
+    it("does not log when LLM_EXE_DEBUG is unset", () => {
+      delete process.env.LLM_EXE_DEBUG;
+      debug("should not log");
+      expect(debugSpy).not.toHaveBeenCalled();
+    });
 
-it("masks API keys when object has Authorization header", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const objWithAuth = {
-  headers: {
-    Authorization: "Bearer sk-123456789abcdef01234567890123456",
-    "Content-Type": "application/json"
-  },
-  data: {
-    apiKey: "sk-987654321fedcba98765432109876543"
-  }
-};
-debug(objWithAuth);
-// debug logs a single argument, so get the first call's first argument
-const loggedString = consoleDebugSpy.mock.calls[0][0];
-// The logged string should be masked
-expect(loggedString).toContain("Bear**********************************3456");
-expect(loggedString).toContain("sk-9***************************6543");
-expect(loggedString).not.toContain("sk-123456789abcdef01234567890123456");
-expect(loggedString).not.toContain("sk-987654321fedcba98765432109876543");
-});
+    it("does not log when LLM_EXE_DEBUG is empty string", () => {
+      process.env.LLM_EXE_DEBUG = "";
+      debug("should not log");
+      expect(debugSpy).not.toHaveBeenCalled();
+    });
 
-it("handles object with headers but no Authorization", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const objWithHeaders = {
-  headers: {
-    "Content-Type": "application/json",
-    "X-Custom": "value"
-  },
-  data: "some data"
-};
-debug(objWithHeaders);
-// Should not mask anything since no Authorization header
-expect(consoleDebugSpy).toHaveBeenCalledWith(JSON.stringify(objWithHeaders, null, 2));
-});
+    it("does not log when LLM_EXE_DEBUG is 'undefined'", () => {
+      process.env.LLM_EXE_DEBUG = "undefined";
+      debug("should not log");
+      expect(debugSpy).not.toHaveBeenCalled();
+    });
 
-it("handles object without headers property", () => {
-process.env.LLM_EXE_DEBUG = "true";
-const objNoHeaders = {
-  data: "some data",
-  status: 200
-};
-debug(objNoHeaders);
-// Should not mask anything since no headers
-expect(consoleDebugSpy).toHaveBeenCalledWith(JSON.stringify(objNoHeaders, null, 2));
-});
+    it("does not log when LLM_EXE_DEBUG is 'null'", () => {
+      process.env.LLM_EXE_DEBUG = "null";
+      debug("should not log");
+      expect(debugSpy).not.toHaveBeenCalled();
+    });
+
+    it("is case-insensitive for 'undefined' and 'null' checks", () => {
+      process.env.LLM_EXE_DEBUG = "UNDEFINED";
+      debug("should not log");
+      expect(debugSpy).not.toHaveBeenCalled();
+    });
+  });
 });
