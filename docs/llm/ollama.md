@@ -34,13 +34,11 @@ await llm.call(prompt);
 
 ## Ollama-Specific Options
 
-In addition to the generic options, the following options are Ollama-specific and can be passed in when creating a llm function.
+| Option | Type   | Default   | Description                                                    |
+| ------ | ------ | --------- | -------------------------------------------------------------- |
+| model  | string | —         | The model to use. Must be specified when using `ollama.chat.v1`. |
 
-| Option           | Type    | Default     | Description                                                    |
-| ---------------- | ------- | ----------- | -------------------------------------------------------------- |
-| model            | string  | —           | The model to use. Must be specified. See Ollama Docs             |
-| temperature      | number  | undefined   | Maps to temperature.*                          |
-| maxTokens        | number  | undefined   | Maps to max_tokens. See Ollama Docs                            |
-| topP             | number  | undefined   | Maps to top_p. See Ollama Docs                                 |
+> [!NOTE]
+> The Ollama provider currently maps `model` and `prompt` only. Generic options like `temperature`, `maxTokens`, and `topP` are not mapped to the Ollama API at this time. The Ollama request body is sent directly to the `/api/chat` endpoint.
 
-\* Ollama Docs: [link](https://ollama.com/)
+See [Ollama Docs](https://ollama.com/) for details.

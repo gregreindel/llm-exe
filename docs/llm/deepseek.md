@@ -42,15 +42,15 @@ await llm.call(prompt);
 
 In addition to the generic options, the following options are Deepseek-specific and can be passed in when creating a llm function.
 
-| Option           | Type    | Default     | Description                                                    |
-| ---------------- | ------- | ----------- | -------------------------------------------------------------- |
+| Option           | Type    | Default       | Description                                                    |
+| ---------------- | ------- | ------------- | -------------------------------------------------------------- |
 | model            | string  | deepseek-chat | The model to use. Can be any valid chat model. See Deepseek Docs |
-| deepseekApiKey     | string  | undefined   | API key for Deepseek. See [authentication](/llm/deepseek#authentication)   |
-| temperature      | number  | undefined   | Maps to temperature.*                          |
-| maxTokens        | number  | undefined   | Maps to max_tokens. See Deepseek Docs                            |
-| topP             | number  | undefined   | Maps to top_p. See Deepseek Docs                                 |
-| n                | number  | undefined   | Maps to n. See Deepseek Docs                                     |
-| stream           | boolean | undefined   | See Deepseek Docs. Note: Not supported yet.                      |
+| deepseekApiKey   | string  | undefined     | API key for Deepseek. See [authentication](/llm/deepseek#authentication) |
+| topP             | number  | undefined     | Maps to `top_p`. See Deepseek Docs                             |
+| stopSequences    | array   | undefined     | Maps to `stop`. See Deepseek Docs                              |
+| frequencyPenalty | number  | undefined     | Maps to `frequency_penalty`. See Deepseek Docs                 |
+| logitBias        | object  | undefined     | Maps to `logit_bias`. See Deepseek Docs                        |
+| useJson          | boolean | undefined     | When `true`, sets `response_format` to `json_object`           |
+| effort           | string  | undefined     | Maps to `reasoning_effort`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. |
 
-
-\* Deepseek Docs: [link](https://api-docs.deepseek.com/)
+See [Deepseek API Reference](https://api-docs.deepseek.com/) for details on these parameters.

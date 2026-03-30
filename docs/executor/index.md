@@ -69,6 +69,40 @@ const response = await executor.execute({ input: "Hello!" });
 
 `createLlmExecutor` Returns an instance of LlmExecutor.
 
+## Function Executor
+
+If you need tool/function calling support, use `createLlmFunctionExecutor`. It extends the standard LLM executor with the ability to define functions the LLM can call. This works with any provider that supports tool calling (OpenAI, Anthropic, Google, etc.).
+
+```typescript
+import { useLlm, createChatPrompt, createLlmFunctionExecutor } from "llm-exe";
+
+const llm = useLlm("openai.gpt-4o-mini");
+const prompt = createChatPrompt("You are a helpful assistant.");
+
+const executor = createLlmFunctionExecutor({
+  llm,
+  prompt,
+});
+
+const response = await executor.execute(
+  { input: "What's the weather?" },
+  {
+    functionCall: "auto",
+    functions: [
+      {
+        name: "get_weather",
+        description: "Get the current weather",
+        parameters: { /* JSON Schema */ },
+      },
+    ],
+  }
+);
+```
+
+`createLlmFunctionExecutor` Returns an instance of LlmExecutorWithFunctions.
+
+See [Tool Calling Executor](/executor/openai-functions.html) for full documentation and examples.
+
 ## Core Executor
 
 If you need a typed executor that wraps a plain function (no LLM involved), use `createCoreExecutor`. This is useful for composing non-LLM steps alongside LLM executors in a pipeline — the core executor provides the same `execute` interface, tracing, and hooks as an LLM executor.
