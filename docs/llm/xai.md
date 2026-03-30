@@ -42,19 +42,15 @@ await llm.call(prompt);
 
 In addition to the generic options, the following options are xAI-specific and can be passed in when creating a llm function.
 
-| Option           | Type    | Default     | Description                                                 |
-| ---------------- | ------- | ----------- | ----------------------------------------------------------- |
-| model            | string  | —           | The model to use. Must be specified. See xAI Docs               |
-| xAiApiKey        | string  | undefined   | API key for xAI.                                            |
-| temperature      | number  | undefined   | Maps to temperature.\*                                      |
-| maxTokens        | number  | undefined   | Maps to max_tokens. See xAI Docs                            |
-| topP             | number  | undefined   | Maps to top_p. See xAI Docs                                 |
-| n                | number  | undefined   | Maps to n. See xAI Docs                                     |
-| stream           | boolean | undefined   | See xAI Docs. Note: Not supported yet.                      |
-| stop             | ?       | undefined   | Maps to stop. See xAI Docs                                  |
-| presencePenalty  | number  | undefined   | Maps to presence_penalty. See xAI Docs                      |
-| frequencyPenalty | number  | undefined   | Maps to frequency_penalty. See xAI Docs                     |
-| logitBias        | object  | undefined   | Maps to logit_bias. See xAI Docs                            |
-| user             | string  | undefined   | Maps to user. See xAI Docs                                  |
+| Option           | Type    | Default     | Description                                                    |
+| ---------------- | ------- | ----------- | -------------------------------------------------------------- |
+| model            | string  | —           | The model to use. Must be specified when using `xai.chat.v1`.  |
+| xAiApiKey        | string  | undefined   | API key for xAI. Optionally can be set using process.env.XAI_API_KEY |
+| topP             | number  | undefined   | Maps to `top_p`. See xAI Docs                                 |
+| stopSequences    | array   | undefined   | Maps to `stop`. See xAI Docs                                  |
+| frequencyPenalty | number  | undefined   | Maps to `frequency_penalty`. See xAI Docs                     |
+| logitBias        | object  | undefined   | Maps to `logit_bias`. See xAI Docs                            |
+| useJson          | boolean | undefined   | When `true`, sets `response_format` to `json_object`           |
+| effort           | string  | undefined   | Maps to `reasoning_effort`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. |
 
-\* xAI Docs: [link](https://docs.x.ai/docs/overview)
+See [xAI API Reference](https://docs.x.ai/docs/overview) for details on these parameters.
