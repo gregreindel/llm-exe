@@ -257,6 +257,44 @@ describe("getLlmConfig", () => {
     );
   });
 
+  it("should suggest similar providers for a close misspelling", () => {
+    try {
+      getLlmConfig("openai.gpt4o" as any);
+    } catch (e: any) {
+      expect(e.message).toBe("Invalid provider: openai.gpt4o");
+      expect(e.context.resolution).toMatch(/Did you mean/);
+      expect(e.context.resolution).toMatch(/"openai\.gpt-4o"/);
+    }
+  });
+
+  it("should suggest similar providers for a typo with extra characters", () => {
+    try {
+      getLlmConfig("openai.gpt-4o-mni" as any);
+    } catch (e: any) {
+      expect(e.message).toBe("Invalid provider: openai.gpt-4o-mni");
+      expect(e.context.resolution).toMatch(/Did you mean/);
+      expect(e.context.resolution).toMatch(/"openai\.gpt-4o-mini"/);
+    }
+  });
+
+  it("should list prefix-matched providers when no close match exists", () => {
+    try {
+      getLlmConfig("openai.nonexistent" as any);
+    } catch (e: any) {
+      expect(e.message).toBe("Invalid provider: openai.nonexistent");
+      expect(e.context.resolution).toMatch(/Available "openai" providers/);
+      expect(e.context.resolution).toMatch(/"openai\.chat\.v1"/);
+    }
+  });
+
+  it("should fall back to generic message for completely unknown input", () => {
+    try {
+      getLlmConfig("zzzzzzzzz" as any);
+    } catch (e: any) {
+      expect(e.context.resolution).toBe("Provide a valid provider.");
+    }
+  });
+
   it("should throw an error when provider is undefined", () => {
     const provider: any = undefined;
     expect(() => getLlmConfig(provider)).toThrow(`Missing provider`);
