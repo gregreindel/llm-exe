@@ -23,7 +23,7 @@ This is an example input message.
 ## Number Parser
 
 `number`
-Extracts a number from the LLM response.
+Extracts a number from the LLM response. Throws an error if no numeric value is found.
 Returns: number
 
 ```ts
@@ -67,7 +67,7 @@ Yes, that is correct.
 ## String Extractor Parser
 
 `stringExtract`
-Use this parser to ensure the response is one of many specific strings you define. This parser does not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected.
+Use this parser to ensure the response is one of many specific strings you define. This parser does not return the LLM's actual response, but works through the `enum` you provide and looks for a match. When it finds one, it returns the `enum` value, ensuring the response is exactly as expected. Throws an error if no matching enum value is found.
 
 Returns: string
 
@@ -241,12 +241,25 @@ Returns string.
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of key: value pairs (separated by \n) to an object. By default, keys are camelCased (e.g., `First Name` becomes `firstName`).
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
+```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | Controls how keys are transformed. `"camelCase"` converts keys like `First Name` to `firstName`. `"preserve"` keeps the original key as-is. |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON schema to validate and enforce defaults on the parsed output. |
+
+```typescript
+// Preserve original keys instead of camelCasing
+const parser = createParser("listToJson", { keyTransform: "preserve" });
+const result = parser.parse("First Name: John\nLast Name: Doe");
+// { "First Name": "John", "Last Name": "Doe" }
 ```
 
 ::: code-group

@@ -49,5 +49,5 @@ Appends an array of existing chat history messages to the prompt.
 `format`
 Format the prompt for LLM. This processes the template as a handlebars template.
 
-<!-- `validate`
-Validate the prompt. Makes sure there are no unresolved tokens. -->
+`validate`
+Validates the prompt. Throws an error if the prompt is empty (has no messages).
