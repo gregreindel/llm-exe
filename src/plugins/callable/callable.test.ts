@@ -188,3 +188,179 @@ describe("llm-exe:callable/useExecutors", () => {
     });
   });
 });
+
+describe("llm-exe:callable/CallableExecutor constructor", () => {
+  it("throws on invalid handler (not function or executor)", () => {
+    expect(() => {
+      new CallableExecutor({
+        name: "bad",
+        description: "should fail",
+        input: "none",
+        handler: "not a function" as any,
+      });
+    }).toThrow("Invalid handler");
+  });
+
+  it("defaults key to name when key is not provided", () => {
+    const callable = new CallableExecutor({
+      name: "my_func",
+      description: "test",
+      input: "none",
+      handler: async () => "ok",
+    });
+    expect(callable.key).toEqual("my_func");
+  });
+
+  it("uses provided key over name", () => {
+    const callable = new CallableExecutor({
+      name: "my_func",
+      key: "custom_key",
+      description: "test",
+      input: "none",
+      handler: async () => "ok",
+    });
+    expect(callable.key).toEqual("custom_key");
+  });
+
+  it("defaults parameters to empty object", () => {
+    const callable = new CallableExecutor({
+      name: "my_func",
+      description: "test",
+      input: "none",
+      handler: async () => "ok",
+    });
+    expect(callable.parameters).toEqual({});
+  });
+
+  it("defaults attributes to empty object", () => {
+    const callable = new CallableExecutor({
+      name: "my_func",
+      description: "test",
+      input: "none",
+      handler: async () => "ok",
+    });
+    expect(callable.attributes).toEqual({});
+  });
+
+  it("stores provided parameters", () => {
+    const params = { type: "string", required: true };
+    const callable = new CallableExecutor({
+      name: "my_func",
+      description: "test",
+      input: "none",
+      parameters: params,
+      handler: async () => "ok",
+    });
+    expect(callable.parameters).toEqual(params);
+  });
+
+  it("stores provided attributes", () => {
+    const attrs = { category: "search" };
+    const callable = new CallableExecutor({
+      name: "my_func",
+      description: "test",
+      input: "none",
+      attributes: attrs,
+      handler: async () => "ok",
+    });
+    expect(callable.attributes).toEqual(attrs);
+  });
+});
+
+describe("llm-exe:callable/CallableExecutor visibilityHandler", () => {
+  it("returns true by default when no visibilityHandler provided", () => {
+    const callable = new CallableExecutor({
+      name: "visible_fn",
+      description: "always visible",
+      input: "none",
+      handler: async () => "ok",
+    });
+    expect(callable.visibilityHandler({}, {})).toBe(true);
+  });
+
+  it("calls custom visibilityHandler with input and attributes", () => {
+    const visibilityHandler = jest.fn().mockReturnValue(false);
+    const callable = new CallableExecutor({
+      name: "conditional_fn",
+      description: "conditionally visible",
+      input: "none",
+      handler: async () => "ok",
+      visibilityHandler,
+    });
+    const result = callable.visibilityHandler({ role: "admin" }, { level: 5 });
+    expect(result).toBe(false);
+    expect(visibilityHandler).toHaveBeenCalled();
+  });
+
+  it("getVisibleFunctions filters based on visibilityHandler", () => {
+    const alwaysVisible = new CallableExecutor({
+      name: "always",
+      description: "always visible",
+      input: "none",
+      handler: async () => "ok",
+    });
+    const neverVisible = new CallableExecutor({
+      name: "never",
+      description: "never visible",
+      input: "none",
+      handler: async () => "ok",
+      visibilityHandler: () => false,
+    });
+    const executors = useExecutors([alwaysVisible, neverVisible]);
+    const visible = executors.getVisibleFunctions({});
+    expect(visible).toHaveLength(1);
+    expect(visible[0].name).toEqual("always");
+  });
+});
+
+describe("llm-exe:callable/CallableExecutor execute", () => {
+  it("executes handler and wraps result with enforceResultAttributes", async () => {
+    const callable = new CallableExecutor({
+      name: "exec_fn",
+      description: "test execute",
+      input: "none",
+      handler: async (input: any) => ({ doubled: input.value * 2 }),
+    });
+    const result = await callable.execute({ value: 5 } as any);
+    expect(result).toEqual({
+      result: { doubled: 10 },
+      attributes: {},
+    });
+  });
+
+  it("execute passes string input through ensureInputIsObject", async () => {
+    const callable = new CallableExecutor({
+      name: "string_fn",
+      description: "test string input",
+      input: "none",
+      handler: async (input: any) => input,
+    });
+    const result = await callable.execute("hello" as any);
+    expect(result.result).toEqual({ input: "hello" });
+  });
+});
+
+describe("llm-exe:callable/UseExecutorsBase callFunction", () => {
+  it("returns error message string when handler does not exist", async () => {
+    const executors = useExecutors([]);
+    const result = await executors.callFunction("nonexistent", "test");
+    expect(result).toEqual(
+      "[invalid handler] The handler (nonexistent) does not exist."
+    );
+  });
+
+  it("getFunctions returns a copy of handlers array", () => {
+    const callable = new CallableExecutor({
+      name: "fn1",
+      description: "test",
+      input: "none",
+      handler: async () => "ok",
+    });
+    const executors = useExecutors([callable]);
+    const fns = executors.getFunctions();
+    expect(fns).toHaveLength(1);
+    expect(fns).not.toBe(executors.handlers); // should be a copy
+    fns.push(callable);
+    expect(executors.handlers).toHaveLength(1); // original unchanged
+  });
+});
