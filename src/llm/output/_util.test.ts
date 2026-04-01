@@ -18,6 +18,30 @@ describe("normalizeFunctionCall", () => {
     const result = normalizeFunctionCall(input, "openai");
     expect(result).toBe(input);
   });
+
+  it("should return input for input 'any' and provider 'google'", () => {
+    const result = normalizeFunctionCall("any", "google");
+    expect(result).toBe("any");
+  });
+
+  it("should return 'auto' unchanged for all providers", () => {
+    expect(normalizeFunctionCall("auto", "openai")).toBe("auto");
+    expect(normalizeFunctionCall("auto", "anthropic")).toBe("auto");
+    expect(normalizeFunctionCall("auto", "google")).toBe("auto");
+  });
+
+  it("should return 'none' unchanged for all providers", () => {
+    expect(normalizeFunctionCall("none", "openai")).toBe("none");
+    expect(normalizeFunctionCall("none", "anthropic")).toBe("none");
+    expect(normalizeFunctionCall("none", "google")).toBe("none");
+  });
+
+  it("should return object function call unchanged", () => {
+    const input = { name: "myFunction" } as GenericFunctionCall;
+    expect(normalizeFunctionCall(input, "openai")).toBe(input);
+    expect(normalizeFunctionCall(input, "anthropic")).toBe(input);
+    expect(normalizeFunctionCall(input, "google")).toBe(input);
+  });
 });
 
 describe("normalizeFinishReason", () => {

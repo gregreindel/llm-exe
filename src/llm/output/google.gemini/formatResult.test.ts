@@ -108,4 +108,106 @@ describe("formatResult", () => {
     const output = formatResult(result);
     expect(output).toEqual([]);
   });
+
+  it("uses provided id in functionId when id argument is given", () => {
+    const result = {
+      content: {
+        parts: [
+          {
+            functionCall: {
+              name: "myFunc",
+              args: { key: "value" },
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "custom-id");
+    expect(output).toEqual([
+      {
+        functionId: "custom-id-0",
+        type: "function_use",
+        name: "myFunc",
+        input: { key: "value" },
+      },
+    ]);
+  });
+
+  it("uses provided id with correct index for multiple function calls", () => {
+    const result = {
+      content: {
+        parts: [
+          { text: "Some text" },
+          {
+            functionCall: {
+              name: "func1",
+              args: { a: 1 },
+            },
+          },
+          {
+            functionCall: {
+              name: "func2",
+              args: { b: 2 },
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "resp-123");
+    expect(output).toEqual([
+      { type: "text", text: "Some text" },
+      {
+        functionId: "resp-123-1",
+        type: "function_use",
+        name: "func1",
+        input: { a: 1 },
+      },
+      {
+        functionId: "resp-123-2",
+        type: "function_use",
+        name: "func2",
+        input: { b: 2 },
+      },
+    ]);
+  });
+
+  it("generates uuid-based functionId when no id is provided", () => {
+    const result = {
+      content: {
+        parts: [
+          {
+            functionCall: {
+              name: "testFunc",
+              args: {},
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result);
+    expect(output).toHaveLength(1);
+    expect(output[0].type).toBe("function_use");
+    // functionId should be a uuid + "-0" pattern
+    expect(output[0]).toHaveProperty("functionId");
+    expect((output[0] as any).functionId).toMatch(/-0$/);
+  });
+
+  it("handles functionCall with string args (JSON string)", () => {
+    const result = {
+      content: {
+        parts: [
+          {
+            functionCall: {
+              name: "parseFunc",
+              args: '{"key":"value"}',
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "test-id");
+    expect(output).toHaveLength(1);
+    expect(output[0].type).toBe("function_use");
+    expect((output[0] as any).input).toEqual({ key: "value" });
+  });
 });

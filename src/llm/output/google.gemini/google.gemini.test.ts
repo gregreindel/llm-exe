@@ -133,4 +133,97 @@ describe("llm-exe:output/OutputGoogleGeminiChat", () => {
     expect(output.options).toEqual([]);
     expect(output.stopReason).toBeUndefined();
   });
+
+  it("handles multiple candidates, using first as content and rest as options", () => {
+    const mockWithMultipleCandidates = {
+      ...mock,
+      candidates: [
+        {
+          content: {
+            parts: [{ text: "Primary response" }],
+            role: "model",
+          },
+          finishReason: "STOP",
+          avgLogprobs: -0.01,
+        },
+        {
+          content: {
+            parts: [{ text: "Alternative response 1" }],
+            role: "model",
+          },
+          finishReason: "STOP",
+          avgLogprobs: -0.02,
+        },
+        {
+          content: {
+            parts: [{ text: "Alternative response 2" }],
+            role: "model",
+          },
+          finishReason: "STOP",
+          avgLogprobs: -0.03,
+        },
+      ],
+    };
+    const output = OutputGoogleGeminiChat(mockWithMultipleCandidates as any);
+    expect(output.content).toEqual([
+      { type: "text", text: "Primary response" },
+    ]);
+    expect(output.options).toHaveLength(2);
+    expect(output.stopReason).toEqual("stop");
+  });
+
+  it("handles missing usageMetadata", () => {
+    const mockWithoutUsage = {
+      ...mock,
+      usageMetadata: undefined,
+    };
+    const output = OutputGoogleGeminiChat(mockWithoutUsage as any);
+    expect(output.usage).toEqual({
+      input_tokens: undefined,
+      output_tokens: undefined,
+      total_tokens: undefined,
+    });
+  });
+
+  it("handles candidate with function call", () => {
+    const mockWithFunctionCall = {
+      ...mock,
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                functionCall: {
+                  name: "get_weather",
+                  args: { location: "NYC" },
+                },
+              },
+            ],
+            role: "model",
+          },
+          finishReason: "STOP",
+          avgLogprobs: -0.01,
+        },
+      ],
+    };
+    const output = OutputGoogleGeminiChat(mockWithFunctionCall as any);
+    expect(output.content).toHaveLength(1);
+    expect(output.content[0].type).toEqual("function_use");
+    expect((output.content[0] as any).name).toEqual("get_weather");
+    expect((output.content[0] as any).input).toEqual({ location: "NYC" });
+  });
+
+  it("uses responseId as the output id", () => {
+    const output = OutputGoogleGeminiChat(mock as any);
+    expect(output.id).toEqual("12345-67890");
+  });
+
+  it("handles missing responseId", () => {
+    const mockWithoutId = {
+      ...mock,
+      responseId: undefined,
+    };
+    const output = OutputGoogleGeminiChat(mockWithoutId as any);
+    expect(output.id).toBeUndefined();
+  });
 });
