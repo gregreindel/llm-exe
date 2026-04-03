@@ -410,4 +410,99 @@ describe("llm-exe:executor/BaseExecutor", () => {
     });
   });
 
+  describe("removeHook edge cases", () => {
+    it("should remove the first hook when multiple hooks exist", () => {
+      const executor = new MockExecutor();
+      const hookA = () => {};
+      const hookB = () => {};
+      const hookC = () => {};
+
+      executor.on("onComplete", hookA);
+      executor.on("onComplete", hookB);
+      executor.on("onComplete", hookC);
+      expect(executor.getHookCount("onComplete")).toBe(3);
+
+      executor.removeHook("onComplete", hookA);
+      expect(executor.getHookCount("onComplete")).toBe(2);
+      // hookA should be gone, hookB and hookC remain
+      expect(executor.hooks.onComplete).toContain(hookB);
+      expect(executor.hooks.onComplete).toContain(hookC);
+      expect(executor.hooks.onComplete).not.toContain(hookA);
+    });
+
+    it("should remove the middle hook when multiple hooks exist", () => {
+      const executor = new MockExecutor();
+      const hookA = () => {};
+      const hookB = () => {};
+      const hookC = () => {};
+
+      executor.on("onComplete", hookA);
+      executor.on("onComplete", hookB);
+      executor.on("onComplete", hookC);
+
+      executor.removeHook("onComplete", hookB);
+      expect(executor.getHookCount("onComplete")).toBe(2);
+      expect(executor.hooks.onComplete).toContain(hookA);
+      expect(executor.hooks.onComplete).toContain(hookC);
+    });
+
+    it("should remove the last hook when multiple hooks exist", () => {
+      const executor = new MockExecutor();
+      const hookA = () => {};
+      const hookB = () => {};
+
+      executor.on("onComplete", hookA);
+      executor.on("onComplete", hookB);
+
+      executor.removeHook("onComplete", hookB);
+      expect(executor.getHookCount("onComplete")).toBe(1);
+      expect(executor.hooks.onComplete).toContain(hookA);
+    });
+
+    it("should not remove anything if the function is not in the hooks list", () => {
+      const executor = new MockExecutor();
+      const hookA = () => {};
+      const hookB = () => {};
+
+      executor.on("onComplete", hookA);
+      executor.removeHook("onComplete", hookB);
+      expect(executor.getHookCount("onComplete")).toBe(1);
+      expect(executor.hooks.onComplete).toContain(hookA);
+    });
+
+    it("should only remove the first matching instance (break after first match)", () => {
+      const executor = new MockExecutor();
+      const hookA = () => {};
+
+      // Force-add the same reference twice (bypassing dedup in setHooks)
+      executor.hooks.onComplete.push(hookA, hookA);
+      const countBefore = executor.hooks.onComplete.length;
+
+      executor.removeHook("onComplete", hookA);
+      // Should only remove one instance
+      expect(executor.hooks.onComplete.length).toBe(countBefore - 1);
+    });
+  });
+
+  describe("metadata tracking", () => {
+    it("should track execution count in metadata", async () => {
+      const executor = new MockExecutor();
+      expect(executor.executions).toBe(0);
+
+      await executor.execute({});
+      expect(executor.executions).toBe(1);
+
+      await executor.execute({});
+      expect(executor.executions).toBe(2);
+    });
+
+    it("should increment execution count even when handler throws", async () => {
+      const executor = new MockExecutorThatThrows();
+      expect(executor.executions).toBe(0);
+
+      await expect(executor.execute({})).rejects.toThrow();
+      expect(executor.executions).toBe(1);
+    });
+  });
+
 });

@@ -95,4 +95,79 @@ describe("llm-exe:output/BaseLlmOutput", () => {
     expect(result1).toEqual(result2);
     expect(result1).not.toBe(result2); // Different object references
   });
+
+  it("should not be affected by mutations to the original content array", () => {
+    const content: OutputResultContent[] = [
+      { type: "text", text: "original" },
+    ];
+    const input = { ...mockResult, content };
+    const output = BaseLlmOutput(input);
+
+    // Mutate the original array
+    content.push({ type: "text", text: "injected" });
+
+    const result = output.getResult();
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].text).toBe("original");
+  });
+
+  it("should not be affected by mutations to the original options array", () => {
+    const options: OutputResultContent[][] = [
+      [{ type: "text", text: "opt1" }],
+    ];
+    const input = { ...mockResult, options };
+    const output = BaseLlmOutput(input);
+
+    // Mutate the original array
+    options.push([{ type: "text", text: "injected" }]);
+
+    const result = output.getResult();
+    expect(result.options).toHaveLength(1);
+  });
+
+  it("getResultText returns text content for the first item", () => {
+    const output = BaseLlmOutput(mockResult);
+    const text = output.getResultText();
+    expect(text).toBe("Test content");
+  });
+
+  it("handles result with multiple content items", () => {
+    const multiContent = {
+      ...mockResult,
+      content: [
+        { type: "text" as const, text: "First" },
+        { type: "text" as const, text: "Second" },
+      ],
+    };
+    const output = BaseLlmOutput(multiContent);
+    // getResultText() returns the first content item's text
+    expect(output.getResultText()).toBe("First");
+    const result = output.getResult();
+    expect(result.content).toHaveLength(2);
+    expect(result.content[1].text).toBe("Second");
+  });
+
+  it("getResultText with index reads from options, not content", () => {
+    const withOptions = {
+      ...mockResult,
+      options: [
+        [{ type: "text" as const, text: "option-0" }],
+        [{ type: "text" as const, text: "option-1" }],
+      ],
+    };
+    const output = BaseLlmOutput(withOptions);
+    // index=0 reads from content, index>0 reads from options[index]
+    expect(output.getResultText()).toBe("Test content");
+    expect(output.getResultText(1)).toBe("option-1");
+  });
+
+  it("handles result with empty content array", () => {
+    const emptyContent = {
+      ...mockResult,
+      content: [] as OutputResultContent[],
+    };
+    const output = BaseLlmOutput(emptyContent);
+    const result = output.getResult();
+    expect(result.content).toEqual([]);
+  });
 });
