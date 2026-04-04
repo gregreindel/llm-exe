@@ -8,16 +8,16 @@ When using Google Gemini models, llm-exe will make POST requests to `https://gen
 
 ```ts
 const llm = useLlm("google.chat.v1", {
-  model: "gemini-2.0-flash", // specify a model
+  model: "gemini-2.5-flash", // specify a model
 });
 ```
 
 ### Gemini Chat By Model
 
 ```ts
-const llm = useLlm("google.gemini-2.0-flash", {
+const llm = useLlm("google.gemini-2.5-flash", {
   // other options,
-  // no model needed, using gemini-2.0-flash
+  // no model needed, using gemini-2.5-flash
 });
 ```
 
@@ -44,7 +44,7 @@ In addition to the generic options, the following options are Gemini-specific an
 
 | Option       | Type   | Default          | Description                                                          |
 | ------------ | ------ | ---------------- | -------------------------------------------------------------------- |
-| model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See Google Gemini Docs |
+| model        | string | —                | The model to use. Must be specified when using `google.chat.v1`. See Google Gemini Docs |
 | geminiApiKey | string | undefined        | API key for Google. See [authentication](/llm/gemini#authentication) |
 | effort       | string | undefined        | Maps to `thinkingConfig.thinkingBudget`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. Only supported with reasoning models (e.g. gemini-2.5-pro, gemini-2.5-flash). |
 
