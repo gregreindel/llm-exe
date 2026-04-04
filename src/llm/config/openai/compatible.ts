@@ -70,7 +70,7 @@ export function createOpenAiCompatibleConfiguration<
         transform: (v, _s) => {
           if (
             // only supported reasoning models
-            ["gpt-5"].includes(_s.model) &&
+            ["gpt-5", "gpt-5.2", "gpt-5-mini", "gpt-5-nano", "o3", "o4-mini"].includes(_s.model) &&
             typeof v === "string" &&
             ["minimal", "low", "medium", "high"].includes(v)
           ) {
