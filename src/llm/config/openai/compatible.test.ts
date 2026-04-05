@@ -151,6 +151,27 @@ describe("createOpenAiCompatibleConfiguration", () => {
       expect(transform("minimal", { model: "gpt-5" })).toBe("minimal");
     });
 
+    it.each(["gpt-5.2", "gpt-5-mini", "gpt-5-nano", "o3", "o4-mini"])(
+      "should return effort value for reasoning model %s",
+      (model) => {
+        const config = createOpenAiCompatibleConfiguration({
+          key: "custom.chat.v1",
+          provider: "custom.chat",
+          endpoint: "https://api.custom.com/v1/chat",
+          apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
+        });
+
+        const transform = config.mapBody.effort.transform as (
+          v: any,
+          s: any
+        ) => any;
+        expect(transform("low", { model })).toBe("low");
+        expect(transform("medium", { model })).toBe("medium");
+        expect(transform("high", { model })).toBe("high");
+        expect(transform("minimal", { model })).toBe("minimal");
+      }
+    );
+
     it("should return undefined for unsupported models", () => {
       const config = createOpenAiCompatibleConfiguration({
         key: "custom.chat.v1",
