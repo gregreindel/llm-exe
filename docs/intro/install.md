@@ -6,7 +6,7 @@ npm i llm-exe
 ```
 
 ```ts
-import llmExe from "llm-exe"
+import * as llmExe from "llm-exe"
 
 // or 
 
