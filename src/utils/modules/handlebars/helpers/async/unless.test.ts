@@ -1,88 +1,47 @@
-import { ifFnAsync } from "@/utils/modules/handlebars/helpers/async/if";
-import { unlessFnAsync } from "@/utils/modules/handlebars/helpers/async/unless";
+import { unlessFnAsync } from "./unless";
+import { ifFnAsync } from "./if";
 
-jest.mock("@/utils/modules/handlebars/helpers/async/if", () => ({
-  ifFnAsync: jest.fn(),
-}));
+jest.mock("./if");
 
 describe("unlessFnAsync", () => {
-  const ifFnAsyncMock = ifFnAsync as jest.Mock;
-
-  const options = {
-    fn: jest.fn().mockReturnValue("fn result"),
-    inverse: jest.fn().mockReturnValue("inverse result"),
-    hash: {
-      key: "value",
-    },
-  };
+  const fn = jest.fn();
+  const inverse = jest.fn();
+  const ifFnAsyncMock = ifFnAsync as jest.MockedFunction<typeof ifFnAsync>;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should throw an error when called with incorrect number of arguments", async () => {
-    await expect((unlessFnAsync as any).call({}, true)).rejects.toThrow(
+  it("should throw an error if arguments length is not 2", async () => {
+    await expect((unlessFnAsync as any).call({})).rejects.toThrow(
       "#unless requires exactly one argument"
     );
   });
 
-  it("should call ifFnAsync with correct arguments when conditional is true", async () => {
-    const context = {
-      key: "context value"
-    };
-    
-    const conditional = true;
-    
-    await unlessFnAsync.call(context, conditional, options);
+  it("should call ifFnAsync with fn and inverse swapped", async () => {
+    ifFnAsyncMock.mockResolvedValue("result");
 
-    expect(ifFnAsyncMock).toHaveBeenCalledWith(conditional, {
-      fn: options.inverse,
-      inverse: options.fn,
-      hash: options.hash,
+    const context = { key: "value" };
+    const options = { fn, inverse, hash: { includeZero: true } };
+
+    await unlessFnAsync.call(context, "conditional", options);
+
+    expect(ifFnAsyncMock).toHaveBeenCalledWith("conditional", {
+      fn: inverse,
+      inverse: fn,
+      hash: { includeZero: true },
     });
   });
 
-  it("should call ifFnAsync with correct arguments when conditional is false", async () => {
-    const context = {
-      key: "context value"
-    };
-    
-    const conditional = false;
+  it("should return the result from ifFnAsync", async () => {
+    ifFnAsyncMock.mockResolvedValue("unless result");
 
-    await unlessFnAsync.call(context, conditional, options);
-
-    expect(ifFnAsyncMock).toHaveBeenCalledWith(conditional, {
-      fn: options.inverse,
-      inverse: options.fn,
-      hash: options.hash,
-    });
-  });
-
-  it("should correctly handle the provided context", async () => {
-    const context = {
-      key: "context value"
-    };
-
-    const conditional = true;
-    ifFnAsyncMock.mockResolvedValue("resolved value");
-
-    const result = await unlessFnAsync.call(context, conditional, options);
-
-    expect(ifFnAsyncMock).toHaveBeenCalledWith(conditional, {
-      fn: options.inverse,
-      inverse: options.fn,
-      hash: options.hash,
+    const result = await unlessFnAsync.call({}, false, {
+      fn,
+      inverse,
+      hash: {},
     });
 
-    expect(result).toBe("resolved value");
-  });
-
-  it("should return the result of ifFnAsync", async () => {
-    const conditional = true;
-    ifFnAsyncMock.mockResolvedValue("expected result");
-
-    const result = await unlessFnAsync.call({}, conditional, options);
-
-    expect(result).toBe("expected result");
+    expect(result).toBe("unless result");
   });
 });
