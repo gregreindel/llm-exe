@@ -235,19 +235,46 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Uses Handlebars to process the LLM output as a template, replacing `{{ variable }}` placeholders with values you provide via the executor context.
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+// When used in an executor, context values are passed as template variables.
+// For example, if the LLM responds with "Hello {{ name }}", and the context
+// contains { name: "World" }, the parser returns "Hello World".
+```
+
+::: code-group
+
+```[Output]
+Hello World
+```
+
+```[Response]
+Hello {{ name }}
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of key: value pairs (separated by \n) to an object. By default, keys are converted to camelCase.
+Returns: object
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | Controls how keys are transformed. `"camelCase"` converts keys like "First Name" to "firstName". `"preserve"` keeps keys as-is (trimmed). |
+| `schema` | `JSONSchema` | `undefined` | A JSON Schema to enforce on the parsed output and provide default values. |
+| `validateSchema` | `boolean` | `false` | When `true`, validates the parsed output against the schema and throws on validation errors. |
 
 ::: code-group
 
@@ -270,7 +297,18 @@ Type: Fruit
 ## JSON
 
 `json`
-Parse an expected stringified json object or array into a valid object. Schema can be passed in to enforce schema and provide default values.
+Parse an expected stringified JSON object or array into a valid object. Handles common LLM response formats including JSON wrapped in markdown code blocks, escaped quotes, and raw JSON strings.
+Returns: object | array
+
+```ts
+const parser = createParser("json");
+```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `schema` | `JSONSchema` | `undefined` | A JSON Schema to enforce on the parsed output and provide default values. See [Using a Parser with Schema](/parser/#using-a-parser-with-schema). |
+| `validateSchema` | `boolean` | `false` | When `true`, validates the parsed output against the schema and throws on validation errors. |
 
 ::: code-group
 
