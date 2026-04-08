@@ -61,5 +61,36 @@ describe("llm-exe:parser/NumberParser", () => {
       });
     }
   });
+  it('parses leading zeros correctly', () => {
+    const parser = new NumberParser()
+    expect(parser.parse("007")).toEqual(7)
+  });
+  it('does not match scientific notation (e.g. 1e5)', () => {
+    const parser = new NumberParser()
+    // regex matches "1" from "1e5", not the full scientific notation
+    expect(parser.parse("1e5")).toEqual(1)
+  });
+  it('extracts first number when text contains multiple numbers', () => {
+    const parser = new NumberParser()
+    expect(parser.parse("5 and 10")).toEqual(5)
+    expect(parser.parse("between 3.5 and 7.2")).toEqual(3.5)
+  });
+  it('throws for empty string', () => {
+    const parser = new NumberParser()
+    expect(() => parser.parse("")).toThrow(LlmExeError)
+  });
+  it('throws for whitespace-only string', () => {
+    const parser = new NumberParser()
+    expect(() => parser.parse("   ")).toThrow(LlmExeError)
+  });
+  it('parses zero correctly', () => {
+    const parser = new NumberParser()
+    expect(parser.parse("0")).toEqual(0)
+    expect(parser.parse("The value is 0.")).toEqual(0)
+  });
+  it('parses negative decimal from text', () => {
+    const parser = new NumberParser()
+    expect(parser.parse("temperature: -0.5 degrees")).toEqual(-0.5)
+  });
 });
 
