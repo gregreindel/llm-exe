@@ -51,6 +51,9 @@
 - [OpenAI Embeddings](https://llm-exe.com/embeddings/openai.html)
 - [Amazon Embeddings](https://llm-exe.com/embeddings/amazon.html)
 
+### Callable
+- [Callable Executors](https://llm-exe.com/callable/index.html)
+
 ### Examples
 - [LLM Executor Function Syntax](https://llm-exe.com/examples/FunctionSyntax.html)
 - [Tips: Working with JSON](https://llm-exe.com/examples/concepts/working-with-json.html)
