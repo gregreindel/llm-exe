@@ -140,6 +140,28 @@ describe("google configuration", () => {
     });
   });
 
+  describe("google.gemini-2.5-pro-exp-03-25", () => {
+    const googleGemini25ProExp = google[
+      "google.gemini-2.5-pro-exp-03-25"
+    ] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(googleGemini25ProExp.endpoint).toEqual(googleChatV1.endpoint);
+      expect(googleGemini25ProExp.method).toEqual(googleChatV1.method);
+      expect(googleGemini25ProExp.headers).toEqual(googleChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gemini-2.5-pro-exp-03-25", () => {
+      expect(googleGemini25ProExp.mapBody.model).toEqual({
+        default: "gemini-2.5-pro-exp-03-25",
+        key: "model",
+      });
+      expect(googleGemini25ProExp.options.model).toEqual({
+        default: "gemini-2.5-pro-exp-03-25",
+      });
+    });
+  });
+
   describe("gemini-2.0-flash", () => {
     it("should be based on googleChatV1 configuration", () => {
       expect(googleGemini2Flash.endpoint).toEqual(googleChatV1.endpoint);

@@ -572,7 +572,7 @@ export type AllUseLlmOptions = AllLlm & {
   };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
-    input: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o": {
     input: Omit<OpenAiRequest, "model">;
