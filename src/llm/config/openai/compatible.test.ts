@@ -133,53 +133,55 @@ describe("createOpenAiCompatibleConfiguration", () => {
   });
 
   describe("effort transform", () => {
-    it("should return effort value for supported models", () => {
+    const makeTransform = () => {
       const config = createOpenAiCompatibleConfiguration({
         key: "custom.chat.v1",
         provider: "custom.chat",
         endpoint: "https://api.custom.com/v1/chat",
         apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
       });
+      return config.mapBody.effort.transform as (v: any, s: any) => any;
+    };
 
-      const transform = config.mapBody.effort.transform as (
-        v: any,
-        s: any
-      ) => any;
+    it("should return effort value for the gpt-5 family", () => {
+      const transform = makeTransform();
       expect(transform("low", { model: "gpt-5" })).toBe("low");
       expect(transform("medium", { model: "gpt-5" })).toBe("medium");
       expect(transform("high", { model: "gpt-5" })).toBe("high");
       expect(transform("minimal", { model: "gpt-5" })).toBe("minimal");
+      expect(transform("low", { model: "gpt-5.2" })).toBe("low");
+      expect(transform("medium", { model: "gpt-5-mini" })).toBe("medium");
+      expect(transform("high", { model: "gpt-5-nano" })).toBe("high");
     });
 
-    it("should return undefined for unsupported models", () => {
-      const config = createOpenAiCompatibleConfiguration({
-        key: "custom.chat.v1",
-        provider: "custom.chat",
-        endpoint: "https://api.custom.com/v1/chat",
-        apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
-      });
+    it("should return effort value for o-series reasoning models", () => {
+      const transform = makeTransform();
+      expect(transform("low", { model: "o3" })).toBe("low");
+      expect(transform("medium", { model: "o4-mini" })).toBe("medium");
+      expect(transform("high", { model: "o1" })).toBe("high");
+    });
 
-      const transform = config.mapBody.effort.transform as (
-        v: any,
-        s: any
-      ) => any;
+    it("should return undefined for non-reasoning models", () => {
+      const transform = makeTransform();
       expect(transform("high", { model: "gpt-4o" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4o-mini" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4.1" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4.1-mini" })).toBeUndefined();
+    });
+
+    it("should return undefined when model is missing or non-string", () => {
+      const transform = makeTransform();
+      expect(transform("high", { model: undefined })).toBeUndefined();
+      expect(transform("high", { model: 123 })).toBeUndefined();
+      expect(transform("high", {})).toBeUndefined();
     });
 
     it("should return undefined for invalid effort values", () => {
-      const config = createOpenAiCompatibleConfiguration({
-        key: "custom.chat.v1",
-        provider: "custom.chat",
-        endpoint: "https://api.custom.com/v1/chat",
-        apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
-      });
-
-      const transform = config.mapBody.effort.transform as (
-        v: any,
-        s: any
-      ) => any;
+      const transform = makeTransform();
       expect(transform("invalid", { model: "gpt-5" })).toBeUndefined();
       expect(transform(123, { model: "gpt-5" })).toBeUndefined();
+      expect(transform("high", { model: "o3" })).toBe("high");
+      expect(transform(undefined, { model: "o3" })).toBeUndefined();
     });
   });
 

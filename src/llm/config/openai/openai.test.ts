@@ -56,8 +56,20 @@ describe("openai configuration", () => {
       expect(effortTransform("minimal", { model: "gpt-5" })).toBe("minimal");
     });
 
+    it("should return the value for all registered gpt-5 shorthands", () => {
+      expect(effortTransform("low", { model: "gpt-5.2" })).toBe("low");
+      expect(effortTransform("medium", { model: "gpt-5-mini" })).toBe("medium");
+      expect(effortTransform("high", { model: "gpt-5-nano" })).toBe("high");
+    });
+
+    it("should return the value for o-series reasoning models", () => {
+      expect(effortTransform("low", { model: "o3" })).toBe("low");
+      expect(effortTransform("medium", { model: "o4-mini" })).toBe("medium");
+    });
+
     it("should return undefined for unsupported model", () => {
       expect(effortTransform("high", { model: "gpt-4o" })).toBe(undefined);
+      expect(effortTransform("high", { model: "gpt-4.1" })).toBe(undefined);
     });
 
     it("should return undefined for non-string value", () => {

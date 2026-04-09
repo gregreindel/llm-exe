@@ -68,9 +68,15 @@ export function createOpenAiCompatibleConfiguration<
       effort: {
         key: "reasoning_effort",
         transform: (v, _s) => {
+          const model = typeof _s.model === "string" ? _s.model : "";
+          // Supported reasoning models: the gpt-5 family (gpt-5, gpt-5.2,
+          // gpt-5-mini, gpt-5-nano, ...) and the o-series reasoning models
+          // (o1, o3, o4-mini, ...). Prefix matching keeps us resilient to
+          // new point releases without a code change.
+          const isReasoningModel =
+            model.startsWith("gpt-5") || /^o\d/.test(model);
           if (
-            // only supported reasoning models
-            ["gpt-5"].includes(_s.model) &&
+            isReasoningModel &&
             typeof v === "string" &&
             ["minimal", "low", "medium", "high"].includes(v)
           ) {
