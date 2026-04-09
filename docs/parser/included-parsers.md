@@ -235,8 +235,47 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's response, using a data object as the substitution values. When used inside an executor, the data object is the input you passed to `.execute(...)` — so the LLM can return a template that gets filled in with your original variables before reaching the caller.
+
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+
+parser.parse("Hello {{name}}!", { name: "World" });
+// => "Hello World!"
+```
+
+### Example: templated LLM output
+
+Instruct the LLM to return a template string referencing your input variables, then let the parser fill them in:
+
+```ts
+// The prompt tells the LLM to return a sentence containing literal placeholders
+// (e.g. {{name}} and {{product}}) rather than filling them in.
+const instruction = [
+  "You write short support replies.",
+  "Return a single sentence that greets the user by name and mentions the product they asked about.",
+  "Use the literal placeholders {{name}} and {{product}} in your response — do NOT fill them in.",
+].join("\n");
+
+const prompt = createChatPrompt<{ name: string; product: string }>(instruction);
+
+const executor = createLlmExecutor({
+  llm: useLlm("openai.gpt-4o-mini"),
+  prompt,
+  parser: createParser("replaceStringTemplate"),
+});
+
+await executor.execute({ name: "Ada", product: "Widget Pro" });
+// LLM returns: "Hi {{name}}, thanks for reaching out about {{product}} — how can I help?"
+// Parser fills in the placeholders using the executor input:
+// => "Hi Ada, thanks for reaching out about Widget Pro — how can I help?"
+```
+
+::: tip
+This is useful when you want the LLM to generate *structure* (tone, phrasing, order) but not risk hallucinating the literal values — the parser guarantees the final output contains the exact input data you provided.
+:::
 
 ## List to JSON
 

@@ -91,7 +91,7 @@ createParser("listToJson");          // key: value list → object (with optiona
 createParser("listToKeyValue");      // key: value list → Array<{ key, value }>
 createParser("markdownCodeBlock");   // single code block → { code, language }
 createParser("markdownCodeBlocks");  // multiple code blocks → Array<{ code, language }>
-createParser("replaceStringTemplate"); // handlebars-based output templating
+createParser("replaceStringTemplate"); // fills handlebars tags in the LLM output using executor input
 ```
 
 #### Custom Parsers
@@ -104,12 +104,58 @@ const parser = createCustomParser("MyUppercaseParser", (output, input) => {
 
 #### State
 
+llm-exe ships a lightweight state module for managing conversation history, typed context, and loose attributes across LLM calls. You opt in only to the pieces you need.
+
+##### Dialogue — conversation history
+
+Standalone dialogues track chat history for multi-turn interactions. All setters chain and return `this`.
+
 ```ts
+import { createDialogue } from "llm-exe";
+
 const dialogue = createDialogue("chat");
-dialogue.setUserMessage("Hi");
-dialogue.setAssistantMessage("Hello!");
-dialogue.getHistory(); // returns chat array
+dialogue
+  .setSystemMessage("You are a helpful assistant.")
+  .setUserMessage("Hi")
+  .setAssistantMessage("Hello!");
+
+dialogue.getHistory(); // IChatMessages array ready to pass to a prompt
+
+// Or add an LLM response directly (handles text + tool calls):
+const output = await llm.call(prompt);
+dialogue.addFromOutput(output);
 ```
+
+##### State — dialogues + context + attributes
+
+`createState()` gives you a container that holds multiple dialogues, typed context items, and a loose key-value attribute store.
+
+```ts
+import { createState, createStateItem } from "llm-exe";
+
+const state = createState();
+
+// Dialogues — create, look up, or create-if-missing
+const chat = state.createDialogue("chat");
+state.useDialogue("chat").setUserMessage("Hey");
+state.getDialogue("chat").setAssistantMessage("Hi!");
+
+// Context — typed state items with get/set/reset
+const intent = createStateItem("userIntent", "unknown"); // default defines the type
+state.createContextItem(intent);
+intent.setValue("booking");
+state.getContextValue<string>("userIntent"); // "booking"
+
+// Attributes — simple key/value bag
+state.setAttribute("sessionId", "abc-123");
+state.deleteAttribute("sessionId");
+state.clearAttributes();
+
+// Serialize everything for persistence
+const snapshot = state.serialize();
+```
+
+> **Heads up:** `createStateItem(name, defaultValue)` requires a default value — its type is locked in on creation, so `setValue()` later must match that type. See [`docs/state`](https://llm-exe.com/state/) for the full API.
 
 #### Hooks
 

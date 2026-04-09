@@ -31,6 +31,10 @@ userIntent.getValue();    // "booking"
 userIntent.resetValue();  // resets to "unknown"
 ```
 
+::: warning
+`createStateItem(name, defaultValue)` locks the item's type to the type of the default value you pass in. Later calls to `setValue` must match that type. Always pass a meaningful default of the exact type you intend to store (e.g. `""` for strings, `0` for numbers) — omitting the default will make the item `undefined`-typed and subsequent writes will fail.
+:::
+
 **Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
 
 ## Creating State
