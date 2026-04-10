@@ -104,11 +104,31 @@ const parser = createCustomParser("MyUppercaseParser", (output, input) => {
 
 #### State
 
+Manage conversation history and structured context across LLM calls.
+
 ```ts
+import { createState, createDialogue, createStateItem } from "llm-exe";
+
+// Standalone dialogue — track a conversation
 const dialogue = createDialogue("chat");
 dialogue.setUserMessage("Hi");
 dialogue.setAssistantMessage("Hello!");
-dialogue.getHistory(); // returns chat array
+dialogue.getHistory(); // returns chat message array
+
+// Full state — dialogues + typed context + attributes
+const state = createState();
+const chatHistory = state.createDialogue("chat");
+chatHistory.setUserMessage("What's the weather?");
+
+// Context items — typed values with get/set/reset
+const intent = createStateItem("intent", "unknown");
+state.createContextItem(intent);
+intent.setValue("weather");
+intent.getValue(); // "weather"
+intent.resetValue(); // back to "unknown"
+
+// Attributes — simple key-value metadata
+state.setAttribute("source", "web");
 ```
 
 #### Hooks

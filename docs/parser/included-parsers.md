@@ -235,8 +235,38 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Treats the LLM response as a Handlebars template and renders it against the provided context (the executor input). This is useful when you want the LLM to produce a template that gets filled in with known values before being returned.
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+When used inside an executor, the executor's input is passed as the template context. You can also call `parse()` directly with a context object:
+
+```ts
+const parser = createParser("replaceStringTemplate");
+const result = parser.parse("Hello, {{name}}!", { name: "World" });
+// result: "Hello, World!"
+```
+
+Supports standard Handlebars syntax — variables (`{{var}}`), conditionals (`{{#if}}`), iteration (`{{#each}}`), and any registered helpers or partials.
+
+::: code-group
+
+```[Output]
+Hello, World!
+```
+
+```[Response (template from LLM)]
+Hello, {{name}}!
+```
+
+```[Context]
+{ "name": "World" }
+```
+
+:::
 
 ## List to JSON
 
