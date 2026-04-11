@@ -108,4 +108,114 @@ describe("formatResult", () => {
     const output = formatResult(result);
     expect(output).toEqual([]);
   });
+
+  it("uses the provided id for function_use functionId", () => {
+    const result = {
+      content: {
+        parts: [
+          {
+            functionCall: {
+              name: "myFunc",
+              args: { key: "value" },
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "custom-id");
+    expect(output).toEqual([
+      {
+        functionId: "custom-id-0",
+        type: "function_use",
+        name: "myFunc",
+        input: { key: "value" },
+      },
+    ]);
+  });
+
+  it("handles mixed text and function_call parts", () => {
+    const result = {
+      content: {
+        parts: [
+          { text: "Here is the result:" },
+          {
+            functionCall: {
+              name: "getData",
+              args: { query: "test" },
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "mixed-id");
+    expect(output).toEqual([
+      { type: "text", text: "Here is the result:" },
+      {
+        functionId: "mixed-id-1",
+        type: "function_use",
+        name: "getData",
+        input: { query: "test" },
+      },
+    ]);
+  });
+
+  it("handles multiple function calls in parts", () => {
+    const result = {
+      content: {
+        parts: [
+          {
+            functionCall: {
+              name: "func1",
+              args: { a: 1 },
+            },
+          },
+          {
+            functionCall: {
+              name: "func2",
+              args: { b: 2 },
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "multi");
+    expect(output).toEqual([
+      {
+        functionId: "multi-0",
+        type: "function_use",
+        name: "func1",
+        input: { a: 1 },
+      },
+      {
+        functionId: "multi-1",
+        type: "function_use",
+        name: "func2",
+        input: { b: 2 },
+      },
+    ]);
+  });
+
+  it("handles function call with string args (JSON parse)", () => {
+    const result = {
+      content: {
+        parts: [
+          {
+            functionCall: {
+              name: "parseMe",
+              args: '{"key": "value"}',
+            },
+          },
+        ],
+      },
+    } as any;
+    const output = formatResult(result, "parse-id");
+    expect(output).toEqual([
+      {
+        functionId: "parse-id-0",
+        type: "function_use",
+        name: "parseMe",
+        input: { key: "value" },
+      },
+    ]);
+  });
 });

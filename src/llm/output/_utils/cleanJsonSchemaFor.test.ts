@@ -128,4 +128,79 @@ describe("cleanJsonSchemaFor", () => {
       required: [],
     });
   });
+
+  it("should remove additionalProperties for google.chat provider", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        name: { type: "string", default: "none" },
+        nested: {
+          type: "object",
+          properties: {
+            inner: { type: "string" },
+          },
+          additionalProperties: false,
+        },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    };
+
+    const result = cleanJsonSchemaFor(schema, "google.chat");
+
+    expect(result).toEqual({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "none" },
+        nested: {
+          type: "object",
+          properties: {
+            inner: { type: "string" },
+          },
+        },
+      },
+      required: ["name"],
+    });
+  });
+
+  it("should preserve all fields for anthropic.chat provider (no exclusions)", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        name: { type: "string", default: "none" },
+        age: { type: "integer", default: 0 },
+      },
+      required: ["name"],
+      additionalProperties: false,
+      default: { name: "test" },
+    };
+
+    const result = cleanJsonSchemaFor(schema, "anthropic.chat");
+
+    expect(result).toEqual(schema);
+  });
+
+  it("should return empty schema for empty object input", () => {
+    const result = cleanJsonSchemaFor({}, "openai.chat");
+    expect(result).toEqual({
+      type: "object",
+      properties: {},
+      required: [],
+    });
+  });
+
+  it("should not mutate the original schema", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        name: { type: "string", default: "value" },
+      },
+      default: { name: "original" },
+    };
+    const original = JSON.parse(JSON.stringify(schema));
+
+    cleanJsonSchemaFor(schema, "openai.chat");
+
+    expect(schema).toEqual(original);
+  });
 });
