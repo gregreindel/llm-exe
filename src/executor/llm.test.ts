@@ -261,4 +261,77 @@ describe("llm-exe:executor/LlmExecutor", () => {
     const result = await executor.execute(undefined as any);
     expect(result).toBeDefined();
   });
+
+  it("uses provided name when passed in configuration", () => {
+    const executor = new LlmExecutor({
+      llm,
+      prompt,
+      name: "my-custom-executor",
+    });
+    expect(executor.name).toEqual("my-custom-executor");
+    expect(executor.getMetadata().name).toEqual("my-custom-executor");
+  });
+
+  it("falls back to 'anonymous-llm-executor' name when name is not provided", () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    expect(executor.name).toEqual("anonymous-llm-executor");
+  });
+
+  it("awaits async formatAsync when promptFn returns a prompt with async-function formatAsync", async () => {
+    const formatSpy = jest.fn();
+    const asyncFormatAsync = async (input: any) => {
+      formatSpy(input);
+      return ["async-result"];
+    };
+    const asyncPrompt = {
+      format: jest.fn().mockReturnValue(["sync-should-not-be-called"]),
+      formatAsync: asyncFormatAsync,
+    };
+    const promptFn = jest.fn().mockReturnValue(asyncPrompt);
+    const executor = new LlmExecutor({ llm, prompt: promptFn as any });
+
+    const result = await executor.getHandlerInput({ foo: "bar" });
+
+    expect(promptFn).toHaveBeenCalledWith({ foo: "bar" });
+    expect(formatSpy).toHaveBeenCalledWith({ foo: "bar" });
+    expect(asyncPrompt.format).not.toHaveBeenCalled();
+    expect(result).toEqual(["async-result"]);
+  });
+
+  it("getHandlerOutput uses parser.parse with getResult when parser target is function_call", () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    // Swap parser for one with function_call target
+    const fnParser: any = {
+      target: "function_call",
+      parse: jest.fn().mockReturnValue({ parsed: "from-function-call" }),
+    };
+    executor.parser = fnParser;
+
+    const mockOut: any = {
+      getResult: jest.fn().mockReturnValue({ structured: "result" }),
+      getResultText: jest.fn().mockReturnValue("should-not-be-called"),
+    };
+
+    const result = executor.getHandlerOutput(mockOut, {} as any);
+
+    expect(mockOut.getResult).toHaveBeenCalled();
+    expect(mockOut.getResultText).not.toHaveBeenCalled();
+    expect(fnParser.parse).toHaveBeenCalledWith(
+      { structured: "result" },
+      {}
+    );
+    expect(result).toEqual({ parsed: "from-function-call" });
+  });
+
+  it("does not attach jsonSchema to options when JsonParser has no schema", async () => {
+    const parser = new JsonParser();
+    const executor = new LlmExecutor({ llm, prompt, parser });
+    jest.spyOn(executor, "handler");
+    // The mock LLM will throw when parser tries to parse non-JSON,
+    // so catch the error and just check handler options.
+    await executor.execute({ input: "x" }).catch(() => void 0);
+    const handlerCall = (executor.handler as jest.Mock).mock.calls[0];
+    // Second arg is options — should not have jsonSchema since parser had no schema
+    expect(handlerCall[1]?.jsonSchema).toBeUndefined();
+  });
 });
