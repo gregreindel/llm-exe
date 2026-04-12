@@ -3,11 +3,16 @@ import { Dialogue } from "./dialogue";
 import { BaseStateItem } from "./item";
 
 export abstract class BaseState {
+  public name?: string;
   public dialogues: { [key in string]: Dialogue } = {};
   public attributes: Record<string, any> = {};
   public context: Record<string, BaseStateItem<any>> = {};
 
-  constructor() {}
+  constructor(name?: string) {
+    if (name !== undefined) {
+      this.name = name;
+    }
+  }
 
   createDialogue(name: string = "defaultDialogue") {
     assert(!this.dialogues[name], `Dialogue already exists`);
@@ -91,8 +96,8 @@ export abstract class BaseState {
 }
 
 export class DefaultState extends BaseState {
-  constructor() {
-    super();
+  constructor(name?: string) {
+    super(name);
   }
   async saveState() {
     console.log("Save not implemented in default state.");

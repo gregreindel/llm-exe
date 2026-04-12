@@ -2,8 +2,8 @@ import { DefaultState } from "./index";
 import { Dialogue } from "./dialogue";
 import { DefaultStateItem } from "./item";
 
-export function createState() {
-  return new DefaultState();
+export function createState(name?: string) {
+  return new DefaultState(name);
 }
 export function createDialogue(name: string) {
   return new Dialogue(name);
