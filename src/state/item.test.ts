@@ -43,6 +43,19 @@ describe("llm-exe:state/BaseStateItem", () => {
         const item = new MockStateItem("intent", defaultValue);
         expect(() => item.setValue({} as any)).toThrowError("Invalid value type. Expected string, received object")
       });
+      it("item.setValue allows first set when initial value is undefined", () => {
+        const item = new MockStateItem<string | undefined>("intent", undefined);
+        expect(item.getValue()).toBeUndefined();
+        item.setValue("cancel_account");
+        expect(item.getValue()).toEqual("cancel_account");
+      });
+      it("item.setValue locks in type after first set when initial value was undefined", () => {
+        const item = new MockStateItem<any>("intent", undefined);
+        item.setValue("cancel_account");
+        expect(() => item.setValue({} as any)).toThrowError(
+          "Invalid value type. Expected string, received object"
+        );
+      });
       it("item.resetValue sets back to default", () => {
         const defaultValue = "unknown"
         const item = new MockStateItem("intent", defaultValue);
