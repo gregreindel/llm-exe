@@ -55,4 +55,109 @@ describe("llm-exe:executor/CoreExecutor", () => {
     expect(executor.name).toEqual("otherName");
     expect(typeof executor._handler).toEqual("function");
   });
+
+  describe("execute()", () => {
+    it("executes a synchronous handler and returns the result", async () => {
+      const executor = new CoreExecutor<{ x: number }, number>({
+        handler: ({ x }) => x * 2,
+        name: "doubler",
+      });
+      const result = await executor.execute({ x: 5 });
+      expect(result).toEqual(10);
+    });
+
+    it("executes an async handler and awaits the result", async () => {
+      const executor = new CoreExecutor<{ x: number }, number>({
+        handler: async ({ x }) => {
+          return Promise.resolve(x + 1);
+        },
+        name: "incrementer",
+      });
+      const result = await executor.execute({ x: 41 });
+      expect(result).toEqual(42);
+    });
+
+    it("increments executions counter after a successful run", async () => {
+      const executor = new CoreExecutor<{ x: number }, number>({
+        handler: ({ x }) => x,
+        name: "identity",
+      });
+      expect(executor.executions).toEqual(0);
+      await executor.execute({ x: 1 });
+      expect(executor.executions).toEqual(1);
+      await executor.execute({ x: 2 });
+      expect(executor.executions).toEqual(2);
+    });
+
+    it("propagates thrown errors from the handler", async () => {
+      const executor = new CoreExecutor<{ x: number }, number>({
+        handler: () => {
+          throw new Error("boom");
+        },
+        name: "exploder",
+      });
+      await expect(executor.execute({ x: 0 })).rejects.toThrow("boom");
+    });
+  });
+
+  describe("hooks", () => {
+    it("runs onSuccess hook when handler succeeds", async () => {
+      const onSuccess = jest.fn();
+      const executor = new CoreExecutor<{ x: number }, number>(
+        { handler: ({ x }) => x * 10, name: "tenX" },
+        { hooks: { onSuccess: [onSuccess] } }
+      );
+      await executor.execute({ x: 3 });
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it("runs onError hook when handler throws", async () => {
+      const onError = jest.fn();
+      const executor = new CoreExecutor<{ x: number }, number>(
+        {
+          handler: () => {
+            throw new Error("bad");
+          },
+          name: "fails",
+        },
+        { hooks: { onError: [onError] } }
+      );
+      await expect(executor.execute({ x: 0 })).rejects.toThrow("bad");
+      expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it("runs onComplete hook regardless of outcome", async () => {
+      const onComplete = jest.fn();
+      const okExec = new CoreExecutor<{ x: number }, number>(
+        { handler: ({ x }) => x, name: "ok" },
+        { hooks: { onComplete: [onComplete] } }
+      );
+      const failExec = new CoreExecutor<{ x: number }, number>(
+        {
+          handler: () => {
+            throw new Error("nope");
+          },
+          name: "fail",
+        },
+        { hooks: { onComplete: [onComplete] } }
+      );
+      await okExec.execute({ x: 1 });
+      await expect(failExec.execute({ x: 1 })).rejects.toThrow();
+      expect(onComplete).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("metadata", () => {
+    it("getMetadata returns executor metadata with id, name, type", () => {
+      const executor = new CoreExecutor({
+        handler: () => ({}),
+        name: "meta-exec",
+      });
+      const meta = executor.getMetadata();
+      expect(meta).toHaveProperty("id", executor.id);
+      expect(meta).toHaveProperty("name", "meta-exec");
+      expect(meta).toHaveProperty("type", "function-executor");
+      expect(meta).toHaveProperty("created");
+    });
+  });
 });
