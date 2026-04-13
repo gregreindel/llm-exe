@@ -235,8 +235,45 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars template substitution on the LLM's output, using the second `attributes` argument as the template data. This lets the LLM reply with a template string that is filled in with runtime values before being returned to the caller.
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+
+parser.parse("Hello {{name}}!", { name: "World" });
+// => "Hello World!"
+```
+
+### When to use it
+
+Use this parser when you want the LLM to pick a *phrasing* or *template*, but you want the final string to include structured data you already have (rather than trusting the LLM to echo it back verbatim). A common pattern is letting the LLM produce a sentence stub, then interpolating the user's original input.
+
+When used inside an executor, the parser's second argument is the executor's execution metadata. The original input you passed to `execute()` is available under `input`, so templates reference `{{input.fieldName}}`:
+
+```ts
+const executor = createLlmExecutor({
+  llm,
+  prompt, // instructs the LLM to respond with, e.g. "Thanks for your order, {{input.customer}}!"
+  parser: createParser("replaceStringTemplate"),
+});
+
+await executor.execute({ customer: "Alice" });
+// LLM returns: "Thanks for your order, {{input.customer}}!"
+// Parser returns: "Thanks for your order, Alice!"
+```
+
+::: code-group
+
+```[Output]
+Thanks for your order, Alice!
+```
+
+```[Response]
+Thanks for your order, {{input.customer}}!
+```
+
+:::
 
 ## List to JSON
 
