@@ -91,7 +91,7 @@ createParser("listToJson");          // key: value list → object (with optiona
 createParser("listToKeyValue");      // key: value list → Array<{ key, value }>
 createParser("markdownCodeBlock");   // single code block → { code, language }
 createParser("markdownCodeBlocks");  // multiple code blocks → Array<{ code, language }>
-createParser("replaceStringTemplate"); // handlebars-based output templating
+createParser("replaceStringTemplate"); // run handlebars on the LLM output, filling {{vars}} from .parse(text, vars)
 ```
 
 #### Custom Parsers
@@ -104,12 +104,31 @@ const parser = createCustomParser("MyUppercaseParser", (output, input) => {
 
 #### State
 
+The `state` module gives you a place to keep dialogue history, typed context items, and lightweight key/value attributes between LLM calls. Three top-level helpers cover the most common cases:
+
 ```ts
+import { createState, createStateItem, createDialogue } from "llm-exe";
+
+// Standalone dialogue — chat history outside of state
 const dialogue = createDialogue("chat");
 dialogue.setUserMessage("Hi");
 dialogue.setAssistantMessage("Hello!");
-dialogue.getHistory(); // returns chat array
+dialogue.getHistory(); // returns the chat array
+
+// Typed context item — value with getValue/setValue/resetValue
+const userIntent = createStateItem("userIntent", "unknown");
+userIntent.setValue("booking");
+userIntent.getValue(); // "booking"
+
+// State container — dialogues + context items + attributes in one place
+const state = createState();
+const chatHistory = state.createDialogue("chatHistory");
+state.createContextItem(userIntent);
+state.setAttribute("locale", "en-US");
+state.serialize(); // { dialogues, context, attributes }
 ```
+
+`createStateItem(name, defaultValue)` requires a default value — its type defines what the item can hold. See [State](https://llm-exe.com/state/) for the full API.
 
 #### Hooks
 
