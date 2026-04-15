@@ -87,11 +87,11 @@ createParser("boolean");             // extracts boolean from response
 createParser("number");              // extracts number from response
 createParser("stringExtract", { enum: ["yes", "no"] }); // match one of the enum values
 createParser("listToArray");         // newline-separated list → string[]
-createParser("listToJson");          // key: value list → object (with optional schema)
-createParser("listToKeyValue");      // key: value list → Array<{ key, value }>
+createParser("listToJson");          // key: value list → single flat object (not an array — see note below)
+createParser("listToKeyValue");      // key: value list → Array<{ key, value }> (preserves order + duplicates)
 createParser("markdownCodeBlock");   // single code block → { code, language }
 createParser("markdownCodeBlocks");  // multiple code blocks → Array<{ code, language }>
-createParser("replaceStringTemplate"); // handlebars-based output templating
+createParser("replaceStringTemplate"); // runs Handlebars over the LLM output, filling {{vars}} from the executor input
 ```
 
 #### Custom Parsers

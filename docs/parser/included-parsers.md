@@ -235,19 +235,55 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs the LLM's response through Handlebars, substituting `{{variable}}` placeholders with data you supply as the second argument to `parse`. Useful when you want the LLM to pick a *template* and have the executor fill in the original input values — so the returned string stays deterministic even though the LLM chose its shape.
+
+Returns: string.
+
+```ts
+const parser = createParser("replaceStringTemplate");
+parser.parse("Hello {{name}}!", { name: "World" });
+// => "Hello World!"
+```
+
+When composed into an executor, the executor's input is forwarded as the `attributes` argument, so the LLM can return a template referencing any field from the original input.
+
+> **Example Prompt:** <br>You are a reply composer. Given the user's order info, reply with ONE of these templates (verbatim):<br>• `"Hi {{customer}}, your order #{{orderId}} has shipped."`<br>• `"Hi {{customer}}, your order #{{orderId}} is delayed."`
+
+```ts
+const prompt = createChatPrompt<{ customer: string; orderId: string; status: string }>(
+  `Pick the template that matches status "{{status}}" and respond with it verbatim.`
+);
+const parser = createParser("replaceStringTemplate");
+const replyBuilder = createLlmExecutor({ llm, prompt, parser });
+
+const message = await replyBuilder.execute({
+  customer: "Alice",
+  orderId: "A-42",
+  status: "shipped",
+});
+// => "Hi Alice, your order #A-42 has shipped."
+```
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by `\n`) into a **single flat object**. Despite the "list" in its name, this parser does **not** return an array — every `key: value` line is folded into one object, and if a key repeats the later value overwrites the earlier one. For an array of key/value pairs that preserves duplicates, use [`listToKeyValue`](#list-to-key-value) instead.
+
+By default, keys are converted to `camelCase`. Pass `keyTransform: "preserve"` to keep the original key text.
+
+Returns: `object`
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys — `camelCase` or keep them as written. |
+| `schema` | `JSONSchema` | — | Optional JSON schema. When provided, the output is coerced to the schema and typed accordingly. |
 
 ::: code-group
 
@@ -265,6 +301,17 @@ Name: Apple
 Type: Fruit
 ```
 
+:::
+
+::: warning
+`listToJson` is **not** a list-of-objects parser. Given multiple records separated by blank lines, every line collapses into the same object and duplicate keys are silently overwritten:
+
+```ts
+createParser("listToJson").parse("Name: Alice\nAge: 25\n\nName: Bob\nAge: 30");
+// => { name: "Bob", age: "30" }  — Alice is gone
+```
+
+If you need multiple records, have the LLM respond with JSON and use the [`json`](#json) parser, or use [`listToKeyValue`](#list-to-key-value) to preserve order and duplicates as `Array<{ key, value }>`.
 :::
 
 ## JSON
