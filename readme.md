@@ -104,12 +104,34 @@ const parser = createCustomParser("MyUppercaseParser", (output, input) => {
 
 #### State
 
+llm-exe ships a lightweight state module for managing conversation history, typed context, and loose attributes across turns. There are three primitives:
+
 ```ts
-const dialogue = createDialogue("chat");
-dialogue.setUserMessage("Hi");
-dialogue.setAssistantMessage("Hello!");
-dialogue.getHistory(); // returns chat array
+import { createState, createStateItem, createDialogue } from "llm-exe";
+
+// A standalone dialogue (chat history) — use when you only need messages
+const chat = createDialogue("chat");
+chat.setUserMessage("Hi");
+chat.setAssistantMessage("Hello!");
+chat.getHistory(); // => chat array
+
+// A state container — groups dialogues, context items, and attributes together
+const state = createState(); // createState() takes no arguments
+state.createDialogue("main").setUserMessage("Hey");
+state.getDialogue("main").setAssistantMessage("Hi there!");
+
+// Typed context items — require a default value so the item's type can be inferred
+const userIntent = createStateItem("userIntent", "unknown"); // default establishes the type
+state.createContextItem(userIntent);
+userIntent.setValue("booking");
+userIntent.getValue();   // "booking"
+userIntent.resetValue(); // back to "unknown"
+
+// Attributes — loose key/value metadata
+state.setAttribute("sessionId", "abc-123");
 ```
+
+> Note: `createStateItem` requires a default value — the default establishes the item's type, and `setValue` enforces that type on later writes. See the [State docs](https://llm-exe.com/state/) for the full API.
 
 #### Hooks
 
