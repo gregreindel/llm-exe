@@ -55,10 +55,27 @@ export class LlmExecutor<
     }
   }
 
+  /**
+   * Runs the executor against the configured LLM and prompt.
+   *
+   * `undefined` (including calling `execute()` with no arguments) is treated
+   * as an empty input — intentional convenience for prompts that declare no
+   * template variables.
+   *
+   * `null` is rejected with a `TypeError`: the declared input type requires
+   * an object, and silently coercing `null` hides a clear contract
+   * violation. See issue #410.
+   */
   async execute(
     _input: PromptInput<Prompt>,
     _options?: LlmExecutorExecuteOptions
   ): Promise<ParserOutput<Parser>> {
+    if (_input === null) {
+      throw new TypeError(
+        `[llm-exe] Executor "${this.name}" received null as input. ` +
+          `execute() expects an object matching the prompt's input type.`
+      );
+    }
     const input = _input ?? {};
     if (this?.parser instanceof JsonParser && this.parser.schema) {
       _options = Object.assign(_options || {}, {

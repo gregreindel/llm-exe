@@ -86,7 +86,18 @@ export abstract class BaseExecutor<
 
   /**
    *
-   * Used to filter the input of the handler
+   * Used to filter the input of the handler.
+   *
+   * Throws a `TypeError` if `_input` is `null`. The declared input type is
+   * `I extends PlainObject`; passing an explicit `null` is a contract
+   * violation with no valid coercion, so we surface it loudly rather than
+   * silently wrapping it.
+   *
+   * Non-object inputs (strings, numbers, arrays) are intentionally coerced
+   * to `{ input: value }` via {@link ensureInputIsObject}. This preserves the
+   * convenience pattern used by tool/function callables, which forward raw
+   * string arguments into an executor.
+   *
    * @param _input
    * @returns original input formatted for handler
    */
@@ -95,6 +106,12 @@ export abstract class BaseExecutor<
     _metadata: ExecutorExecutionMetadata<I, any>,
     _options?: any
   ): Promise<any> {
+    if (_input === null) {
+      throw new TypeError(
+        `[llm-exe] Executor "${this.name}" received null as input. ` +
+          `execute() expects an object matching the prompt's input type.`
+      );
+    }
     return ensureInputIsObject(_input);
   }
 
