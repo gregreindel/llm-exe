@@ -235,19 +235,47 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM output, using the parser's second argument as the data. This is useful when you want the LLM to return a template (e.g. `"Hello {{name}}!"`) that gets filled in with runtime values before being returned to the caller.
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+parser.parse("Hello {{name}}!", { name: "World" });
+// => "Hello World!"
+```
+
+When used inside an executor, the original input is passed through as the attributes, so the LLM can emit templates that reference the caller's input variables:
+
+```ts
+const executor = createLlmExecutor({
+  llm,
+  prompt: createChatPrompt<{ name: string }>(
+    "Respond with a greeting template that uses the handlebars variable {{'{{name}}'}}."
+  ),
+  parser: createParser("replaceStringTemplate"),
+});
+
+// LLM returns "Hello {{name}}!", the parser fills it in with the original input
+await executor.execute({ name: "Ada" }); // => "Hello Ada!"
+```
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by `\n`) into a **single flat object**. Despite the "list" in the name, this parser does not return an array — it folds all `key: value` lines into one object. Repeated keys overwrite earlier values silently, so this parser is best used when the LLM is asked to return a fixed set of named fields (one value per key).
+Returns: `Record<string, string>` (or the shape defined by `schema`)
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to normalize keys. `camelCase` (default) converts `"First Name"` → `firstName`. `preserve` keeps keys as written (trimmed). |
+| `schema` | `JSONSchema` | — | Optional JSON schema to coerce and validate the parsed object. |
 
 ::: code-group
 
@@ -265,6 +293,10 @@ Name: Apple
 Type: Fruit
 ```
 
+:::
+
+::: warning
+If you need a **list of objects** (e.g. `[{ name: "Alice" }, { name: "Bob" }]`), `listToJson` is not the right parser — repeated keys are collapsed. For an array of key/value pairs, use `listToKeyValue` above, or use [`json`](#json) with a schema that expects an array.
 :::
 
 ## JSON
