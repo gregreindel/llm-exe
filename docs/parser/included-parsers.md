@@ -235,13 +235,42 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the executor's input attributes as the template data. This lets the LLM return a template string that gets filled in with the original input variables before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+When used inside an executor, the parser receives the same input data that was passed to `executor.execute()`. For example, if the LLM returns `"Hello, {{name}}!"` and the executor input was `{ name: "Alice" }`, the parser produces `"Hello, Alice!"`.
+
+::: code-group
+
+```[Output]
+Hello, Alice!
+```
+
+```[Response]
+Hello, {{name}}!
+```
+
+```[Input Attributes]
+{ "name": "Alice" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by newlines) into a **single flat object**. Each line is split on the first colon — the text before the colon becomes the key, and the text after becomes the value.
+
+Returns: `Record<string, string>` (or a typed object when a `schema` is provided)
+
+::: warning Important
+This parser produces a single object, not an array. If the LLM response contains duplicate keys, **later values overwrite earlier ones**. For multi-record extraction, use the `json` parser with an array schema instead.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +278,19 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | Controls how keys are transformed. By default, keys like `"First Name"` become `"firstName"`. Set to `"preserve"` to keep original key casing. |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON schema to enforce structure and provide default values. |
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
 }
 ```
 
