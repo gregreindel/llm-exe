@@ -21,6 +21,8 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   public partials: PromptPartial[] = [];
   public helpers: PromptHelper[] = [];
 
+  public validateInput?: "warn" | "strict";
+
   public replaceTemplateString = replaceTemplateString;
   public replaceTemplateStringAsync = replaceTemplateStringAsync;
 
@@ -56,6 +58,18 @@ export abstract class BasePrompt<I extends Record<string, any>> {
       }
       if (options.replaceTemplateString) {
         this.replaceTemplateString = options.replaceTemplateString;
+      }
+      if (options.validateInput) {
+        this.validateInput = options.validateInput;
+        const _replace = this.replaceTemplateString;
+        const _replaceAsync = this.replaceTemplateStringAsync;
+        const validateInput = options.validateInput;
+        this.replaceTemplateString = (template, subs, config) => {
+          return _replace(template, subs, { ...config, validateInput });
+        };
+        this.replaceTemplateStringAsync = (template, subs, config) => {
+          return _replaceAsync(template, subs, { ...config, validateInput });
+        };
       }
     }
   }

@@ -7,6 +7,7 @@ export type PromptPartial = { name: string; template: string };
 export interface PromptTemplateOptions {
   partials?: PromptPartial[];
   helpers?: PromptHelper[];
+  validateInput?: "warn" | "strict";
 }
 
 export interface PromptOptions extends PromptTemplateOptions {

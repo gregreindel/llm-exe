@@ -1,5 +1,6 @@
 import { PromptTemplateOptions } from "@/types";
 import { hbsAsync } from "./handlebars";
+import { findMissingVariables } from "@/utils/modules/extractTemplateVariables";
 
 export async function replaceTemplateStringAsync(
   templateString?: string,
@@ -10,6 +11,24 @@ export async function replaceTemplateStringAsync(
   }
 ) {
   if (!templateString) return Promise.resolve(templateString || "");
+
+  if (configuration.validateInput) {
+    const helperNames = (configuration.helpers || []).map((h) => h.name);
+    const missing = findMissingVariables(
+      templateString,
+      substitutions,
+      helperNames
+    );
+    if (missing.length > 0) {
+      const message = `[llm-exe] Missing template variable(s): ${missing.join(", ")}. Template expects these variables but they were not provided.`;
+      if (configuration.validateInput === "strict") {
+        throw new Error(message);
+      } else {
+        console.warn(message);
+      }
+    }
+  }
+
   const tempHelpers = [];
   const tempPartials = [];
 

@@ -118,5 +118,62 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(formatted).toEqual("");
   });
 
+  describe("validateInput option", () => {
+    it("warns on missing variables in warn mode", () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const prompt = new MockPrompt("Hello {{name}}, age {{age}}", {
+        validateInput: "warn",
+      });
+      prompt.format({ name: "Greg" } as any);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("age")
+      );
+      warnSpy.mockRestore();
+    });
 
+    it("throws on missing variables in strict mode", () => {
+      const prompt = new MockPrompt("Hello {{name}}, age {{age}}", {
+        validateInput: "strict",
+      });
+      expect(() => prompt.format({ name: "Greg" } as any)).toThrow(
+        "Missing template variable(s): age"
+      );
+    });
+
+    it("does not warn when all variables are provided", () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const prompt = new MockPrompt("Hello {{name}}", {
+        validateInput: "warn",
+      });
+      prompt.format({ name: "Greg" });
+      expect(warnSpy).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it("works with formatAsync in warn mode", async () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const prompt = new MockPrompt("Hello {{name}}, age {{age}}", {
+        validateInput: "warn",
+      });
+      await prompt.formatAsync({ name: "Greg" } as any);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("age")
+      );
+      warnSpy.mockRestore();
+    });
+
+    it("works with formatAsync in strict mode", async () => {
+      const prompt = new MockPrompt("Hello {{name}}, age {{age}}", {
+        validateInput: "strict",
+      });
+      await expect(
+        prompt.formatAsync({ name: "Greg" } as any)
+      ).rejects.toThrow("Missing template variable(s): age");
+    });
+
+    it("stores validateInput on instance", () => {
+      const prompt = new MockPrompt("test", { validateInput: "strict" });
+      expect(prompt.validateInput).toBe("strict");
+    });
+  });
 })
