@@ -92,7 +92,7 @@ export const anthropic = {
     anthropicChatV1,
     "claude-sonnet-4-6"
   ),
-  // Claude 4 models
+  // Deprecated
   "anthropic.claude-sonnet-4": withDefaultModel(
     anthropicChatV1,
     "claude-sonnet-4-0"
@@ -101,8 +101,6 @@ export const anthropic = {
     anthropicChatV1,
     "claude-opus-4-0"
   ),
-
-  // Deprecated
   "anthropic.claude-3-7-sonnet": withDefaultModel(
     anthropicChatV1,
     "claude-3-7-sonnet-20250219"

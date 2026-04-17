@@ -588,20 +588,13 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Claude 4 models
-  "anthropic.claude-sonnet-4-0": {
-    input: Omit<AnthropicRequest, "model">;
-  };
-  "anthropic.claude-opus-4-0": {
-    input: Omit<AnthropicRequest, "model">;
-  };
+  // Anthropic - Deprecated
   "anthropic.claude-sonnet-4": {
     input: Omit<AnthropicRequest, "model">;
   };
   "anthropic.claude-opus-4": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Deprecated
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
