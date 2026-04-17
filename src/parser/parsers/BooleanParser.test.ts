@@ -55,5 +55,44 @@ describe("llm-exe:parser/BooleanParser", () => {
     const parser = new BooleanParser()
     expect(parser.parse("  yes  ")).toEqual(true)
   })
+  it('parses "FALSE" as false (uppercase)', () => {
+    const parser = new BooleanParser()
+    expect(parser.parse("FALSE")).toEqual(false)
+  })
+  it('parses "Y" as true (uppercase)', () => {
+    const parser = new BooleanParser()
+    expect(parser.parse("Y")).toEqual(true)
+  })
+  it('parses "TRUE" as true (all caps)', () => {
+    const parser = new BooleanParser()
+    expect(parser.parse("TRUE")).toEqual(true)
+  })
+  it('returns false for unrecognized strings', () => {
+    const parser = new BooleanParser()
+    expect(parser.parse("maybe")).toEqual(false)
+    expect(parser.parse("absolutely")).toEqual(false)
+    expect(parser.parse("2")).toEqual(false)
+    expect(parser.parse("")).toEqual(false)
+  })
+  it('throws on non-string input', () => {
+    const parser = new BooleanParser()
+    expect(() => parser.parse(42 as any)).toThrow("Invalid input. Expected string.")
+    expect(() => parser.parse(null as any)).toThrow("Invalid input. Expected string.")
+    expect(() => parser.parse(undefined as any)).toThrow("Invalid input. Expected string.")
+  })
+  it('handles whitespace-only input as false', () => {
+    const parser = new BooleanParser()
+    expect(parser.parse("   ")).toEqual(false)
+  })
+  it('handles tab and newline whitespace', () => {
+    const parser = new BooleanParser()
+    expect(parser.parse("\ttrue\n")).toEqual(true)
+    expect(parser.parse("\n1\t")).toEqual(true)
+  })
+  it('accepts options in constructor', () => {
+    const parser = new BooleanParser({})
+    expect(parser).toBeInstanceOf(BooleanParser)
+    expect(parser.name).toEqual("boolean")
+  })
 });
 
