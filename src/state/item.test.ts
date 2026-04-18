@@ -66,4 +66,27 @@ describe("llm-exe:state/BaseStateItem", () => {
                 value: { intent: 'unknown' }
         });
       });
+
+      it("item.setValue accepts value when default is undefined", () => {
+        const item = new MockStateItem<string | undefined>("intent", undefined);
+        item.setValue("hello");
+        expect(item.getValue()).toEqual("hello");
+      });
+
+      it("item.setValue enforces type after first set from undefined", () => {
+        const item = new MockStateItem<any>("intent", undefined);
+        item.setValue("hello");
+        expect(item.getValue()).toEqual("hello");
+        expect(() => item.setValue({} as any)).toThrowError(
+          "Invalid value type. Expected string, received object"
+        );
+      });
+
+      it("item.resetValue restores undefined default", () => {
+        const item = new MockStateItem<string | undefined>("intent", undefined);
+        item.setValue("hello");
+        expect(item.getValue()).toEqual("hello");
+        item.resetValue();
+        expect(item.getValue()).toBeUndefined();
+      });
 })
