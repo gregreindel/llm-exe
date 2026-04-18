@@ -235,19 +235,68 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, replacing template variables with values from the executor's input attributes. This is useful when the LLM returns a template string that should be filled in with the original input data before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+In an executor pipeline, the parser receives the LLM output as the template and the original input attributes as the data:
+
+```ts
+const executor = createLlmExecutor({
+  llm: useLlm("openai.gpt-4o-mini"),
+  prompt: createChatPrompt<{ name: string; language: string }>(
+    "Write a greeting template using {{name}} and {{language}} as placeholders."
+  ),
+  parser: createParser("replaceStringTemplate"),
+});
+
+// If the LLM responds with: "Hello {{name}}, welcome! Your preferred language is {{language}}."
+// The parser fills in the variables from the input:
+const result = await executor.execute({ name: "Alice", language: "TypeScript" });
+// result: "Hello Alice, welcome! Your preferred language is TypeScript."
+```
+
+::: code-group
+
+```[Output]
+Hello Alice, welcome!
+```
+
+```[Response]
+Hello {{name}}, welcome!
+```
+
+```[Attributes]
+{ "name": "Alice" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by newlines) into a **single flat object**. Each line is split on the first colon — the key becomes a property name and the value becomes a string property value.
+
+::: warning Important
+This parser returns a single object, not an array. If the input contains duplicate keys, only the **last value** is kept. For example, parsing `"Name: Alice\nName: Bob"` returns `{ name: "Bob" }` — "Alice" is silently overwritten. Use this parser for extracting a fixed set of unique fields, not for parsing repeated records.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase"` \| `"preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like "First Name" to "firstName". `"preserve"` keeps the original key text. |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON schema to enforce on the output. |
+| `validateSchema` | `boolean` | `false` | When `true` and a schema is provided, validates the output against the schema. |
 
 ::: code-group
 
@@ -266,6 +315,31 @@ Type: Fruit
 ```
 
 :::
+
+Values containing colons (like URLs or timestamps) are handled correctly — only the first colon splits key from value:
+
+::: code-group
+
+```[Output]
+{
+    "url": "https://example.com",
+    "time": "10:30:00"
+}
+```
+
+```[Response]
+URL: https://example.com
+Time: 10:30:00
+```
+
+:::
+
+To preserve original key casing and spacing, use `keyTransform: "preserve"`:
+
+```typescript
+const parser = createParser("listToJson", { keyTransform: "preserve" });
+// "First Name: John\nLast Name: Doe" → { "First Name": "John", "Last Name": "Doe" }
+```
 
 ## JSON
 
