@@ -261,4 +261,48 @@ describe("llm-exe:executor/LlmExecutor", () => {
     const result = await executor.execute(undefined as any);
     expect(result).toBeDefined();
   });
+
+  it("getHandlerInput uses async formatAsync when promptFn returns prompt with async formatAsync", async () => {
+    const asyncPrompt = {
+      formatAsync: async (input: any) => [`async-formatted-${input.key}`],
+    };
+    const promptFn = jest.fn().mockReturnValue(asyncPrompt);
+
+    const executor = new LlmExecutor({
+      llm,
+      prompt: promptFn as any
+    });
+
+    const result = await executor.getHandlerInput({ key: "val" });
+
+    expect(promptFn).toHaveBeenCalledWith({ key: "val" });
+    expect(result).toEqual(["async-formatted-val"]);
+  });
+
+  it("uses default StringParser when no parser is provided", async () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    expect(executor.parser).toBeDefined();
+    const result = await executor.execute({});
+    expect(typeof result).toBe("string");
+  });
+
+  it("uses custom name when provided", () => {
+    const executor = new LlmExecutor({ llm, prompt, name: "my-executor" });
+    expect(executor.name).toBe("my-executor");
+  });
+
+  it("uses default name when not provided", () => {
+    const executor = new LlmExecutor({ llm, prompt });
+    expect(executor.name).toBe("anonymous-llm-executor");
+  });
+
+  it("getTraceId returns llm traceId when executor has no traceId", () => {
+    const tracedLlm = useLlm("openai.chat-mock.v1", {
+      model: "test",
+      traceId: "from-llm",
+    });
+    const executor = new LlmExecutor({ llm: tracedLlm, prompt });
+    expect(executor.traceId).toBeNull();
+    expect(executor.getTraceId()).toBe("from-llm");
+  });
 });
