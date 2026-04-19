@@ -235,13 +235,43 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Takes the LLM response as a Handlebars template and renders it with the provided attributes. Useful when you want the LLM to produce a template that gets filled in with known values.
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+The `parse` method accepts a second argument — an object of attributes to substitute into the template:
+
+```ts
+const result = parser.parse(
+  "Hello, {{ name }}! You have {{ count }} items.",
+  { name: "Alice", count: 5 }
+);
+// => "Hello, Alice! You have 5 items."
+```
+
+Standard Handlebars syntax is supported, including helpers and block expressions:
+
+::: code-group
+
+```[Output]
+Welcome back, Alice! You have 5 new notifications.
+```
+
+```[Response (template from LLM)]
+Welcome back, {{ name }}! You have {{ count }} new notifications.
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses newline-separated `key: value` pairs into a flat object. Each line is split on the first colon — everything before is the key, everything after is the value. Despite the name, this returns a flat object (not a list or array). For an array of key/value pairs, see [`listToKeyValue`](#list-to-key-value) above.
+
+By default, keys are converted to camelCase. Use the `keyTransform` option to change this behavior.
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +279,20 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like `"First Name"` → `"firstName"`. `"preserve"` keeps the original key as-is (trimmed). |
+| `schema` | `JSONSchema` | — | Optional JSON Schema to enforce on the parsed output and provide default values. |
+| `validateSchema` | `boolean` | `false` | When `true` and a `schema` is provided, validates the output against the schema and throws on failure. |
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
 }
 ```
 

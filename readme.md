@@ -104,12 +104,27 @@ const parser = createCustomParser("MyUppercaseParser", (output, input) => {
 
 #### State
 
+Manage conversation history and application state across executor calls.
+
 ```ts
+// Dialogue — tracks chat history
 const dialogue = createDialogue("chat");
 dialogue.setUserMessage("Hi");
 dialogue.setAssistantMessage("Hello!");
-dialogue.getHistory(); // returns chat array
+dialogue.getHistory(); // returns chat message array
+
+// State — container for dialogues, context items, and attributes
+const state = createState();
+state.createDialogue("chat").setUserMessage("Hi");
+state.setAttribute("userId", "abc-123");
+
+// State Items — typed, resettable values for use as context
+const counter = createStateItem("requestCount", 0);
+counter.setValue(counter.getValue() + 1);
+counter.resetValue(); // back to 0
 ```
+
+See full state docs at [llm-exe.com/state](https://llm-exe.com/state).
 
 #### Hooks
 
