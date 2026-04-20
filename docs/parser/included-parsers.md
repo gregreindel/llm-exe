@@ -235,19 +235,54 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars template substitution on the LLM's output, using the executor's input attributes as template data. This lets the LLM return a template string that gets filled in with the original input variables before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+> **Use case:** The LLM generates a response containing placeholders from your original input. The parser fills those placeholders in automatically, so the final output is a fully resolved string.
+
+::: code-group
+
+```[Output]
+Hello World! Your order #12345 has been confirmed.
+```
+
+```[Response (from LLM)]
+Hello {{name}}! Your order #{{orderId}} has been confirmed.
+```
+
+```[Attributes (from executor input)]
+{ "name": "World", "orderId": "12345" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts newline-separated `key: value` pairs into a **single flat object**. Each line is split on the first colon — the left side becomes the key (camelCased by default), and the right side becomes the string value.
+
+Returns: `Record<string, string>` (or the schema type if a schema is provided)
+
+::: warning Important
+This parser produces a single object, not an array. If the input contains duplicate keys (e.g. multiple records separated by blank lines), later values **silently overwrite** earlier ones. For multi-record inputs, use the `json` parser with an array schema instead.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like "First Name" to "firstName". `"preserve"` keeps the original key text (trimmed). |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON Schema to validate and enforce types on the output. |
 
 ::: code-group
 
