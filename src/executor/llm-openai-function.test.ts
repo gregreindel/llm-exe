@@ -53,6 +53,71 @@ describe("llm-exe:executor/LlmExecutor", () => {
       { functionCall: "auto", functions: [] }
     );
   });
+
+  it("uses default StringParser when no parser is provided", () => {
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
+    expect(executor).toBeInstanceOf(LlmExecutorWithFunctions);
+  });
+
+  it("uses custom parser when provided", () => {
+    const customParser = { parse: jest.fn() };
+    const executor = new LlmExecutorWithFunctions({
+      llm,
+      prompt,
+      parser: customParser as any,
+    });
+    expect(executor).toBeInstanceOf(LlmExecutorWithFunctions);
+  });
+
+  it("sets type to llm-executor", () => {
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
+    expect(executor.type).toBe("llm-executor");
+  });
+
+  it("passes options hooks to base executor", () => {
+    const onSuccess = jest.fn();
+    const onError = jest.fn();
+    const executor = new LlmExecutorWithFunctions(
+      { llm, prompt },
+      { hooks: { onSuccess, onError } }
+    );
+    expect(executor.hooks.onSuccess).toEqual([onSuccess]);
+    expect(executor.hooks.onError).toEqual([onError]);
+  });
+
+  it("returns result from execute with functionCall none", async () => {
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
+    const result = await executor.execute(
+      { input: "test-value" },
+      { functionCall: "none", functions: [] }
+    );
+    expect(result).toBeDefined();
+  });
+
+  it("increments execution count", async () => {
+    const executor = new LlmExecutorWithFunctions({ llm, prompt });
+    expect(executor.executions).toBe(0);
+    await executor.execute(
+      { input: "test" },
+      { functionCall: "none", functions: [] }
+    );
+    expect(executor.executions).toBe(1);
+  });
+
+  it("calls hooks during execution", async () => {
+    const onSuccess = jest.fn();
+    const onComplete = jest.fn();
+    const executor = new LlmExecutorWithFunctions(
+      { llm, prompt },
+      { hooks: { onSuccess, onComplete } }
+    );
+    await executor.execute(
+      { input: "test" },
+      { functionCall: "none", functions: [] }
+    );
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("llm-exe:executor/LlmExecutorOpenAiFunctions (deprecated)", () => {

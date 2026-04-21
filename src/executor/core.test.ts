@@ -55,4 +55,113 @@ describe("llm-exe:executor/CoreExecutor", () => {
     expect(executor.name).toEqual("otherName");
     expect(typeof executor._handler).toEqual("function");
   });
+
+  it("uses fallback name for anonymous functions", () => {
+    const executor = new CoreExecutor({ handler: () => ({}) });
+    expect(executor.name).toBeDefined();
+    expect(typeof executor.name).toBe("string");
+  });
+
+  it("sets type to function-executor", () => {
+    const executor = new CoreExecutor({ handler: () => ({}) });
+    expect(executor.type).toEqual("function-executor");
+  });
+
+  it("executes sync handler and returns result", async () => {
+    const executor = new CoreExecutor({
+      handler: (input: { value: number }) => ({ doubled: input.value * 2 }),
+    });
+    const result = await executor.execute({ value: 5 });
+    expect(result).toEqual({ doubled: 10 });
+  });
+
+  it("executes async handler and returns result", async () => {
+    const executor = new CoreExecutor({
+      handler: async (input: { value: string }) => ({ upper: input.value.toUpperCase() }),
+    });
+    const result = await executor.execute({ value: "hello" });
+    expect(result).toEqual({ upper: "HELLO" });
+  });
+
+  it("increments execution count on each execute", async () => {
+    const executor = new CoreExecutor({ handler: () => ({}) });
+    expect(executor.executions).toBe(0);
+    await executor.execute({});
+    expect(executor.executions).toBe(1);
+    await executor.execute({});
+    expect(executor.executions).toBe(2);
+  });
+
+  it("propagates handler errors through execute", async () => {
+    const executor = new CoreExecutor({
+      handler: () => { throw new Error("handler failed"); },
+    });
+    await expect(executor.execute({})).rejects.toThrow("handler failed");
+  });
+
+  it("increments execution count even when handler throws", async () => {
+    const executor = new CoreExecutor({
+      handler: () => { throw new Error("boom"); },
+    });
+    try { await executor.execute({}); } catch {}
+    expect(executor.executions).toBe(1);
+  });
+
+  it("calls onSuccess hook on successful execution", async () => {
+    const onSuccess = jest.fn();
+    const executor = new CoreExecutor(
+      { handler: () => ({ ok: true }) },
+      { hooks: { onSuccess } }
+    );
+    await executor.execute({});
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onError hook when handler throws", async () => {
+    const onError = jest.fn();
+    const executor = new CoreExecutor(
+      { handler: () => { throw new Error("fail"); } },
+      { hooks: { onError } }
+    );
+    try { await executor.execute({}); } catch {}
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onComplete hook regardless of success or failure", async () => {
+    const onComplete = jest.fn();
+    const successExecutor = new CoreExecutor(
+      { handler: () => ({}) },
+      { hooks: { onComplete } }
+    );
+    await successExecutor.execute({});
+    expect(onComplete).toHaveBeenCalledTimes(1);
+
+    const onComplete2 = jest.fn();
+    const failExecutor = new CoreExecutor(
+      { handler: () => { throw new Error("fail"); } },
+      { hooks: { onComplete: onComplete2 } }
+    );
+    try { await failExecutor.execute({}); } catch {}
+    expect(onComplete2).toHaveBeenCalledTimes(1);
+  });
+
+  it("getMetadata returns executor metadata", () => {
+    const executor = new CoreExecutor({
+      handler: () => ({}),
+      name: "test-exec",
+    });
+    const meta = executor.getMetadata();
+    expect(meta.name).toBe("test-exec");
+    expect(meta.type).toBe("function-executor");
+    expect(meta.id).toBeDefined();
+    expect(meta.executions).toBe(0);
+  });
+
+  it("handler is bound with null context", async () => {
+    const executor = new CoreExecutor({
+      handler: function() { return { self: this }; },
+    });
+    const result = await executor.execute({});
+    expect(result.self).toBeNull();
+  });
 });
