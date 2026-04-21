@@ -12,11 +12,13 @@ export abstract class BaseStateItem<T> implements Serializable {
     this.initialValue = initialValue;
   }
   setValue(value: T) {
-    assert(
-      typeof value === typeof this.value,
-      `Invalid value type. Expected ${typeof this
-        .value}, received ${typeof value}`
-    );
+    if (typeof this.value !== "undefined") {
+      assert(
+        typeof value === typeof this.value,
+        `Invalid value type. Expected ${typeof this
+          .value}, received ${typeof value}`
+      );
+    }
     this.value = value;
   }
   getKey() {
