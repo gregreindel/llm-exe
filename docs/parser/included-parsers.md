@@ -235,13 +235,38 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs the LLM response through Handlebars, substituting variables from the parser's `attributes` context. Useful when the LLM generates a template and you want to fill in values at parse time.
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+
+// The second argument to parse() provides the template variables
+parser.parse("Hello, {{ name }}! You have {{ count }} items.", {
+  name: "Alice",
+  count: 5,
+});
+// => "Hello, Alice! You have 5 items."
+```
+
+::: code-group
+
+```[Output]
+Hello, Alice! You have 5 items.
+```
+
+```[Response]
+Hello, {{ name }}! You have {{ count }} items.
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses a newline-separated list of `key: value` pairs into a flat object. Each line becomes a property on the returned object. Despite the name, this does **not** return an array — it returns a single `Record<string, string>`.
+
+By default, keys are converted to camelCase. Use the `keyTransform` option to keep original keys.
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +274,43 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like "First Name" to "firstName". `"preserve"` keeps the original key text (trimmed). |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON Schema to validate and enforce defaults on the output. |
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
+}
+```
+
+```[Response]
+Color: Red
+Name: Apple
+Type: Fruit
+```
+
+:::
+
+With `keyTransform: "preserve"`:
+
+```typescript
+const parser = createParser("listToJson", { keyTransform: "preserve" });
+```
+
+::: code-group
+
+```[Output]
+{
+    "Color": "Red",
+    "Name": "Apple",
+    "Type": "Fruit"
 }
 ```
 
