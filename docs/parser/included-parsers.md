@@ -235,13 +235,51 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the executor's input data as template variables. This lets the LLM return a template string that gets filled in with original input values before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+When used inside an executor, the parser receives the executor's input as its `attributes` argument. This means the LLM can reference input variables in its response using `{{variable}}` syntax, and they'll be resolved automatically.
+
+**Example — LLM generates a personalized template:**
+
+```ts
+const executor = createLlmExecutor({
+  llm: useLlm("openai.gpt-4o-mini"),
+  prompt: createChatPrompt<{ name: string; topic: string }>(
+    "Write a one-line greeting for {{name}} about {{topic}}. " +
+    "You may use {{name}} and {{topic}} in your response."
+  ),
+  parser: createParser("replaceStringTemplate"),
+});
+
+// If the LLM responds: "Hey {{name}}, let's dive into {{topic}}!"
+// The parser resolves it to: "Hey Alice, let's dive into TypeScript!"
+const result = await executor.execute({ name: "Alice", topic: "TypeScript" });
+```
+
+::: code-group
+
+```[Output]
+Hey Alice, let's dive into TypeScript!
+```
+
+```[Response]
+Hey {{name}}, let's dive into {{topic}}!
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses newline-separated `key: value` pairs into a **single flat object** (`Record<string, string>`). This is a key-value extraction parser, not a list-of-objects parser — each key appears once in the output. If the LLM response contains duplicate keys, only the last value is kept.
+
+Returns: `Record<string, string>` (or a typed object when a schema is provided)
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +287,47 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like `"First Name"` to `"firstName"`. `"preserve"` keeps keys as-is (trimmed). |
+| `schema` | `JSONSchema` | — | Optional JSON schema to enforce types and defaults on the output. |
+
+::: warning Duplicate keys
+If the response contains the same key more than once, only the last occurrence is kept. If you need to parse multiple records, consider using `listToKeyValue` (which returns an array) or `json` with a schema.
+:::
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
+}
+```
+
+```[Response]
+Color: Red
+Name: Apple
+Type: Fruit
+```
+
+:::
+
+**Preserving original key casing:**
+
+```typescript
+const parser = createParser("listToJson", { keyTransform: "preserve" });
+```
+
+::: code-group
+
+```[Output]
+{
+    "Color": "Red",
+    "Name": "Apple",
+    "Type": "Fruit"
 }
 ```
 
