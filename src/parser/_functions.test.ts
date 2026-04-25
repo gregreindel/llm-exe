@@ -139,4 +139,48 @@ describe("createCustomParser", () => {
     const result = parser.parse('{"items": ["a", "b", "c"]}', {} as any);
     expect(result).toEqual({ items: ["a", "b", "c"], count: 3 });
   });
+
+  it("propagates errors thrown by the parser function", () => {
+    const parser = createCustomParser("thrower", () => {
+      throw new Error("parse failed");
+    });
+    expect(() => parser.parse("input", {} as any)).toThrow("parse failed");
+  });
+
+  it("can return null from parser function", () => {
+    const parser = createCustomParser("null-parser", () => null);
+    const result = parser.parse("anything", {} as any);
+    expect(result).toBeNull();
+  });
+
+  it("can return undefined from parser function", () => {
+    const parser = createCustomParser("undef-parser", () => undefined);
+    const result = parser.parse("anything", {} as any);
+    expect(result).toBeUndefined();
+  });
+
+  it("can return an empty string from parser function", () => {
+    const parser = createCustomParser("empty", () => "");
+    const result = parser.parse("anything", {} as any);
+    expect(result).toBe("");
+  });
+
+  it("can return an array from parser function", () => {
+    const parser = createCustomParser("array-parser", (text) =>
+      text.split(",")
+    );
+    const result = parser.parse("a,b,c", {} as any);
+    expect(result).toEqual(["a", "b", "c"]);
+  });
+
+  it("handles empty string input to parser function", () => {
+    const parser = createCustomParser("echo", (text) => text);
+    const result = parser.parse("", {} as any);
+    expect(result).toBe("");
+  });
+
+  it("works with an empty string name", () => {
+    const parser = createCustomParser("", (text) => text);
+    expect(parser.name).toBe("");
+  });
 });
