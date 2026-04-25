@@ -87,11 +87,11 @@ createParser("boolean");             // extracts boolean from response
 createParser("number");              // extracts number from response
 createParser("stringExtract", { enum: ["yes", "no"] }); // match one of the enum values
 createParser("listToArray");         // newline-separated list → string[]
-createParser("listToJson");          // key: value list → object (with optional schema)
+createParser("listToJson");          // key: value lines → single flat object (not an array)
 createParser("listToKeyValue");      // key: value list → Array<{ key, value }>
 createParser("markdownCodeBlock");   // single code block → { code, language }
 createParser("markdownCodeBlocks");  // multiple code blocks → Array<{ code, language }>
-createParser("replaceStringTemplate"); // handlebars-based output templating
+createParser("replaceStringTemplate"); // handlebars substitution on LLM output using input data
 ```
 
 #### Custom Parsers
@@ -104,12 +104,32 @@ const parser = createCustomParser("MyUppercaseParser", (output, input) => {
 
 #### State
 
+Manage conversation history and structured data across LLM calls.
+
 ```ts
+import { createState, createStateItem, createDialogue } from "llm-exe";
+
+// Standalone dialogue (no state needed)
 const dialogue = createDialogue("chat");
 dialogue.setUserMessage("Hi");
 dialogue.setAssistantMessage("Hello!");
-dialogue.getHistory(); // returns chat array
+dialogue.getHistory(); // returns IChatMessages[]
+
+// Full state: dialogues + context items + attributes
+const state = createState();
+const chatHistory = state.createDialogue("chatHistory");
+
+// Typed context items with default values
+const userIntent = createStateItem("userIntent", "unknown");
+state.createContextItem(userIntent);
+userIntent.setValue("booking");
+userIntent.getValue(); // "booking"
+
+// Simple key-value attributes
+state.setAttribute("sessionId", "abc-123");
 ```
+
+See the full [State documentation](https://llm-exe.com/state/) for details on dialogues, context items, and attributes.
 
 #### Hooks
 

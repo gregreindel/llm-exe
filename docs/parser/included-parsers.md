@@ -235,13 +235,42 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output using the executor's input data as the template context. This lets the LLM return a template string that gets filled in with the original input variables before being returned to the caller.
+
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+> **Example use case:** The LLM generates a response template with placeholders, and the parser fills in actual values from the input data.
+
+::: code-group
+
+```[Output]
+Hello World! Your order #12345 is on the way.
+```
+
+```[Response (from LLM)]
+Hello {{name}}! Your order #{{orderId}} is on the way.
+```
+
+```[Input Attributes]
+{ "name": "World", "orderId": "12345" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by newlines) into a single flat object. Each line is split on the first colon — the part before becomes the key (camelCased by default), and the part after becomes the string value.
+
+Returns: `Record<string, string>` (or a typed object when `schema` is provided)
+
+::: warning Important
+This parser produces a **single object**, not an array. If the input contains duplicate keys, later values overwrite earlier ones. For extracting an array of key/value pairs, use [`listToKeyValue`](#list-to-key-value) instead.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +278,19 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON Schema to validate and type the output. |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like `"First Name"` to `"firstName"`. `"preserve"` keeps the original key text (trimmed). |
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
 }
 ```
 
