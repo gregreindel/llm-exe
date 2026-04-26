@@ -13,7 +13,7 @@ export abstract class BaseStateItem<T> implements Serializable {
   }
   setValue(value: T) {
     assert(
-      typeof value === typeof this.value,
+      typeof this.value === "undefined" || typeof value === typeof this.value,
       `Invalid value type. Expected ${typeof this
         .value}, received ${typeof value}`
     );
