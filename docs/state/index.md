@@ -31,6 +31,13 @@ userIntent.getValue();    // "booking"
 userIntent.resetValue();  // resets to "unknown"
 ```
 
+You can retrieve context items later using `state.getContext(key)` (returns the `BaseStateItem` instance) or `state.getContextValue(key)` (returns the value directly):
+
+```ts
+state.getContext("userIntent").getValue();  // "booking"
+state.getContextValue("userIntent");        // "booking" — shorthand
+```
+
 **Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
 
 ## Creating State
@@ -59,6 +66,23 @@ state.getDialogue("chatHistory").setAssistantMessage("Yep! What's up?");
 ```
 
 You can also create a standalone dialogue without state using `createDialogue`. See the [Dialogue](/state/dialogue.html) page for full details.
+
+### Dialogue methods
+
+| Method | Description |
+|--------|-------------|
+| `state.createDialogue(name)` | Creates a new dialogue. Throws if a dialogue with that name already exists. |
+| `state.useDialogue(name)` | Gets an existing dialogue by name, or creates one if it doesn't exist. Useful when you don't know if the dialogue has been created yet. |
+| `state.getDialogue(name)` | Gets an existing dialogue by name. Throws if not found. |
+
+## Serialization
+
+Call `state.serialize()` to get a plain object snapshot of all dialogues, context items, and attributes:
+
+```ts
+const snapshot = state.serialize();
+// { dialogues: { ... }, context: { ... }, attributes: { ... } }
+```
 
 ## Saving State
 

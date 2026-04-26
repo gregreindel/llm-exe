@@ -235,13 +235,40 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the executor's input data as template variables. This lets the LLM return a template string that gets filled in with the original input before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+**How it works in an executor pipeline:**
+
+When used inside an executor, the parser receives the original input data as its second argument (`attributes`). Any `{{variable}}` placeholders in the LLM's response are replaced with the corresponding values from the input.
+
+::: code-group
+
+```[Output]
+Hello Alice, your order #12345 has shipped!
+```
+
+```[Response (from the LLM)]
+Hello {{name}}, your order #{{orderId}} has shipped!
+```
+
+```[Input (passed as attributes)]
+{ "name": "Alice", "orderId": "12345" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by newlines) into a **single flat object**. Each line is split on the first colon — the text before the colon becomes the key, and the text after becomes the value.
+
+Returns: `Record<string, string>` (or a typed object when using `schema`)
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +276,23 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like "First Name" to `firstName`. `"preserve"` keeps keys as-is (trimmed). |
+| `schema` | `JSONSchema` | — | Optional JSON schema to enforce on the output and provide defaults. |
+
+::: warning Important
+This parser returns a single object, not an array. If the LLM response contains duplicate keys, **later values overwrite earlier ones**. For example, two lines starting with `Name:` will result in only the last value being kept. If you need to parse multiple records, consider using the `json` parser with an array schema instead.
+:::
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
 }
 ```
 
