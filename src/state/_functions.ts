@@ -1,8 +1,10 @@
+import { assert } from "@/utils/modules/assert";
 import { DefaultState } from "./index";
 import { Dialogue } from "./dialogue";
 import { DefaultStateItem } from "./item";
 
 export function createState() {
+  assert(arguments.length === 0, "createState() does not accept arguments.");
   return new DefaultState();
 }
 export function createDialogue(name: string) {
