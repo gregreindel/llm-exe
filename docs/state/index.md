@@ -13,6 +13,20 @@ Dialogues are a place to store conversation history, internal dialogues, really 
 
 **Context** items are instances of `BaseStateItem` — typed classes with `getValue()`, `setValue()`, and `resetValue()` methods. Use context for structured, typed data that needs its own lifecycle (e.g., extracted entities, session config). Create context items with `createStateItem(name, defaultValue)` and add them via `state.createContextItem(item)`.
 
+::: warning
+`createStateItem` requires a default value, and `setValue` enforces that subsequent values match the type of the default. Always provide a default value of the type you intend to store:
+```ts
+// ✅ Correct — default value establishes the type
+const counter = createStateItem("counter", 0);
+counter.setValue(42); // works
+
+// ❌ Wrong — omitting the default means the type is undefined,
+// and you won't be able to set a value later
+const broken = createStateItem("broken", undefined);
+broken.setValue("hello"); // throws: "Expected undefined, received string"
+```
+:::
+
 ```ts
 import { createState, createStateItem } from "llm-exe";
 
