@@ -235,19 +235,67 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the executor's input data as template variables. This lets the LLM return a template string that gets filled in with the original input before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+In an executor pipeline, the parser receives the LLM output as the template and the original executor input as the data:
+
+```ts
+const prompt = createChatPrompt<{ name: string; role: string }>(
+  "Generate a greeting template using {{name}} and {{role}} as Handlebars placeholders."
+);
+
+const executor = createLlmExecutor({
+  llm: useLlm("openai.gpt-4o"),
+  prompt,
+  parser: createParser("replaceStringTemplate"),
+});
+
+// If the LLM responds with "Hello {{name}}, welcome as our new {{role}}!"
+const result = await executor.execute({ name: "Alice", role: "engineer" });
+// result: "Hello Alice, welcome as our new engineer!"
+```
+
+::: code-group
+
+```[Output]
+Hello Alice, welcome as our new engineer!
+```
+
+```[Response]
+Hello {{name}}, welcome as our new {{role}}!
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses key: value pairs (separated by newlines) into a **single flat object**. Each line is split on the first colon — text before the colon becomes the key, text after becomes the value. By default, keys are converted to camelCase.
+
+Returns: `Record<string, any>` (or a typed object when a schema is provided)
+
+::: warning Single-object output
+Despite the "list" prefix, this parser always returns **one object**, not an array. If the input contains duplicate keys, later values silently overwrite earlier ones. If you need an array of key/value pairs, use [`listToKeyValue`](#list-to-key-value) instead.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | Controls how keys are transformed. Use `"preserve"` to keep original casing. |
+| `schema` | JSON Schema | — | Optional schema for validation and default values. |
+| `validateSchema` | `boolean` | `false` | When `true`, validates parsed output against the schema. |
 
 ::: code-group
 
