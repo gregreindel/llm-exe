@@ -235,13 +235,53 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the `attributes` argument as the template data. This lets the LLM return a template string that gets filled in with your original input data before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+The parser takes two arguments: the template string (typically the LLM's output) and a data object used to fill in the Handlebars variables.
+
+::: code-group
+
+```[Output]
+Hello, World!
+```
+
+```[Input]
+parser.parse("Hello, {{name}}!", { name: "World" })
+```
+
+:::
+
+When used inside an executor, the parser receives the execution metadata as the data object. The original input is available under `input`:
+
+```ts
+const executor = createLlmExecutor({
+  llm: useLlm("openai.gpt-4o-mini"),
+  prompt: createChatPrompt<{ name: string }>(
+    "Generate a greeting template. Use the Handlebars variable {{input.name}}."
+  ),
+  parser: createParser("replaceStringTemplate"),
+});
+
+// If the LLM responds with "Hello, {{input.name}}! Welcome aboard."
+// The parser substitutes the execution metadata, returning:
+// "Hello, Alice! Welcome aboard."
+const result = await executor.execute({ name: "Alice" });
+```
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses newline-separated `key: value` pairs into a **single flat object**. Each line becomes one property on the object. Keys are camelCased by default.
+
+::: warning
+Despite the name, this parser does **not** produce an array. If the LLM response contains duplicate keys, only the last value is kept. For parsing multiple records, use the `json` parser with an array schema instead.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -266,6 +306,35 @@ Type: Fruit
 ```
 
 :::
+
+### Options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How keys are transformed. `"camelCase"` converts keys like "First Name" → "firstName". `"preserve"` keeps the original key text. |
+| `schema` | `JSONSchema` | — | Optional JSON Schema to enforce types and provide default values. |
+| `validateSchema` | `boolean` | `false` | When `true`, throws an error if the parsed output doesn't match the schema. |
+
+### Key transformation
+
+```ts
+// Default: keys are camelCased
+createParser("listToJson").parse("First Name: John\nLast Name: Doe")
+// => { firstName: "John", lastName: "Doe" }
+
+// Preserve original keys
+createParser("listToJson", { keyTransform: "preserve" }).parse("First Name: John\nLast Name: Doe")
+// => { "First Name": "John", "Last Name": "Doe" }
+```
+
+### Values with colons
+
+Only the first colon on each line is treated as the key/value separator. Colons in values (URLs, timestamps) are preserved:
+
+```ts
+createParser("listToJson").parse("URL: https://example.com\nTime: 10:30:00")
+// => { url: "https://example.com", time: "10:30:00" }
+```
 
 ## JSON
 
