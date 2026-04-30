@@ -60,6 +60,21 @@ state.getDialogue("chatHistory").setAssistantMessage("Yep! What's up?");
 
 You can also create a standalone dialogue without state using `createDialogue`. See the [Dialogue](/state/dialogue.html) page for full details.
 
+## Full API Reference
+
+| Method | Description |
+|--------|-------------|
+| `createDialogue(name)` | Creates a new named dialogue on the state. |
+| `useDialogue(name)` | Gets an existing dialogue by name, or creates one if it doesn't exist. |
+| `getDialogue(name)` | Gets an existing dialogue by name. Throws if not found. |
+| `createContextItem(item)` | Registers a `BaseStateItem` for structured context storage. |
+| `getContext(key)` | Retrieves a context item by key. |
+| `getContextValue(key)` | Retrieves the value from a context item directly. |
+| `setAttribute(key, value)` | Sets a key-value attribute. |
+| `deleteAttribute(key)` | Removes an attribute by key. |
+| `clearAttributes()` | Clears all attributes. |
+| `serialize()` | Serializes the full state (dialogues, context, and attributes) to a plain object. |
+
 ## Saving State
 
 The `DefaultState` class implements `saveState()` with a warning log by default. To persist state, extend `DefaultState` and override it with your own save logic:

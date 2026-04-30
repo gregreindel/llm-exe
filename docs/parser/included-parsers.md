@@ -235,19 +235,67 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Replaces handlebars-style template placeholders in the LLM's output with values from the input attributes. This is useful when the LLM returns a template string that should be filled in with the original input data before being returned to the caller.
+
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+In an executor pipeline, the parser receives the executor's input as the `attributes` argument, so template variables in the LLM's output are replaced with the original input values:
+
+```ts
+const executor = createLlmExecutor({
+  llm: useLlm("openai.gpt-4o-mini"),
+  prompt: createChatPrompt<{ name: string; topic: string }>(
+    "Write a greeting template for {{name}} about {{topic}}. " +
+    "Use {{ name }} and {{ topic }} as placeholders in your response."
+  ),
+  parser: createParser("replaceStringTemplate"),
+});
+
+// If the LLM responds with: "Hello {{ name }}, let's talk about {{ topic }}!"
+// The parser replaces the placeholders with the input values:
+const result = await executor.execute({ name: "Alice", topic: "TypeScript" });
+// => "Hello Alice, let's talk about TypeScript!"
+```
+
+::: code-group
+
+```[Output]
+Hello Alice, let's talk about TypeScript!
+```
+
+```[Response]
+Hello {{ name }}, let's talk about {{ topic }}!
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts newline-separated `key: value` pairs into a single flat object. Each line is split on the first colon — the text before the colon becomes the key, and everything after becomes the value. Empty lines and lines without a colon are skipped.
+
+Returns: `Record<string, string>` (or typed via schema)
+
+::: warning
+This parser produces a **single flat object**, not an array. If the LLM returns duplicate keys (e.g. multiple `Name:` lines), later values silently overwrite earlier ones. For extracting repeated key-value groups, use the `json` parser with an array schema instead.
+:::
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | Controls whether keys are converted to camelCase or kept as-is. |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON Schema to enforce output structure and provide type inference. |
+| `validateSchema` | `boolean` | `false` | When `true` and a schema is provided, throws an error if the parsed object doesn't match the schema. |
 
 ::: code-group
 
@@ -263,6 +311,24 @@ const parser = createParser("listToJson");
 Color: Red
 Name: Apple
 Type: Fruit
+```
+
+:::
+
+Values containing colons (such as URLs or timestamps) are handled correctly — only the first colon on each line is used as the delimiter:
+
+::: code-group
+
+```[Output]
+{
+    "website": "https://example.com",
+    "time": "12:30 PM"
+}
+```
+
+```[Response]
+Website: https://example.com
+Time: 12:30 PM
 ```
 
 :::
