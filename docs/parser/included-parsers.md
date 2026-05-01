@@ -235,19 +235,53 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the executor's input data as template variables. This is useful when the LLM returns a template string that should be filled in with the original input data before being returned to the caller.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+::: code-group
+
+```[Output]
+Hello World! Welcome to the team.
+```
+
+```[Response]
+Hello {{name}}! Welcome to the {{department}}.
+```
+
+```[Attributes passed to parser]
+{ "name": "World", "department": "the team" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses `key: value` pairs (one per line) into a single flat object. Each line is split on the **first** colon — the left side becomes the property name, the right side becomes the string value. By default, keys are camelCased.
+
+::: warning Important
+Despite the name, this parser returns a **single flat object**, not an array. If the input contains duplicate keys, later values silently overwrite earlier ones. Use this parser when you expect one set of unique key-value pairs. For repeated groups, consider the `json` parser with a schema instead.
+:::
+
+Returns: `Record<string, string>` (or a typed object when a `schema` is provided)
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like `First Name` to `firstName`. `"preserve"` keeps the original key text. |
+| `schema` | `JSONSchema` | — | Optional JSON Schema to enforce types and defaults on the output. |
+| `validateSchema` | `boolean` | `false` | When `true` and a `schema` is provided, throws an error if the output doesn't match the schema. |
 
 ::: code-group
 
@@ -263,6 +297,30 @@ const parser = createParser("listToJson");
 Color: Red
 Name: Apple
 Type: Fruit
+```
+
+:::
+
+### Preserving original keys
+
+By default, keys are camelCased (`First Name` becomes `firstName`). To keep the original key text:
+
+```typescript
+const parser = createParser("listToJson", { keyTransform: "preserve" });
+```
+
+::: code-group
+
+```[Output]
+{
+    "First Name": "John",
+    "Last Name": "Doe"
+}
+```
+
+```[Response]
+First Name: John
+Last Name: Doe
 ```
 
 :::

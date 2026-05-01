@@ -88,3 +88,29 @@ This is a simple example, but to highlight some key differences:
 - The llm-exe version is structured in a way that each component could be testable. 
 - Extra configuration details are hidden away.
 - Parsing the output - the llm-exe version enforces the output we desire, and makes sure it is well-typed, without needing to deal with the response.
+
+## State Management
+
+For multi-turn conversations and agents, llm-exe provides a state module with three primitives: **dialogues**, **context items**, and **attributes**.
+
+```ts
+import { createState, createDialogue, createStateItem } from "llm-exe";
+
+// Create a state container
+const state = createState();
+
+// Track conversation history
+const chat = state.createDialogue("chat");
+chat.setUserMessage("Hello!");
+chat.setAssistantMessage("Hi there!");
+
+// Store typed data with context items
+const intent = createStateItem("userIntent", "unknown");
+state.createContextItem(intent);
+intent.setValue("booking");
+
+// Simple key-value metadata with attributes
+state.setAttribute("language", "en");
+```
+
+You can also create standalone dialogues without state using `createDialogue("name")`. See the full [State documentation](/state/) and [Dialogue documentation](/state/dialogue.html) for details.
