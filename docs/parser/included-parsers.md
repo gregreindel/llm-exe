@@ -235,13 +235,47 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Treats the LLM's response as a Handlebars template and renders it against the executor's input data. This is useful when you want the LLM to produce a template that gets filled in with known values at parse time, keeping structured data out of the LLM's response while still letting it control the phrasing.
+
+Returns: `string`
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+When used in an executor, the input data passed to `execute()` is available as template variables:
+
+```ts
+const executor = createLlmExecutor({
+  llm,
+  prompt: createChatPrompt("Write a greeting template using {{name}} and {{role}}."),
+  parser: createParser("replaceStringTemplate"),
+});
+
+// The LLM might respond with: "Hello {{name}}, welcome aboard as our new {{role}}!"
+// The parser renders it with the input data:
+const result = await executor.execute({ name: "Alice", role: "engineer" });
+// result: "Hello Alice, welcome aboard as our new engineer!"
+```
+
+::: code-group
+
+```[Output]
+Hello Alice, welcome aboard as our new engineer!
+```
+
+```[Response]
+Hello {{name}}, welcome aboard as our new {{role}}!
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses newline-separated `key: value` pairs into a flat object. Despite the name, this does not return an array — it returns a single `Record<string, string>` (or a schema-typed object when a schema is provided). Keys are camelCased by default.
+
+Returns: `Record<string, string>` (or typed via schema)
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
@@ -249,13 +283,20 @@ Converts a list of key: value pairs (separated by \n) to an object.
 const parser = createParser("listToJson");
 ```
 
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts `First Name` to `firstName`. `"preserve"` keeps the original key. |
+| `schema` | `JSONSchema` | — | Optional JSON Schema to validate and type the output. |
+| `validateSchema` | `boolean` | `false` | When `true`, throws an error if the parsed output doesn't match the schema. |
+
 ::: code-group
 
 ```[Output]
 {
-    "color": "red",
-    "name": "apple",
-    "type": "fruit"
+    "color": "Red",
+    "name": "Apple",
+    "type": "Fruit"
 }
 ```
 
@@ -266,6 +307,36 @@ Type: Fruit
 ```
 
 :::
+
+### Key transform
+
+By default, keys are converted to camelCase. Use `keyTransform: "preserve"` to keep the original key text:
+
+```ts
+const parser = createParser("listToJson", { keyTransform: "preserve" });
+// Input: "First Name: John\nLast Name: Doe"
+// Output: { "First Name": "John", "Last Name": "Doe" }
+```
+
+### With schema
+
+Pass a schema to get typed output with defaults and validation:
+
+```ts
+import { defineSchema } from "llm-exe";
+
+const schema = defineSchema({
+  type: "object",
+  properties: {
+    name: { type: "string", default: "unknown" },
+    occupation: { type: "string", default: "unemployed" },
+  },
+  required: ["name", "occupation"],
+  additionalProperties: false,
+} as const);
+
+const parser = createParser("listToJson", { schema });
+```
 
 ## JSON
 
