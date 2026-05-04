@@ -235,18 +235,45 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Processes the LLM's response as a Handlebars template, substituting placeholders with values you provide via the parser's `attributes` parameter. Useful when the LLM generates output containing template variables that need to be resolved against known data before use.
+
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+
+// The LLM returned a template string:
+const llmOutput = "Hello, {{name}}! Your order #{{orderId}} is ready.";
+
+// Resolve it with actual values:
+const result = parser.parse(llmOutput, { name: "Alice", orderId: "12345" });
+// "Hello, Alice! Your order #12345 is ready."
+```
+
+The second argument to `parse()` is an attributes object whose keys match the `{{placeholder}}` names in the template. Standard Handlebars syntax is supported, including helpers and block expressions.
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Converts a list of `key: value` pairs (separated by newlines) into a **single flat object**. Each line becomes one property: the text before the first colon is the key, and everything after is the value. Despite the "list" in the name, the input is a list of lines — the output is always a plain object, not an array. (For an array of key/value pairs, see [`listToKeyValue`](#list-to-key-value) above.)
+
+Returns: `Record<string, string>` (or a typed object when a `schema` is provided)
 
 > **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
+```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | By default, keys are converted to camelCase. Set to `"preserve"` to keep the original casing. |
+| `schema` | `JSONSchema` | — | Optional JSON Schema to validate and enforce types on the parsed output. |
+
+```ts
+// Preserve original key casing instead of camelCase
+const parser = createParser("listToJson", { keyTransform: "preserve" });
 ```
 
 ::: code-group

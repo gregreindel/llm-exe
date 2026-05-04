@@ -2,16 +2,48 @@
 
 When calling an LLM from your code, the LLM only knows the history you provide it.
 
-When using llm-exe, the state is something you need to manage. To help provide a concept of memory to your LLM's, we provide a simple state module. 
+When using llm-exe, the state is something you need to manage. To help provide a concept of memory to your LLMs, we provide a simple state module.
+
+## Quick Start
+
+```ts
+import { createState, createStateItem, createDialogue } from "llm-exe";
+
+// Create a state container (takes no arguments)
+const state = createState();
+
+// Store conversation history
+const chat = state.createDialogue("chat");
+chat.setUserMessage("Hello!");
+
+// Store typed data
+const mood = createStateItem("mood", "neutral");
+state.createContextItem(mood);
+mood.setValue("happy");
+
+// Store simple metadata
+state.setAttribute("userId", "abc-123");
+```
+
+## Concepts
 
 The state module consists of 3 concepts:
-- Dialogues
-- Context
-- Attributes
 
-Dialogues are a place to store conversation history, internal dialogues, really any conversation that is taking place with an LLM. You can have one or many dialogues. When you create a new dialogue, you should provide a key, which allows you to access the dialogue from the state later if needed.
+| Concept | Purpose | Create with |
+|---------|---------|-------------|
+| **Dialogues** | Conversation history for LLM interactions | `state.createDialogue(name)` or standalone `createDialogue(name)` |
+| **Context** | Typed, named data items with get/set/reset | `createStateItem(name, defaultValue)` + `state.createContextItem(item)` |
+| **Attributes** | Simple key-value metadata | `state.setAttribute(key, value)` |
 
-**Context** items are instances of `BaseStateItem` — typed classes with `getValue()`, `setValue()`, and `resetValue()` methods. Use context for structured, typed data that needs its own lifecycle (e.g., extracted entities, session config). Create context items with `createStateItem(name, defaultValue)` and add them via `state.createContextItem(item)`.
+### Dialogues
+
+A place to store conversation history — any conversation taking place with an LLM. You can have one or many dialogues. When you create a new dialogue, provide a key so you can retrieve it from the state later. See the [Dialogue](/state/dialogue.html) page for the full message API.
+
+### Context
+
+Context items are instances of `BaseStateItem` — typed classes with `getValue()`, `setValue()`, and `resetValue()` methods. Use context for structured, typed data that needs its own lifecycle (e.g., extracted entities, session config).
+
+The `defaultValue` you pass to `createStateItem` determines the type — `setValue()` will reject values of a different type at runtime. Always provide a default value.
 
 ```ts
 import { createState, createStateItem } from "llm-exe";
@@ -31,7 +63,32 @@ userIntent.getValue();    // "booking"
 userIntent.resetValue();  // resets to "unknown"
 ```
 
-**Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
+### Attributes
+
+A simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
+
+## API Reference
+
+### Factory Functions
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `createState()` | `DefaultState` | Creates a new state container. Takes no arguments. |
+| `createDialogue(name)` | `Dialogue` | Creates a standalone dialogue (not attached to state). |
+| `createStateItem(name, defaultValue)` | `DefaultStateItem` | Creates a typed state item. The `defaultValue` sets the accepted type. |
+
+### State Methods
+
+| Method | Description |
+|--------|-------------|
+| `state.createDialogue(name)` | Create a new dialogue within the state and return it. |
+| `state.getDialogue(name)` | Retrieve a dialogue by name. |
+| `state.useDialogue(name)` | Get an existing dialogue or create it if it doesn't exist. |
+| `state.createContextItem(item)` | Add a `BaseStateItem` to the state's context. |
+| `state.getContext(name)` | Retrieve a context item by name. |
+| `state.setAttribute(key, value)` | Set a metadata attribute. |
+| `state.deleteAttribute(key)` | Remove a metadata attribute. |
+| `state.clearAttributes()` | Remove all metadata attributes. |
 
 ## Creating State
 
