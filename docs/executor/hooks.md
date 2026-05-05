@@ -4,56 +4,90 @@ Hooks are available mostly for logging purposes, but can have more advanced use-
 
 The following hooks are available:
 
-- onComplete
-- onSuccess
-- onError
+- `onSuccess` — runs after a successful execution, once the output has been produced
+- `onError` — runs when the executor throws, before the error is re-thrown
+- `onComplete` — runs after `onSuccess` or `onError`, regardless of outcome
+
+### Hook Signature
+
+Every hook receives the same two arguments:
+
+```typescript
+type Hook = (
+  executionMetadata: ExecutorExecutionMetadata,
+  executorMetadata: ExecutorMetadata
+) => void;
+```
+
+`executionMetadata` contains information about this specific execution (input, output, timings, and — for `onError` — the thrown error). `executorMetadata` contains information about the executor instance itself (id, type, name, total executions).
+
+| Field                           | Available on           | Description                                      |
+| ------------------------------- | ---------------------- | ------------------------------------------------ |
+| `executionMetadata.input`       | all hooks              | The input passed to `.execute()`                 |
+| `executionMetadata.output`      | `onSuccess`, `onComplete` | The parsed output returned by the executor   |
+| `executionMetadata.error`       | `onError`, `onComplete` | The thrown `Error` instance                     |
+| `executionMetadata.errorMessage`| `onError`, `onComplete` | Shortcut for `error.message`                    |
+| `executionMetadata.start`       | all hooks              | Execution start time (ms since epoch)            |
+| `executionMetadata.end`         | `onComplete`           | Execution end time (ms since epoch)              |
+| `executorMetadata.id`           | all hooks              | Stable id of the executor                        |
+| `executorMetadata.name`         | all hooks              | Name of the executor, if set                     |
+| `executorMetadata.executions`   | all hooks              | Number of times this executor has run            |
+
+Hooks should be synchronous and lightweight. Errors thrown inside a hook are caught and logged by llm-exe; they will not affect the executor's result.
 
 You can attach hooks:
 
 - During initialization
-- After initialization using on/off/once
+- After initialization using `on` / `off` / `once`
 
-#### Adding hooks during initialization:
+#### Adding hooks during initialization
 
-```typescript{2,5}:no-line-numbers
-// You can pass in hooks object
-const hooks = { onComplete: logFunction, onError: logFunctionError };
+```typescript{5}:no-line-numbers
+const hooks = {
+  onSuccess: (exec) => console.log("output:", exec.output),
+  onError: (exec) => console.error("failed:", exec.errorMessage),
+};
 const llm = useLlm("openai.chat-mock.v1", {});
 const prompt = createChatPrompt("This is a prompt.");
 const executor = createLlmExecutor({ llm, prompt }, { hooks });
 ```
 
-#### Adding hooks after initialization:
+#### Adding hooks after initialization
 
-```typescript{13,14}:no-line-numbers
-function logFunction() {
-  console.log("its done!!");
+Use `.on()` to attach a hook, and `.off()` to remove it.
+
+```typescript{10,11,14}:no-line-numbers
+function logSuccess(exec) {
+  console.log("output:", exec.output);
 }
 
-function logFunctionError() {
-  console.log("its done!!");
+function logError(exec) {
+  console.error("failed:", exec.errorMessage);
 }
 
-// You can also use on to listen
-const llm = useLlm("openai.chat-mock.v1", {});
-const prompt = createChatPrompt("This is a prompt.");
 const executor = createLlmExecutor({ llm, prompt });
-executor.on("onComplete", logFunction);
-executor.on("onError", logFunctionError);
-return executor.execute({});
+executor.on("onSuccess", logSuccess);
+executor.on("onError", logError);
+
+// Later, detach a specific listener:
+executor.off("onSuccess", logSuccess);
 ```
 
-You can also use `.once` to add a hook that get executed exactly once
+#### Listening exactly once
 
-```typescript{5}:no-line-numbers
-// You can also use once to listen once
-const llm = useLlm("openai.chat-mock.v1", {});
-const prompt = createChatPrompt("This is a prompt.");
+Use `.once()` to add a hook that fires on the next execution only and then detaches itself.
+
+```typescript{3}:no-line-numbers
 const executor = createLlmExecutor({ llm, prompt });
-executor.once("onComplete", logFunction);
-return executor.execute({});
+
+executor.once("onComplete", (exec) => {
+  console.log(`first run took ${exec.end - exec.start}ms`);
+});
+
+await executor.execute({});
+await executor.execute({}); // the once handler no longer fires
 ```
 
 ::: tip
-Default behavior is to not add the same handler to the same hook more than once.
+Default behavior is to not add the same handler to the same hook more than once. There is also a per-event hook limit to prevent unbounded memory growth — if you hit it, remove unused hooks with `.off()` rather than piling on new ones.
 :::
