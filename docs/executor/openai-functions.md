@@ -2,6 +2,10 @@
 
 To take advantage of tool calling with OpenAI, Anthropic, and other providers that support it, you can use `createLlmFunctionExecutor` or the `LlmExecutorWithFunctions` class directly. It works exactly like a regular [llm executor](/executor/) — it extends the class and adds options with some additional type constraints.
 
+::: warning Deprecated Export
+`LlmExecutorOpenAiFunctions` is deprecated and will be removed in a future major version. Use `LlmExecutorWithFunctions` or `createLlmFunctionExecutor` instead — they support tool calling across all providers, not just OpenAI.
+:::
+
 ## Basic Example
 
 ```ts{13,14,15,16,17,18,19,20,21,26,27}

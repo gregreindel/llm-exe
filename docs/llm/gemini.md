@@ -44,10 +44,11 @@ In addition to the generic options, the following options are Gemini-specific an
 
 | Option       | Type   | Default          | Description                                                          |
 | ------------ | ------ | ---------------- | -------------------------------------------------------------------- |
-| model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See Google Gemini Docs       |
+| model        | string | gemini-2.0-flash | The model to use. Can be any valid chat model. See Google Gemini Docs |
 | geminiApiKey | string | undefined        | API key for Google. See [authentication](/llm/gemini#authentication) |
-| temperature  | number | undefined        | Maps to temperature.\*                                               |
-| maxTokens    | number | undefined        | Maps to max_tokens. See Google Gemini Docs                                  |
-| topP         | number | undefined        | Maps to top_p. See Google Gemini Docs                                       |
+| effort       | string | undefined        | Maps to `thinkingConfig.thinkingBudget`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. Only supported with reasoning models (e.g. gemini-2.5-pro, gemini-2.5-flash). |
 
-\* Google Gemini Docs: [link](https://ai.google.dev/gemini-api/docs)
+> [!NOTE]
+> The Gemini provider currently maps `model`, `geminiApiKey`, and `effort`. Generic options like `temperature`, `maxTokens`, and `topP` are not mapped to the Gemini API at this time.
+
+See [Google Gemini API Reference](https://ai.google.dev/gemini-api/docs) for details.
