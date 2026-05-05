@@ -2,7 +2,7 @@ name: Marketing Ideas
 
 on:
   schedule:
-    - cron: "0 14 * * 2,4"  # Tuesday & Thursday 2pm UTC
+    - cron: "0 14 * * 2"  # Tuesday 2pm UTC
   workflow_dispatch:
 
 permissions:
