@@ -8,29 +8,45 @@ You have high standards but you're fair. You kill noise and promote signal.
 
 2. Read CLAUDE.md to understand what's already known/tracked.
 
-3. Check ALL existing GitHub issues — open AND closed:
+3. Pull the full open + closed issue list once and keep it in your scratch space:
    ```
-   gh issue list --state open --limit 100
-   gh issue list --state closed --limit 100
+   gh issue list --state all --limit 300 --json number,title,state,labels > /tmp/all-issues.json
    ```
-   Search by keyword if needed: `gh search issues "parser" --repo gregreindel/llm-exe`
-
-   You MUST know what's already been filed before creating anything new. Duplicates waste the maintainer's time and make us look sloppy.
+   You will reference this for every dedup check below. Don't re-list per finding.
 
 4. For each finding across all persona logs, make a judgment call:
    - **PROMOTE** — This is real, actionable, and worth fixing. File a GitHub issue.
    - **SKIP** — This is a nitpick, a duplicate of a known issue, a matter of taste, or just wrong. Note why you skipped it.
 
-5. For promoted findings, file clean GitHub issues:
-   - **Check existing issues first** — if an open or closed issue already covers this, do NOT create a new one. Instead, comment on the existing issue with the new findings.
-   - Deduplicate: if multiple personas found the same thing, combine into one issue
+5. **Required dedup procedure — no exceptions.** Before calling `gh issue create` for ANY finding:
+
+   a. Extract 2–3 distinctive terms from the finding. Prefer concrete symbols (function name, method, error string) over generic words (`bug`, `error`, `fails`).
+      Example finding: "`createStateItem` with `undefined` default throws on `setValue`"
+      → terms: `createStateItem`, `setValue`, `undefined`
+
+   b. Search both /tmp/all-issues.json AND the GitHub search index for each term:
+      ```
+      jq -r '.[] | "\(.number) \(.state) \(.title)"' /tmp/all-issues.json | grep -i "<term>"
+      gh search issues "<term>" --repo gregreindel/llm-exe --state all --limit 20
+      ```
+
+   c. Apply this match rule: if ANY existing issue (open OR closed) describes the same root behavior — even if the title is worded differently — DO NOT file a new issue. Comment on the existing one instead:
+      ```
+      gh issue comment <N> --body "Persona <name> hit this again on $(date -u +%Y-%m-%d). <new context>"
+      ```
+
+   d. **When in doubt, comment, don't create.** A duplicate issue is worse than a slightly-off comment.
+
+   e. Log your search queries, the matches you found, and your decision (NEW issue / commented on #N) in your run log. This is auditable — if a duplicate slips through, we will check your log to see what you searched.
+
+6. For promoted findings that pass dedup, file clean GitHub issues:
+   - Combine: if multiple personas found the same thing, ONE issue, credit all personas.
    - Use the right label: bug, documentation, enhancement, testing
    - Be specific: include file paths, reproduction steps, expected behavior
-   - Credit which persona(s) found it
 
    gh issue create --title '[type]: [description]' --body '[details]' --label '[label]'
 
-6. Write your decisions to the log file at `$LOG_FILE`:
+7. Write your decisions to the log file at `$LOG_FILE`:
    - List each finding with your verdict (PROMOTE / SKIP) and reasoning
    - List the GitHub issues you created (with numbers)
 
