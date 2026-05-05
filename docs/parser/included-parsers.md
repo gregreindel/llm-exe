@@ -235,19 +235,54 @@ function subtract(a: number, b: number){
 ## Replace String Template
 
 `replaceStringTemplate`
-Uses handlebars to parse the output.
-Returns string.
+Runs Handlebars substitution on the LLM's output, using the executor's input attributes as template data. This lets the LLM return a template string that gets filled in with the original input variables before being returned to the caller.
+
+Returns: string
+
+```ts
+const parser = createParser("replaceStringTemplate");
+```
+
+**Use case:** The LLM generates a response containing placeholders, and the parser fills them in with known values from the executor input — useful for personalized messages, dynamic templates, or mail-merge patterns.
+
+::: code-group
+
+```[Output]
+Hello Alice! Your order #12345 has shipped.
+```
+
+```[Response]
+Hello {{name}}! Your order #{{orderId}} has shipped.
+```
+
+```[Attributes passed to parser]
+{ name: "Alice", orderId: "12345" }
+```
+
+:::
 
 ## List to JSON
 
 `listToJson`
-Converts a list of key: value pairs (separated by \n) to an object.
+Parses key:value lines (separated by newlines) into a **single flat object**. Each line becomes one property — the key is derived from the text before the first colon, and the value is the text after it. Keys are camelCased by default.
 
-> **Example Prompt:** <br>You need to extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
+Returns: object (flat key-value pairs)
+
+::: warning
+This parser produces a single object, not an array. If the LLM output contains duplicate keys, later values overwrite earlier ones. If you need to preserve multiple records with the same keys, use [`listToKeyValue`](#list-to-key-value) instead (which returns an array of `{ key, value }` pairs).
+:::
+
+> **Example Prompt:** <br>Extract the following information. Reply only with: Color: the color\nName: the name\nType: the type
 
 ```typescript
 const parser = createParser("listToJson");
 ```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `keyTransform` | `"camelCase" \| "preserve"` | `"camelCase"` | How to transform keys. `"camelCase"` converts keys like "First Name" to "firstName". `"preserve"` keeps the original key text (trimmed). |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON Schema to validate and enforce types on the output. |
 
 ::: code-group
 
@@ -266,6 +301,13 @@ Type: Fruit
 ```
 
 :::
+
+**Choosing between `listToJson` and `listToKeyValue`:**
+
+| Parser | Returns | Best for |
+| --- | --- | --- |
+| `listToJson` | `{ key: value, ... }` (flat object) | Extracting a fixed set of unique fields from a response |
+| `listToKeyValue` | `Array<{ key, value }>` | Preserving order, handling duplicate keys, or iterating over pairs |
 
 ## JSON
 
