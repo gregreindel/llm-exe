@@ -1,8 +1,18 @@
-name: Cleanup PR and Branch Caches After Merge
+name: Cleanup Caches
+
 on:
   pull_request:
     types:
       - closed
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name to clean caches for (defaults to the branch this workflow is run on)'
+        required: false
+        default: ''
 
 permissions:
   id-token: write
@@ -11,7 +21,6 @@ permissions:
 
 jobs:
   cleanup:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Generate bot token
@@ -27,41 +36,108 @@ jobs:
           GH_TOKEN: ${{ steps.bot-token.outputs.token }}
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
 
+      - name: Resolve refs to clean
+        id: refs
+        run: |
+          PR_REF=""
+          BRANCH_REF=""
+          TAG_REF=""
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_REF="refs/pull/${{ github.event.pull_request.number }}/merge"
+            BRANCH_REF="${{ github.event.pull_request.head.ref }}"
+            echo "Trigger: pull_request closed - PR #${{ github.event.pull_request.number }}, branch: $BRANCH_REF"
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            BRANCH_REF="${{ github.event.release.target_commitish }}"
+            TAG_REF="refs/tags/${{ github.event.release.tag_name }}"
+            echo "Trigger: release published - tag: ${{ github.event.release.tag_name }}, target branch: $BRANCH_REF"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            INPUT_BRANCH="${{ github.event.inputs.branch }}"
+            if [ -n "$INPUT_BRANCH" ]; then
+              BRANCH_REF="$INPUT_BRANCH"
+            else
+              BRANCH_REF="${{ github.ref_name }}"
+            fi
+            echo "Trigger: manual dispatch - branch: $BRANCH_REF"
+          fi
+
+          echo "pr_ref=$PR_REF" >> $GITHUB_OUTPUT
+          echo "branch_ref=$BRANCH_REF" >> $GITHUB_OUTPUT
+          echo "tag_ref=$TAG_REF" >> $GITHUB_OUTPUT
+
       - name: Cleanup Caches
         run: |
-          PR_REF="refs/pull/${{ github.event.pull_request.number }}/merge"
-          BRANCH_REF="${{ github.event.pull_request.head.ref }}"
+          PR_REF="${{ steps.refs.outputs.pr_ref }}"
+          BRANCH_REF="${{ steps.refs.outputs.branch_ref }}"
+          TAG_REF="${{ steps.refs.outputs.tag_ref }}"
+          ALL_CACHE_OUTPUT=""
 
-          echo "Fetching list of cache keys for PR ref: $PR_REF"
-          prCacheKeysOutput=$(gh actions-cache list -R $REPO -B $PR_REF -L 100 2>&1)
-          echo "$prCacheKeysOutput"
+          echo "Starting cache cleanup at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "Repository: $REPO"
 
-          if [ "$BRANCH_REF" = "development" ]; then
-            echo "Branch ref is 'development'. Skipping cache key fetch for the branch."
-            branchCacheKeysOutput=""
-          else
-            echo "Fetching list of cache keys for branch ref: $BRANCH_REF"
-            branchCacheKeysOutput=$(gh actions-cache list -R $REPO -B $BRANCH_REF -L 100 2>&1)
-            echo "$branchCacheKeysOutput"
+          # Collect PR ref caches
+          if [ -n "$PR_REF" ]; then
+            echo "Fetching cache keys for PR ref: $PR_REF"
+            if prCacheKeysOutput=$(gh actions-cache list -R "$REPO" -B "$PR_REF" -L 100 2>&1); then
+              COUNT=$(echo "$prCacheKeysOutput" | awk -F'\t' '$1 != "KEY" && $1 != ""' | wc -l | tr -d ' ')
+              echo "Found $COUNT cache(s) for PR ref: $PR_REF"
+              ALL_CACHE_OUTPUT="$prCacheKeysOutput"
+            else
+              echo "Failed to list caches for PR ref: $PR_REF. Continuing."
+            fi
           fi
 
-          cacheKeys=$(echo "$prCacheKeysOutput" "$branchCacheKeysOutput" | cut -f 1 | sort | uniq)
+          # Collect branch ref caches
+          if [ -n "$BRANCH_REF" ] && [ "$BRANCH_REF" != "development" ]; then
+            echo "Fetching cache keys for branch: $BRANCH_REF"
+            if branchCacheKeysOutput=$(gh actions-cache list -R "$REPO" -B "$BRANCH_REF" -L 100 2>&1); then
+              COUNT=$(echo "$branchCacheKeysOutput" | awk -F'\t' '$1 != "KEY" && $1 != ""' | wc -l | tr -d ' ')
+              echo "Found $COUNT cache(s) for branch: $BRANCH_REF"
+              ALL_CACHE_OUTPUT=$(printf '%s\n%s' "$ALL_CACHE_OUTPUT" "$branchCacheKeysOutput")
+            else
+              echo "Failed to list caches for branch: $BRANCH_REF. Continuing."
+            fi
+          elif [ "$BRANCH_REF" = "development" ]; then
+            echo "Branch is 'development'. Skipping cache cleanup for this branch."
+          fi
+
+          # Collect tag ref caches (release event only)
+          if [ -n "$TAG_REF" ]; then
+            echo "Fetching cache keys for tag ref: $TAG_REF"
+            if tagCacheKeysOutput=$(gh actions-cache list -R "$REPO" -B "$TAG_REF" -L 100 2>&1); then
+              COUNT=$(echo "$tagCacheKeysOutput" | awk -F'\t' '$1 != "KEY" && $1 != ""' | wc -l | tr -d ' ')
+              echo "Found $COUNT cache(s) for tag ref: $TAG_REF"
+              ALL_CACHE_OUTPUT=$(printf '%s\n%s' "$ALL_CACHE_OUTPUT" "$tagCacheKeysOutput")
+            else
+              echo "Failed to list caches for tag ref: $TAG_REF. Continuing."
+            fi
+          fi
+
+          # Parse and deduplicate keys
+          cacheKeys=$(echo "$ALL_CACHE_OUTPUT" | awk -F'\t' '$1 != "KEY" && $1 != "" { print $1 }' | sort | uniq)
 
           if [ -z "$cacheKeys" ]; then
-            echo "No cache keys found. Skipping cache deletion."
+            echo "No cache keys found to delete."
           else
-            echo "Deleting caches..."
-            for cacheKey in $cacheKeys
-            do
-                if gh actions-cache delete $cacheKey -R $REPO --confirm; then
-                  echo "Successfully deleted cache key: $cacheKey"
+            TOTAL=$(echo "$cacheKeys" | grep -v '^$' | wc -l | tr -d ' ')
+            echo "Found $TOTAL unique cache key(s) to delete."
+            DELETED=0
+            FAILED=0
+            while IFS= read -r cacheKey; do
+                [ -z "$cacheKey" ] && continue
+                echo "Deleting cache key: $cacheKey"
+                if gh actions-cache delete "$cacheKey" -R "$REPO" --confirm; then
+                  echo "Deleted: $cacheKey"
+                  DELETED=$((DELETED + 1))
                 else
-                  echo "Failed to delete cache key: $cacheKey"
-                  exit 1  # Exit with an error status
+                  echo "Failed to delete: $cacheKey"
+                  FAILED=$((FAILED + 1))
                 fi
-            done
-            echo "Cache deletion process completed."
+            done <<< "$cacheKeys"
+            echo "Cache cleanup complete. Deleted: $DELETED, Failed: $FAILED."
           fi
+
+          echo "Cache cleanup finished at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
         env:
           REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}

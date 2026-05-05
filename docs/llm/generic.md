@@ -4,34 +4,26 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 
 ## Options
 
-| Option        | Type             | Default | Description                                                                                                |
-| ------------- | ---------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| timeout       | number           | 30000   | Max execution time of API call to the LLM, in milliseconds.                                                |
-| maxDelay      | number           | 5000    | Used for retry back-off. Max time to wait between attempts when timeout has been reached, in milliseconds. |
-| numOfAttempts | number           | 0       | Used for retry. How many attempts should be made before throwing error                                     |
-| jitter        | "none" \| "full" | none    | Used for retry back-off.                                                                                   |
-| temperature   | number           | 0       | Used by model.                                                                                             |
-| maxTokens     | number           | 500     | Used by model.                                                                                             |
-| stream        | boolean \| null  | null    | Note: Not supported yet.                                                                                   |
+| Option        | Type             | Default   | Description                                                                                                |
+| ------------- | ---------------- | --------- | ---------------------------------------------------------------------------------------------------------- |
+| timeout       | number           | 30000     | Max execution time of API call to the LLM, in milliseconds.                                                |
+| maxDelay      | number           | 5000      | Used for retry back-off. Max time to wait between attempts when timeout has been reached, in milliseconds. |
+| numOfAttempts | number           | 0         | Used for retry. How many attempts should be made before throwing error                                     |
+| jitter        | "none" \| "full" | none      | Used for retry back-off.                                                                                   |
+| temperature   | number           | undefined | Maps to provider-specific temperature parameter.                                                           |
+| maxTokens     | number           | undefined | Maps to provider-specific max tokens parameter.                                                            |
+| topP          | number           | undefined | Maps to provider-specific top_p parameter.                                                                 |
+| stopSequences | string[]         | undefined | Maps to provider-specific stop sequences parameter.                                                        |
+| effort        | string           | undefined | Maps to reasoning effort. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. Only supported by providers/models that support reasoning effort (e.g. OpenAI gpt-5, Google Gemini 2.5). |
+| stream        | boolean \| null  | null      | Note: Not supported yet.                                                                                   |
 
 > [!NOTE]
 > Different vendors will allow (and may require) additional options.
-> - [OpenAi Chat Model Options](/llm/openai#openai-specific-options).
-> - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options).
-> - [Bedrock Chat Model Options](/llm/bedrock/index.html).
+> - [OpenAI Chat Model Options](/llm/openai#openai-specific-options)
+> - [Anthropic Chat Model Options](/llm/anthropic#anthropic-specific-options)
+> - [Google Gemini Chat Model Options](/llm/gemini#gemini-specific-options)
+> - [xAI Chat Model Options](/llm/xai#xai-specific-options)
+> - [Deepseek Chat Model Options](/llm/deepseek#deepseek-specific-options)
+> - [Ollama Chat Model Options](/llm/ollama#ollama-specific-options)
+> - [AWS Bedrock Chat Model Options](/llm/bedrock/index.html)
 
-<!-- 
-| Option           | Type            | Default       | Description                                                                                                                             |
-| ---------------- | --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| openAIApiKey     | string          | undefined     | API key for OpenAI. Optionally can be set using process.env.OPENAI_API_KEY                                                             |
-| model            | string          | gpt-3.5-turbo | The model to use. Can be any one of: gpt-4o, gpt-4o-mini, gpt-4, gpt-3.5-turbo, davinci, text-curie-001, text-babbage-001, text-ada-001 |
-| temperature      | number          | 0             | See OpenAI Docs                                                                                                                         |
-| maxTokens        | number          | 500           | See OpenAI Docs                                                                                                                         |
-| topP             | number \| null  | null          | See OpenAI Docs                                                                                                                         |
-| n                | number \| null  | null          | See OpenAI Docs                                                                                                                         |
-| stream           | boolean \| null | null          | See OpenAI Docs. Note: Not supported yet.                                                                                               |
-| stop             | ?               | null          | See OpenAI Docs                                                                                                                         |
-| presencePenalty  | number \| null  | null          | See OpenAI Docs                                                                                                                         |
-| frequencyPenalty | number \| null  | null          | See OpenAI Docs                                                                                                                         |
-| logitBias        | object \| null  | null          | See OpenAI Docs                                                                                                                         |
-| user             | string \| null  | null          | See OpenAI Docs                                                                                                                         | -->

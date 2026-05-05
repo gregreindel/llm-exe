@@ -468,10 +468,10 @@ describe("llm-exe:state/Dialogue", () => {
       dialogue.setMessageTurn("User msg", "Assistant msg", "System msg");
       const history = dialogue.getHistory();
       expect(history).toHaveLength(3);
-      expect(history[0].content).toEqual("User msg");
-      expect(history[1].content).toEqual("Assistant msg");
-      expect(history[2].content).toEqual("System msg");
-      expect(history[2].role).toEqual("system");
+      expect(history[0].content).toEqual("System msg");
+      expect(history[0].role).toEqual("system");
+      expect(history[1].content).toEqual("User msg");
+      expect(history[2].content).toEqual("Assistant msg");
     });
 
     it("does not set function message with empty content", () => {
@@ -503,6 +503,143 @@ describe("llm-exe:state/Dialogue", () => {
       expect(history).toHaveLength(1);
       assert(history[0].role === "function_call");
       expect(history[0].function_call?.arguments).toEqual('{"key":"value"}');
+    });
+  });
+
+  describe("add* aliases", () => {
+    it("addUserMessage delegates to setUserMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addUserMessage("Hello from add");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("user");
+      expect(history[0].content).toEqual("Hello from add");
+    });
+
+    it("addUserMessage with name", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addUserMessage("Hello", "Greg");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("user");
+      assert(history[0].role === "user");
+      expect(history[0].name).toEqual("Greg");
+    });
+
+    it("addAssistantMessage delegates to setAssistantMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addAssistantMessage("Assistant response");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("assistant");
+      expect(history[0].content).toEqual("Assistant response");
+    });
+
+    it("addSystemMessage delegates to setSystemMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addSystemMessage("System instruction");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("system");
+      expect(history[0].content).toEqual("System instruction");
+    });
+
+    it("addToolMessage delegates to setToolMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addToolMessage("Tool output", "myTool", "tool-1");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function");
+      assert(history[0].role === "function");
+      expect(history[0].name).toEqual("myTool");
+      expect(history[0].content).toEqual("Tool output");
+      expect(history[0].id).toEqual("tool-1");
+    });
+
+    it("addToolCallMessage delegates to setToolCallMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addToolCallMessage({
+        name: "myTool",
+        arguments: '{"key":"val"}',
+        id: "call-1",
+      });
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.name).toEqual("myTool");
+    });
+
+    it("addFunctionMessage delegates to setFunctionMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addFunctionMessage("Result", "fn1", "fn-1");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function");
+      assert(history[0].role === "function");
+      expect(history[0].name).toEqual("fn1");
+    });
+
+    it("addFunctionCallMessage delegates to setFunctionCallMessage", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addFunctionCallMessage({
+        function_call: { name: "fn1", arguments: "{}" },
+      });
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].role).toEqual("function_call");
+      assert(history[0].role === "function_call");
+      expect(history[0].function_call?.name).toEqual("fn1");
+    });
+
+    it("addMessageTurn delegates to setMessageTurn", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addMessageTurn("User msg", "Assistant msg", "System msg");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(3);
+      expect(history[0].role).toEqual("system");
+      expect(history[1].role).toEqual("user");
+      expect(history[2].role).toEqual("assistant");
+    });
+
+    it("addMessageTurn without systemMessage uses default empty string", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addMessageTurn("User msg", "Assistant msg");
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].role).toEqual("user");
+      expect(history[0].content).toEqual("User msg");
+      expect(history[1].role).toEqual("assistant");
+      expect(history[1].content).toEqual("Assistant msg");
+    });
+
+    it("addHistory delegates to setHistory", () => {
+      const dialogue = new Dialogue("main");
+      dialogue.addHistory([
+        { role: "user", content: "Hello" },
+        { role: "assistant", content: "Hi" },
+      ]);
+      const history = dialogue.getHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].role).toEqual("user");
+      expect(history[1].role).toEqual("assistant");
+    });
+
+    it("add* methods are chainable", () => {
+      const dialogue = new Dialogue("main");
+      const result = dialogue
+        .addSystemMessage("Be helpful")
+        .addUserMessage("Hello")
+        .addAssistantMessage("Hi there")
+        .addToolCallMessage({
+          name: "search",
+          arguments: '{"q":"test"}',
+          id: "c1",
+        })
+        .addToolMessage("found it", "search", "c1");
+
+      expect(result).toBe(dialogue);
+      expect(dialogue.getHistory()).toHaveLength(5);
     });
   });
 

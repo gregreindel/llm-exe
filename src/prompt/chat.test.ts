@@ -230,9 +230,13 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "World", role: "assistant" },
     ]);
   });
-  it("validate defaults to true", () => {
+  it("validate returns true when prompt has messages", () => {
     const prompt = new ChatPrompt("Hello");
     expect(prompt.validate()).toEqual(true);
+  });
+  it("validate returns false when prompt has no messages", () => {
+    const prompt = new ChatPrompt();
+    expect(prompt.validate()).toEqual(false);
   });
 
   it("addToPrompt to add assistant message", () => {
@@ -769,6 +773,20 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "Hello", role: "system" },
       { content: "I'll help you with that", role: "assistant" },
     ]);
+  });
+
+  it("throws a descriptive error when format() is called without arguments", () => {
+    const prompt = new ChatPrompt<{ name: string }>("Hello {{name}}");
+    expect(() => (prompt as any).format()).toThrow(
+      "format() requires an input object"
+    );
+  });
+
+  it("throws a descriptive error when format() is called with null", () => {
+    const prompt = new ChatPrompt<{ name: string }>("Hello {{name}}");
+    expect(() => (prompt as any).format(null)).toThrow(
+      "format() requires an input object"
+    );
   });
 
   it("handles assistant message with function_call but no content", () => {

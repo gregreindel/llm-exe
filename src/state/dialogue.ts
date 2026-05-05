@@ -137,10 +137,63 @@ export class Dialogue extends BaseStateItem<IChatMessages> {
     assistantMessage: string,
     systemMessage: string = ""
   ) {
+    this.setSystemMessage(systemMessage);
     this.setUserMessage(userMessage);
     this.setAssistantMessage(assistantMessage);
-    this.setSystemMessage(systemMessage);
     return this;
+  }
+
+  /**
+   * Aliases using `add*` naming to match ChatPrompt's API.
+   * These delegate to the corresponding `set*` methods.
+   */
+  addUserMessage(
+    content: string | IChatMessageContentDetailed[],
+    name?: string
+  ) {
+    return this.setUserMessage(content, name);
+  }
+
+  addAssistantMessage(content: string | OutputResultsText) {
+    return this.setAssistantMessage(content);
+  }
+
+  addSystemMessage(content: string) {
+    return this.setSystemMessage(content);
+  }
+
+  addToolMessage(content: string, name: string, id?: string) {
+    return this.setToolMessage(content, name, id);
+  }
+
+  addToolCallMessage(input: { name: string; arguments: string; id?: string }) {
+    return this.setToolCallMessage(input);
+  }
+
+  addFunctionMessage(content: string, name: string, id?: string) {
+    return this.setFunctionMessage(content, name, id);
+  }
+
+  addFunctionCallMessage(
+    input:
+      | { name: string; arguments: string; id?: string }
+      | {
+          function_call: { name: string; arguments: string; id?: string };
+        }
+  ) {
+    return this.setFunctionCallMessage(input);
+  }
+
+  addMessageTurn(
+    userMessage: string,
+    assistantMessage: string,
+    systemMessage: string = ""
+  ) {
+    return this.setMessageTurn(userMessage, assistantMessage, systemMessage);
+  }
+
+  addHistory(messages: IChatMessages) {
+    return this.setHistory(messages);
   }
 
   setHistory(messages: IChatMessages) {
