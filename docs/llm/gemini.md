@@ -25,7 +25,7 @@ const llm = useLlm("google.gemini-2.0-flash", {
 
 ## Authentication
 
-To authenticate, you need to provide an Google Gemini API Key. You can provide the API key various ways, depending on your use case.
+To authenticate, you need to provide a Google Gemini API Key. You can provide the API key various ways, depending on your use case.
 
 1. Pass in as execute options using `geminiApiKey`
 2. Pass in as setup options using `geminiApiKey`
