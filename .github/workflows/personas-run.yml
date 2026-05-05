@@ -13,7 +13,7 @@ on:
           - "3"
           - "4"
   schedule:
-    - cron: "0 6 * * *"   # 12am CT daily — all 4 personas + curator
+    - cron: "0 6 * * 0"   # 12am CT Sunday — all 4 personas + curator
 
 permissions:
   contents: write
@@ -22,7 +22,42 @@ permissions:
   id-token: write
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Backlog gate
+        id: check
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual dispatch — bypassing backlog gate."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MAX_BOT_PRS=20
+          MAX_ISSUES=40
+          bot_prs=$(gh pr list --repo ${{ github.repository }} --state open --author "app/llm-exe-bot" --limit 200 --json number -q 'length')
+          issues=$(gh issue list --repo ${{ github.repository }} --state open --limit 200 --json number -q 'length')
+          echo "::notice::Open bot PRs: $bot_prs (cap $MAX_BOT_PRS), open issues: $issues (cap $MAX_ISSUES)"
+          if [ "$bot_prs" -gt "$MAX_BOT_PRS" ] || [ "$issues" -gt "$MAX_ISSUES" ]; then
+            echo "::warning::Backlog over cap — skipping LLM run."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   pick-personas:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     outputs:
       personas: ${{ steps.pick.outputs.personas }}
@@ -35,7 +70,8 @@ jobs:
           echo "personas=$personas" >> "$GITHUB_OUTPUT"
 
   run-persona:
-    needs: pick-personas
+    needs: [gate, pick-personas]
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -119,8 +155,8 @@ jobs:
           clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
 
   run-curator:
-    needs: run-persona
-    if: always() && needs.run-persona.result != 'cancelled'
+    needs: [gate, run-persona]
+    if: always() && needs.gate.outputs.proceed == 'true' && needs.run-persona.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
