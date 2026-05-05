@@ -1,6 +1,11 @@
 import { configs, getLlmConfig } from "@/llm/config";
 import { Config, LlmProviderKey } from "@/types";
 
+// Capture env var defaults at import time (before beforeAll modifies them),
+// since config objects are initialized when the module is first imported.
+const AWS_REGION_AT_IMPORT = process.env.AWS_REGION;
+const ANTHROPIC_API_KEY_AT_IMPORT = process.env.ANTHROPIC_API_KEY;
+
 describe("configs", () => {
   const OLD_ENV = process.env;
 
@@ -93,7 +98,7 @@ describe("configs", () => {
           required: [true, "maxTokens required"],
         },
         anthropicApiKey: {
-          default: undefined,
+          default: ANTHROPIC_API_KEY_AT_IMPORT,
         },
       },
       mapBody: {
@@ -153,7 +158,7 @@ describe("configs", () => {
         topP: {},
         maxTokens: {},
         awsRegion: {
-          default: undefined,
+          default: AWS_REGION_AT_IMPORT,
           required: [true, "aws region is required"],
         },
         awsSecretKey: {},
@@ -197,7 +202,7 @@ describe("configs", () => {
         maxTokens: {},
         temperature: {},
         awsRegion: {
-          default: undefined,
+          default: AWS_REGION_AT_IMPORT,
         },
         awsSecretKey: {},
         awsAccessKey: {},

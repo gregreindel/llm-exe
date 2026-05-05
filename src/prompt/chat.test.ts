@@ -230,9 +230,13 @@ describe("llm-exe:prompt/ChatPrompt", () => {
       { content: "World", role: "assistant" },
     ]);
   });
-  it("validate defaults to true", () => {
+  it("validate returns true when prompt has messages", () => {
     const prompt = new ChatPrompt("Hello");
     expect(prompt.validate()).toEqual(true);
+  });
+  it("validate returns false when prompt has no messages", () => {
+    const prompt = new ChatPrompt();
+    expect(prompt.validate()).toEqual(false);
   });
 
   it("addToPrompt to add assistant message", () => {

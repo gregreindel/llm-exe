@@ -151,3 +151,30 @@ Website: www.example.com`,
 // pass in `{ helpers, partials }` when creating prompt.
 const prompt = createPrompt("text", "You are a cowboy.", { helpers, partials });
 ```
+
+### 2. Register them globally
+
+If you want helpers or partials available to all prompts in your application, use the standalone `registerHelpers` and `registerPartials` utility functions. These register with the global Handlebars instance, so any prompt created afterward can use them.
+
+```ts
+import { registerHelpers, registerPartials } from "llm-exe";
+
+// Register custom helpers globally
+registerHelpers([
+  {
+    name: "uppercase",
+    handler: (str: string) => str.toUpperCase(),
+  },
+]);
+
+// Register custom partials globally
+registerPartials([
+  {
+    name: "greeting",
+    template: "Hello {{name}}!",
+  },
+]);
+
+// Now any prompt can use them
+const prompt = createChatPrompt("{{> greeting name='World'}} {{uppercase 'hello'}}");
+```
