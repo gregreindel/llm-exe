@@ -567,9 +567,6 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.o3": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "openai.o4-mini": {
-    input: Omit<OpenAiRequest, "model">;
-  };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
     input: OpenAiRequest;
@@ -578,6 +575,10 @@ export type AllUseLlmOptions = AllLlm & {
     input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o-mini": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  // OpenAI - Deprecated
+  "openai.o4-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
 
