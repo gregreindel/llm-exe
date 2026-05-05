@@ -17,9 +17,9 @@ on:
         required: false
         type: string
   schedule:
-    - cron: "0 9 * * *"     # tester — 3am CT daily
-    - cron: "0 10 * * *"    # docs — 4am CT daily
-    - cron: "0 11 * * 1,4"  # scout — 5am CT Mon/Thu
+    - cron: "0 9 * * 1,4"   # tester — 3am CT Mon/Thu
+    - cron: "0 10 * * 2,5"  # docs — 4am CT Tue/Fri
+    - cron: "0 11 * * 1"    # scout — 5am CT Mon
 
 concurrency:
   group: agent-${{ github.event.inputs.agent || github.event.schedule }}
@@ -32,7 +32,42 @@ permissions:
   id-token: write
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Backlog gate
+        id: check
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual dispatch — bypassing backlog gate."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MAX_BOT_PRS=20
+          MAX_ISSUES=40
+          bot_prs=$(gh pr list --repo ${{ github.repository }} --state open --author "app/llm-exe-bot" --limit 200 --json number -q 'length')
+          issues=$(gh issue list --repo ${{ github.repository }} --state open --limit 200 --json number -q 'length')
+          echo "::notice::Open bot PRs: $bot_prs (cap $MAX_BOT_PRS), open issues: $issues (cap $MAX_ISSUES)"
+          if [ "$bot_prs" -gt "$MAX_BOT_PRS" ] || [ "$issues" -gt "$MAX_ISSUES" ]; then
+            echo "::warning::Backlog over cap — skipping LLM run."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   run-agent:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -69,9 +104,9 @@ jobs:
         id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "0 9 * * *")      echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
-            "0 10 * * *")     echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
-            "0 11 * * 1,4")   echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
+            "0 9 * * 1,4")    echo "agent=tester" >> "$GITHUB_OUTPUT" ;;
+            "0 10 * * 2,5")   echo "agent=docs" >> "$GITHUB_OUTPUT" ;;
+            "0 11 * * 1")     echo "agent=scout" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Build prompt

@@ -44,20 +44,34 @@ Check the official docs/changelogs for each provider llm-exe supports:
 
 3. Read `src/llm/` to understand what models and providers we currently support. Check the shorthand definitions.
 
-4. Check what's already been reported — read ALL open issues, not just the first page:
+4. Pull the full open + closed issue list once and keep it on disk:
    ```
-   gh issue list --state open --limit 100
+   gh issue list --state all --limit 300 --json number,title,state,labels > /tmp/all-issues.json
    ```
-   Know what's already tracked before you do anything.
+   You will reference this for every dedup check below. Don't re-list per finding.
 
 5. Fetch the provider docs listed above. For each provider, compare what they offer against what we support.
 
-6. For each finding, decide how to handle it:
+6. **Required dedup procedure — no exceptions.** Before calling `gh issue create` for ANY finding:
 
-   **If an open issue already covers it:**
-   - Add a comment with the update — new info, changed timeline, link to the announcement
-   - If urgency changed (e.g., deprecation date moved closer), say so
-   - Don't create a duplicate. Ever.
+   a. Extract 2–3 distinctive terms from the finding. Prefer concrete model IDs and provider names (`gpt-5`, `claude-opus-4`, `gemini-2.5-flash`) over generic words (`deprecation`, `new model`).
+
+   b. Search both /tmp/all-issues.json AND the GitHub search index for each term:
+      ```
+      jq -r '.[] | "\(.number) \(.state) \(.title)"' /tmp/all-issues.json | grep -i "<term>"
+      gh search issues "<term>" --repo gregreindel/llm-exe --state all --limit 20
+      ```
+
+   c. Match rule: if an existing issue (open OR closed) covers the same model/provider/change, DO NOT file a new issue. Comment on the existing one instead with new context (changed timeline, new docs link, etc.):
+      ```
+      gh issue comment <N> --body "Update from scout run on $(date -u +%Y-%m-%d): <new context>"
+      ```
+
+   d. **When in doubt, comment, don't create.**
+
+   e. Log your search queries, the matches you found, and your decision (NEW issue / commented on #N) in your run log so failures are auditable.
+
+7. For findings that pass dedup, decide how to file:
 
    **If it's new and actionable:**
    - File an issue. Be specific — include the model ID, link to docs, what we'd need to change.
@@ -69,7 +83,7 @@ Check the official docs/changelogs for each provider llm-exe supports:
    **If it's new but minor:**
    - Still file it, but be clear it's low priority. Not everything needs to be done now.
 
-7. Use judgment on urgency:
+8. Use judgment on urgency:
    - Breaking change or imminent deprecation → tag @gregreindel in the issue body
    - New popular model everyone's talking about → file it, note the demand
    - Niche model nobody uses → skip it or mention it in your log, don't file an issue
