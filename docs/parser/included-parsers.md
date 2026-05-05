@@ -137,7 +137,7 @@ const parser = createParser("listToArray");
 
 `listToKeyValue`
 Converts a list of `key: value` pairs (separated by newlines) to an array of key/value objects.
-Returns Array<{ key: string; value: string; }>
+Returns `Array<{ key: string; value: string; }>`
 
 ::: code-group
 
@@ -162,7 +162,7 @@ Setting Up Your Account: To set up your account, you need to...
 
 `markdownCodeBlock`
 Extracts the **first** code block from the LLM response, including the language identifier. If the response contains no code blocks, returns `{ code: "", language: "" }`. For extracting all code blocks, see [`markdownCodeBlocks`](#markdown-code-blocks) below.
-Returns: { code: string; language: string; }
+Returns: `{ code: string; language: string; }`
 
 ```ts
 const parser = createParser("markdownCodeBlock");
@@ -193,7 +193,7 @@ function add(a: number, b: number){
 
 `markdownCodeBlocks`
 Extracts **all** code blocks from the LLM response, returning them as an array. Use this when the response may contain multiple code blocks. For extracting only the first code block, see [`markdownCodeBlock`](#markdown-code-block) above.
-Returns: Array<{ code: string; language: string; }>
+Returns: `Array<{ code: string; language: string; }>`
 
 ```ts
 const parser = createParser("markdownCodeBlocks");

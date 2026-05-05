@@ -7,7 +7,7 @@ export const asyncCallWithTimeout = async <T = any>(
   const timeoutPromise = new Promise((_resolve, reject) => {
     timeoutHandle = setTimeout(() => {
       return reject(
-        new Error("Unable to perform action. Try again, or use another action.")
+        new Error(`LLM call timed out after ${timeLimit}ms`)
       );
     }, timeLimit);
   });

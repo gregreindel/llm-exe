@@ -201,11 +201,10 @@ export abstract class BasePrompt<I extends Record<string, any>> {
   }
 
   /**
-   * validate description
-   * @return {boolean} Returns false if the template is not valid.
+   * Validates the prompt structure.
+   * @return {boolean} Returns false if the prompt has no messages defined.
    */
   validate(): boolean {
-    // add validation for missing tokens, etc
-    return true;
+    return this.messages.length > 0;
   }
 }

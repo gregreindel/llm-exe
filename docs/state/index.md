@@ -33,31 +33,47 @@ userIntent.resetValue();  // resets to "unknown"
 
 **Attributes** are a simple key-value store for lightweight metadata. Use `state.setAttribute(key, value)`, `state.deleteAttribute(key)`, and `state.clearAttributes()`.
 
-State has a `saveState()` method that can be customized to save the state to a database.
+## Creating State
 
-Initializing a state object is as simple as:
+Initializing a state object is simple:
 ```ts
-const state = createState()
+import { createState } from "llm-exe";
+
+const state = createState();
 ```
 
-If you wanted to store a chat conversation dialogue, you could:
+## Dialogues
+
+If you want to store a chat conversation dialogue, create one on the state:
 ```ts
-const state = createState()
+const state = createState();
 
 // this creates a new dialogue in the state, and returns it
 const chatHistory = state.createDialogue("chatHistory");
 
-// we can use this directly
-// chatHistory.setUserMessage("Hey anyone there?");
+// add messages directly
+chatHistory.setUserMessage("Hey anyone there?");
 
-
-// or get again from state object
-// state.getDialogue("chatHistory").setAssistantMessage("Yep! Whats up?");
+// or retrieve from state later
+state.getDialogue("chatHistory").setAssistantMessage("Yep! What's up?");
 ```
 
+You can also create a standalone dialogue without state using `createDialogue`. See the [Dialogue](/state/dialogue.html) page for full details.
 
-Saving state
+## Saving State
+
+The `DefaultState` class implements `saveState()` with a warning log by default. To persist state, extend `DefaultState` and override it with your own save logic:
+
 ```ts
-// this needs to be implemented by you if you want to save somewhere
-await state.saveState()
+import { DefaultState } from "llm-exe";
+
+class MyState extends DefaultState {
+  async saveState() {
+    const data = {
+      dialogues: this.dialogues,
+      attributes: this.attributes,
+    };
+    await db.save("state", JSON.stringify(data));
+  }
+}
 ```
