@@ -195,4 +195,87 @@ describe("apiRequestWrapper", () => {
     expect(mockHandler).toHaveBeenCalledWith(deepFreeze(mockState), deepFreeze(mockMessages), deepFreeze({}));
   });
 
+  it("should call handler and return result on success", async () => {
+    const mockResult = { data: "success response" };
+    backOffMock.mockClear().mockImplementation(async (fn) => {
+      return fn();
+    });
+    asyncCallWithTimeoutMock.mockResolvedValue(mockResult);
+
+    const apiRequest = setupAPIRequestWrapper();
+    const result = await apiRequest.call(mockMessages);
+
+    expect(result).toEqual(mockResult);
+
+    const metrics = (apiRequest.getMetadata().metrics as any);
+    expect(metrics.total_calls).toBe(1);
+    expect(metrics.total_call_success).toBe(1);
+    expect(metrics.total_call_retry).toBe(0);
+    expect(metrics.total_call_error).toBe(0);
+  });
+
+  it("should use default options when not provided", () => {
+    const defaultOptions = {};
+    stateFromOptionsMock.mockReturnValue({});
+
+    const apiRequest = apiRequestWrapper(mockConfig, defaultOptions, mockHandler);
+    const metadata = apiRequest.getMetadata();
+
+    expect(metadata.timeout).toBe(30000);
+    expect(metadata.maxDelay).toBe(5000);
+    expect(metadata.numOfAttempts).toBe(2);
+    expect(metadata.jitter).toBe("none");
+    expect(metadata.traceId).toBeNull();
+  });
+
+  it("should exclude sensitive keys from metadata", () => {
+    const sensitiveOptions = {
+      ...mockOptions,
+      awsSecretKey: "secret-aws-key",
+      awsAccessKey: "access-aws-key",
+      openAiApiKey: "sk-openai-key",
+      anthropicApiKey: "sk-ant-key",
+    };
+    stateFromOptionsMock.mockReturnValue({});
+
+    const apiRequest = apiRequestWrapper(mockConfig, sensitiveOptions, mockHandler);
+    const metadata = apiRequest.getMetadata();
+
+    expect(metadata).not.toHaveProperty("awsSecretKey");
+    expect(metadata).not.toHaveProperty("awsAccessKey");
+    expect(metadata).not.toHaveProperty("openAiApiKey");
+    expect(metadata).not.toHaveProperty("anthropicApiKey");
+  });
+
+  it("should track metrics across multiple calls", async () => {
+    const mockResult = { data: "ok" };
+    backOffMock.mockClear().mockImplementation(async (fn) => fn());
+    asyncCallWithTimeoutMock.mockResolvedValue(mockResult);
+
+    const apiRequest = setupAPIRequestWrapper();
+
+    await apiRequest.call(mockMessages);
+    await apiRequest.call(mockMessages);
+
+    const metrics = (apiRequest.getMetadata().metrics as any);
+    expect(metrics.total_calls).toBe(2);
+    expect(metrics.total_call_success).toBe(2);
+  });
+
+  it("should pass options to handler via deepFreeze", async () => {
+    const mockResult = { data: "ok" };
+    stateFromOptionsMock.mockReturnValue(mockState);
+    deepFreezeMock.mockImplementation((obj) => obj);
+    backOffMock.mockClear().mockImplementation(async (fn) => fn());
+    asyncCallWithTimeoutMock.mockResolvedValue(mockResult);
+
+    const apiRequest = setupAPIRequestWrapper();
+    const callOptions = { functionCall: "auto", functions: [] } as any;
+
+    await apiRequest.call(mockMessages, callOptions);
+
+    expect(deepFreezeMock).toHaveBeenCalledTimes(3);
+    expect(mockHandler).toHaveBeenCalledWith(mockState, mockMessages, callOptions);
+  });
+
 });
