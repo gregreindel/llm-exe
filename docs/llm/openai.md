@@ -40,21 +40,17 @@ await llm.call(prompt);
 
 ## OpenAi-Specific Options
 
-In addition to the generic options, the following options are OpenAi-specific and can be passed in when creating a llm function.
+In addition to the [generic options](/llm/generic.html), the following options are OpenAi-specific and can be passed in when creating a llm function.
 
 | Option           | Type    | Default     | Description                                                    |
 | ---------------- | ------- | ----------- | -------------------------------------------------------------- |
 | model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See OpenAI Docs |
 | openAIApiKey     | string  | undefined   | API key for OpenAi. See [authentication](/llm/openai#authentication)   |
-| temperature      | number  | undefined   | Maps to temperature.*                          |
-| maxTokens        | number  | undefined   | Maps to max_tokens. See OpenAI Docs                            |
-| topP             | number  | undefined   | Maps to top_p. See OpenAI Docs                                 |
-| n                | number  | undefined   | Maps to n. See OpenAI Docs                                     |
-| stream           | boolean | undefined   | See OpenAI Docs. Note: Not supported yet.                      |
-| stop             | ?       | undefined   | Maps to stop. See OpenAI Docs                                  |
-| presencePenalty  | number  | undefined   | Maps to presence_penalty. See OpenAI Docs                      |
-| frequencyPenalty | number  | undefined   | Maps to frequency_penalty. See OpenAI Docs                     |
-| logitBias        | object  | undefined   | Maps to logit_bias. See OpenAI Docs                            |
-| user             | string  | undefined   | Maps to user. See OpenAI Docs                                  |
+| topP             | number  | undefined   | Maps to `top_p`. See OpenAI Docs                               |
+| stopSequences    | array   | undefined   | Maps to `stop`. See OpenAI Docs                                |
+| frequencyPenalty | number  | undefined   | Maps to `frequency_penalty`. See OpenAI Docs                   |
+| logitBias        | object  | undefined   | Maps to `logit_bias`. See OpenAI Docs                          |
+| useJson          | boolean | undefined   | When `true`, sets `response_format` to `json_object`           |
+| effort           | string  | undefined   | Maps to `reasoning_effort`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. Only supported with reasoning models (e.g. gpt-5). |
 
-\* OpenAI Docs: [link](https://platform.openai.com/docs/api-reference/chat)
+See [OpenAI API Reference](https://platform.openai.com/docs/api-reference/chat) for details on these parameters.

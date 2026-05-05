@@ -43,7 +43,7 @@
 
 ### Executor
 - [LLM Executor](https://llm-exe.com/executor/index.html)
-- [OpenAi Functions Executor](https://llm-exe.com/executor/openai-functions.html)
+- [Tool Calling Executor](https://llm-exe.com/executor/openai-functions.html)
 - [hooks](https://llm-exe.com/executor/hooks.html)
 
 ### Embeddings

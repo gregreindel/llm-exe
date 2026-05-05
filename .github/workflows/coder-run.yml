@@ -3,7 +3,7 @@ name: Coder Run
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 8 * * *"  # 2am CT daily
+    - cron: "0 8 * * 1,4"  # 2am CT Mon/Thu
 
 permissions:
   contents: write
@@ -12,7 +12,42 @@ permissions:
   id-token: write
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Backlog gate
+        id: check
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual dispatch — bypassing backlog gate."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MAX_BOT_PRS=20
+          MAX_ISSUES=40
+          bot_prs=$(gh pr list --repo ${{ github.repository }} --state open --author "app/llm-exe-bot" --limit 200 --json number -q 'length')
+          issues=$(gh issue list --repo ${{ github.repository }} --state open --limit 200 --json number -q 'length')
+          echo "::notice::Open bot PRs: $bot_prs (cap $MAX_BOT_PRS), open issues: $issues (cap $MAX_ISSUES)"
+          if [ "$bot_prs" -gt "$MAX_BOT_PRS" ] || [ "$issues" -gt "$MAX_ISSUES" ]; then
+            echo "::warning::Backlog over cap — skipping LLM run."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   find-issues:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     outputs:
       issues: ${{ steps.list.outputs.issues }}
@@ -31,16 +66,28 @@ jobs:
           GH_TOKEN: ${{ steps.bot-token.outputs.token }}
         run: |
           # Get open bugs and enhancements, skip breaking and needs-discussion
-          issues=$(gh issue list --repo ${{ github.repository }} --state open --json number,labels --limit 50 \
+          candidates=$(gh issue list --repo ${{ github.repository }} --state open --json number,labels --limit 50 \
             | jq -c '[.[] | select(
                 (.labels | map(.name) | any(. == "bug" or . == "enhancement" or . == "agent-ok"))
                 and (.labels | map(.name) | any(. == "breaking" or . == "needs-discussion" or . == "on-hold") | not)
-              ) | .number] | if length > 5 then .[:5] else . end')
+              ) | .number]')
+
+          # Get issue numbers that already have an open bot PR (from title or body "closes #N" / "fixes #N")
+          claimed=$(gh pr list --repo ${{ github.repository }} --state open --author "app/llm-exe-bot" \
+            --json title,body --limit 100 \
+            | jq -r '.[] | (.title + " " + .body)' \
+            | { grep -oiE '(closes|fixes|resolves) #[0-9]+' || true; } \
+            | { grep -oE '[0-9]+' || true; } \
+            | jq -Rn '[inputs | tonumber]')
+
+          # Filter out issues that already have a PR
+          issues=$(echo "$candidates" | jq -c --argjson claimed "$claimed" \
+            '[.[] | select(. as $n | $claimed | index($n) | not)] | if length > 5 then .[:5] else . end')
 
           count=$(echo "$issues" | jq 'length')
           echo "issues=$issues" >> "$GITHUB_OUTPUT"
           echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "Found $count issues to work on"
+          echo "Found $count issues to work on (filtered from $(echo "$candidates" | jq 'length') candidates)"
 
   run-coder:
     needs: find-issues

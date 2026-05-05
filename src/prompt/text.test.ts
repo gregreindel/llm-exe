@@ -138,9 +138,13 @@ describe("llm-exe:prompt/TextPrompt", () => {
     expect(textPrompt.helpers[0]).toEqual(helper);
   });
 
-  test("validate", () => {
-    const textPrompt = new TextPrompt();
+  test("validate returns true when prompt has messages", () => {
+    const textPrompt = new TextPrompt("Hello");
     expect(textPrompt.validate()).toBe(true);
+  });
+  test("validate returns false when prompt has no messages", () => {
+    const textPrompt = new TextPrompt();
+    expect(textPrompt.validate()).toBe(false);
   });
 
   it("can add pre filters that run _before_ replacements", () => {
@@ -200,5 +204,12 @@ describe("llm-exe:prompt/TextPrompt", () => {
     const prompt = new TextPrompt("Hello {{who}}", options);
     const format = prompt.format({who: `World`});
     expect(format).toEqual("Hello World")
+  });
+
+  it("throws a descriptive error when format() is called without arguments", () => {
+    const prompt = new TextPrompt<{ name: string }>("Hello {{name}}");
+    expect(() => (prompt as any).format()).toThrow(
+      "format() requires an input object"
+    );
   });
 });

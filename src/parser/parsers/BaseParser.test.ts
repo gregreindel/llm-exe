@@ -27,5 +27,38 @@ describe("llm-exe:parser/BaseParser", () => {
     const parser = new MockParser()
     expect(parser.parse(JSON.stringify({ age: 90, name: "Greg" }))).toEqual({ age: 90, name: "Greg" })
   })
+
+  it('defaults target to text', () => {
+    const parser = new MockParser()
+    expect(parser.target).toEqual("text")
+  })
+
+  it('sets options when provided', () => {
+    const opts = { someOption: true };
+    const parser = new MockParser(opts)
+    expect(parser.options).toEqual(opts)
+  })
+
+  it('sets options to empty object by default', () => {
+    const parser = new MockParser()
+    expect(parser.options).toEqual({})
+  })
+});
+
+describe("llm-exe:parser/BaseParser with target", () => {
+  class FunctionCallParser extends BaseParser {
+    constructor() {
+      super("fn-parser", {}, "function_call");
+    }
+    parse(text: string) {
+      return text;
+    }
+  }
+
+  it('sets target to function_call when specified', () => {
+    const parser = new FunctionCallParser()
+    expect(parser.target).toEqual("function_call")
+    expect(parser.name).toEqual("fn-parser")
+  })
 });
 
