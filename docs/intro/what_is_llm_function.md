@@ -66,7 +66,7 @@ credit card number: <true or false if this type of PII is included>`;
  * Somewhere else in your codebase
  */
 const input = "Hello! can you bill me? my cc is 4242-4242-4242-4242!!"
-const response = await piiDetector({ input })
+const response = await piiDetector(input)
 /**
  *
  * Output:

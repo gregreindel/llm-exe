@@ -178,7 +178,10 @@ const spanish = await translator.execute({
 ```typescript
 const analyst = createLlmExecutor(
   {
-    llm: useLlm("openai.gpt-4o"),
+    llm: useLlm("openai.gpt-4o", {
+      numOfAttempts: 3,
+      timeout: 30000,
+    }),
     prompt: createChatPrompt<{ data: any }>(
       "Analyze this data and return insights as JSON: {{data}}"
     ),
@@ -190,9 +193,6 @@ const analyst = createLlmExecutor(
     }),
   },
   {
-    // Built-in retry, timeout, hooks
-    maxRetries: 3,
-    timeout: 30000,
     hooks: {
       onSuccess: (result) => logger.info("Analysis complete", result),
       onError: (error) => logger.error("Analysis failed", error),
@@ -204,7 +204,7 @@ const analyst = createLlmExecutor(
 const { insights, score } = await analyst.execute({ data: salesData });
 
 // You can also bind events to an executor!
-analyst.on("complete", (result) => {
+analyst.on("onComplete", (result) => {
   logger.info("Analysis complete", result);
 });
 ```
