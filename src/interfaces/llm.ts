@@ -588,7 +588,20 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
+  // Anthropic - Claude 4.5 models
+  "anthropic.claude-haiku-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-opus-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-sonnet-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   // Anthropic - Claude 4 models
+  "anthropic.claude-opus-4-1": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   "anthropic.claude-sonnet-4-0": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -672,6 +685,18 @@ export type AllUseLlmOptions = AllLlm & {
     input: GenericLLm;
   };
   "ollama.qwq": {
+    input: GenericLLm;
+  };
+  "ollama.gemma3": {
+    input: GenericLLm;
+  };
+  "ollama.mistral": {
+    input: GenericLLm;
+  };
+  "ollama.qwen2.5": {
+    input: GenericLLm;
+  };
+  "ollama.qwen3": {
     input: GenericLLm;
   };
 
