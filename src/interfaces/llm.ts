@@ -704,6 +704,12 @@ export type AllUseLlmOptions = AllLlm & {
   "deepseek.chat": {
     input: DeepseekRequest;
   };
+  "deepseek.v4-flash": {
+    input: Omit<DeepseekRequest, "model">;
+  };
+  "deepseek.v4-pro": {
+    input: Omit<DeepseekRequest, "model">;
+  };
 };
 
 export type LlmProviderKey = keyof AllLlm;
