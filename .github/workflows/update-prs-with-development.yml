@@ -1,0 +1,49 @@
+name: Update Open PRs with Development
+
+on:
+  schedule:
+    - cron: "0 8 * * 1-5"  # Weekdays 8am UTC (3am CT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  update-prs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Update open PRs targeting development
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          PR_NUMBERS=$(gh pr list --base development --state open --json number --jq '.[].number')
+
+          if [ -z "$PR_NUMBERS" ]; then
+            echo "No open PRs targeting development."
+            exit 0
+          fi
+
+          for PR in $PR_NUMBERS; do
+            echo "Attempting to update PR #$PR..."
+            if gh pr update-branch "$PR" 2>&1; then
+              echo "PR #$PR updated successfully."
+            else
+              echo "PR #$PR skipped (conflicts or already up to date)."
+            fi
+          done
