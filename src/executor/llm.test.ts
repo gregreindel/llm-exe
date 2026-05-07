@@ -266,4 +266,49 @@ describe("llm-exe:executor/LlmExecutor", () => {
     const result = await executor.execute(undefined as any);
     expect(result).toBeDefined();
   });
+
+  it("getHandlerOutput uses getResult when parser target is function_call", async () => {
+    const mockParser = {
+      target: "function_call",
+      parse: jest.fn().mockReturnValue([{ type: "function_use", name: "fn", input: {} }]),
+    };
+    const executor = new LlmExecutor({ llm, prompt, parser: mockParser as any });
+
+    const mockOutput = {
+      getResult: jest.fn().mockReturnValue({ content: [{ type: "function_use", name: "fn", input: {} }] }),
+      getResultText: jest.fn().mockReturnValue("text"),
+      getResultContent: jest.fn(),
+    };
+
+    const result = executor.getHandlerOutput(mockOutput, {} as any);
+
+    expect(mockOutput.getResult).toHaveBeenCalled();
+    expect(mockOutput.getResultText).not.toHaveBeenCalled();
+    expect(mockParser.parse).toHaveBeenCalledWith(
+      { content: [{ type: "function_use", name: "fn", input: {} }] },
+      {}
+    );
+    expect(result).toEqual([{ type: "function_use", name: "fn", input: {} }]);
+  });
+
+  it("getHandlerOutput uses getResultText when parser target is not function_call", async () => {
+    const mockParser = {
+      target: "text",
+      parse: jest.fn().mockReturnValue("parsed text"),
+    };
+    const executor = new LlmExecutor({ llm, prompt, parser: mockParser as any });
+
+    const mockOutput = {
+      getResult: jest.fn(),
+      getResultText: jest.fn().mockReturnValue("raw text from llm"),
+      getResultContent: jest.fn(),
+    };
+
+    const result = executor.getHandlerOutput(mockOutput, {} as any);
+
+    expect(mockOutput.getResultText).toHaveBeenCalled();
+    expect(mockOutput.getResult).not.toHaveBeenCalled();
+    expect(mockParser.parse).toHaveBeenCalledWith("raw text from llm", {});
+    expect(result).toEqual("parsed text");
+  });
 });
