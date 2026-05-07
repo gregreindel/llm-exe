@@ -12,4 +12,6 @@ const deepseekChatV1: Config = createOpenAiCompatibleConfiguration({
 export const deepseek = {
   "deepseek.chat.v1": deepseekChatV1,
   "deepseek.chat": withDefaultModel(deepseekChatV1, "deepseek-chat"),
+  "deepseek.v4-flash": withDefaultModel(deepseekChatV1, "deepseek-v4-flash"),
+  "deepseek.v4-pro": withDefaultModel(deepseekChatV1, "deepseek-v4-pro"),
 };
