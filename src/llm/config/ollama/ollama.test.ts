@@ -30,4 +30,25 @@ describe("ollama configuration", () => {
       ]);
     });
   });
+
+  describe("shorthands", () => {
+    it.each([
+      ["ollama.deepseek-r1", "deepseek-r1"],
+      ["ollama.llama3.3", "llama3.3"],
+      ["ollama.llama3.2", "llama3.2"],
+      ["ollama.llama3.1", "llama3.1"],
+      ["ollama.qwq", "qwq"],
+      ["ollama.gemma3", "gemma3"],
+      ["ollama.mistral", "mistral"],
+      ["ollama.qwen2.5", "qwen2.5"],
+      ["ollama.qwen3", "qwen3"],
+    ] as const)(
+      "%s should resolve to %s",
+      (shorthand, expectedModel) => {
+        const cfg = ollama[shorthand];
+        expect(cfg).toBeDefined();
+        expect(cfg.options.model.default).toBe(expectedModel);
+      }
+    );
+  });
 });

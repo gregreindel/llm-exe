@@ -21,8 +21,8 @@ When combined with an LLM executor, the parser is responsible for providing type
 
 When working with output parsers, you have two options:
 
-1. Use a default parser.
-2. Extend the base parser to create a custom output parser
+1. Use a [default parser](/parser/included-parsers.html).
+2. Create a [custom parser](/parser/custom.html) for full control over output transformation.
 
 #### Use a Default Parser
 
