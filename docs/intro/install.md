@@ -6,7 +6,7 @@ npm i llm-exe
 ```
 
 ```ts
-import llmExe from "llm-exe"
+import * as llmExe from "llm-exe"
 
 // or 
 
@@ -53,5 +53,5 @@ const response = await executor.execute({ input })
  * Output from LLM executor:
  * Arrr, matey! Speak up, fer me ears be as keen as a sea serpent's! 
  * Avast ye, what be your query?
- * /
+ */
 ```

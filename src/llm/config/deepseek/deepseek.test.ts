@@ -57,4 +57,44 @@ describe("deepseek configuration", () => {
       expect(deepseekChat.options.model).toEqual({ default: "deepseek-chat" });
     });
   });
+
+  describe("deepseek.v4-flash", () => {
+    const deepseekV4Flash = deepseek["deepseek.v4-flash"] as Config;
+
+    it("should be based on deepseekChatV1 configuration", () => {
+      expect(deepseekV4Flash.endpoint).toEqual(deepseekChatV1.endpoint);
+      expect(deepseekV4Flash.method).toEqual(deepseekChatV1.method);
+      expect(deepseekV4Flash.headers).toEqual(deepseekChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as deepseek-v4-flash", () => {
+      expect(deepseekV4Flash.mapBody.model).toEqual({
+        default: "deepseek-v4-flash",
+        key: "model",
+      });
+      expect(deepseekV4Flash.options.model).toEqual({
+        default: "deepseek-v4-flash",
+      });
+    });
+  });
+
+  describe("deepseek.v4-pro", () => {
+    const deepseekV4Pro = deepseek["deepseek.v4-pro"] as Config;
+
+    it("should be based on deepseekChatV1 configuration", () => {
+      expect(deepseekV4Pro.endpoint).toEqual(deepseekChatV1.endpoint);
+      expect(deepseekV4Pro.method).toEqual(deepseekChatV1.method);
+      expect(deepseekV4Pro.headers).toEqual(deepseekChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as deepseek-v4-pro", () => {
+      expect(deepseekV4Pro.mapBody.model).toEqual({
+        default: "deepseek-v4-pro",
+        key: "model",
+      });
+      expect(deepseekV4Pro.options.model).toEqual({
+        default: "deepseek-v4-pro",
+      });
+    });
+  });
 });
