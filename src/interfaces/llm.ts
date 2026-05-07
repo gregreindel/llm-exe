@@ -687,10 +687,28 @@ export type AllUseLlmOptions = AllLlm & {
   "ollama.qwq": {
     input: GenericLLm;
   };
+  "ollama.gemma3": {
+    input: GenericLLm;
+  };
+  "ollama.mistral": {
+    input: GenericLLm;
+  };
+  "ollama.qwen2.5": {
+    input: GenericLLm;
+  };
+  "ollama.qwen3": {
+    input: GenericLLm;
+  };
 
   // Deepseek
   "deepseek.chat": {
     input: DeepseekRequest;
+  };
+  "deepseek.v4-flash": {
+    input: Omit<DeepseekRequest, "model">;
+  };
+  "deepseek.v4-pro": {
+    input: Omit<DeepseekRequest, "model">;
   };
 };
 
