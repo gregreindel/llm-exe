@@ -18,9 +18,9 @@ const executor = createLlmExecutor(
   },
   {
     hooks: {
-      onComplete: () => console.log("Done"),
-      onSuccess: (result) => console.log("Result:", result),
-      onError: (error) => console.error("Error:", error),
+      onSuccess: (exec) => console.log("Result:", exec.output),
+      onError: (exec) => console.error("Error:", exec.errorMessage),
+      onComplete: (exec) => console.log(`Done in ${exec.end - exec.start}ms`),
     },
   }
 );
