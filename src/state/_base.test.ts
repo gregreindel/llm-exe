@@ -12,8 +12,8 @@ import {
  */
 describe("llm-exe:state/BaseState", () => {
   class MockState extends BaseState {
-    constructor() {
-      super();
+    constructor(name?: string) {
+      super(name);
     }
     async saveState() {}
   }
@@ -34,6 +34,23 @@ describe("llm-exe:state/BaseState", () => {
     expect(state).toHaveProperty("dialogues");
     expect(state).toHaveProperty("attributes");
     expect(state).toHaveProperty("context");
+  });
+
+  it("BaseState stores name when provided", () => {
+    const state = new MockState("myState");
+    expect(state.name).toEqual("myState");
+  });
+  it("BaseState name is undefined when not provided", () => {
+    const state = new MockState();
+    expect(state.name).toBeUndefined();
+  });
+  it("DefaultState stores name when provided", () => {
+    const state = new DefaultState("testState");
+    expect(state.name).toEqual("testState");
+  });
+  it("DefaultState name is undefined when not provided", () => {
+    const state = new DefaultState();
+    expect(state.name).toBeUndefined();
   });
 
   it("creates class with expected properties", () => {

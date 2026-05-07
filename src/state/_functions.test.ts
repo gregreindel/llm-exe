@@ -1,9 +1,20 @@
 import { BaseState, DefaultState, createState } from "@/state";
 import { createStateFrom } from "@/state/_functions";
 
-/**
- * Tests the TextPrompt class
- */
+describe("llm-exe:state/createState", () => {
+  it("creates state without name", () => {
+    const state = createState();
+    expect(state).toBeInstanceOf(DefaultState);
+    expect(state).toBeInstanceOf(BaseState);
+    expect(state.name).toBeUndefined();
+  });
+  it("creates state with name", () => {
+    const state = createState("myState");
+    expect(state).toBeInstanceOf(DefaultState);
+    expect(state.name).toEqual("myState");
+  });
+});
+
 describe("llm-exe:state/createStateFrom", () => {
   it("creates empty state if nothing provided", () => {
     const state = createStateFrom();
