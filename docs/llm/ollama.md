@@ -23,7 +23,9 @@ const llm = useLlm("ollama.deepseek-r1", {
 
 <ImportModelNames provider="ollama" />
 
+## Configuration
 
+By default, llm-exe connects to `http://localhost:11434`. To use a different Ollama endpoint, set the `OLLAMA_ENDPOINT` environment variable.
 
 Generally you pass the LLM instance off to an LLM Executor and call that. However, it is possible to interact with the LLM object directly, if you wanted.
 
