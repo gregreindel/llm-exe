@@ -21,6 +21,13 @@ const llm = useLlm("xai.grok-4", {
 });
 ```
 
+```ts
+const llm = useLlm("xai.grok-3-mini", {
+  // other options,
+  // no model needed, using grok-3-mini
+});
+```
+
 <ImportModelNames provider="xai" />
 
 ## Authentication
