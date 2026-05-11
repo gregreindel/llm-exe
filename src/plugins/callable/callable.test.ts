@@ -187,4 +187,157 @@ describe("llm-exe:callable/useExecutors", () => {
       },
     });
   });
+
+  describe("getVisibleFunctions with visibility filtering", () => {
+    it("filters out executors whose visibilityHandler returns false", () => {
+      const visible = new CallableExecutor({
+        name: "visible_fn",
+        description: "Always visible",
+        input: "{}",
+        handler: async () => "visible",
+        visibilityHandler: () => true,
+      });
+      const hidden = new CallableExecutor({
+        name: "hidden_fn",
+        description: "Always hidden",
+        input: "{}",
+        handler: async () => "hidden",
+        visibilityHandler: () => false,
+      });
+      const executors = useExecutors([visible, hidden]);
+      const result = executors.getVisibleFunctions({});
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toEqual("visible_fn");
+    });
+
+    it("passes input and attributes to visibilityHandler", () => {
+      const visibilityHandler = jest.fn().mockReturnValue(true);
+      const callable = new CallableExecutor({
+        name: "check_fn",
+        description: "Checks args",
+        input: "{}",
+        handler: async () => "ok",
+        visibilityHandler,
+      });
+      const executors = useExecutors([callable]);
+      const input = { userId: "123" };
+      const attrs = { role: "admin" };
+      executors.getVisibleFunctions(input, attrs);
+      expect(visibilityHandler).toHaveBeenCalledWith(
+        input,
+        expect.any(Object),
+        attrs
+      );
+    });
+
+    it("includes executors with no visibilityHandler", () => {
+      const withHandler = new CallableExecutor({
+        name: "with_handler",
+        description: "Has visibility",
+        input: "{}",
+        handler: async () => "a",
+        visibilityHandler: () => true,
+      });
+      const withoutHandler = new CallableExecutor({
+        name: "without_handler",
+        description: "No visibility handler",
+        input: "{}",
+        handler: async () => "b",
+      });
+      const executors = useExecutors([withHandler, withoutHandler]);
+      const result = executors.getVisibleFunctions({});
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe("callFunction with non-existent handler", () => {
+    it("returns error message when handler does not exist", async () => {
+      const executors = useExecutors([callableFn]);
+      const result = await executors.callFunction("non_existent", "{}");
+      expect(result).toEqual(
+        "[invalid handler] The handler (non_existent) does not exist."
+      );
+    });
+  });
+
+  describe("CallableExecutor attributes and parameters", () => {
+    it("stores custom attributes from constructor", () => {
+      const callable = new CallableExecutor({
+        name: "fn_with_attrs",
+        description: "Has attributes",
+        input: "{}",
+        handler: async () => "ok",
+        attributes: { category: "search", priority: 1 },
+      });
+      expect(callable.attributes).toEqual({ category: "search", priority: 1 });
+    });
+
+    it("defaults attributes to empty object", () => {
+      const callable = new CallableExecutor({
+        name: "fn_no_attrs",
+        description: "No attributes",
+        input: "{}",
+        handler: async () => "ok",
+      });
+      expect(callable.attributes).toEqual({});
+    });
+
+    it("stores custom parameters from constructor", () => {
+      const callable = new CallableExecutor({
+        name: "fn_with_params",
+        description: "Has parameters",
+        input: "{}",
+        handler: async () => "ok",
+        parameters: {
+          type: "object",
+          properties: { query: { type: "string" } },
+        },
+      });
+      expect(callable.parameters).toEqual({
+        type: "object",
+        properties: { query: { type: "string" } },
+      });
+    });
+
+    it("defaults parameters to empty object", () => {
+      const callable = new CallableExecutor({
+        name: "fn_no_params",
+        description: "No parameters",
+        input: "{}",
+        handler: async () => "ok",
+      });
+      expect(callable.parameters).toEqual({});
+    });
+  });
+
+  describe("CallableExecutor.validateInput edge cases", () => {
+    it("returns result with enforceResultAttributes wrapping for bare boolean", async () => {
+      const callable = new CallableExecutor({
+        name: "validate_bare",
+        description: "Returns bare boolean",
+        input: "{}",
+        handler: async () => "ok",
+        validateInput: async () => true as any,
+      });
+      const result = await callable.validateInput({});
+      expect(result).toEqual({ result: true, attributes: {} });
+    });
+
+    it("returns false with error when validateInput throws", async () => {
+      const callable = new CallableExecutor({
+        name: "validate_throw",
+        description: "Throws error",
+        input: "{}",
+        handler: async () => "ok",
+        validateInput: async () => {
+          throw new Error("validation failed");
+        },
+      });
+      const result = await callable.validateInput({});
+      expect(result).toEqual({
+        result: false,
+        attributes: { error: "validation failed" },
+      });
+    });
+  });
 });
