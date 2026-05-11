@@ -21,17 +21,21 @@ type Hook = (
 
 `executionMetadata` contains information about this specific execution (input, output, timings, and — for `onError` — the thrown error). `executorMetadata` contains information about the executor instance itself (id, type, name, total executions).
 
-| Field                           | Available on           | Description                                      |
-| ------------------------------- | ---------------------- | ------------------------------------------------ |
-| `executionMetadata.input`       | all hooks              | The input passed to `.execute()`                 |
-| `executionMetadata.output`      | `onSuccess`, `onComplete` | The parsed output returned by the executor   |
-| `executionMetadata.error`       | `onError`, `onComplete` | The thrown `Error` instance                     |
-| `executionMetadata.errorMessage`| `onError`, `onComplete` | Shortcut for `error.message`                    |
-| `executionMetadata.start`       | all hooks              | Execution start time (ms since epoch)            |
-| `executionMetadata.end`         | `onComplete`           | Execution end time (ms since epoch)              |
-| `executorMetadata.id`           | all hooks              | Stable id of the executor                        |
-| `executorMetadata.name`         | all hooks              | Name of the executor, if set                     |
-| `executorMetadata.executions`   | all hooks              | Number of times this executor has run            |
+| Field                              | Available on              | Description                                      |
+| ---------------------------------- | ------------------------- | ------------------------------------------------ |
+| `executionMetadata.input`          | all hooks                 | The input passed to `.execute()`                 |
+| `executionMetadata.output`         | `onSuccess`, `onComplete` | The parsed output returned by the executor       |
+| `executionMetadata.handlerInput`   | all hooks                 | The transformed input passed to the internal handler |
+| `executionMetadata.handlerOutput`  | `onSuccess`, `onComplete` | The raw handler output before parsing            |
+| `executionMetadata.error`          | `onError`, `onComplete`   | The thrown `Error` instance                      |
+| `executionMetadata.errorMessage`   | `onError`, `onComplete`   | Shortcut for `error.message`                     |
+| `executionMetadata.start`          | all hooks                 | Execution start time (ms since epoch)            |
+| `executionMetadata.end`            | `onComplete`              | Execution end time (ms since epoch)              |
+| `executorMetadata.id`              | all hooks                 | Stable id of the executor                        |
+| `executorMetadata.name`            | all hooks                 | Name of the executor, if set                     |
+| `executorMetadata.type`            | all hooks                 | Type of executor (e.g. `"llm-executor"`)         |
+| `executorMetadata.created`         | all hooks                 | Timestamp when the executor was created (ms since epoch) |
+| `executorMetadata.executions`      | all hooks                 | Number of times this executor has run            |
 
 Hooks should be synchronous and lightweight. Errors thrown inside a hook are caught and logged by llm-exe; they will not affect the executor's result.
 
@@ -91,3 +95,45 @@ await executor.execute({}); // the once handler no longer fires
 ::: tip
 Default behavior is to not add the same handler to the same hook more than once. There is also a per-event hook limit to prevent unbounded memory growth — if you hit it, remove unused hooks with `.off()` rather than piling on new ones.
 :::
+
+#### Clearing hooks
+
+Use `.clearHooks()` to remove all hooks for a specific event, or all events at once. This is useful for preventing memory leaks in long-running processes.
+
+```typescript{3,6}:no-line-numbers
+const executor = createLlmExecutor({ llm, prompt });
+
+// Clear hooks for a specific event
+executor.clearHooks("onSuccess");
+
+// Clear all hooks across all events
+executor.clearHooks();
+```
+
+#### Inspecting hook count
+
+Use `.getHookCount()` to check how many hooks are registered, either for a specific event or across all events.
+
+```typescript{3,6}:no-line-numbers
+const executor = createLlmExecutor({ llm, prompt });
+
+// Get count for a specific event
+const count = executor.getHookCount("onSuccess"); // number
+
+// Get counts for all events
+const counts = executor.getHookCount(); // { onSuccess: 0, onError: 0, onComplete: 0 }
+```
+
+#### Trace ID
+
+Use `.withTraceId()` to associate an executor with a trace identifier for observability. The trace ID is included in `executorMetadata` passed to hooks.
+
+```typescript{3}:no-line-numbers
+const executor = createLlmExecutor({ llm, prompt });
+
+executor.withTraceId("req-abc-123");
+
+executor.on("onComplete", (exec, meta) => {
+  console.log(meta.traceId); // "req-abc-123"
+});
+```
