@@ -21,6 +21,13 @@ const llm = useLlm("deepseek.chat", {
 });
 ```
 
+```ts
+const llm = useLlm("deepseek.v4-flash", {
+  // other options,
+  // no model needed, using deepseek-v4-flash model
+});
+```
+
 <ImportModelNames provider="deepseek" />
 
 ## Authentication
