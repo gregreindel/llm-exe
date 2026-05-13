@@ -21,11 +21,18 @@ const llm = useLlm("deepseek.chat", {
 });
 ```
 
+```ts
+const llm = useLlm("deepseek.v4-flash", {
+  // other options,
+  // no model needed, using deepseek-v4-flash model
+});
+```
+
 <ImportModelNames provider="deepseek" />
 
 ## Authentication
 
-To authenticate, you need to provide an Deepseek API Key. You can provide the API key various ways, depending on your use case.
+To authenticate, you need to provide a Deepseek API Key. You can provide the API key various ways, depending on your use case.
 
 1. Pass in as execute options using `deepseekApiKey`
 2. Pass in as setup options using `deepseekApiKey`

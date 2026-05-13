@@ -567,9 +567,6 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.o3": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "openai.o4-mini": {
-    input: Omit<OpenAiRequest, "model">;
-  };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
     input: OpenAiRequest;
@@ -580,6 +577,10 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.gpt-4o-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
+  // OpenAI - Deprecated
+  "openai.o4-mini": {
+    input: Omit<OpenAiRequest, "model">;
+  };
 
   // Anthropic - Claude 4.6 models
   "anthropic.claude-opus-4-6": {
@@ -588,7 +589,28 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
+
+  // Anthropic - Claude 4.5 models
+  "anthropic.claude-haiku-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-opus-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-sonnet-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  
   // Anthropic - Deprecated
+  "anthropic.claude-opus-4-1": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-sonnet-4-0": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-opus-4-0": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   "anthropic.claude-sonnet-4": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -615,22 +637,23 @@ export type AllUseLlmOptions = AllLlm & {
   "google.gemini-2.5-pro-exp-03-25": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.0-flash": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash-lite": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
   "google.gemini-2.5-flash-lite": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-1.5-pro": {
+  "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.5-pro": {
+  // Google - Deprecated
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
 
@@ -667,10 +690,28 @@ export type AllUseLlmOptions = AllLlm & {
   "ollama.qwq": {
     input: GenericLLm;
   };
+  "ollama.gemma3": {
+    input: GenericLLm;
+  };
+  "ollama.mistral": {
+    input: GenericLLm;
+  };
+  "ollama.qwen2.5": {
+    input: GenericLLm;
+  };
+  "ollama.qwen3": {
+    input: GenericLLm;
+  };
 
   // Deepseek
   "deepseek.chat": {
     input: DeepseekRequest;
+  };
+  "deepseek.v4-flash": {
+    input: Omit<DeepseekRequest, "model">;
+  };
+  "deepseek.v4-pro": {
+    input: Omit<DeepseekRequest, "model">;
   };
 };
 

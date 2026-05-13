@@ -19,11 +19,17 @@
     "models": [
       "claude-opus-4-6",
       "claude-sonnet-4-6",
+      "claude-opus-4-5",
+      "claude-sonnet-4-5",
+      "claude-haiku-4-5",
+      "claude-opus-4-1",
       "claude-sonnet-4",
       "claude-opus-4",
       "claude-3-7-sonnet",
       "claude-3-5-sonnet",
-      "claude-3-5-haiku"
+      "claude-3-5-haiku",
+      "claude-3-opus",
+      "claude-3-haiku"
     ]
   },
   "google": {
@@ -39,7 +45,7 @@
   },
   "ollama": {
     "name": "Ollama",
-    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq"]
+    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq", "gemma3", "mistral", "qwen2.5", "qwen3"]
   },
   "xai": {
     "name": "xAI",
@@ -55,6 +61,6 @@
   },
   "deepseek": {
     "name": "DeepSeek",
-    "models": ["chat"]
+    "models": ["chat", "v4-flash", "v4-pro"]
   }
 }

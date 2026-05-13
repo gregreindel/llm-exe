@@ -92,7 +92,26 @@ export const anthropic = {
     anthropicChatV1,
     "claude-sonnet-4-6"
   ),
+
+  // Claude 4.5 models
+  "anthropic.claude-haiku-4-5": withDefaultModel(
+    anthropicChatV1,
+    "claude-haiku-4-5-20251001"
+  ),
+  "anthropic.claude-opus-4-5": withDefaultModel(
+    anthropicChatV1,
+    "claude-opus-4-5-20251101"
+  ),
+  "anthropic.claude-sonnet-4-5": withDefaultModel(
+    anthropicChatV1,
+    "claude-sonnet-4-5-20250929"
+  ),
+
   // Deprecated
+  "anthropic.claude-opus-4-1": withDefaultModel(
+    anthropicChatV1,
+    "claude-opus-4-1-20250805"
+  ),
   "anthropic.claude-sonnet-4": withDefaultModel(
     anthropicChatV1,
     "claude-sonnet-4-0"
