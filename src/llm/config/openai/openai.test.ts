@@ -201,6 +201,19 @@ describe("openai configuration", () => {
     });
   });
 
+  describe("deprecated shorthands still resolve", () => {
+    it.each([
+      ["openai.o4-mini", "o4-mini"],
+    ] as const)(
+      "%s should resolve to %s",
+      (shorthand, expectedModel) => {
+        const cfg = openai[shorthand];
+        expect(cfg).toBeDefined();
+        expect(cfg.options.model.default).toBe(expectedModel);
+      }
+    );
+  });
+
   describe("openai.gpt-4o", () => {
     it("should be based on openAiChatV1 configuration", () => {
       expect(openAiGpt4o.endpoint).toEqual(openAiChatV1.endpoint);

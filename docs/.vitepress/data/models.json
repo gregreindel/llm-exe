@@ -45,7 +45,7 @@
   },
   "ollama": {
     "name": "Ollama",
-    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq"]
+    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq", "gemma3", "mistral", "qwen2.5", "qwen3"]
   },
   "xai": {
     "name": "xAI",

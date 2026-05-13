@@ -16,4 +16,5 @@ export const xai = {
   "xai.grok-3-mini": withDefaultModel(xaiChatV1, "grok-3-mini"),
   "xai.grok-4": withDefaultModel(xaiChatV1, "grok-4"),
   "xai.grok-4-fast": withDefaultModel(xaiChatV1, "grok-4-fast-non-reasoning"),
+  "xai.grok-4-1-fast": withDefaultModel(xaiChatV1, "grok-4-1-fast-non-reasoning"),
 };
