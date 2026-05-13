@@ -73,30 +73,7 @@ const googleGeminiChatV1: Config = {
 
 export const google = {
   "google.chat.v1": googleGeminiChatV1,
-  "google.gemini-2.0-flash": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.0-flash"
-  ),
-  "google.gemini-2.0-flash-lite": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.0-flash-lite"
-  ),
-  "google.gemini-2.5-flash": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.5-flash"
-  ),
-  "google.gemini-2.5-flash-lite": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.5-flash-lite"
-  ),
-  "google.gemini-1.5-pro": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-1.5-pro"
-  ),
-  "google.gemini-2.5-pro": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.5-pro"
-  ),
+  
   "google.gemini-3-flash-preview": withDefaultModel(
     googleGeminiChatV1,
     "gemini-3-flash-preview"
@@ -108,5 +85,31 @@ export const google = {
   "google.gemini-3.1-flash-lite-preview": withDefaultModel(
     googleGeminiChatV1,
     "gemini-3.1-flash-lite-preview"
+    
+  "google.gemini-2.5-flash": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.5-flash"
+  ),
+  "google.gemini-2.5-flash-lite": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.5-flash-lite"
+  ),
+  "google.gemini-2.5-pro": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.5-pro"
+  ),
+
+  // Deprecated
+  "google.gemini-2.0-flash": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.0-flash"
+  ),
+  "google.gemini-2.0-flash-lite": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.0-flash-lite"
+  ),
+  "google.gemini-1.5-pro": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-1.5-pro"
   ),
 };
