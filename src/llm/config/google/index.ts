@@ -85,6 +85,7 @@ export const google = {
   "google.gemini-3.1-flash-lite-preview": withDefaultModel(
     googleGeminiChatV1,
     "gemini-3.1-flash-lite-preview"
+  ),
     
   "google.gemini-2.5-flash": withDefaultModel(
     googleGeminiChatV1,
