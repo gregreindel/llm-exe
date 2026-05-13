@@ -567,9 +567,6 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.o3": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "openai.o4-mini": {
-    input: Omit<OpenAiRequest, "model">;
-  };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
     input: OpenAiRequest;
@@ -578,6 +575,10 @@ export type AllUseLlmOptions = AllLlm & {
     input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o-mini": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  // OpenAI - Deprecated
+  "openai.o4-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
 
@@ -635,22 +636,23 @@ export type AllUseLlmOptions = AllLlm & {
   "google.gemini-2.5-pro-exp-03-25": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.0-flash": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash-lite": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
   "google.gemini-2.5-flash-lite": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-1.5-pro": {
+  "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.5-pro": {
+  // Google - Deprecated
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
 
