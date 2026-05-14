@@ -83,6 +83,12 @@ const anthropicChatV1: Config = {
 
 export const anthropic = {
   "anthropic.chat.v1": anthropicChatV1,
+  // Claude 4.7 models
+  "anthropic.claude-opus-4-7": withDefaultModel(
+    anthropicChatV1,
+    "claude-opus-4-7"
+  ),
+
   // Claude 4.6 models
   "anthropic.claude-opus-4-6": withDefaultModel(
     anthropicChatV1,
@@ -96,15 +102,11 @@ export const anthropic = {
   // Claude 4.5 models
   "anthropic.claude-haiku-4-5": withDefaultModel(
     anthropicChatV1,
-    "claude-haiku-4-5-20251001"
-  ),
-  "anthropic.claude-opus-4-5": withDefaultModel(
-    anthropicChatV1,
-    "claude-opus-4-5-20251101"
+    "claude-haiku-4-5"
   ),
   "anthropic.claude-sonnet-4-5": withDefaultModel(
     anthropicChatV1,
-    "claude-sonnet-4-5-20250929"
+    "claude-sonnet-4-5"
   ),
 
   // Deprecated

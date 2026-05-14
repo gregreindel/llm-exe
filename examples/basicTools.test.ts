@@ -35,7 +35,7 @@ describe("llmUsingToolsSimple", () => {
   itWithUseLlmMocked(
     "handle this simple instruction",
     [
-      "anthropic.claude-opus-4-5",
+      "anthropic.claude-opus-4-7",
       "google.gemini-2.5-flash",
       "xai.grok-4",
       "deepseek.chat",
