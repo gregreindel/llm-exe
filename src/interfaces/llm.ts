@@ -459,6 +459,15 @@ export interface OpenAiRequest extends GenericLLm {
   useJson?: boolean;
 }
 
+export interface XAiRequest extends GenericLLm {
+  model: string;
+  frequencyPenalty?: number;
+  logitBias?: Record<string, any> | null;
+  responseFormat?: Record<string, any>;
+  xAiApiKey?: string;
+  useJson?: boolean;
+}
+
 export interface AmazonBedrockRequest extends GenericLLm {
   model: string;
   awsRegion?: string;
@@ -525,7 +534,7 @@ export type AllLlm = {
   //   // output: OpenAiRequest;
   // };
   "xai.chat.v1": {
-    input: GenericLLm;
+    input: XAiRequest;
     // output: OpenAiRequest;
   };
   "ollama.chat.v1": {
@@ -652,22 +661,22 @@ export type AllUseLlmOptions = AllLlm & {
 
   // xAI
   "xai.grok-2": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3-mini": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-fast": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-1-fast": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
 
   // Ollama
