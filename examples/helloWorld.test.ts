@@ -36,7 +36,7 @@ describe("helloWorld", () => {
       "deepseek.chat",
       {
         key: "amazon:anthropic.chat.v1",
-        model: "anthropic.claude-sonnet-4-5-20250929-v1:0",
+        model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
       },
     ],
     async (config: any) => {
