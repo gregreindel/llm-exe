@@ -92,6 +92,7 @@ export const anthropic = {
     anthropicChatV1,
     "claude-sonnet-4-6"
   ),
+
   // Claude 4.5 models
   "anthropic.claude-haiku-4-5": withDefaultModel(
     anthropicChatV1,
@@ -105,7 +106,8 @@ export const anthropic = {
     anthropicChatV1,
     "claude-sonnet-4-5-20250929"
   ),
-  // Claude 4 models
+
+  // Deprecated
   "anthropic.claude-opus-4-1": withDefaultModel(
     anthropicChatV1,
     "claude-opus-4-1-20250805"
@@ -118,8 +120,6 @@ export const anthropic = {
     anthropicChatV1,
     "claude-opus-4-0"
   ),
-
-  // Deprecated
   "anthropic.claude-3-7-sonnet": withDefaultModel(
     anthropicChatV1,
     "claude-3-7-sonnet-20250219"
@@ -135,9 +135,5 @@ export const anthropic = {
   "anthropic.claude-3-opus": withDefaultModel(
     anthropicChatV1,
     "claude-3-opus-20240229"
-  ),
-  "anthropic.claude-3-haiku": withDefaultModel(
-    anthropicChatV1,
-    "claude-3-haiku-20240307"
   ),
 };
