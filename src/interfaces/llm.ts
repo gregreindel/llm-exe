@@ -567,17 +567,18 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.o3": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "openai.o4-mini": {
-    input: Omit<OpenAiRequest, "model">;
-  };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
-    input: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o": {
     input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o-mini": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  // OpenAI - Deprecated
+  "openai.o4-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
 
@@ -588,6 +589,7 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
+
   // Anthropic - Claude 4.5 models
   "anthropic.claude-haiku-4-5": {
     input: Omit<AnthropicRequest, "model">;
@@ -598,7 +600,8 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Claude 4 models
+  
+  // Anthropic - Deprecated
   "anthropic.claude-opus-4-1": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -614,7 +617,6 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-opus-4": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Deprecated
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -627,30 +629,24 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-3-haiku": {
-    input: Omit<AnthropicRequest, "model">;
-  };
-
   // Google
-  "google.gemini-2.5-pro-exp-03-25": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash-lite": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
   "google.gemini-2.5-flash-lite": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-1.5-pro": {
+  "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.5-pro": {
+  // Google - Deprecated
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
 
@@ -668,6 +664,9 @@ export type AllUseLlmOptions = AllLlm & {
     input: OpenAiRequest;
   };
   "xai.grok-4-fast": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  "xai.grok-4-1-fast": {
     input: Omit<OpenAiRequest, "model">;
   };
 
