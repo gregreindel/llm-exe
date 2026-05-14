@@ -29,9 +29,14 @@ const googleGeminiChatV1: Config = {
       transform: (v, _s) => {
         if (
           // only supported reasoning models
-          ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-light"].includes(
-            _s.model
-          ) &&
+          [
+            "gemini-2.5-pro",
+            "gemini-2.5-flash",
+            "gemini-2.5-light",
+            "gemini-3-flash-preview",
+            "gemini-3.1-pro-preview",
+            "gemini-3.1-flash-lite-preview",
+          ].includes(_s.model) &&
           typeof v === "string" &&
           ["minimal", "low", "medium", "high"].includes(v)
         ) {
