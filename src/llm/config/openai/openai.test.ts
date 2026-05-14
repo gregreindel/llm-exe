@@ -49,23 +49,29 @@ describe("openai configuration", () => {
       s: any
     ) => any;
 
-    it("should return the value for supported model and valid effort", () => {
-      expect(effortTransform("low", { model: "gpt-5" })).toBe("low");
-      expect(effortTransform("medium", { model: "gpt-5" })).toBe("medium");
-      expect(effortTransform("high", { model: "gpt-5" })).toBe("high");
-      expect(effortTransform("minimal", { model: "gpt-5" })).toBe("minimal");
+    it("should return the value for gpt-5 family models", () => {
+      expect(effortTransform("low", { model: "gpt-5.2" })).toBe("low");
+      expect(effortTransform("medium", { model: "gpt-5-mini" })).toBe("medium");
+      expect(effortTransform("high", { model: "gpt-5-nano" })).toBe("high");
+      expect(effortTransform("minimal", { model: "gpt-5.2" })).toBe("minimal");
+    });
+
+    it("should return the value for o-series reasoning models", () => {
+      expect(effortTransform("low", { model: "o3" })).toBe("low");
+      expect(effortTransform("high", { model: "o4-mini" })).toBe("high");
     });
 
     it("should return undefined for unsupported model", () => {
       expect(effortTransform("high", { model: "gpt-4o" })).toBe(undefined);
+      expect(effortTransform("high", { model: "gpt-4.1" })).toBe(undefined);
     });
 
     it("should return undefined for non-string value", () => {
-      expect(effortTransform(123, { model: "gpt-5" })).toBe(undefined);
+      expect(effortTransform(123, { model: "gpt-5.2" })).toBe(undefined);
     });
 
     it("should return undefined for unsupported effort level", () => {
-      expect(effortTransform("max", { model: "gpt-5" })).toBe(undefined);
+      expect(effortTransform("max", { model: "gpt-5.2" })).toBe(undefined);
     });
   });
 
@@ -192,6 +198,24 @@ describe("openai configuration", () => {
       ) => any;
       expect(transformUseJson(true)).toBe("json_object");
       expect(transformUseJson(false)).toBe("text");
+    });
+  });
+
+  describe("openai.gpt-4", () => {
+    const openAiGpt4 = openai["openai.gpt-4"] as Config;
+
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(openAiGpt4.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(openAiGpt4.method).toEqual(openAiChatV1.method);
+      expect(openAiGpt4.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gpt-4", () => {
+      expect(openAiGpt4.mapBody.model).toEqual({
+        default: "gpt-4",
+        key: "model",
+      });
+      expect(openAiGpt4.options.model).toEqual({ default: "gpt-4" });
     });
   });
 

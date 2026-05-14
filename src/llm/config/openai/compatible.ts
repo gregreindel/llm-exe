@@ -68,9 +68,13 @@ export function createOpenAiCompatibleConfiguration<
       effort: {
         key: "reasoning_effort",
         transform: (v, _s) => {
+          const isReasoningModel =
+            _s.model.startsWith("gpt-5") ||
+            _s.model.startsWith("o3") ||
+            _s.model.startsWith("o4");
+
           if (
-            // only supported reasoning models
-            ["gpt-5"].includes(_s.model) &&
+            isReasoningModel &&
             typeof v === "string" &&
             ["minimal", "low", "medium", "high"].includes(v)
           ) {

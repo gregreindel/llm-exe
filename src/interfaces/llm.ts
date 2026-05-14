@@ -459,6 +459,15 @@ export interface OpenAiRequest extends GenericLLm {
   useJson?: boolean;
 }
 
+export interface XAiRequest extends GenericLLm {
+  model: string;
+  frequencyPenalty?: number;
+  logitBias?: Record<string, any> | null;
+  responseFormat?: Record<string, any>;
+  xAiApiKey?: string;
+  useJson?: boolean;
+}
+
 export interface AmazonBedrockRequest extends GenericLLm {
   model: string;
   awsRegion?: string;
@@ -525,7 +534,7 @@ export type AllLlm = {
   //   // output: OpenAiRequest;
   // };
   "xai.chat.v1": {
-    input: GenericLLm;
+    input: XAiRequest;
     // output: OpenAiRequest;
   };
   "ollama.chat.v1": {
@@ -569,7 +578,7 @@ export type AllUseLlmOptions = AllLlm & {
   };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
-    input: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o": {
     input: Omit<OpenAiRequest, "model">;
@@ -589,6 +598,7 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
+
   // Anthropic - Claude 4.5 models
   "anthropic.claude-haiku-4-5": {
     input: Omit<AnthropicRequest, "model">;
@@ -599,7 +609,8 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Claude 4 models
+  
+  // Anthropic - Deprecated
   "anthropic.claude-opus-4-1": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -615,7 +626,6 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-opus-4": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Deprecated
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -629,9 +639,6 @@ export type AllUseLlmOptions = AllLlm & {
     input: Omit<AnthropicRequest, "model">;
   };
   // Google
-  "google.gemini-2.5-pro-exp-03-25": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
@@ -663,22 +670,22 @@ export type AllUseLlmOptions = AllLlm & {
 
   // xAI
   "xai.grok-2": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3-mini": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-fast": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-1-fast": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
 
   // Ollama
