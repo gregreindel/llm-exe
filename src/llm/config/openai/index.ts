@@ -56,9 +56,10 @@ export const openai = {
   "openai.gpt-4.1-nano": withDefaultModel(openAiChatV1, "gpt-4.1-nano"),
   // Reasoning models
   "openai.o3": withDefaultModel(openAiChatV1, "o3"),
-  "openai.o4-mini": withDefaultModel(openAiChatV1, "o4-mini"),
   // GPT-4o family
   "openai.gpt-4": withDefaultModel(openAiChatV1, "gpt-4"),
   "openai.gpt-4o": withDefaultModel(openAiChatV1, "gpt-4o"),
   "openai.gpt-4o-mini": withDefaultModel(openAiChatV1, "gpt-4o-mini"),
+  // Deprecated
+  "openai.o4-mini": withDefaultModel(openAiChatV1, "o4-mini"),
 };

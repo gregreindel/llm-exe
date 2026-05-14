@@ -76,7 +76,7 @@ const response = await piiDetector(input)
  *   socialSecurityNumber: false,
  *   creditCardNumber: true
  * }
- * /
+ */
 ```
 
 The input and output of the `piiDetector` function are strongly typed, providing reliable structure and safety when integrating with the rest of your application
