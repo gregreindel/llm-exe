@@ -50,6 +50,8 @@ describe("anthropic config", () => {
 
   describe("deprecated shorthands still resolve", () => {
     it.each([
+      ["anthropic.claude-sonnet-4", "claude-sonnet-4-0"],
+      ["anthropic.claude-opus-4", "claude-opus-4-0"],
       ["anthropic.claude-3-7-sonnet", "claude-3-7-sonnet-20250219"],
       ["anthropic.claude-3-5-sonnet", "claude-3-5-sonnet-latest"],
       ["anthropic.claude-3-5-haiku", "claude-3-5-haiku-latest"],
