@@ -118,7 +118,7 @@ export interface Claude3Response {
       }
   )[];
   model: string;
-  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal";
+  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal" | "model_context_window_exceeded";
   stop_sequence: null | string;
   usage: {
     input_tokens: number;
