@@ -34,6 +34,10 @@ describe("helloWorld", () => {
       "google.gemini-2.5-flash",
       "xai.grok-3",
       "deepseek.chat",
+      {
+        key: "amazon:anthropic.chat.v1",
+        model: "anthropic.claude-sonnet-4-5-20250929-v1:0",
+      },
     ],
     async (config: any) => {
       jest.resetModules();
