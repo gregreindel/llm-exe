@@ -81,9 +81,43 @@ describe("apiRequest", () => {
     } as unknown as Response);
 
     await expect(apiRequest(url)).rejects.toThrow(
-      `Request to ${url} failed: HTTP error. Status: 404. Error Message: Unknown error.`
+      `Request to ${url} failed: HTTP error. Status Code: 404. Error Message: Some error message`
     );
     expect(fetchMock).toHaveBeenCalledWith(url, {});
+  });
+
+  it("falls back to default message when response body is empty", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      text: jest.fn().mockResolvedValue(""),
+      json: jest.fn(),
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status: 500. Error Message: Internal Server Error`
+    );
+  });
+
+  it("falls back to raw text when response body is not JSON", async () => {
+    const rawText = "plain text error from upstream";
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 502,
+      text: jest.fn().mockResolvedValue(rawText),
+      json: jest.fn(),
+      headers: new Headers({
+        "content-type": "text/plain",
+      }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status Code: 502. Error Message: ${rawText}`
+    );
   });
 
   it("should throw a generic error if the request fails", async () => {
@@ -96,16 +130,16 @@ describe("apiRequest", () => {
   });
 
 
-  it("should handle HTTP errors correctly", async () => {
+  it("extracts the error.message field from a JSON error body", async () => {
     globalFetch.mockResolvedValue({
       ok: false,
       status: 404,
-      text: textMock,
-      json: jest
+      text: jest
         .fn()
         .mockResolvedValue(
           JSON.stringify({ error: { message: "No further details provided." } })
         ),
+      json: jest.fn(),
       headers: new Headers({
         "content-type": "application/json",
       }),
