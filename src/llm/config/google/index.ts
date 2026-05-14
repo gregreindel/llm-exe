@@ -97,8 +97,4 @@ export const google = {
     googleGeminiChatV1,
     "gemini-2.5-pro"
   ),
-  "google.gemini-2.5-pro-exp-03-25": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.5-pro-exp-03-25"
-  ),
 };

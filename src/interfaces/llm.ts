@@ -632,9 +632,6 @@ export type AllUseLlmOptions = AllLlm & {
   };
 
   // Google
-  "google.gemini-2.5-pro-exp-03-25": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.0-flash": {
     input: Omit<GeminiRequest, "model">;
   };
