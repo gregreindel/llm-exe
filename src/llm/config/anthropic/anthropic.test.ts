@@ -68,6 +68,7 @@ describe("anthropic config", () => {
 
   describe("active shorthands", () => {
     it.each([
+      ["anthropic.claude-opus-4-7", "claude-opus-4-7"],
       ["anthropic.claude-opus-4-6", "claude-opus-4-6"],
       ["anthropic.claude-sonnet-4-6", "claude-sonnet-4-6"],
       ["anthropic.claude-haiku-4-5", "claude-haiku-4-5-20251001"],
