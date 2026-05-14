@@ -569,7 +569,7 @@ export type AllUseLlmOptions = AllLlm & {
   };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
-    input: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o": {
     input: Omit<OpenAiRequest, "model">;
@@ -629,9 +629,6 @@ export type AllUseLlmOptions = AllLlm & {
     input: Omit<AnthropicRequest, "model">;
   };
   // Google
-  "google.gemini-2.5-pro-exp-03-25": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };

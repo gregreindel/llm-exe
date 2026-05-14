@@ -201,6 +201,24 @@ describe("openai configuration", () => {
     });
   });
 
+  describe("openai.gpt-4", () => {
+    const openAiGpt4 = openai["openai.gpt-4"] as Config;
+
+    it("should be based on openAiChatV1 configuration", () => {
+      expect(openAiGpt4.endpoint).toEqual(openAiChatV1.endpoint);
+      expect(openAiGpt4.method).toEqual(openAiChatV1.method);
+      expect(openAiGpt4.headers).toEqual(openAiChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gpt-4", () => {
+      expect(openAiGpt4.mapBody.model).toEqual({
+        default: "gpt-4",
+        key: "model",
+      });
+      expect(openAiGpt4.options.model).toEqual({ default: "gpt-4" });
+    });
+  });
+
   describe("deprecated shorthands still resolve", () => {
     it.each([
       ["openai.o4-mini", "o4-mini"],
