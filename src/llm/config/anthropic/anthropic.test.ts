@@ -1,4 +1,5 @@
 import { anthropic } from "@/llm/config/anthropic";
+import { mapBody } from "@/llm/_utils.mapBody";
 import { anthropicPromptSanitize } from "./promptSanitize";
 
 describe("anthropic config", () => {
@@ -71,9 +72,8 @@ describe("anthropic config", () => {
       ["anthropic.claude-opus-4-7", "claude-opus-4-7"],
       ["anthropic.claude-opus-4-6", "claude-opus-4-6"],
       ["anthropic.claude-sonnet-4-6", "claude-sonnet-4-6"],
-      ["anthropic.claude-haiku-4-5", "claude-haiku-4-5-20251001"],
-      ["anthropic.claude-opus-4-5", "claude-opus-4-5-20251101"],
-      ["anthropic.claude-sonnet-4-5", "claude-sonnet-4-5-20250929"],
+      ["anthropic.claude-haiku-4-5", "claude-haiku-4-5"],
+      ["anthropic.claude-sonnet-4-5", "claude-sonnet-4-5"],
       ["anthropic.claude-opus-4-1", "claude-opus-4-1-20250805"],
       ["anthropic.claude-sonnet-4", "claude-sonnet-4-0"],
       ["anthropic.claude-opus-4", "claude-opus-4-0"],
@@ -85,5 +85,66 @@ describe("anthropic config", () => {
         expect(cfg.options.model.default).toBe(expectedModel);
       }
     );
+  });
+
+  describe("sampling parameter guards", () => {
+    const buildBody = (overrides: Record<string, any>) =>
+      mapBody(config.mapBody, {
+        maxTokens: 1024,
+        prompt: [{ role: "user", content: "hi" }],
+        ...overrides,
+      });
+
+    it("drops temperature, top_p, and top_k for claude-opus-4-7", () => {
+      const body = buildBody({
+        model: "claude-opus-4-7",
+        temperature: 0.5,
+        topP: 0.9,
+        topK: 40,
+      });
+      expect(body.temperature).toBeUndefined();
+      expect(body.top_p).toBeUndefined();
+      expect(body.top_k).toBeUndefined();
+    });
+
+    it("drops top_p but keeps temperature on Claude 4.x when both are set", () => {
+      for (const model of [
+        "claude-opus-4-6",
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5",
+        "claude-sonnet-4-5",
+        "claude-opus-4-1-20250805",
+        "claude-sonnet-4-0",
+        "claude-opus-4-0",
+      ]) {
+        const body = buildBody({ model, temperature: 0.5, topP: 0.9 });
+        expect(body.temperature).toBe(0.5);
+        expect(body.top_p).toBeUndefined();
+      }
+    });
+
+    it("keeps top_p on Claude 4.x when temperature is not set", () => {
+      const body = buildBody({ model: "claude-sonnet-4-6", topP: 0.9 });
+      expect(body.top_p).toBe(0.9);
+    });
+
+    it("keeps both temperature and top_p on Claude 3.x", () => {
+      const body = buildBody({
+        model: "claude-3-7-sonnet-20250219",
+        temperature: 0.5,
+        topP: 0.9,
+      });
+      expect(body.temperature).toBe(0.5);
+      expect(body.top_p).toBe(0.9);
+    });
+
+    it("keeps top_k on Claude 4.x (non-Opus-4.7)", () => {
+      const body = buildBody({
+        model: "claude-sonnet-4-6",
+        temperature: 0.5,
+        topK: 40,
+      });
+      expect(body.top_k).toBe(40);
+    });
   });
 });

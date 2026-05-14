@@ -118,7 +118,7 @@ export interface Claude3Response {
       }
   )[];
   model: string;
-  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal";
+  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal" | "model_context_window_exceeded";
   stop_sequence: null | string;
   usage: {
     input_tokens: number;
@@ -606,9 +606,6 @@ export type AllUseLlmOptions = AllLlm & {
 
   // Anthropic - Claude 4.5 models
   "anthropic.claude-haiku-4-5": {
-    input: Omit<AnthropicRequest, "model">;
-  };
-  "anthropic.claude-opus-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
   "anthropic.claude-sonnet-4-5": {
