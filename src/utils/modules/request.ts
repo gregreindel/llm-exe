@@ -31,17 +31,25 @@ export async function apiRequest<T extends Record<string, any> | null>(
       let message = `HTTP error. Status: ${response.status}. Error Message: ${
         response?.statusText || "Unknown error."
       }`;
-      if (url.startsWith("https://api.openai.com/")) {
-        try {
-          const body = await response.json();
-          message = `HTTP error. Status Code: ${
-            response.status
-          }. Error Message: ${
-            body?.error?.message || "No further details provided."
-          }`;
-        } catch (error) {
-          // just use default error messaging
+      try {
+        const text = await response.text();
+        if (text) {
+          let detail = text;
+          try {
+            const body = JSON.parse(text);
+            detail =
+              body?.error?.message ||
+              body?.error ||
+              body?.message ||
+              text;
+            if (typeof detail !== "string") detail = JSON.stringify(detail);
+          } catch {
+            // body wasn't JSON; fall back to raw text
+          }
+          message = `HTTP error. Status Code: ${response.status}. Error Message: ${detail}`;
         }
+      } catch {
+        // body unreadable; keep default message
       }
       throw new Error(message);
     }
