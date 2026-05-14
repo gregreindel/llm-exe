@@ -648,6 +648,9 @@ export type AllUseLlmOptions = AllLlm & {
   "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
+  "google.gemini-3.1-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
   // Google - Deprecated
   "google.gemini-2.0-flash": {
     input: Omit<GeminiRequest, "model">;
