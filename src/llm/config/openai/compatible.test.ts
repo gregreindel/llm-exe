@@ -133,7 +133,7 @@ describe("createOpenAiCompatibleConfiguration", () => {
   });
 
   describe("effort transform", () => {
-    it("should return effort value for supported models", () => {
+    it("should return effort value for gpt-5 family models", () => {
       const config = createOpenAiCompatibleConfiguration({
         key: "custom.chat.v1",
         provider: "custom.chat",
@@ -145,10 +145,26 @@ describe("createOpenAiCompatibleConfiguration", () => {
         v: any,
         s: any
       ) => any;
-      expect(transform("low", { model: "gpt-5" })).toBe("low");
-      expect(transform("medium", { model: "gpt-5" })).toBe("medium");
-      expect(transform("high", { model: "gpt-5" })).toBe("high");
-      expect(transform("minimal", { model: "gpt-5" })).toBe("minimal");
+      expect(transform("low", { model: "gpt-5.2" })).toBe("low");
+      expect(transform("medium", { model: "gpt-5-mini" })).toBe("medium");
+      expect(transform("high", { model: "gpt-5-nano" })).toBe("high");
+      expect(transform("minimal", { model: "gpt-5.2" })).toBe("minimal");
+    });
+
+    it("should return effort value for o-series reasoning models", () => {
+      const config = createOpenAiCompatibleConfiguration({
+        key: "custom.chat.v1",
+        provider: "custom.chat",
+        endpoint: "https://api.custom.com/v1/chat",
+        apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
+      });
+
+      const transform = config.mapBody.effort.transform as (
+        v: any,
+        s: any
+      ) => any;
+      expect(transform("low", { model: "o3" })).toBe("low");
+      expect(transform("high", { model: "o4-mini" })).toBe("high");
     });
 
     it("should return undefined for unsupported models", () => {
@@ -164,6 +180,8 @@ describe("createOpenAiCompatibleConfiguration", () => {
         s: any
       ) => any;
       expect(transform("high", { model: "gpt-4o" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4.1" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4.1-mini" })).toBeUndefined();
     });
 
     it("should return undefined for invalid effort values", () => {
@@ -178,8 +196,8 @@ describe("createOpenAiCompatibleConfiguration", () => {
         v: any,
         s: any
       ) => any;
-      expect(transform("invalid", { model: "gpt-5" })).toBeUndefined();
-      expect(transform(123, { model: "gpt-5" })).toBeUndefined();
+      expect(transform("invalid", { model: "gpt-5.2" })).toBeUndefined();
+      expect(transform(123, { model: "o3" })).toBeUndefined();
     });
   });
 

@@ -459,6 +459,15 @@ export interface OpenAiRequest extends GenericLLm {
   useJson?: boolean;
 }
 
+export interface XAiRequest extends GenericLLm {
+  model: string;
+  frequencyPenalty?: number;
+  logitBias?: Record<string, any> | null;
+  responseFormat?: Record<string, any>;
+  xAiApiKey?: string;
+  useJson?: boolean;
+}
+
 export interface AmazonBedrockRequest extends GenericLLm {
   model: string;
   awsRegion?: string;
@@ -525,7 +534,7 @@ export type AllLlm = {
   //   // output: OpenAiRequest;
   // };
   "xai.chat.v1": {
-    input: GenericLLm;
+    input: XAiRequest;
     // output: OpenAiRequest;
   };
   "ollama.chat.v1": {
@@ -567,17 +576,18 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.o3": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "openai.o4-mini": {
-    input: Omit<OpenAiRequest, "model">;
-  };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
-    input: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o": {
     input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o-mini": {
+    input: Omit<OpenAiRequest, "model">;
+  };
+  // OpenAI - Deprecated
+  "openai.o4-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
 
@@ -588,7 +598,22 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Claude 4 models
+
+  // Anthropic - Claude 4.5 models
+  "anthropic.claude-haiku-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-opus-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  "anthropic.claude-sonnet-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
+  
+  // Anthropic - Deprecated
+  "anthropic.claude-opus-4-1": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   "anthropic.claude-sonnet-4-0": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -601,7 +626,6 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-opus-4": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Deprecated
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -614,48 +638,45 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-3-haiku": {
-    input: Omit<AnthropicRequest, "model">;
-  };
-
   // Google
-  "google.gemini-2.5-pro-exp-03-25": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash-lite": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
   "google.gemini-2.5-flash-lite": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-1.5-pro": {
+  "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.5-pro": {
+  // Google - Deprecated
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
 
   // xAI
   "xai.grok-2": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3-mini": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-fast": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
+  };
+  "xai.grok-4-1-fast": {
+    input: Omit<XAiRequest, "model">;
   };
 
   // Ollama
@@ -674,10 +695,28 @@ export type AllUseLlmOptions = AllLlm & {
   "ollama.qwq": {
     input: GenericLLm;
   };
+  "ollama.gemma3": {
+    input: GenericLLm;
+  };
+  "ollama.mistral": {
+    input: GenericLLm;
+  };
+  "ollama.qwen2.5": {
+    input: GenericLLm;
+  };
+  "ollama.qwen3": {
+    input: GenericLLm;
+  };
 
   // Deepseek
   "deepseek.chat": {
     input: DeepseekRequest;
+  };
+  "deepseek.v4-flash": {
+    input: Omit<DeepseekRequest, "model">;
+  };
+  "deepseek.v4-pro": {
+    input: Omit<DeepseekRequest, "model">;
   };
 };
 

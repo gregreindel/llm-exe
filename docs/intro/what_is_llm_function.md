@@ -66,7 +66,7 @@ credit card number: <true or false if this type of PII is included>`;
  * Somewhere else in your codebase
  */
 const input = "Hello! can you bill me? my cc is 4242-4242-4242-4242!!"
-const response = await piiDetector({ input })
+const response = await piiDetector(input)
 /**
  *
  * Output:
@@ -76,7 +76,7 @@ const response = await piiDetector({ input })
  *   socialSecurityNumber: false,
  *   creditCardNumber: true
  * }
- * /
+ */
 ```
 
 The input and output of the `piiDetector` function are strongly typed, providing reliable structure and safety when integrating with the rest of your application
