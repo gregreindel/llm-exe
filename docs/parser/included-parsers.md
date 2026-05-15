@@ -8,6 +8,10 @@
 The default parser. Doesn't really parse, it passes through the string response with no modification.
 Returns: string
 
+```ts
+const parser = createParser("string");
+```
+
 ::: code-group
 
 ```[Output]
@@ -313,6 +317,16 @@ Type: Fruit
 
 `json`
 Parse an expected stringified json object or array into a valid object. Schema can be passed in to enforce schema and provide default values.
+Returns: object | array
+
+```ts
+const parser = createParser("json");
+```
+
+Options:
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `schema` | `JSONSchema` | `undefined` | Optional JSON Schema to validate and enforce types on the output. Use with [`defineSchema`](/parser/index.html#defineschema) for full type inference. |
 
 ::: code-group
 
