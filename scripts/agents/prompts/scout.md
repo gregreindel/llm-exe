@@ -22,6 +22,7 @@ Check the official docs/changelogs for each provider llm-exe supports:
 2. **Deprecated models** — models we still reference that providers have sunset or plan to sunset.
 3. **API changes** — new parameters, changed response formats, new capabilities that multiple providers now support (e.g., if structured output becomes universal).
 4. **Breaking changes** — anything that could break our current provider implementations.
+5. **Migration Guides** — Are there migration guides for new models from old models? This often uncovers important details.
 
 ## What to Ignore
 
@@ -71,7 +72,7 @@ Check the official docs/changelogs for each provider llm-exe supports:
 
    e. Log your search queries, the matches you found, and your decision (NEW issue / commented on #N) in your run log so failures are auditable.
 
-7. For findings that pass dedup, decide how to file:
+7. For findings that pass dedupe, decide how to file:
 
    **If it's new and actionable:**
    - File an issue. Be specific — include the model ID, link to docs, what we'd need to change.
