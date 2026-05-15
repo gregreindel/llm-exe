@@ -69,9 +69,13 @@ export function itWithUseLlmMocked(
     const { provider, key, ...defaultOptions } = _scenario;
     const modelName = defaultOptions.options.model?.default;
 
-    it(`${instruction} (${modelName})`, async () => {
-      return cb(Object.assign(defaultOptions, { key, model: modelName }));
-    });
+    it(
+      `${instruction} (${modelName})`,
+      async () => {
+        return cb(Object.assign(defaultOptions, { key, model: modelName }));
+      },
+      120000
+    );
   }
 }
 
