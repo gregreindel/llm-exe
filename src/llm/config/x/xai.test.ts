@@ -53,4 +53,29 @@ describe("openai configuration", () => {
       expect(config.method).toBe("POST");
     });
   });
+
+  describe("effort transform", () => {
+    // Per xAI docs (checked 2026-05-13), reasoning_effort is only supported
+    // on grok-4.3 and grok-4.20-multi-agent. grok-4 specifically returns an
+    // error if reasoning_effort is sent. Since none of those models have
+    // shorthands here yet, effort must be dropped for every model we ship.
+    const transform = xai["xai.chat.v1"].mapBody.effort.transform as (
+      v: any,
+      s: any
+    ) => any;
+
+    it("drops effort for every currently-shipped xAI shorthand model", () => {
+      for (const model of [
+        "grok-2-latest",
+        "grok-3",
+        "grok-3-mini",
+        "grok-4",
+        "grok-4-fast-non-reasoning",
+        "grok-4-1-fast-non-reasoning",
+      ]) {
+        expect(transform("low", { model })).toBeUndefined();
+        expect(transform("high", { model })).toBeUndefined();
+      }
+    });
+  });
 });
