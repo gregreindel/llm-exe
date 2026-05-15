@@ -118,12 +118,15 @@ describe("configs", () => {
         },
         temperature: {
           key: "temperature",
+          transform: expect.any(Function),
         },
         topP: {
           key: "top_p",
+          transform: expect.any(Function),
         },
         topK: {
           key: "top_k",
+          transform: expect.any(Function),
         },
         stopSequences: {
           key: "stop_sequences",
