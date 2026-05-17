@@ -1,4 +1,5 @@
 import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
+import { CohereBedrockEmbedding } from "@/embedding/output/CohereBedrockEmbedding";
 import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
 import { EmbeddingProviderKey } from "@/types";
 
@@ -14,6 +15,8 @@ export function getEmbeddingOutputParser(
       return OpenAiEmbedding(response, config);
     case "amazon.embedding.v1":
       return AmazonTitanEmbedding(response, config);
+    case "amazon:cohere.embedding.v1":
+      return CohereBedrockEmbedding(response, config);
     default:
       throw new Error("Unsupported provider");
   }
