@@ -37,18 +37,25 @@ describe("llmUsingToolsSimple", () => {
     [
       "anthropic.claude-opus-4-7",
       "google.gemini-2.5-flash",
-      "xai.grok-4",
+      "xai.grok-3",
       "deepseek.chat",
+      {
+        key: "amazon:anthropic.chat.v1",
+        model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      },
     ],
     async (config: any) => {
       jest.resetModules();
 
-      // clone exe and mock useLlm
+      // clone exe and mock useLlm. Bump the per-call timeout — reasoning
+      // models routinely take longer than llm-exe's 30s default for tool-use
+      // prompts.
       jest.doMock("llm-exe", () => {
         const real = jest.requireActual("llm-exe");
         return {
           ...real,
-          useLlm: (_orig: string) => real.useLlm(config.key, config),
+          useLlm: (_orig: string) =>
+            real.useLlm(config.key, { ...config, timeout: 120000 }),
         };
       });
 
