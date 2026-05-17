@@ -1,10 +1,15 @@
 import { getEmbeddingOutputParser } from "@/embedding/output/getEmbeddingOutputParser";
 import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
+import { CohereBedrockEmbedding } from "@/embedding/output/CohereBedrockEmbedding";
 import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
 import { EmbeddingProviderKey } from "@/types";
 
 jest.mock("@/embedding/output/AmazonTitan", () => ({
   AmazonTitanEmbedding: jest.fn(),
+}));
+
+jest.mock("@/embedding/output/CohereBedrockEmbedding", () => ({
+  CohereBedrockEmbedding: jest.fn(),
 }));
 
 jest.mock("@/embedding/output/OpenAiEmbedding", () => ({
@@ -13,6 +18,7 @@ jest.mock("@/embedding/output/OpenAiEmbedding", () => ({
 
 describe("getEmbeddingOutputParser", () => {
   const AmazonTitanEmbeddingMock = AmazonTitanEmbedding as jest.Mock;
+  const CohereBedrockEmbeddingMock = CohereBedrockEmbedding as jest.Mock;
   const OpenAiEmbeddingMock = OpenAiEmbedding as jest.Mock;
 
   beforeEach(() => {
@@ -30,6 +36,7 @@ describe("getEmbeddingOutputParser", () => {
 
     expect(OpenAiEmbeddingMock).toHaveBeenCalledWith(response, config);
     expect(AmazonTitanEmbeddingMock).not.toHaveBeenCalled();
+    expect(CohereBedrockEmbeddingMock).not.toHaveBeenCalled();
   });
 
   it("should call AmazonTitanEmbedding when key is 'amazon.embedding.v1'", () => {
@@ -43,6 +50,21 @@ describe("getEmbeddingOutputParser", () => {
 
     expect(AmazonTitanEmbeddingMock).toHaveBeenCalledWith(response, config);
     expect(OpenAiEmbeddingMock).not.toHaveBeenCalled();
+    expect(CohereBedrockEmbeddingMock).not.toHaveBeenCalled();
+  });
+
+  it("should call CohereBedrockEmbedding when key is 'amazon:cohere.embedding.v1'", () => {
+    const config = {
+      model: "cohere.embed-english-v3",
+      key: "amazon:cohere.embedding.v1" as EmbeddingProviderKey,
+    };
+    const response = { some: "response" };
+
+    getEmbeddingOutputParser(config, response);
+
+    expect(CohereBedrockEmbeddingMock).toHaveBeenCalledWith(response, config);
+    expect(OpenAiEmbeddingMock).not.toHaveBeenCalled();
+    expect(AmazonTitanEmbeddingMock).not.toHaveBeenCalled();
   });
 
   it("should throw an error when key is unsupported", () => {
@@ -58,5 +80,6 @@ describe("getEmbeddingOutputParser", () => {
 
     expect(OpenAiEmbeddingMock).not.toHaveBeenCalled();
     expect(AmazonTitanEmbeddingMock).not.toHaveBeenCalled();
+    expect(CohereBedrockEmbeddingMock).not.toHaveBeenCalled();
   });
 });
