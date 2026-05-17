@@ -8,7 +8,7 @@ describe("llmUsingToolsSimple", () => {
   });
 
   const prompt =
-    "Hello what is the weather at longitude 30.278044 and latitude -96.675568?";
+    "Hello what is the weather at longitude -96.675568 and latitude 30.278044?";
 
   /**
    * This simple test will check if the function as-is is working as expected
@@ -24,8 +24,8 @@ describe("llmUsingToolsSimple", () => {
     expect(guards.isFunctionCall(fnCall)).toBe(true);
     expect(guards.isFunctionCall(fnCall) && fnCall.name).toBe("getWeather");
     expect(guards.isFunctionCall(fnCall) && fnCall.input).toEqual({
-      longitude: 30.278044,
-      latitude: -96.675568,
+      longitude: -96.675568,
+      latitude: 30.278044,
     });
   });
 
@@ -70,8 +70,8 @@ describe("llmUsingToolsSimple", () => {
       expect(guards.isFunctionCall(fnCall)).toBe(true);
       expect(guards.isFunctionCall(fnCall) && fnCall.name).toBe("getWeather");
       expect(guards.isFunctionCall(fnCall) && fnCall.input).toEqual({
-        longitude: 30.278044,
-        latitude: -96.675568,
+        longitude: -96.675568,
+        latitude: 30.278044,
       });
     }
   );
