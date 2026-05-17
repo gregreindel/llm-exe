@@ -52,6 +52,7 @@
 - [Embeddings](https://llm-exe.com/embeddings/index.html)
 - [OpenAI Embeddings](https://llm-exe.com/embeddings/openai.html)
 - [Amazon Embeddings](https://llm-exe.com/embeddings/amazon.html)
+- [Cohere Embeddings (via Bedrock)](https://llm-exe.com/embeddings/cohere.html)
 
 ### Callable
 - [Callable Executors](https://llm-exe.com/callable/index.html)
