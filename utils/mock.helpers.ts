@@ -57,17 +57,24 @@ export function debug(...args: any[]) {
   }
 }
 
+type LiveTestModel =
+  | keyof typeof configs
+  | { key: keyof typeof configs; model: string };
+
 export function itWithUseLlmMocked(
   instruction: string,
-  _models: keyof typeof configs | (keyof typeof configs)[],
+  _models: LiveTestModel | LiveTestModel[],
   cb: (...args: any[]) => any
 ) {
-  const models = useModels(Array.isArray(_models) ? _models : [_models]);
+  const list = Array.isArray(_models) ? _models : [_models];
 
-  for (let index = 0; index < models.length; index++) {
-    const _scenario = models[index];
-    const { provider, key, ...defaultOptions } = _scenario;
-    const modelName = defaultOptions.options.model?.default;
+  for (const entry of list) {
+    const key = typeof entry === "string" ? entry : entry.key;
+    const modelOverride = typeof entry === "string" ? undefined : entry.model;
+    const _scenario = configs[key];
+
+    const { provider, key: _key, ...defaultOptions } = _scenario;
+    const modelName = modelOverride ?? defaultOptions.options.model?.default;
 
     it(
       `${instruction} (${modelName})`,

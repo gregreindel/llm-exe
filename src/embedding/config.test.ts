@@ -34,6 +34,24 @@ describe("getEmbeddingConfig", () => {
     });
   });
 
+  it("should return the correct configuration for 'amazon:cohere.embedding.v1'", () => {
+    const provider: EmbeddingProviderKey = "amazon:cohere.embedding.v1";
+
+    (getEnvironmentVariable as jest.Mock).mockReturnValue("us-west-2");
+
+    const config = getEmbeddingConfig(provider);
+    expect(config).toEqual({
+      ...embeddingConfigs[provider],
+      options: {
+        ...embeddingConfigs[provider].options,
+        awsRegion: {
+          default: undefined,
+          required: [true, "aws region is required"],
+        },
+      },
+    });
+  });
+
   it("should throw an error for an invalid provider", () => {
     const invalidProvider = "invalid.provider" as EmbeddingProviderKey;
     expect(() => getEmbeddingConfig(invalidProvider)).toThrowError(
@@ -120,5 +138,61 @@ describe("embeddingConfigs", () => {
       },
       transformResponse: expect.any(Function),
     });
+  });
+
+  it("should contain 'amazon:cohere.embedding.v1' with correct values", () => {
+    const provider: EmbeddingProviderKey = "amazon:cohere.embedding.v1";
+    (getEnvironmentVariable as jest.Mock).mockReturnValue("us-west-2");
+
+    const config = embeddingConfigs[provider];
+
+    expect(config).toEqual({
+      key: "amazon:cohere.embedding.v1",
+      provider: "amazon:cohere.embedding",
+      endpoint: `https://bedrock-runtime.{{awsRegion}}.amazonaws.com/model/{{model}}/invoke`,
+      method: "POST",
+      headers: `{"Content-Type": "application/json" }`,
+      options: {
+        input: {},
+        inputType: {
+          default: "search_document",
+        },
+        truncate: {},
+        dimensions: {},
+        awsRegion: expect.objectContaining({
+          default: undefined,
+          required: [true, "aws region is required"],
+        }),
+        awsSecretKey: {},
+        awsAccessKey: {},
+      },
+      mapBody: {
+        input: {
+          key: "texts",
+          transform: expect.any(Function),
+        },
+        inputType: {
+          key: "input_type",
+        },
+        truncate: {
+          key: "truncate",
+        },
+        dimensions: {
+          key: "output_dimension",
+        },
+      },
+      transformResponse: expect.any(Function),
+    });
+  });
+
+  it("input transform on 'amazon:cohere.embedding.v1' wraps strings into arrays", () => {
+    const provider: EmbeddingProviderKey = "amazon:cohere.embedding.v1";
+    const config = embeddingConfigs[provider];
+    const transform = config.mapBody.input.transform as (
+      v: string | string[]
+    ) => string[];
+
+    expect(transform("hello")).toEqual(["hello"]);
+    expect(transform(["hello", "world"])).toEqual(["hello", "world"]);
   });
 });
