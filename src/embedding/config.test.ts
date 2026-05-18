@@ -100,7 +100,6 @@ describe("embeddingConfigs", () => {
           key: "encoding_format",
         },
       },
-      transformResponse: expect.any(Function),
     });
   });
 
@@ -136,7 +135,6 @@ describe("embeddingConfigs", () => {
           key: "dimensions",
         },
       },
-      transformResponse: expect.any(Function),
     });
   });
 
@@ -179,20 +177,70 @@ describe("embeddingConfigs", () => {
         },
         dimensions: {
           key: "output_dimension",
+          transform: expect.any(Function),
         },
       },
-      transformResponse: expect.any(Function),
+    });
+  });
+
+  describe("dimensions transform on 'amazon:cohere.embedding.v1'", () => {
+    const provider: EmbeddingProviderKey = "amazon:cohere.embedding.v1";
+    function getTransform() {
+      const transform =
+        embeddingConfigs[provider].mapBody.dimensions.transform;
+      if (!transform) {
+        throw new Error("dimensions transform is missing from config");
+      }
+      return transform;
+    }
+
+    it("drops the field when dimensions=1024 against Embed v3 (no-op, v3 returns 1024)", () => {
+      const transform = getTransform();
+      expect(
+        transform(1024, { model: "cohere.embed-english-v3" }, {})
+      ).toBeUndefined();
+      expect(
+        transform(1024, { model: "cohere.embed-multilingual-v3" }, {})
+      ).toBeUndefined();
+    });
+
+    it("throws when dimensions != 1024 against Embed v3 (don't silently mutate intent)", () => {
+      const transform = getTransform();
+      expect(() =>
+        transform(512, { model: "cohere.embed-english-v3" }, {})
+      ).toThrow(/Cohere Embed v3 only supports 1024-dimensional output/);
+      expect(() =>
+        transform(256, { model: "cohere.embed-multilingual-v3" }, {})
+      ).toThrow(/requested: 256/);
+    });
+
+    it("passes the value through for Embed v4 and unknown models (Cohere validates)", () => {
+      const transform = getTransform();
+      expect(transform(512, { model: "cohere.embed-v4:0" }, {})).toBe(512);
+      expect(transform(1024, { model: "cohere.embed-v4" }, {})).toBe(1024);
+      expect(transform(256, { model: "cohere.embed-v4:0" }, {})).toBe(256);
+      expect(transform(1536, { model: "cohere.embed-v4:0" }, {})).toBe(1536);
+    });
+
+    it("returns undefined when no dimensions value is supplied", () => {
+      const transform = getTransform();
+      expect(
+        transform(undefined, { model: "cohere.embed-v4:0" }, {})
+      ).toBeUndefined();
+      expect(
+        transform(undefined, { model: "cohere.embed-english-v3" }, {})
+      ).toBeUndefined();
     });
   });
 
   it("input transform on 'amazon:cohere.embedding.v1' wraps strings into arrays", () => {
     const provider: EmbeddingProviderKey = "amazon:cohere.embedding.v1";
-    const config = embeddingConfigs[provider];
-    const transform = config.mapBody.input.transform as (
-      v: string | string[]
-    ) => string[];
+    const transform = embeddingConfigs[provider].mapBody.input.transform;
+    if (!transform) {
+      throw new Error("input transform is missing from config");
+    }
 
-    expect(transform("hello")).toEqual(["hello"]);
-    expect(transform(["hello", "world"])).toEqual(["hello", "world"]);
+    expect(transform("hello", {}, {})).toEqual(["hello"]);
+    expect(transform(["hello", "world"], {}, {})).toEqual(["hello", "world"]);
   });
 });

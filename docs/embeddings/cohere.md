@@ -10,7 +10,7 @@ When using Cohere embeddings, llm-exe will make POST requests to the AWS Bedrock
 | `model` | `string` | — | The Bedrock model ID (e.g., `cohere.embed-english-v3`, `cohere.embed-multilingual-v3`, `cohere.embed-v4:0`) |
 | `inputType` | `"search_document" \| "search_query" \| "classification" \| "clustering"` | `"search_document"` | How Cohere should prepare the embedding. Use `search_document` for the corpus you index and `search_query` for queries you embed at search time |
 | `truncate` | `"NONE" \| "START" \| "END" \| "LEFT" \| "RIGHT"` | — | How over-length inputs are handled. `START`/`END` for v3, `LEFT`/`RIGHT` for v4. `NONE` returns an error if the input is too long |
-| `dimensions` | `number` | — | **Embed v4 only.** Output vector size: `256`, `512`, `1024`, or `1536`. Maps to Cohere's `output_dimension`. Embed v3 has a fixed 1024-dim output and rejects this field — leave it unset |
+| `dimensions` | `number` | — | Output vector size. For Embed v4: `256`, `512`, `1024`, or `1536` (maps to Cohere's `output_dimension`). For Embed v3: the model has a fixed 1024-dim output — passing `1024` is accepted as a no-op, any other value throws immediately so you don't silently get a different dimension than you asked for |
 | `awsRegion` | `string` | `AWS_REGION` env var | The AWS region for the Bedrock endpoint (required) |
 | `awsSecretKey` | `string` | — | AWS secret key (if not using default credentials) |
 | `awsAccessKey` | `string` | — | AWS access key (if not using default credentials) |
