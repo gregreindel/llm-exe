@@ -2,6 +2,7 @@ import { Config, EmbeddingProviderKey } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { OpenAiEmbedding } from "@/embedding/output/OpenAiEmbedding";
 import { AmazonTitanEmbedding } from "@/embedding/output/AmazonTitan";
+import { CohereBedrockEmbedding } from "@/embedding/output/CohereBedrockEmbedding";
 
 export const embeddingConfigs: {
   [key in EmbeddingProviderKey]: Config<EmbeddingProviderKey>;
@@ -66,6 +67,45 @@ export const embeddingConfigs: {
       },
     },
     transformResponse: AmazonTitanEmbedding as any,
+  },
+
+  "amazon:cohere.embedding.v1": {
+    key: "amazon:cohere.embedding.v1",
+    provider: "amazon:cohere.embedding",
+    endpoint: `https://bedrock-runtime.{{awsRegion}}.amazonaws.com/model/{{model}}/invoke`,
+    method: "POST",
+    headers: `{"Content-Type": "application/json" }`,
+    options: {
+      input: {},
+      inputType: {
+        default: "search_document",
+      },
+      truncate: {},
+      dimensions: {},
+      awsRegion: {
+        default: getEnvironmentVariable("AWS_REGION"),
+        required: [true, "aws region is required"],
+      },
+      awsSecretKey: {},
+      awsAccessKey: {},
+    },
+    mapBody: {
+      input: {
+        key: "texts",
+        transform: (value: string | string[]) =>
+          Array.isArray(value) ? value : [value],
+      },
+      inputType: {
+        key: "input_type",
+      },
+      truncate: {
+        key: "truncate",
+      },
+      dimensions: {
+        key: "output_dimension",
+      },
+    },
+    transformResponse: CohereBedrockEmbedding as any,
   },
 };
 
