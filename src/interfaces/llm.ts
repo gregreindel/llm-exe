@@ -407,6 +407,23 @@ export interface AmazonEmbeddingOptions extends GenericEmbeddingOptions {
   awsAccessKey?: string;
 }
 
+export interface CohereBedrockEmbeddingOptions
+  extends AmazonEmbeddingOptions {
+  inputType?:
+    | "search_document"
+    | "search_query"
+    | "classification"
+    | "clustering";
+  truncate?: "NONE" | "START" | "END" | "LEFT" | "RIGHT";
+}
+
+export interface CohereBedrockEmbeddingApiResponseOutput {
+  id?: string;
+  response_type?: string;
+  embeddings: number[][];
+  texts?: string[];
+}
+
 // theirs
 export interface OpenAiEmbeddingApiRequestInput {
   input: string;
@@ -505,6 +522,9 @@ export type AllEmbedding = {
   };
   "amazon.embedding.v1": {
     input: AmazonEmbeddingOptions;
+  };
+  "amazon:cohere.embedding.v1": {
+    input: CohereBedrockEmbeddingOptions;
   };
 };
 

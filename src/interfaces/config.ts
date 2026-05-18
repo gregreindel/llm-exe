@@ -10,6 +10,7 @@ export type LlmProvider =
   | "amazon:meta.chat"
   | "amazon:nova.chat"
   | "amazon.embedding"
+  | "amazon:cohere.embedding"
   | "xai.chat"
   | "google.chat"
   | "ollama.chat"

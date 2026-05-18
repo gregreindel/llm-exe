@@ -41,6 +41,7 @@ The returned object has a `.call(input)` method that returns a promise. The reso
 |----------|-----|---------|
 | OpenAI | `openai.embedding.v1` | [OpenAI Embeddings](./openai.md) |
 | Amazon Titan | `amazon.embedding.v1` | [Amazon Embeddings](./amazon.md) |
+| Cohere (via Bedrock) | `amazon:cohere.embedding.v1` | [Cohere Embeddings](./cohere.md) |
 
 ## Adding Custom Providers
 Custom embedding providers are not currently supported. If you need an embedding provider that isn't listed above, please open an issue.
