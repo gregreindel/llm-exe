@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   review:
-    if: startsWith(github.head_ref, 'agent/')
+    if: github.base_ref == 'development'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -45,7 +45,19 @@ jobs:
         run: |
           source ./scripts/agents/config.sh
           log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number }}")
-          prompt=$(sed -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" -e "s|\$LOG_FILE|$log_file|g" ./scripts/agents/prompts/reviewer.md)
+
+          head_ref="${{ github.event.pull_request.head.ref }}"
+          if echo "$head_ref" | grep -q '^agent/'; then
+            pr_context="This PR was opened by a bot agent (branch: ${head_ref}). It is automated code — hold it to the same standards but be aware it may follow mechanical patterns."
+          else
+            pr_context="This PR was opened by a human contributor (branch: ${head_ref}). Review it as you would any community contribution."
+          fi
+
+          prompt=$(sed \
+            -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" \
+            -e "s|\$LOG_FILE|$log_file|g" \
+            -e "s|\$PR_CONTEXT|${pr_context}|g" \
+            ./scripts/agents/prompts/reviewer.md)
           echo "$prompt" > /tmp/review-prompt.txt
           echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
 
@@ -70,6 +82,27 @@ jobs:
           name: agent-prompt-${{ github.run_id }}
           path: /tmp/review-prompt.txt
           retention-days: 7
+
+      - name: Approve PR (high confidence verdict only)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f /tmp/review-verdict.txt ]; then
+            echo "No verdict file found - skipping approval."
+            exit 0
+          fi
+          verdict=$(cat /tmp/review-verdict.txt | tr -d '[:space:]')
+          echo "Verdict: $verdict"
+          if [ "$verdict" = "approve-high-confidence" ]; then
+            gh pr review ${{ github.event.pull_request.number }} \
+              --repo ${{ github.repository }} \
+              --approve \
+              --body "Approved by reviewer agent (high confidence)."
+            echo "PR approved."
+          else
+            echo "Verdict '$verdict' does not meet high-confidence threshold - no approval submitted."
+          fi
 
       - name: Clock out
         if: always()
