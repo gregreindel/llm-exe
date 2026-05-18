@@ -83,26 +83,34 @@ jobs:
           path: /tmp/review-prompt.txt
           retention-days: 7
 
-      - name: Approve PR (high confidence verdict only)
+      - name: Stage PR for approval
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ ! -f /tmp/review-verdict.txt ]; then
-            echo "No verdict file found - skipping approval."
+            echo "No verdict file found - skipping."
             exit 0
           fi
           verdict=$(cat /tmp/review-verdict.txt | tr -d '[:space:]')
           echo "Verdict: $verdict"
-          if [ "$verdict" = "approve-high-confidence" ]; then
-            gh pr review ${{ github.event.pull_request.number }} \
-              --repo ${{ github.repository }} \
-              --approve \
-              --body "Approved by reviewer agent (high confidence)."
-            echo "PR approved."
-          else
-            echo "Verdict '$verdict' does not meet high-confidence threshold - no approval submitted."
+          if [ "$verdict" != "approve-high-confidence" ]; then
+            echo "Verdict '$verdict' does not meet high-confidence threshold - no approval staged."
+            exit 0
           fi
+
+          # Ensure the label exists on the repo (idempotent)
+          gh label create "reviewer:approved" \
+            --color "0e7490" \
+            --description "Bot reviewer approved, pending CI" \
+            --repo ${{ github.repository }} 2>/dev/null || true
+
+          # Apply label — auto-approve-pr.yml picks this up when checks pass
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --add-label "reviewer:approved" \
+            --repo ${{ github.repository }}
+
+          echo "PR #${{ github.event.pull_request.number }} staged for approval (label applied). Approval submitted when CI passes."
 
       - name: Clock out
         if: always()
