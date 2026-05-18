@@ -15,6 +15,8 @@ Automated agents that maintain the llm-exe repo — docs, tests, code fixes, and
 
 **On agent PRs** — when any agent opens a PR from an `agent/*` branch, the `agent-review-pr` workflow triggers the reviewer agent to approve or request changes.
 
+**On workflow source changes** - when any file under `.github/workflows/`, `.github/actions/`, `scripts/agents/prompts/`, `scripts/agents/config.sh`, `scripts/maintain.sh`, or `package.json` is merged to `development`, the `docs-sync` workflow runs the docs-sync agent. It reads the diff, maps changed files to their deep-dive docs in `.github/docs/*_DEEP_DIVE.md`, and opens a PR with the corresponding documentation updates.
+
 Each agent gets a 10-minute time budget with a hard timeout.
 
 ## What you do
@@ -29,6 +31,7 @@ Each agent gets a 10-minute time budget with a hard timeout.
 ./scripts/maintain.sh docs
 ./scripts/maintain.sh tester
 ./scripts/maintain.sh coder
+./scripts/maintain.sh docs-sync          # sync workflow deep dives against current source
 ./scripts/maintain.sh beginner       # single persona
 ./scripts/maintain.sh personas       # all personas
 ./scripts/maintain.sh curator
@@ -51,6 +54,8 @@ scripts/
       docs.md                    # Docs agent prompt
       tester.md                  # Test agent prompt
       coder.md                   # Code agent prompt
+      scout.md                   # Scout agent prompt
+      docs-sync.md               # Workflow-docs sync agent prompt
       curator.md                 # Curator prompt
       reviewer.md                # PR reviewer prompt
       _persona.md                # Base persona template

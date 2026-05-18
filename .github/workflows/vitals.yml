@@ -1,0 +1,81 @@
+name: Vitals
+
+# Refreshes AUTOMATION.md (the live dashboard at the repo root) so anyone
+# landing on the repo sees the actual current state of the automation
+# system, not what the docs say it ought to be.
+#
+# Loop prevention:
+#   - This workflow has NO push trigger. It cannot be triggered by its
+#     own commit to development.
+#   - The commit message includes [skip ci] so workflows that DO listen
+#     to push events skip this commit.
+#   - AUTOMATION.md lives at the repo root, outside any docs-sync or
+#     workflow-source path filter. Other workflows do not retrigger on
+#     vitals updates.
+
+on:
+  schedule:
+    - cron: "0 8 * * *"  # daily at 8am UTC (3am CT), same window as the other agents
+  workflow_dispatch:
+
+concurrency:
+  group: vitals
+  cancel-in-progress: true
+
+permissions:
+  # Minimum needed:
+  #   contents: write - commit the regenerated AUTOMATION.md to development
+  #   pull-requests: read - gh pr list for stale-PR and dev-to-main draft queries
+  #   issues: read - gh issue list for open-count and label-count queries
+  # We do NOT request actions:read (no gh run list calls; status comes from
+  # shields.io URLs at view time) nor id-token:write (no OIDC).
+  contents: write
+  pull-requests: read
+  issues: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.actor != 'llm-exe-bot[bot]' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "llm-exe-bot[bot]"
+          git config user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
+
+      - name: Generate AUTOMATION.md
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          bash .github/vitals/generate.sh AUTOMATION.md
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet AUTOMATION.md 2>/dev/null && [ -z "$(git status --porcelain AUTOMATION.md)" ]; then
+            echo "::notice::No vitals changes this run."
+            exit 0
+          fi
+          git add AUTOMATION.md
+          git commit -m "chore: refresh automation vitals [skip ci]"
+          # Use a small retry to absorb the rare race against a parallel commit
+          # to development. If push fails, pull rebase and retry once.
+          if ! git push origin development; then
+            echo "::warning::push failed, rebasing and retrying"
+            git pull --rebase origin development
+            git push origin development
+          fi
