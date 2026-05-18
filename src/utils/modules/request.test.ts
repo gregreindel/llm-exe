@@ -153,6 +153,101 @@ describe("apiRequest", () => {
   });
   
 
+  it("extracts the error string from body.error when it is a string", async () => {
+    globalFetch.mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: jest
+        .fn()
+        .mockResolvedValue(JSON.stringify({ error: "Forbidden by policy" })),
+      json: jest.fn(),
+      headers: new Headers({ "content-type": "application/json" }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status Code: 403. Error Message: Forbidden by policy`
+    );
+  });
+
+  it("extracts body.message when body.error is absent", async () => {
+    globalFetch.mockResolvedValue({
+      ok: false,
+      status: 422,
+      text: jest
+        .fn()
+        .mockResolvedValue(JSON.stringify({ message: "Validation failed" })),
+      json: jest.fn(),
+      headers: new Headers({ "content-type": "application/json" }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status Code: 422. Error Message: Validation failed`
+    );
+  });
+
+  it("JSON-stringifies detail when it resolves to a non-string value", async () => {
+    globalFetch.mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: jest
+        .fn()
+        .mockResolvedValue(
+          JSON.stringify({ error: { code: "BAD_REQUEST", details: [1, 2] } })
+        ),
+      json: jest.fn(),
+      headers: new Headers({ "content-type": "application/json" }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status Code: 400. Error Message: {"code":"BAD_REQUEST","details":[1,2]}`
+    );
+  });
+
+  it("falls back to raw text when JSON body has no error or message fields", async () => {
+    const rawJson = JSON.stringify({ code: 123, info: "unexpected shape" });
+    globalFetch.mockResolvedValue({
+      ok: false,
+      status: 418,
+      text: jest.fn().mockResolvedValue(rawJson),
+      json: jest.fn(),
+      headers: new Headers({ "content-type": "application/json" }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status Code: 418. Error Message: ${rawJson}`
+    );
+  });
+
+  it("falls back to default message when text() itself throws", async () => {
+    globalFetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+      text: jest.fn().mockRejectedValue(new Error("stream consumed")),
+      json: jest.fn(),
+      headers: new Headers({ "content-type": "application/json" }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status: 503. Error Message: Service Unavailable`
+    );
+  });
+
+  it("falls back to 'Unknown error.' when statusText is empty", async () => {
+    globalFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "",
+      text: jest.fn().mockRejectedValue(new Error("unreadable")),
+      json: jest.fn(),
+      headers: new Headers({ "content-type": "application/json" }),
+    } as unknown as Response);
+
+    await expect(apiRequest(url)).rejects.toThrow(
+      `Request to ${url} failed: HTTP error. Status: 500. Error Message: Unknown error.`
+    );
+  });
+
   it("should handle null responses correctly", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
