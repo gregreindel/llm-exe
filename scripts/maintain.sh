@@ -34,7 +34,7 @@ ${context}"
   fi
 }
 
-TASK_AGENTS=(docs tester coder scout)
+TASK_AGENTS=(docs tester coder scout docs-sync)
 PERSONAS=(beginner harsh-critic speed-runner enterprise)
 
 usage() {
@@ -45,6 +45,7 @@ Task agents (create branches, make changes, open PRs):
   docs           Documentation agent
   tester         Test coverage agent
   coder          Code fix/feature agent
+  docs-sync      Keep workflow deep-dive docs in sync with workflow source files
 
 Research:
   scout          Monitor provider docs for new models, deprecations, API changes
@@ -223,7 +224,7 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
 fi
 
 case "$1" in
-  docs|tester|coder|scout)
+  docs|tester|coder|scout|docs-sync)
     run_task_agent "$1"
     ;;
   beginner|harsh-critic|speed-runner|enterprise)
