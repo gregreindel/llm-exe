@@ -10,6 +10,7 @@
       "gpt-4.1-nano",
       "o3",
       "o4-mini",
+      "gpt-4",
       "gpt-4o",
       "gpt-4o-mini"
     ]
@@ -28,8 +29,7 @@
       "claude-3-7-sonnet",
       "claude-3-5-sonnet",
       "claude-3-5-haiku",
-      "claude-3-opus",
-      "claude-3-haiku"
+      "claude-3-opus"
     ]
   },
   "google": {
@@ -49,7 +49,7 @@
   },
   "xai": {
     "name": "xAI",
-    "models": ["grok-2", "grok-3", "grok-3-mini", "grok-4", "grok-4-fast"]
+    "models": ["grok-2", "grok-3", "grok-3-mini", "grok-4", "grok-4-fast", "grok-4-1-fast"]
   },
   "amazon:anthropic": {
     "name": "Amazon Bedrock - Anthropic",
