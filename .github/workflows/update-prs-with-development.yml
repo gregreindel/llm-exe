@@ -1,8 +1,8 @@
 name: Update Open PRs with Development
 
 on:
-  push:
-    branches: [development]
+  # push:
+  #   branches: [development]
   workflow_dispatch:
 
 permissions:
