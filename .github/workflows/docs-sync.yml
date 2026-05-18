@@ -1,24 +1,14 @@
 name: Docs Sync
 
 # Keeps the workflow deep-dive markdown files in sync with the workflow YAML
-# and its dependencies. Triggered when source files change; the docs-sync
-# agent opens a PR with the matching doc updates.
+# and its dependencies. Always invoked via workflow_dispatch — either manually
+# or by docs-sync-trigger.yml which handles the push detection.
 #
-# Loop prevention: the paths filter intentionally EXCLUDES .github/docs/*.md and
-# scripts/agents/logs/** so the bot's own doc PRs do not retrigger this
-# workflow when merged. Do not add those paths.
+# claude-code-action@v1 does not support the push event type, so push
+# detection is separated into docs-sync-trigger.yml which dispatches this
+# workflow with the changed file list pre-computed.
 
 on:
-  push:
-    branches: [development]
-    paths:
-      - '.github/workflows/**'
-      - '.github/actions/**'
-      - '.github/vitals/**'
-      - 'scripts/maintain.sh'
-      - 'scripts/agents/config.sh'
-      - 'scripts/agents/prompts/**'
-      - 'package.json'
   workflow_dispatch:
     inputs:
       target:
