@@ -308,6 +308,10 @@ export default defineConfig({
             text: "Amazon",
             link: "/embeddings/amazon.html",
           },
+          {
+            text: "Cohere (via Bedrock)",
+            link: "/embeddings/cohere.html",
+          },
         ],
       },
       {
