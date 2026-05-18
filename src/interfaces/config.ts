@@ -144,5 +144,11 @@ export interface Config<Pk = LlmProviderKey> {
       config?: Config
     ) => Record<string, any>;
   };
-  transformResponse: (result: any, _config?: Config<any>) => OutputResult;
+  /**
+   * Optional response transformer for chat/LLM configs. The LLM call path
+   * (`llm.call.ts`) defaults to `OutputDefault` when this is omitted.
+   * Embedding configs do not use this — their flow dispatches via
+   * `getEmbeddingOutputParser` instead.
+   */
+  transformResponse?: (result: any, _config?: Config<any>) => OutputResult;
 }
