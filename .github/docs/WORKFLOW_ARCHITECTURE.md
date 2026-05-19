@@ -34,7 +34,7 @@ The repository runs three layers of automation, each with a different cadence an
 | Release pipeline | Promote work from `development` to `main`, bump versions, draft releases, publish to npm, deploy docs to AWS S3 plus CloudFront. | Pull request events, release events, manual dispatch | End users of the npm package |
 | Infrastructure hygiene | Test matrix on PRs, cache cleanup on PR close, weekly email digest, bot mention responder. | PR events, release events, scheduled crons, issue comments | CI health and maintainer awareness |
 
-There are nineteen GitHub Actions workflow files, two reusable composite actions, one shell entry point (`scripts/maintain.sh`), one shared config library (`scripts/agents/config.sh`), nine Markdown prompt files, and a writable `scripts/agents/logs/` directory that the agents both read from and append to across runs.
+There are twenty GitHub Actions workflow files, two reusable composite actions, one shell entry point (`scripts/maintain.sh`), one shared config library (`scripts/agents/config.sh`), nine Markdown prompt files, and a writable `scripts/agents/logs/` directory that the agents both read from and append to across runs.
 
 ---
 
