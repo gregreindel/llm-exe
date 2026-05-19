@@ -1,9 +1,29 @@
-name: Agent Review PR
+name: Agent / Review PR
 
 on:
   pull_request:
-    types: [opened]
+    # opened   - initial PR creation (runs tests + review + decide)
+    # synchronize - new commits pushed / rebase from update-prs-with-development
+    #              (runs tests only; review is gated to opened so the agent
+    #               does not re-review on every rebase)
+    types: [opened, synchronize]
     branches: [main, development]
+
+  # Dispatched by bot-respond.yml when a maintainer comments "@llm-exe-bot re-review"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: string
+      base_ref:
+        description: "Base branch of the PR (e.g. development)"
+        required: true
+        type: string
+      head_ref:
+        description: "Head branch of the PR"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -12,10 +32,50 @@ permissions:
   id-token: write
 
 jobs:
+  # Runs in parallel with review. Result is consumed by the decide job.
+  # Mirrors tests.yml exactly (matrix, cache action, npm install, npm run test).
+  # Coverage upload is intentionally omitted — that is tests.yml's responsibility on main PRs.
+  tests:
+    if: github.base_ref == 'development' || (github.event_name == 'workflow_dispatch' && inputs.base_ref == 'development')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x, 22.x, 24.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout PR (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: gh pr checkout ${{ inputs.pr_number }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test
+
+  # Runs in parallel with tests. Exposes verdict as a job output for decide.
+  # Gated to opened only — no point re-reviewing on synchronize (rebase) events.
   review:
-    if: startsWith(github.head_ref, 'agent/')
+    if: (github.base_ref == 'development' && github.event.action == 'opened') || (github.event_name == 'workflow_dispatch' && inputs.base_ref == 'development')
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      verdict: ${{ steps.verdict.outputs.verdict }}
 
     steps:
       - name: Generate bot token
@@ -44,8 +104,20 @@ jobs:
         id: prompt
         run: |
           source ./scripts/agents/config.sh
-          log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number }}")
-          prompt=$(sed -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" -e "s|\$LOG_FILE|$log_file|g" ./scripts/agents/prompts/reviewer.md)
+          log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number || inputs.pr_number }}")
+
+          head_ref="${{ github.event.pull_request.head.ref || inputs.head_ref }}"
+          if echo "$head_ref" | grep -q '^agent/'; then
+            pr_context="This PR was opened by a bot agent (branch: ${head_ref}). It is automated code - hold it to the same standards but be aware it may follow mechanical patterns."
+          else
+            pr_context="This PR was opened by a human contributor (branch: ${head_ref}). Review it as you would any community contribution."
+          fi
+
+          prompt=$(sed \
+            -e "s|\$PR_NUMBER|${{ github.event.pull_request.number || inputs.pr_number }}|g" \
+            -e "s|\$LOG_FILE|$log_file|g" \
+            -e "s|\$PR_CONTEXT|${pr_context}|g" \
+            ./scripts/agents/prompts/reviewer.md)
           echo "$prompt" > /tmp/review-prompt.txt
           echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
 
@@ -63,8 +135,83 @@ jobs:
             --max-turns 30
             --model claude-opus-4-6
 
+      - name: Upload agent prompt
+        if: steps.prompt.outputs.log_file != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-prompt-${{ github.run_id }}
+          path: /tmp/review-prompt.txt
+          retention-days: 7
+
+      - name: Read verdict
+        id: verdict
+        if: always()
+        run: |
+          if [ -f /tmp/review-verdict.txt ]; then
+            v=$(cat /tmp/review-verdict.txt | tr -d '[:space:]')
+          else
+            v="no-verdict"
+          fi
+          echo "verdict=$v" >> "$GITHUB_OUTPUT"
+
       - name: Clock out
         if: always()
         run: |
           source ./scripts/agents/config.sh
           clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
+
+  # Waits for both tests and review. Approves only when both pass.
+  # Split-token pattern:
+  #   --approve uses GITHUB_TOKEN (github-actions[bot]) because the bot token cannot approve its own PRs.
+  #   gh pr ready uses the bot App token because GITHUB_TOKEN cannot call markPullRequestReadyForReview
+  #   ("Resource not accessible by integration" error).
+  decide:
+    needs: [tests, review]
+    if: always() && (github.base_ref == 'development' || (github.event_name == 'workflow_dispatch' && inputs.base_ref == 'development'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Approve or skip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BOT_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          verdict="${{ needs.review.outputs.verdict }}"
+          tests_result="${{ needs.tests.result }}"
+
+          echo "Review verdict : $verdict"
+          echo "Tests result   : $tests_result"
+
+          if [ "$verdict" = "approve" ] && [ "$tests_result" = "success" ]; then
+            gh pr review ${{ github.event.pull_request.number || inputs.pr_number }} \
+              --approve \
+              --body "Approved by reviewer agent (tests passing)." \
+              --repo ${{ github.repository }}
+
+            # Only promote draft -> ready for agent-opened PRs (branch prefix agent/).
+            # Human PRs stay in whatever draft state the author left them in.
+            head_ref="${{ github.event.pull_request.head.ref || inputs.head_ref }}"
+            if echo "$head_ref" | grep -q '^agent/'; then
+              IS_DRAFT=$(gh pr view ${{ github.event.pull_request.number || inputs.pr_number }} \
+                --json isDraft --jq '.isDraft' \
+                --repo ${{ github.repository }})
+              if [ "$IS_DRAFT" = "true" ]; then
+                GH_TOKEN="$BOT_TOKEN" gh pr ready ${{ github.event.pull_request.number || inputs.pr_number }} --repo ${{ github.repository }}
+                echo "PR marked as ready for review."
+              fi
+            else
+              echo "Human PR (branch: $head_ref) — skipping gh pr ready."
+            fi
+
+            echo "PR #${{ github.event.pull_request.number || inputs.pr_number }} approved."
+          else
+            echo "No approval submitted: verdict='$verdict', tests='$tests_result'."
+          fi
