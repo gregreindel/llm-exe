@@ -162,7 +162,7 @@ jobs:
             Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch"
-            --max-turns 50
+            --max-turns 80
             --model claude-opus-4-6
 
       - name: Upload agent prompt
