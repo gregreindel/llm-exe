@@ -3,7 +3,7 @@ name: Run Tests
 on:
   workflow_dispatch:
   pull_request:
-    branches: ["main", "development"]
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
