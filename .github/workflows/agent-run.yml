@@ -164,6 +164,14 @@ jobs:
             --max-turns 50
             --model claude-opus-4-6
 
+      - name: Upload agent prompt
+        if: steps.prompt.outputs.log_file != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-prompt-${{ github.run_id }}
+          path: /tmp/agent-prompt.txt
+          retention-days: 7
+
       - name: Clock out
         if: always()
         run: |
