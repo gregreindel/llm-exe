@@ -1,4 +1,4 @@
-name: Docs Sync Trigger
+name: Agent / Docs Sync Trigger
 
 # Detects source file changes on push to development and dispatches the
 # docs-sync workflow. This separation exists because claude-code-action@v1
