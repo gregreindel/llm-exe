@@ -1,4 +1,4 @@
-name: Docs Sync
+name: Agent / Docs Sync
 
 # Keeps the workflow deep-dive markdown files in sync with the workflow YAML
 # and its dependencies. Always invoked via workflow_dispatch — either manually
