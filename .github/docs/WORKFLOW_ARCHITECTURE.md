@@ -34,7 +34,7 @@ The repository runs three layers of automation, each with a different cadence an
 | Release pipeline | Promote work from `development` to `main`, bump versions, draft releases, publish to npm, deploy docs to AWS S3 plus CloudFront. | Pull request events, release events, manual dispatch | End users of the npm package |
 | Infrastructure hygiene | Test matrix on PRs, cache cleanup on PR close, weekly email digest, bot mention responder. | PR events, release events, scheduled crons, issue comments | CI health and maintainer awareness |
 
-There are twenty GitHub Actions workflow files, two reusable composite actions, one shell entry point (`scripts/maintain.sh`), one shared config library (`scripts/agents/config.sh`), nine Markdown prompt files, and a writable `scripts/agents/logs/` directory that the agents both read from and append to across runs.
+There are twenty-one GitHub Actions workflow files, two reusable composite actions, one shell entry point (`scripts/maintain.sh`), one shared config library (`scripts/agents/config.sh`), nine Markdown prompt files, and a writable `scripts/agents/logs/` directory that the agents both read from and append to across runs.
 
 ---
 
@@ -55,7 +55,7 @@ flowchart LR
     T["Events<br/>cron, dispatch, PR, release,<br/>issue_comment, workflow_run, push"]:::trig
     A["Agent layer<br/>8 workflows, LLM-driven"]:::agent
     R["Release pipeline<br/>6 workflows, development to npm + S3"]:::rel
-    H["CI hygiene<br/>5 workflows, tests + caches + rebases"]:::hyg
+    H["CI hygiene<br/>6 workflows, tests + caches + rebases"]:::hyg
     X["External services<br/>Anthropic, GitHub, npm, AWS, Microsoft Graph"]:::ext
 
     T --> A
@@ -155,6 +155,7 @@ flowchart LR
     T3["pack-package<br/>tarball artifact"]:::job
     T4["cache-cleanup<br/>Actions cache GC"]:::job
     T5["update-prs-with-development<br/>on-demand rebase"]:::job
+    T6["test-github-action<br/>smoke-test llm-exe action"]:::job
 
     p --> T1
     p --> T3
@@ -165,6 +166,7 @@ flowchart LR
     d --> T3
     d --> T4
     d --> T5
+    d --> T6
 ```
 
 ### 2.5. Identity and runtime (shared infrastructure)
@@ -220,6 +222,7 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `docs-sync-trigger.yml` | no | none | none | none | `push` to `development` on workflow/action/script paths; dispatches `docs-sync.yml` |
 | `docs-sync.yml` | yes, with `target` (string) and `full_refresh` (boolean) inputs | none | none | none | invoked by `docs-sync-trigger.yml` or manual dispatch |
 | `vitals.yml` | yes, no inputs | `0 8 * * *` daily | none | none | regenerates AUTOMATION.md on development |
+| `test-github-action.yml` | yes, with `provider` (choice: `openai.chat.v1`, `anthropic.chat.v1`) and `model` (string, default `gpt-4o-mini`) | none | none | none | none |
 
 ### Concurrency groups
 
@@ -256,6 +259,7 @@ Every system outside this repository that one or more workflows depend on at run
 | Provider documentation sites | `scout` agent inside `agent-run.yml` | Anonymous HTTPS | Detects new and deprecated LLM models. URLs are hard-coded in `scripts/agents/prompts/scout.md`. |
 | Coveralls | `tests.yml` | `coverallsapp/github-action@v1` token resolution | Uploads coverage for the Node 24 matrix leg only. |
 | `gh` CLI extension `actions/gh-actions-cache` | `cache-cleanup.yml` | Bot token | Lists and deletes Actions cache entries by ref. |
+| `llm-exe/github-action@v1` Marketplace action | `test-github-action.yml` | `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` env vars | Runs a smoke test of the external llm-exe GitHub Action with a real LLM call. |
 
 ---
 
@@ -277,7 +281,7 @@ Stored under repository or organization secrets:
 | `APP_ID` | App-token minting in every workflow that needs the bot. |
 | `APP_PRIVATE_KEY` | Same. |
 | `CLAUDE_CODE_OAUTH_TOKEN` | Every agent workflow that invokes `anthropics/claude-code-action@v1`. |
-| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY` | `test-package.yml` and `publish-release.yml` (run-examples-tests job), scoped to the `Examples Test` environment. |
+| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY` | `test-package.yml` and `publish-release.yml` (run-examples-tests job), scoped to the `Examples Test` environment. Also `test-github-action.yml` (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY` only). |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (env-scoped) | `publish-release.yml` run-examples-tests job, scoped to `Examples Test` environment. |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | `agent-digest.yml` token exchange against Microsoft identity. |
 | `SMTP_USERNAME` | `agent-digest.yml` Graph mail sender. |
@@ -335,7 +339,8 @@ The minimal tree, annotated with why each path exists. A replica must reproduce 
 │   │   ├── deploy-docs.yml               on release published from main or manual dispatch from development or main: builds VitePress docs, ships to S3 versioned folder, rotates CloudFront OriginPath, invalidates /*
 │   │   ├── docs-sync-trigger.yml        detects workflow/script changes on push to development, dispatches docs-sync.yml
 │   │   ├── docs-sync.yml                keeps workflow deep-dive markdown in sync with source; invoked by trigger or manual dispatch
-│   │   └── vitals.yml                   daily cron + dispatch; regenerates AUTOMATION.md on development
+│   │   ├── vitals.yml                   daily cron + dispatch; regenerates AUTOMATION.md on development
+│   │   └── test-github-action.yml        dispatch only: smoke-tests llm-exe/github-action@v1 with a real LLM call and assertion
 │   └── WORKFLOW_ARCHITECTURE.md          this document
 ├── scripts/
 │   ├── maintain.sh                       local entry point; same prompt assembly as CI but runs claude interactively
@@ -842,6 +847,20 @@ PR body truncation: capped at 65000 characters.
 | Versioning | `PACKAGE_ID = <package.json version>-<unix-timestamp>`; injected into `docs/.env` as `VITE_PACKAGE_ID` so the built site knows its own identifier. |
 | Build | `npm run docs:update-providers && npm run docs:build`. Output at `docs/.vitepress/dist`. |
 | Ship | Copy to `s3://<bucket>/docs/<PACKAGE_ID>/`. Pull current CloudFront distribution config, set `.Origins.Items[0].OriginPath = "/docs/<PACKAGE_ID>"`, update with the captured ETag, invalidate `/*`. |
+
+### 9.18. `test-github-action.yml` - Smoke test for llm-exe GitHub Action
+
+| Field | Value |
+|-------|-------|
+| Trigger | `workflow_dispatch` with `provider` (choice: `openai.chat.v1`, `anthropic.chat.v1`) and `model` (string, default `gpt-4o-mini`) |
+| Permissions | `contents: read` |
+| Timeout | 5 minutes |
+| External action | `llm-exe/github-action@v1` |
+| Secrets | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` (passed as env vars to the action step) |
+| Behavior | Calls the external action with a system prompt, a Handlebars-templated message (`"Return exactly this text and nothing else: llm-exe action smoke test for {{name}}"`), data (`{"name": "GitHub Actions"}`), and parser `string`. Asserts that both `outputs.result` and `outputs.json` are non-empty, and that `outputs.result` contains the expected rendered string. |
+| Output | Pass/fail status only. No artifacts, no PRs, no issues. |
+
+This workflow is standalone: it does not interact with any other workflow in the repo. It exists so the maintainer can verify that the external `llm-exe/github-action` works end to end with real provider credentials.
 
 ---
 

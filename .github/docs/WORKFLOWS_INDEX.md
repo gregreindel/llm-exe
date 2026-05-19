@@ -40,6 +40,7 @@ flowchart LR
         H3["pack-package"]:::hyg
         H4["cache-cleanup"]:::hyg
         H5["update-prs-with-development"]:::hyg
+        H6["test-github-action"]:::hyg
     end
 
     A1 -- opens PR --> A4
@@ -101,6 +102,7 @@ flowchart LR
 | [pack-package.yml](../workflows/pack-package.yml) | PR closed to development + dispatch | Build + npm pack, uploads .tgz artifact (30-day retention) | [PACK_PACKAGE_DEEP_DIVE.md](PACK_PACKAGE_DEEP_DIVE.md) |
 | [cache-cleanup.yml](../workflows/cache-cleanup.yml) | PR closed + release published + dispatch | Deletes Actions caches scoped to the closed PR or release ref | [CACHE_CLEANUP_DEEP_DIVE.md](CACHE_CLEANUP_DEEP_DIVE.md) |
 | [update-prs-with-development.yml](../workflows/update-prs-with-development.yml) | Dispatch only | Rebases every non-draft open PR targeting development | [UPDATE_PRS_DEEP_DIVE.md](UPDATE_PRS_DEEP_DIVE.md) |
+| [test-github-action.yml](../workflows/test-github-action.yml) | Dispatch only | Smoke-tests the external llm-exe/github-action with a real LLM call | [TEST_GITHUB_ACTION_DEEP_DIVE.md](TEST_GITHUB_ACTION_DEEP_DIVE.md) |
 
 ---
 
@@ -112,11 +114,12 @@ flowchart LR
     classDef md fill:#1e3a8a,color:#fff,stroke:#000
     classDef lg fill:#581c87,color:#fff,stroke:#000
 
-    subgraph Small["5-9 diagrams"]
+    subgraph Small["5-8 diagrams"]
         S1["pack-package: 356 lines, 8"]:::sm
         S2["tests: 377 lines, 9"]:::sm
         S3["update-prs: 367 lines, 9"]:::sm
         S4["check-semver: 383 lines, 9"]:::sm
+        S5["test-github-action: 7 diagrams"]:::sm
     end
 
     subgraph Medium["11-12 diagrams"]
@@ -139,7 +142,7 @@ flowchart LR
     end
 ```
 
-Totals: 19 deep dives (docs-sync-trigger shares the DOCS_SYNC deep dive).
+Totals: 20 deep dives.
 
 ## Conventions every deep dive follows
 
