@@ -294,7 +294,7 @@ flowchart TB
     q1 -->|no| q2{github.event.before is empty\nor all zeros?}
     q2 -->|yes| a2["base = HEAD~1"]:::act
     q2 -->|no| a3["base = github.event.before"]:::act
-    a2 --> a4["git diff --name-only base HEAD --\n.github/workflows/\n.github/actions/\nscripts/maintain.sh\nscripts/agents/config.sh\nscripts/agents/prompts/\npackage.json\n> /tmp/changed-files.txt"]:::act
+    a2 --> a4["git diff --name-only base HEAD --\n.github/workflows/\n.github/actions/\n.github/vitals/\nscripts/maintain.sh\nscripts/agents/config.sh\nscripts/agents/prompts/\npackage.json\n> /tmp/changed-files.txt"]:::act
     a3 --> a4
     a1 --> a5["count = wc -l < /tmp/changed-files.txt"]:::act
     a4 --> a5
@@ -453,7 +453,7 @@ flowchart LR
     d1 --> d3
 ```
 
-Tool allowlist: `Bash,Read,Write,Edit,Glob,Grep,WebFetch`. No `WebSearch` is needed; the agent only reads local files.
+Tool allowlist: `Bash,Read,Write,Edit,Glob,Grep,WebFetch`. No `WebSearch` is needed; the agent only reads local files. `allowed_bots: "llm-exe-bot[bot]"` is passed to `claude-code-action` so the action operates on commits authored by the bot.
 
 [Back to top](#navigate)
 
@@ -583,7 +583,7 @@ flowchart LR
     K1["File"]:::k --- V1[".github/workflows/docs-sync.yml"]:::v
     K2["Triggers"]:::k --- V2["push to development on source paths + dispatch"]:::v
     K3["Inputs"]:::k --- V3["target (comma-separated paths, optional)"]:::v
-    K4["Path filter"]:::k --- V4["workflows, actions, maintain.sh, config.sh, prompts, package.json"]:::v
+    K4["Path filter"]:::k --- V4["workflows, actions, vitals, maintain.sh, config.sh, prompts, package.json"]:::v
     K5["Permissions"]:::k --- V5["contents/PR/issues: write"]:::v
     K6["Timeout"]:::k --- V6["30 minutes"]:::v
     K7["Concurrency"]:::k --- V7["docs-sync, no cancel"]:::v
@@ -634,7 +634,7 @@ Defense in depth:
 
 | Boundary | Mechanism |
 |----------|-----------|
-| Triggering | Only fires on push to `development` (already gated by repo write access) and `workflow_dispatch`. No PR or `issue_comment` triggers. Loop prevention is handled by the paths allowlist — see [section 3](#3-loop-prevention). |
+| Triggering | Only fires via `workflow_dispatch` (either manually or from `docs-sync-trigger.yml` on push to `development`). No direct PR or `issue_comment` triggers. Loop prevention is handled by the paths allowlist in the trigger workflow: see [section 3](#3-loop-prevention). |
 | Scope | Prompt explicitly forbids touching `.github/workflows/`, `.github/actions/`, `scripts/`, `src/`, `docs/`, `package.json`. |
 | Verification | Reviewer agent ([AGENT_REVIEW_PR_DEEP_DIVE.md](AGENT_REVIEW_PR_DEEP_DIVE.md)) reads every `agent/*` PR before merge. Its tool allowlist is read-only so it cannot be prompt-injected to make changes. |
 | Token scope | App-minted token with `contents`, `pull-requests`, and `issues` write. No `id-token`, no `actions`, no admin. |
