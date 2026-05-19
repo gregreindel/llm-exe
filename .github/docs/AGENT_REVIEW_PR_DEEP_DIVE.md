@@ -39,12 +39,14 @@ flowchart LR
     end
 
     subgraph T["Trigger"]
-        t1["pull_request: opened\nbranches: main, development"]:::trig
-        f1["job if:\nstartsWith(head_ref, 'agent/')"]:::gate
+        t1["pull_request: opened, synchronize\nbranches: main, development"]:::trig
+        f1["job if:\nbase_ref == 'development'"]:::gate
     end
 
     subgraph A["agent-review-pr.yml"]
-        R["review job\ntimeout 15m"]:::job
+        TS["tests job\ntimeout 20m\nNode 18/20/22/24 matrix"]:::job
+        R["review job\ntimeout 15m\nopened events only"]:::job
+        DC["decide job\ntimeout 5m\nneeds: tests + review"]:::job
     end
 
     subgraph S["Secrets and Identity"]
@@ -80,10 +82,12 @@ flowchart LR
 
     AR --> t1
     t1 --> f1
-    f1 -->|head_ref starts with agent/| R
-    f1 -.->|other branches| skip(["skip"])
+    f1 -->|base is development| TS
+    f1 -->|base is development AND opened| R
+    f1 -.->|base is not development| skip(["skip"])
     s1 --> bot
     bot --> R
+    bot --> DC
     s2 --> R
     R --> cfg
     cfg --> pr
@@ -91,9 +95,12 @@ flowchart LR
     R --> cmd
     tmp --> ant
     R --> gh
-    R --> v1
-    R --> v2
+    TS --> DC
+    R --> DC
+    DC --> v1
+    DC --> v2
     R --> v3
+    DC --> log
     R --> log
     v1 --> man
     v2 --> next
@@ -104,9 +111,9 @@ flowchart LR
 
 ---
 
-## 2. Triggers and the agent/* filter
+## 2. Triggers and filters
 
-One trigger. One job-level filter. Anything that fails the filter is invisible to billing.
+Two trigger types. Job-level conditions control what runs when.
 
 ```mermaid
 flowchart TB
@@ -115,28 +122,36 @@ flowchart TB
     classDef out fill:#1f2937,color:#fff,stroke:#000
 
     start([pull_request event])
-    start --> typ{action == 'opened'?}
+    start --> typ{action == 'opened'\nor 'synchronize'?}
     typ -->|no| nop1([no workflow run])
-    typ -->|yes| brn{base branch in (main, development)?}
+    typ -->|yes| brn{base branch in\nmain or development?}
     brn -->|no| nop2([no workflow run])
     brn -->|yes| job[[workflow starts]]
 
-    job --> filt{head_ref starts with 'agent/'?}
-    filt -->|no| skipJob[(job evaluated to false\nshows as skipped\nno billable minutes)]:::gate
-    filt -->|yes| run[(review job runs)]:::out
+    job --> tests_if{"tests job:\nbase_ref == 'development'?"}
+    tests_if -->|yes| tests_run[(tests job runs\non opened AND synchronize)]:::out
+    tests_if -->|no| tests_skip[(skipped)]:::gate
+
+    job --> review_if{"review job:\nbase_ref == 'development'\nAND action == 'opened'?"}
+    review_if -->|yes| review_run[(review job runs\non opened only)]:::out
+    review_if -->|no| review_skip[(skipped)]:::gate
+
+    job --> decide_if{"decide job:\nbase_ref == 'development'?\n(always, after tests + review)"}
+    decide_if -->|yes| decide_run[(decide job runs)]:::out
+    decide_if -->|no| decide_skip[(skipped)]:::gate
 ```
 
-Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 3-6 (trigger) and 16 (job-level if).
+Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 3-10 (triggers) and lines 24, 52, 148 (job-level conditions).
 
-Why the filter is on the job rather than the workflow: it lets human PRs into the same branches without ever spending a runner minute, while keeping a single workflow definition.
+The `synchronize` event type lets the tests job re-run when new commits are pushed or the PR is rebased (e.g., by `update-prs-with-development`), while the review job is gated to `opened` only so the agent does not re-review on every rebase.
 
 [Back to top](#navigate)
 
 ---
 
-## 3. The one-job DAG
+## 3. The three-job DAG
 
-One job. Six steps. Linear.
+Three jobs: `tests` and `review` run in parallel, `decide` waits for both.
 
 ```mermaid
 flowchart TB
@@ -144,25 +159,46 @@ flowchart TB
     classDef step fill:#374151,color:#fff,stroke:#000
     classDef gate fill:#7c2d12,color:#fff,stroke:#000
 
-    start([pull_request opened on main or development])
-    start --> filt{head_ref starts with agent/?}
-    filt -->|no| stop([skip job])
-    filt -->|yes| J1
+    start(["pull_request opened or synchronize\non main or development"])
+    start --> J1
+    start --> J2
 
-    subgraph J1["Job: review (ubuntu-latest, timeout-minutes: 15)"]
+    subgraph J1["Job: tests (if: base_ref == development)\nubuntu-latest, timeout 20m, matrix: Node 18/20/22/24"]
         direction TB
-        s1["Generate bot token\nactions/create-github-app-token@v1"]:::step
-        s2["Checkout (fetch-depth: 0)\nwith bot token"]:::step
-        s3["Setup Node 20\ncache: npm"]:::step
+        t1["Checkout"]:::step
+        t2["Setup Node (matrix version)"]:::step
+        t3["Cache npm dependencies"]:::step
+        t4["npm install"]:::step
+        t5["npm run test"]:::step
+        t1 --> t2 --> t3 --> t4 --> t5
+    end
+
+    subgraph J2["Job: review (if: base_ref == development AND action == opened)\nubuntu-latest, timeout 15m"]
+        direction TB
+        s1["Generate bot token"]:::step
+        s2["Checkout (fetch-depth: 0)"]:::step
+        s3["Setup Node 20"]:::step
         s4["npm ci"]:::step
         s5["Build review prompt\nclock_in + sed substitution"]:::step
         s6["Review PR\nclaude-code-action@v1\n(max-turns 30)"]:::step
-        s7["Clock out (if: always())"]:::step
-        s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7
+        s7["Upload agent prompt artifact"]:::step
+        s8["Read verdict from /tmp/review-verdict.txt"]:::step
+        s9["Clock out (if: always())"]:::step
+        s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7 --> s8 --> s9
+    end
+
+    J1 --> J3
+    J2 --> J3
+
+    subgraph J3["Job: decide (needs: tests + review)\nif: always() AND base_ref == development\nubuntu-latest, timeout 5m"]
+        direction TB
+        d1["Generate bot token"]:::step
+        d2["Approve or skip\n(split-token pattern)"]:::step
+        d1 --> d2
     end
 ```
 
-No concurrency group defined. Two PRs opened simultaneously fan out into two parallel review runs. The 15-minute timeout caps cost at roughly half an agent-run.
+No concurrency group defined. Two PRs opened simultaneously fan out into two parallel runs. The tests job mirrors `tests.yml` (same matrix, cache action, install, test). The review job runs only on `opened` events, not on `synchronize` (rebase).
 
 [Back to top](#navigate)
 
@@ -229,12 +265,15 @@ flowchart TB
     B["LAYER 2: Substitutions via sed"]:::sub
     B1["$PR_NUMBER\nfrom github.event.pull_request.number"]:::sub
     B2["$LOG_FILE\nfrom clock_in stdout"]:::sub
+    B3["$PR_CONTEXT\nbot agent vs human contributor\n(computed from head_ref prefix)"]:::sub
 
     A --> X[("write /tmp/review-prompt.txt")]
     B1 --> X
     B2 --> X
+    B3 --> X
     B --> B1
     B --> B2
+    B --> B3
     X --> R[("Claude reads it as its only prompt")]
     R --> Q1["pull diff with gh pr diff"]:::l2
     R --> Q2["pull description with gh pr view"]:::l2
@@ -346,7 +385,7 @@ The `allowed_bots: "llm-exe-bot[bot]"` input is the load-bearing piece: by defau
 
 ## 8. The verdict tree
 
-Three outcomes. The prompt tells the model exactly which `gh` command to run for each.
+The review job writes a verdict to `/tmp/review-verdict.txt`. The decide job reads that verdict and combines it with the tests result.
 
 ```mermaid
 flowchart TB
@@ -365,7 +404,7 @@ flowchart TB
     C -->|yes| D{tests / docs meaningful?}
 
     D -->|no| Q3{salvageable?}
-    D -->|yes| E[approve]:::good
+    D -->|yes| E["writes 'approve' to\n/tmp/review-verdict.txt"]:::good
 
     Q1 -->|yes| F[request-changes]:::bad
     Q1 -->|no| G[close]:::close
@@ -374,14 +413,21 @@ flowchart TB
     Q3 -->|yes| F
     Q3 -->|no| G
 
-    E -->|gh pr review N --approve| OutA[("body: Reviewed by the reviewer agent...")]:::good
+    E --> DC{"decide job:\nverdict == approve\nAND tests == success?"}
+    DC -->|yes| OutA["gh pr review --approve\n(using GITHUB_TOKEN)"]:::good
+    DC -->|no| OutN[("No approval submitted")]:::bad
+
+    OutA --> agent_pr{head_ref starts\nwith agent/?}
+    agent_pr -->|yes AND draft| OutR["gh pr ready\n(using bot token)"]:::good
+    agent_pr -->|no or not draft| OutH[("Human PR: skip gh pr ready")]:::dec
+
     F -->|gh pr review N --request-changes| OutB[("body: specific actionable feedback")]:::bad
     G -->|gh pr close N| OutC[("comment: reason, doesn't meet the bar")]:::close
 ```
 
-Source: [scripts/agents/prompts/reviewer.md](../../scripts/agents/prompts/reviewer.md) lines 30-43.
+Source: [scripts/agents/prompts/reviewer.md](../../scripts/agents/prompts/reviewer.md) and [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 146-196 (decide job).
 
-The prompt explicitly forbids vague "consider improving" feedback. Request-changes bodies must say exactly what to fix.
+The decide job uses a split-token pattern: `GITHUB_TOKEN` (`github-actions[bot]`) for `--approve` because the bot token cannot approve its own PRs, and the App bot token for `gh pr ready` because `GITHUB_TOKEN` lacks the `markPullRequestReadyForReview` permission. Draft-to-ready promotion only happens for `agent/*` branches.
 
 [Back to top](#navigate)
 
@@ -537,20 +583,20 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/agent-review-pr.yml"]:::v
-    K2["Trigger"]:::k --- V2["pull_request opened on main or development"]:::v
-    K3["Job filter"]:::k --- V3["startsWith(head_ref, 'agent/')"]:::v
+    K2["Trigger"]:::k --- V2["pull_request opened + synchronize on main or development"]:::v
+    K3["Job filter"]:::k --- V3["base_ref == development (tests + review + decide)"]:::v
     K4["Permissions"]:::k --- V4["contents: read, PR/issues: write, id-token: write"]:::v
-    K5["Timeout"]:::k --- V5["15 minutes"]:::v
+    K5["Timeouts"]:::k --- V5["tests: 20m, review: 15m, decide: 5m"]:::v
     K6["Concurrency"]:::k --- V6["none (parallel reviews allowed)"]:::v
     K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token"]:::v
     K8["Model"]:::k --- V8["claude-opus-4-6"]:::v
-    K9["Max turns"]:::k --- V9["30"]:::v
+    K9["Max turns"]:::k --- V9["30 (review job only)"]:::v
     K10["Tool allowlist"]:::k --- V10["Bash, Read, Glob, Grep, WebFetch (read-only)"]:::v
     K11["allowed_bots"]:::k --- V11["llm-exe-bot[bot]"]:::v
-    K12["Verdicts"]:::k --- V12["approve, request-changes, close"]:::v
+    K12["Jobs"]:::k --- V12["tests (Node 18/20/22/24), review, decide"]:::v
     K13["Prompt file"]:::k --- V13["scripts/agents/prompts/reviewer.md"]:::v
     K14["Assembled prompt"]:::k --- V14["/tmp/review-prompt.txt"]:::v
-    K15["Substitutions"]:::k --- V15["$PR_NUMBER, $LOG_FILE"]:::v
+    K15["Substitutions"]:::k --- V15["$PR_NUMBER, $LOG_FILE, $PR_CONTEXT"]:::v
     K16["Log path"]:::k --- V16["scripts/agents/logs/reviewer/&lt;ts&gt;.md"]:::v
 ```
 
