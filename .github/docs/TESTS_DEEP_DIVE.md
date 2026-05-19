@@ -353,7 +353,7 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/tests.yml"]:::v
-    K2["Triggers"]:::k --- V2["pull_request (main, development) + workflow_dispatch"]:::v
+    K2["Triggers"]:::k --- V2["pull_request (main) + workflow_dispatch"]:::v
     K3["Bypass"]:::k --- V3["head==bump-version-branch AND base==development"]:::v
     K4["Runner"]:::k --- V4["ubuntu-latest"]:::v
     K5["Matrix"]:::k --- V5["node 18.x, 20.x, 22.x, 24.x"]:::v

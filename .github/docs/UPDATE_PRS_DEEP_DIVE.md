@@ -343,9 +343,9 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/update-prs-with-development.yml"]:::v
-    K2["Triggers"]:::k --- V2["cron 0 8 * * 1-5 + workflow_dispatch"]:::v
+    K2["Triggers"]:::k --- V2["workflow_dispatch only (cron commented out)"]:::v
     K3["Inputs"]:::k --- V3["none"]:::v
-    K4["Permissions"]:::k --- V4["contents/PR: write, id-token: write"]:::v
+    K4["Permissions"]:::k --- V4["contents: write, pull-requests: write"]:::v
     K5["Timeout"]:::k --- V5["15 minutes"]:::v
     K6["Concurrency"]:::k --- V6["none (default group, no overlap risk)"]:::v
     K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token"]:::v
@@ -354,7 +354,7 @@ flowchart LR
     K10["Per-PR action"]:::k --- V10["gh pr update-branch (N)"]:::v
     K11["Failure handling"]:::k --- V11["per-PR errors swallowed, loop continues"]:::v
     K12["Downstream fired"]:::k --- V12["tests.yml + agent-review-pr.yml"]:::v
-    K13["Schedule (local)"]:::k --- V13["weekdays 3am CT / 4am ET"]:::v
+    K13["Schedule (local)"]:::k --- V13["dispatch only (no cron schedule)"]:::v
 ```
 
 Direct links:
