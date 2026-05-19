@@ -203,7 +203,7 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `agent-run.yml` | yes, with `agent` (choice) and `instructions` (string) inputs | `0 9 * * 1,4` tester, `0 10 * * 2,5` docs, `0 11 * * 1` scout | none | none | none |
 | `coder-run.yml` | yes, no inputs | `0 8 * * 1,4` | none | none | none |
 | `personas-run.yml` | yes, with `count` choice input (1..4) | `0 6 * * 0` Sunday full sweep | none | none | none |
-| `agent-review-pr.yml` | no | none | `opened, synchronize` on `main` or `development`; job-level filter `base_ref == 'development'`; review gated to `opened` only | none | none |
+| `agent-review-pr.yml` | yes, with `pr_number`, `base_ref`, `head_ref` string inputs (dispatched by `bot-respond.yml` for re-review) | none | `opened, synchronize` on `main` or `development`; job-level filter `base_ref == 'development'`; review gated to `opened` and dispatch only | none | none |
 | `agent-digest.yml` | yes, no inputs | `0 11 * * 1` Monday morning | none | none | none |
 | `bot-respond.yml` | no | none | none | none | `issue_comment` `created`; filter requires `@llm-exe-bot` mention plus `OWNER`/`MEMBER`/`COLLABORATOR` association and excludes bot self-comments |
 | `tests.yml` | yes, no inputs | none | `pull_request` on `main` only | none | bypass when head branch is `bump-version-branch` |
@@ -577,8 +577,8 @@ flowchart TB
 | scout | `agent-run.yml` cron `0 11 * * 1` or dispatch | src/llm/**, provider documentation URLs, `/tmp/all-issues.json` | Issues only; comments on existing issues when duplicate detected | Zero or more issues with labels `enhancement`, `bug`, `needs-discussion`, or `breaking`. Tags `@gregreindel` for breaking or imminent deprecations. |
 | beginner / harsh-critic / speed-runner / enterprise | `personas-run.yml` (random subset by dispatch, all four on cron Sunday) | CLAUDE.md, README.md, docs/, examples/ | log file only | A persona log file with categorized findings (`genuine-bug`, `confusing`, `rough-edge`, `suggestion`). |
 | curator | `personas-run.yml` final job (waits for persona matrix) or local `maintain.sh curator` | All persona logs, `/tmp/all-issues.json`, CLAUDE.md | Issues plus comments on existing issues; updates own log | Triaged issues with labels `bug`, `documentation`, `enhancement`, `testing`. |
-| reviewer | `agent-review-pr.yml` on `opened` PRs targeting `development` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log; decide job auto-approves when tests pass and verdict is approve | Verdict on the PR. Does not push commits. |
-| bot-respond | `bot-respond.yml` on issue or PR comment mentioning `@llm-exe-bot` from OWNER/MEMBER/COLLABORATOR | The comment body and any referenced PR diff | Comments on the issue or PR; if asked to fix, commits and pushes to the existing PR branch (never creates a new PR) | A reply comment; optionally code commits on the existing branch. |
+| reviewer | `agent-review-pr.yml` on `opened` PRs targeting `development`, or via `workflow_dispatch` (dispatched by bot-respond for re-review) | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log; decide job auto-approves when tests pass and verdict is approve | Verdict on the PR. Does not push commits. |
+| bot-respond | `bot-respond.yml` on issue or PR comment mentioning `@llm-exe-bot` from OWNER/MEMBER/COLLABORATOR | The comment body and any referenced PR diff | Comments on the issue or PR; can dispatch `agent-review-pr.yml` for review requests; if asked to fix, commits and pushes to the existing PR branch (never creates a new PR) | A reply comment; optionally code commits on the existing branch; optionally a dispatched review pipeline. |
 | digest | `agent-digest.yml` Monday cron | Last 7 days of issues, last 20 PRs, recent agent logs, last 3 releases | `/tmp/digest.html` only | HTML body posted via Microsoft Graph to `MARKETING_EMAILS`. |
 
 ---
@@ -672,9 +672,9 @@ Three jobs: `tests`, `review`, `decide`. Tests and review run in parallel; decid
 
 | Field | Value |
 |-------|-------|
-| Triggers | `pull_request` `opened` and `synchronize` on `main` or `development` |
-| Job filters | `tests`: `base_ref == 'development'` (runs on both opened and synchronize). `review`: `base_ref == 'development' && action == 'opened'` (review only on initial open). `decide`: `always() && base_ref == 'development'` (waits for both). |
-| Tests job | Node 18/20/22/24 matrix, mirrors `tests.yml`. Timeout 20m. Runs on opened AND synchronize so re-pushes re-test. |
+| Triggers | `pull_request` `opened` and `synchronize` on `main` or `development`; `workflow_dispatch` with `pr_number`, `base_ref`, `head_ref` inputs (dispatched by `bot-respond.yml` for re-review) |
+| Job filters | `tests`: `base_ref == 'development'` OR dispatch with `inputs.base_ref == 'development'`. `review`: `(base_ref == 'development' && action == 'opened')` OR dispatch with `inputs.base_ref == 'development'`. `decide`: `always() && (base_ref == 'development'` OR dispatch equivalent`)`. |
+| Tests job | Node 18/20/22/24 matrix, mirrors `tests.yml`. Timeout 20m. Runs on opened, synchronize, and dispatch. On `workflow_dispatch`, an extra `gh pr checkout` step checks out the PR code. |
 | Review job | Auth via App token. `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
 | Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Uses split-token pattern: `GITHUB_TOKEN` for `--approve` (bot cannot approve its own PRs), App token for `gh pr ready` (`GITHUB_TOKEN` lacks that permission). Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
 | Prompt substitutions | `$PR_NUMBER`, `$LOG_FILE`, `$PR_CONTEXT` (bot agent vs human contributor, computed from head_ref prefix). |
@@ -718,7 +718,7 @@ Body must be HTML fragment (no `<html>` / `<body>` tags) and must be the only th
 | Filter | Comment body contains `@llm-exe-bot`, comment author is not the bot itself, and author association is `OWNER`, `MEMBER`, or `COLLABORATOR`. Public users cannot summon the bot. |
 | Timeout | 20 minutes |
 | Tools | Full write set (`Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch`); 30 turns; opus-4-6 |
-| Rules baked into the prompt | Two modes: read-only Q-and-A or write-mode revision. Write mode is allowed only on explicit ask. Must check out the existing PR branch with `gh pr checkout <N>`, must push to that branch, must NOT create new PRs or branches, must NOT add `Co-Authored-By` lines, must run `npm test` and `npm run typecheck` before committing. |
+| Rules baked into the prompt | Three modes: (1) dispatch review pipeline via `gh workflow run agent-review-pr.yml` when a review is requested, (2) read-only Q-and-A, (3) write-mode revision. Write mode is allowed only on explicit ask. Must check out the existing PR branch with `gh pr checkout <N>`, must push to that branch, must NOT create new PRs or branches, must NOT add `Co-Authored-By` lines, must run `npm test` and `npm run typecheck` before committing. |
 
 ### 9.7. `tests.yml` - Jest matrix on PRs
 
