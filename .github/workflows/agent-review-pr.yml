@@ -9,6 +9,22 @@ on:
     types: [opened, synchronize]
     branches: [main, development]
 
+  # Dispatched by bot-respond.yml when a maintainer comments "@llm-exe-bot re-review"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: string
+      base_ref:
+        description: "Base branch of the PR (e.g. development)"
+        required: true
+        type: string
+      head_ref:
+        description: "Head branch of the PR"
+        required: true
+        type: string
+
 permissions:
   contents: read
   pull-requests: write
@@ -20,7 +36,7 @@ jobs:
   # Mirrors tests.yml exactly (matrix, cache action, npm install, npm run test).
   # Coverage upload is intentionally omitted — that is tests.yml's responsibility on main PRs.
   tests:
-    if: github.base_ref == 'development'
+    if: github.base_ref == 'development' || (github.event_name == 'workflow_dispatch' && inputs.base_ref == 'development')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -49,7 +65,7 @@ jobs:
   # Runs in parallel with tests. Exposes verdict as a job output for decide.
   # Gated to opened only — no point re-reviewing on synchronize (rebase) events.
   review:
-    if: github.base_ref == 'development' && github.event.action == 'opened'
+    if: (github.base_ref == 'development' && github.event.action == 'opened') || (github.event_name == 'workflow_dispatch' && inputs.base_ref == 'development')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -82,9 +98,9 @@ jobs:
         id: prompt
         run: |
           source ./scripts/agents/config.sh
-          log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number }}")
+          log_file=$(clock_in "reviewer" "PR #${{ github.event.pull_request.number || inputs.pr_number }}")
 
-          head_ref="${{ github.event.pull_request.head.ref }}"
+          head_ref="${{ github.event.pull_request.head.ref || inputs.head_ref }}"
           if echo "$head_ref" | grep -q '^agent/'; then
             pr_context="This PR was opened by a bot agent (branch: ${head_ref}). It is automated code - hold it to the same standards but be aware it may follow mechanical patterns."
           else
@@ -92,7 +108,7 @@ jobs:
           fi
 
           prompt=$(sed \
-            -e "s|\$PR_NUMBER|${{ github.event.pull_request.number }}|g" \
+            -e "s|\$PR_NUMBER|${{ github.event.pull_request.number || inputs.pr_number }}|g" \
             -e "s|\$LOG_FILE|$log_file|g" \
             -e "s|\$PR_CONTEXT|${pr_context}|g" \
             ./scripts/agents/prompts/reviewer.md)
@@ -145,7 +161,7 @@ jobs:
   #   ("Resource not accessible by integration" error).
   decide:
     needs: [tests, review]
-    if: always() && github.base_ref == 'development'
+    if: always() && (github.base_ref == 'development' || (github.event_name == 'workflow_dispatch' && inputs.base_ref == 'development'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -169,27 +185,27 @@ jobs:
           echo "Tests result   : $tests_result"
 
           if [ "$verdict" = "approve" ] && [ "$tests_result" = "success" ]; then
-            gh pr review ${{ github.event.pull_request.number }} \
+            gh pr review ${{ github.event.pull_request.number || inputs.pr_number }} \
               --approve \
               --body "Approved by reviewer agent (tests passing)." \
               --repo ${{ github.repository }}
 
             # Only promote draft -> ready for agent-opened PRs (branch prefix agent/).
             # Human PRs stay in whatever draft state the author left them in.
-            head_ref="${{ github.event.pull_request.head.ref }}"
+            head_ref="${{ github.event.pull_request.head.ref || inputs.head_ref }}"
             if echo "$head_ref" | grep -q '^agent/'; then
-              IS_DRAFT=$(gh pr view ${{ github.event.pull_request.number }} \
+              IS_DRAFT=$(gh pr view ${{ github.event.pull_request.number || inputs.pr_number }} \
                 --json isDraft --jq '.isDraft' \
                 --repo ${{ github.repository }})
               if [ "$IS_DRAFT" = "true" ]; then
-                GH_TOKEN="$BOT_TOKEN" gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
+                GH_TOKEN="$BOT_TOKEN" gh pr ready ${{ github.event.pull_request.number || inputs.pr_number }} --repo ${{ github.repository }}
                 echo "PR marked as ready for review."
               fi
             else
               echo "Human PR (branch: $head_ref) — skipping gh pr ready."
             fi
 
-            echo "PR #${{ github.event.pull_request.number }} approved."
+            echo "PR #${{ github.event.pull_request.number || inputs.pr_number }} approved."
           else
             echo "No approval submitted: verdict='$verdict', tests='$tests_result'."
           fi
