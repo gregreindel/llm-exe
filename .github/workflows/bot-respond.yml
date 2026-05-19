@@ -63,16 +63,30 @@ jobs:
 
             ## Determine what's being asked
 
-            Read the comment that mentioned you carefully. You can be asked to do two kinds of things:
+            Read the comment that mentioned you carefully. Decide which of the following applies:
 
-            ### 1. Answer questions or review (read-only)
-            If the maintainer is asking a question, requesting a review, or wants your opinion:
+            ### 1. PR review requested
+            If the maintainer wants you to review a pull request — any phrasing like "review this", "re-review", "take another look", "check the PR", "can you review", etc. — AND the comment is on a pull request:
+            - Fetch the PR's base and head branch:
+              `gh pr view ${{ github.event.issue.number }} --repo ${{ github.repository }} --json baseRefName,headRefName`
+            - Dispatch the review pipeline (do NOT do an inline review yourself):
+              `gh workflow run agent-review-pr.yml \
+                --repo ${{ github.repository }} \
+                -f pr_number="${{ github.event.issue.number }}" \
+                -f base_ref="<base_ref from above>" \
+                -f head_ref="<head_ref from above>"`
+            - Post a brief acknowledgment, e.g.:
+              "👀 Review pipeline started — tests + agent review + approval will run shortly."
+            - Stop here. Do not also do a manual review.
+
+            ### 2. Answer questions (read-only)
+            If the maintainer is asking a question or wants your opinion on something:
             - Read any relevant source code
             - Use `gh pr diff` or `gh pr view` to understand PR context
             - Run `npm test` and `npm run typecheck` if needed to verify things
             - Reply with a concise, specific answer
 
-            ### 2. Make changes (write mode)
+            ### 3. Make changes (write mode)
             If the maintainer is asking you to fix something, revise a PR, address review feedback, or make code changes:
             - If you're on a PR, check out the PR branch: `gh pr checkout <number>`
             - Read the PR diff, review comments, and any feedback with:
