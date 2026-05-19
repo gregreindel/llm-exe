@@ -1,4 +1,4 @@
-name: Auto Merge PR from Development to Main
+name: Release / Auto Merge
 
 on:
   workflow_run:
