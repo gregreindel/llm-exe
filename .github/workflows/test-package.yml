@@ -2,8 +2,6 @@ name: Test Package
 
 on:
   workflow_dispatch:
-  # pull_request:
-  #   branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +15,7 @@ jobs:
   test-package:
     runs-on: ubuntu-latest
     environment: Examples Test
-    if: ${{ !(github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') || (github.event_name == 'workflow_dispatch' && github.event.sender.login == 'gregreindel') }}
+    if: github.event.sender.login == 'gregreindel'
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

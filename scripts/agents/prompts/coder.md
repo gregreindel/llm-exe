@@ -78,6 +78,7 @@ A few issues per run max. Pick them, fix them properly with tests, ship the PR, 
    - Push to origin with: git push -u origin $BRANCH
    - Create a PR with gh pr create, referencing the issue:
      --base development
+     --draft
      --title 'fix: [short description]'
      --body 'Fixes #N\n\n## Changes\n- [what changed]\n\n## Testing\n- [how it was tested]'
 
