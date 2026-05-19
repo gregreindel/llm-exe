@@ -2,7 +2,11 @@ name: Agent Review PR
 
 on:
   pull_request:
-    types: [opened]
+    # opened   - initial PR creation (runs tests + review + decide)
+    # synchronize - new commits pushed / rebase from update-prs-with-development
+    #              (runs tests only; review is gated to opened so the agent
+    #               does not re-review on every rebase)
+    types: [opened, synchronize]
     branches: [main, development]
 
 permissions:
@@ -43,8 +47,9 @@ jobs:
         run: npm run test
 
   # Runs in parallel with tests. Exposes verdict as a job output for decide.
+  # Gated to opened only — no point re-reviewing on synchronize (rebase) events.
   review:
-    if: github.base_ref == 'development'
+    if: github.base_ref == 'development' && github.event.action == 'opened'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -169,12 +174,19 @@ jobs:
               --body "Approved by reviewer agent (tests passing)." \
               --repo ${{ github.repository }}
 
-            IS_DRAFT=$(gh pr view ${{ github.event.pull_request.number }} \
-              --json isDraft --jq '.isDraft' \
-              --repo ${{ github.repository }})
-            if [ "$IS_DRAFT" = "true" ]; then
-              GH_TOKEN="$BOT_TOKEN" gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
-              echo "PR marked as ready for review."
+            # Only promote draft -> ready for agent-opened PRs (branch prefix agent/).
+            # Human PRs stay in whatever draft state the author left them in.
+            head_ref="${{ github.event.pull_request.head.ref }}"
+            if echo "$head_ref" | grep -q '^agent/'; then
+              IS_DRAFT=$(gh pr view ${{ github.event.pull_request.number }} \
+                --json isDraft --jq '.isDraft' \
+                --repo ${{ github.repository }})
+              if [ "$IS_DRAFT" = "true" ]; then
+                GH_TOKEN="$BOT_TOKEN" gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
+                echo "PR marked as ready for review."
+              fi
+            else
+              echo "Human PR (branch: $head_ref) — skipping gh pr ready."
             fi
 
             echo "PR #${{ github.event.pull_request.number }} approved."
