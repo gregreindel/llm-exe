@@ -3,7 +3,7 @@
 > A lightweight, modular TypeScript toolkit for building LLM-powered applications. Core pattern: Prompt → LLM → Parser → Typed Result.
 
 - Website: https://llm-exe.com
-- GitHub: https://github.com/gregreindel/llm-exe
+- GitHub: https://github.com/llm-exe/llm-exe
 - npm: https://www.npmjs.com/package/llm-exe
 
 ## Docs
