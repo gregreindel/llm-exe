@@ -51,9 +51,11 @@ flowchart LR
     end
 
     subgraph S["Secrets and Identity"]
-        s1["APP_ID + APP_PRIVATE_KEY"]:::file
+        s1["LLM_EXE_REVIEW_BOT_APP_ID\n+ LLM_EXE_REVIEW_BOT_PRIVATE_KEY"]:::file
+        s3["APP_ID + APP_PRIVATE_KEY"]:::file
         s2["CLAUDE_CODE_OAUTH_TOKEN"]:::file
-        bot["llm-exe-bot[bot]\nshort-lived token"]:::file
+        reviewbot["llm-exe-review-bot[bot]\nreview token"]:::file
+        bot["llm-exe-bot[bot]\nmaintenance token"]:::file
     end
 
     subgraph F["Files read"]
@@ -87,8 +89,10 @@ flowchart LR
     f1 -->|base is development| TS
     f1 -->|base is development AND opened| R
     f1 -.->|base is not development| skip(["skip"])
-    s1 --> bot
-    bot --> R
+    s1 --> reviewbot
+    s3 --> bot
+    reviewbot --> R
+    reviewbot --> DC
     bot --> DC
     s2 --> R
     R --> cfg
@@ -181,7 +185,7 @@ flowchart TB
 
     subgraph J2["Job: review (if: base_ref == development AND action == opened, OR dispatch)\nubuntu-latest, timeout 15m"]
         direction TB
-        s1["Generate bot token"]:::step
+        s1["Generate review bot token"]:::step
         s2["Checkout (fetch-depth: 0)"]:::step
         s3["Setup Node 20"]:::step
         s4["npm ci"]:::step
@@ -198,9 +202,11 @@ flowchart TB
 
     subgraph J3["Job: decide (needs: tests + review)\nif: always() AND base_ref == development\nubuntu-latest, timeout 5m"]
         direction TB
-        d1["Generate bot token"]:::step
-        d2["Approve or skip\n(split-token pattern)"]:::step
-        d1 --> d2
+        d1["Generate review bot token"]:::step
+        d2["Generate bot token"]:::step
+        d3["Approve or skip\n(review token approves,\nbot token marks ready)"]:::step
+        d1 --> d3
+        d2 --> d3
     end
 ```
 
@@ -229,15 +235,15 @@ sequenceDiagram
     participant CCA as claude-code-action@v1
     participant API as Anthropic + GitHub
 
-    E->>J: head_ref starts with agent/, job runs
-    J->>T: create-github-app-token@v1 (APP_ID, APP_PRIVATE_KEY)
-    T-->>J: bot token (short-lived)
-    J->>G: checkout fetch-depth 0 with bot token
+    E->>J: base_ref is development, job runs
+    J->>T: create-github-app-token@v1 (LLM_EXE_REVIEW_BOT_APP_ID, key)
+    T-->>J: review bot token (short-lived)
+    J->>G: checkout fetch-depth 0 with review bot token
     J->>N: setup-node@v4 + npm ci
     J->>C: source scripts/agents/config.sh
     C->>L: clock_in "reviewer" "PR #N" writes skeleton .md
     L-->>C: log file path
-    C->>P: sed substitute $PR_NUMBER and $LOG_FILE
+    C->>P: sed substitute $PR_NUMBER, $LOG_FILE, and $PR_CONTEXT
     P-->>C: rendered template
     C->>TMP: write rendered prompt
     J->>CCA: run prompt = "Read /tmp/review-prompt.txt"
@@ -245,7 +251,7 @@ sequenceDiagram
     API-->>CCA: tool calls (Bash, Read, Glob, Grep, WebFetch)
     CCA->>API: gh pr diff N
     CCA->>API: gh pr view N
-    CCA->>API: gh pr review N --approve OR --request-changes OR gh pr close N
+    CCA->>API: gh pr review N --comment OR --request-changes OR gh pr close N
     CCA->>L: rewrite Summary, Files Changed, Next Steps
     J->>C: clock_out (always) maps job.status to exit code
     C->>L: stamp Finished UTC + Status completed or interrupted
@@ -355,14 +361,14 @@ flowchart LR
     classDef web fill:#064e3b,color:#fff,stroke:#000
 
     subgraph Pre["Before the reviewer starts"]
-        c1["actions/create-github-app-token@v1\nauth: APP_ID + APP_PRIVATE_KEY\nwhy: bot identity to post reviews"]:::pre
-        c2["actions/checkout@v4\nauth: bot token\nwhy: full history (depth 0)"]:::pre
+        c1["actions/create-github-app-token@v1\nauth: LLM_EXE_REVIEW_BOT_APP_ID + key\nwhy: review bot identity to post reviews"]:::pre
+        c2["actions/checkout@v4\nauth: review bot token\nwhy: full history (depth 0)"]:::pre
         c3["actions/setup-node@v4\nauth: none\nwhy: prime npm cache (used by tools)"]:::pre
     end
 
     subgraph During["While the reviewer runs"]
         d1["api.anthropic.com\nauth: CLAUDE_CODE_OAUTH_TOKEN\nwhy: model inference (claude-opus-4-6)\ncost meter: --max-turns 30"]:::llm
-        d2["api.github.com (gh CLI)\nauth: bot token\nwhy: gh pr diff/view/review/close"]:::gh
+        d2["api.github.com (gh CLI)\nauth: review bot token\nwhy: gh pr diff/view/review/close"]:::gh
         d3["allowed_bots: llm-exe-bot[bot]\nwhy: lets the action operate on bot PRs\n(default action behavior skips bot PRs)"]:::gh
         d4["WebFetch (allowed but rarely used)\nauth: anonymous\nwhy: external link verification only"]:::web
     end
@@ -420,11 +426,11 @@ flowchart TB
     Q3 -->|no| G
 
     E --> DC{"decide job:\nverdict == approve\nAND tests == success?"}
-    DC -->|yes| OutA["gh pr review --approve\n(using GITHUB_TOKEN)"]:::good
+    DC -->|yes| OutA["gh pr review --approve\n(using review bot token)"]:::good
     DC -->|no| OutN[("No approval submitted")]:::bad
 
     OutA --> agent_pr{head_ref starts\nwith agent/?}
-    agent_pr -->|yes AND draft| OutR["gh pr ready\n(using bot token)"]:::good
+    agent_pr -->|yes AND draft| OutR["gh pr ready\n(using regular bot token)"]:::good
     agent_pr -->|no or not draft| OutH[("Human PR: skip gh pr ready")]:::dec
 
     F -->|gh pr review N --request-changes| OutB[("body: specific actionable feedback")]:::bad
@@ -433,7 +439,7 @@ flowchart TB
 
 Source: [scripts/agents/prompts/reviewer.md](../../scripts/agents/prompts/reviewer.md) and [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 163-218 (decide job).
 
-The decide job uses a split-token pattern: `GITHUB_TOKEN` (`github-actions[bot]`) for `--approve` because the bot token cannot approve its own PRs, and the App bot token for `gh pr ready` because `GITHUB_TOKEN` lacks the `markPullRequestReadyForReview` permission. Draft-to-ready promotion only happens for `agent/*` branches.
+The decide job uses a split-token pattern: the dedicated `llm-exe-review-bot[bot]` App token for `--approve`, and the regular `llm-exe-bot[bot]` App token for `gh pr ready`. Draft-to-ready promotion only happens for `agent/*` branches.
 
 [Back to top](#navigate)
 
@@ -490,8 +496,8 @@ A single review run as a finite state machine.
 stateDiagram-v2
     [*] --> Queued: PR opened on main or development
     Queued --> Filtered: job-level if evaluated
-    Filtered --> Skipped: head_ref not starting with agent/
-    Filtered --> Ready: head_ref starts with agent/
+    Filtered --> Skipped: base_ref is not development
+    Filtered --> Ready: base_ref is development
     Ready --> Booting: review job starts
     Booting --> Setup: checkout + node + npm ci
     Setup --> PromptBuilt: config.sh writes log skeleton + /tmp/review-prompt.txt
@@ -530,13 +536,13 @@ flowchart TB
     classDef effect fill:#374151,color:#fff,stroke:#000
     classDef fix fill:#064e3b,color:#fff,stroke:#000
 
-    F1["Human opens PR from agent/* branch"]:::fail
-    F1 --> F1E["filter still matches, reviewer runs\non a human PR"]:::effect
-    F1E --> F1X["rename branch off agent/* prefix\nor accept the review as bonus signal"]:::fix
+    F1["PR targets main"]:::fail
+    F1 --> F1E["workflow may start, but jobs skip\nbecause base is not development"]:::effect
+    F1E --> F1X["retarget to development\nor review manually"]:::fix
 
-    F2["Bot token mint fails\nAPP_ID or APP_PRIVATE_KEY wrong"]:::fail
+    F2["Review bot token mint fails\nLLM_EXE_REVIEW_BOT_APP_ID or key wrong"]:::fail
     F2 --> F2E["job fails at token step\nno log file written"]:::effect
-    F2X["rotate App key, re-add secret"]:::fix
+    F2X["rotate review App key, re-add secrets"]:::fix
     F2E --> F2X
 
     F3["npm ci fails"]:::fail
@@ -594,7 +600,7 @@ flowchart LR
     K4["Permissions"]:::k --- V4["contents: read, PR/issues: write, id-token: write"]:::v
     K5["Timeouts"]:::k --- V5["tests: 20m, review: 15m, decide: 5m"]:::v
     K6["Concurrency"]:::k --- V6["none (parallel reviews allowed)"]:::v
-    K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token"]:::v
+    K7["Identity"]:::k --- V7["llm-exe-review-bot[bot] for reviews; llm-exe-bot[bot] only for gh pr ready"]:::v
     K8["Model"]:::k --- V8["claude-opus-4-6"]:::v
     K9["Max turns"]:::k --- V9["30 (review job only)"]:::v
     K10["Tool allowlist"]:::k --- V10["Bash, Read, Glob, Grep, WebFetch (read-only)"]:::v
