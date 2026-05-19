@@ -12,10 +12,43 @@ permissions:
   id-token: write
 
 jobs:
+  # Runs in parallel with review. Result is consumed by the decide job.
+  # Mirrors tests.yml exactly (matrix, cache action, npm install, npm run test).
+  # Coverage upload is intentionally omitted — that is tests.yml's responsibility on main PRs.
+  tests:
+    if: github.base_ref == 'development'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x, 22.x, 24.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test
+
+  # Runs in parallel with tests. Exposes verdict as a job output for decide.
   review:
     if: github.base_ref == 'development'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      verdict: ${{ steps.verdict.outputs.verdict }}
 
     steps:
       - name: Generate bot token
@@ -48,7 +81,7 @@ jobs:
 
           head_ref="${{ github.event.pull_request.head.ref }}"
           if echo "$head_ref" | grep -q '^agent/'; then
-            pr_context="This PR was opened by a bot agent (branch: ${head_ref}). It is automated code — hold it to the same standards but be aware it may follow mechanical patterns."
+            pr_context="This PR was opened by a bot agent (branch: ${head_ref}). It is automated code - hold it to the same standards but be aware it may follow mechanical patterns."
           else
             pr_context="This PR was opened by a human contributor (branch: ${head_ref}). Review it as you would any community contribution."
           fi
@@ -83,37 +116,57 @@ jobs:
           path: /tmp/review-prompt.txt
           retention-days: 7
 
-      - name: Stage PR for approval
+      - name: Read verdict
+        id: verdict
         if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          if [ ! -f /tmp/review-verdict.txt ]; then
-            echo "No verdict file found - skipping."
-            exit 0
+          if [ -f /tmp/review-verdict.txt ]; then
+            v=$(cat /tmp/review-verdict.txt | tr -d '[:space:]')
+          else
+            v="no-verdict"
           fi
-          verdict=$(cat /tmp/review-verdict.txt | tr -d '[:space:]')
-          echo "Verdict: $verdict"
-          if [ "$verdict" != "approve-high-confidence" ]; then
-            echo "Verdict '$verdict' does not meet high-confidence threshold - no approval staged."
-            exit 0
-          fi
-
-          # Ensure the label exists on the repo (idempotent)
-          gh label create "reviewer:approved" \
-            --color "0e7490" \
-            --description "Bot reviewer approved, pending CI" \
-            --repo ${{ github.repository }} 2>/dev/null || true
-
-          # Apply label — auto-approve-pr.yml picks this up when checks pass
-          gh pr edit ${{ github.event.pull_request.number }} \
-            --add-label "reviewer:approved" \
-            --repo ${{ github.repository }}
-
-          echo "PR #${{ github.event.pull_request.number }} staged for approval (label applied). Approval submitted when CI passes."
+          echo "verdict=$v" >> "$GITHUB_OUTPUT"
 
       - name: Clock out
         if: always()
         run: |
           source ./scripts/agents/config.sh
           clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
+
+  # Waits for both tests and review. Approves only when both pass.
+  # Uses GITHUB_TOKEN (github-actions[bot]) because the bot token cannot approve its own PRs.
+  decide:
+    needs: [tests, review]
+    if: always() && github.base_ref == 'development'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Approve or skip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          verdict="${{ needs.review.outputs.verdict }}"
+          tests_result="${{ needs.tests.result }}"
+
+          echo "Review verdict : $verdict"
+          echo "Tests result   : $tests_result"
+
+          if [ "$verdict" = "approve" ] && [ "$tests_result" = "success" ]; then
+            gh pr review ${{ github.event.pull_request.number }} \
+              --approve \
+              --body "Approved by reviewer agent (tests passing)." \
+              --repo ${{ github.repository }}
+
+            IS_DRAFT=$(gh pr view ${{ github.event.pull_request.number }} \
+              --json isDraft --jq '.isDraft' \
+              --repo ${{ github.repository }})
+            if [ "$IS_DRAFT" = "true" ]; then
+              gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
+              echo "PR marked as ready for review."
+            fi
+
+            echo "PR #${{ github.event.pull_request.number }} approved."
+          else
+            echo "No approval submitted: verdict='$verdict', tests='$tests_result'."
+          fi
