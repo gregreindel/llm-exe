@@ -1,4 +1,4 @@
-name: Publish Main/Beta Package To Npm Registry
+name: Release / Publish
 
 on:
   workflow_dispatch:

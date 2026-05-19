@@ -1,4 +1,4 @@
-name: Agent Review PR
+name: Agent / Review PR
 
 on:
   pull_request:

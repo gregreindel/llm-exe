@@ -1,4 +1,4 @@
-name: Update Open PRs with Development
+name: CI / Update PRs
 
 on:
   # push:

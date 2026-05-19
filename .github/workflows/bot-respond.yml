@@ -1,4 +1,4 @@
-name: Bot Respond
+name: Agent / Bot Respond
 
 on:
   issue_comment:
