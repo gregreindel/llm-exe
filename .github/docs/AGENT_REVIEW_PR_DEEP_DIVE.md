@@ -7,8 +7,8 @@ Minimum prose. Maximum diagrams.
 ## Navigate
 
 - [1. The whole picture](#1-the-whole-picture)
-- [2. Triggers and the agent/* filter](#2-triggers-and-the-agent-filter)
-- [3. The one-job DAG](#3-the-one-job-dag)
+- [2. Triggers and the base-branch filter](#2-triggers-and-the-base-branch-filter)
+- [3. The three-job DAG](#3-the-three-job-dag)
 - [4. Step-by-step lifecycle](#4-step-by-step-lifecycle)
 - [5. Anatomy of the review prompt](#5-anatomy-of-the-review-prompt)
 - [6. Filesystem reads](#6-filesystem-reads)
@@ -23,7 +23,7 @@ Minimum prose. Maximum diagrams.
 
 ## 1. The whole picture
 
-How [agent-review-pr.yml](../workflows/agent-review-pr.yml) sits between bot output and the maintainer.
+How [agent-review-pr.yml](../workflows/agent-review-pr.yml) sits between bot output and the maintainer. Three jobs run: `tests` and `review` in parallel, then `decide` gates approval on both.
 
 ```mermaid
 flowchart LR
@@ -40,11 +40,15 @@ flowchart LR
 
     subgraph T["Trigger"]
         t1["pull_request: opened\nbranches: main, development"]:::trig
-        f1["job if:\nstartsWith(head_ref, 'agent/')"]:::gate
+        f1["job if:\nbase_ref == 'development'"]:::gate
     end
 
     subgraph A["agent-review-pr.yml"]
+        TST["tests job (matrix)\nNode 18/20/22/24\ntimeout 20m"]:::job
         R["review job\ntimeout 15m"]:::job
+        DEC["decide job\nneeds: tests + review\ntimeout 5m"]:::job
+        TST --> DEC
+        R --> DEC
     end
 
     subgraph S["Secrets and Identity"]
@@ -66,24 +70,26 @@ flowchart LR
     end
 
     subgraph O["Outputs"]
-        v1["approve review"]:::out
-        v2["request-changes review"]:::out
-        v3["pr close"]:::out
+        v1["approve review\n(from decide job)"]:::out
+        v2["request-changes review\n(from review job)"]:::out
+        v3["pr close\n(from review job)"]:::out
+        ready["mark PR ready\n(from decide job)"]:::out
         log["reviewer log file\n(clock_in / clock_out)"]:::out
     end
 
     subgraph D["Downstream consumers"]
         man["maintainer triage"]:::job
-        tst["tests.yml\n(unaffected by verdict)"]:::job
         next["next agent-run\nreads PR feedback"]:::job
     end
 
     AR --> t1
     t1 --> f1
-    f1 -->|head_ref starts with agent/| R
-    f1 -.->|other branches| skip(["skip"])
+    f1 -->|base_ref is development| TST
+    f1 -->|base_ref is development| R
+    f1 -.->|other base branches| skip(["skip"])
     s1 --> bot
     bot --> R
+    bot --> DEC
     s2 --> R
     R --> cfg
     cfg --> pr
@@ -91,7 +97,8 @@ flowchart LR
     R --> cmd
     tmp --> ant
     R --> gh
-    R --> v1
+    DEC --> v1
+    DEC --> ready
     R --> v2
     R --> v3
     R --> log
@@ -104,9 +111,9 @@ flowchart LR
 
 ---
 
-## 2. Triggers and the agent/* filter
+## 2. Triggers and the base-branch filter
 
-One trigger. One job-level filter. Anything that fails the filter is invisible to billing.
+One trigger. One job-level filter on each job. Anything that fails the filter is invisible to billing.
 
 ```mermaid
 flowchart TB
@@ -121,22 +128,22 @@ flowchart TB
     brn -->|no| nop2([no workflow run])
     brn -->|yes| job[[workflow starts]]
 
-    job --> filt{head_ref starts with 'agent/'?}
-    filt -->|no| skipJob[(job evaluated to false\nshows as skipped\nno billable minutes)]:::gate
-    filt -->|yes| run[(review job runs)]:::out
+    job --> filt{base_ref == 'development'?}
+    filt -->|no| skipJob[(all jobs evaluate to false\nshows as skipped\nno billable minutes)]:::gate
+    filt -->|yes| run[(tests + review run in parallel\ndecide waits for both)]:::out
 ```
 
-Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 3-6 (trigger) and 16 (job-level if).
+Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 3-6 (trigger) and lines 19, 47 (job-level if).
 
-Why the filter is on the job rather than the workflow: it lets human PRs into the same branches without ever spending a runner minute, while keeping a single workflow definition.
+The filter checks `base_ref == 'development'` rather than the head branch prefix. PRs targeting `main` skip all three jobs. The `decide` job adds `always()` so it runs even when `tests` or `review` fails, but still checks the base-branch condition.
 
 [Back to top](#navigate)
 
 ---
 
-## 3. The one-job DAG
+## 3. The three-job DAG
 
-One job. Six steps. Linear.
+Three jobs. `tests` and `review` run in parallel; `decide` waits for both.
 
 ```mermaid
 flowchart TB
@@ -145,24 +152,47 @@ flowchart TB
     classDef gate fill:#7c2d12,color:#fff,stroke:#000
 
     start([pull_request opened on main or development])
-    start --> filt{head_ref starts with agent/?}
-    filt -->|no| stop([skip job])
+    start --> filt{base_ref == 'development'?}
+    filt -->|no| stop([skip all jobs])
     filt -->|yes| J1
+    filt -->|yes| J2
 
-    subgraph J1["Job: review (ubuntu-latest, timeout-minutes: 15)"]
+    subgraph J1["Job: tests (ubuntu-latest, timeout 20m, matrix Node 18/20/22/24)"]
         direction TB
-        s1["Generate bot token\nactions/create-github-app-token@v1"]:::step
-        s2["Checkout (fetch-depth: 0)\nwith bot token"]:::step
+        t1["Checkout"]:::step
+        t2["Setup Node (matrix version)\ncache: npm"]:::step
+        t3["Cache npm dependencies\n.github/actions/cache"]:::step
+        t4["npm install"]:::step
+        t5["npm run test"]:::step
+        t1 --> t2 --> t3 --> t4 --> t5
+    end
+
+    subgraph J2["Job: review (ubuntu-latest, timeout 15m)"]
+        direction TB
+        s1["Generate bot token"]:::step
+        s2["Checkout (fetch-depth: 0)"]:::step
         s3["Setup Node 20\ncache: npm"]:::step
         s4["npm ci"]:::step
         s5["Build review prompt\nclock_in + sed substitution"]:::step
         s6["Review PR\nclaude-code-action@v1\n(max-turns 30)"]:::step
-        s7["Clock out (if: always())"]:::step
-        s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7
+        s7["Upload agent prompt artifact"]:::step
+        s8["Read verdict\n(exposes verdict as job output)"]:::step
+        s9["Clock out (if: always())"]:::step
+        s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7 --> s8 --> s9
     end
+
+    subgraph J3["Job: decide (ubuntu-latest, timeout 5m)"]
+        direction TB
+        d1["Generate bot token"]:::step
+        d2["Approve or skip\n(split-token pattern)"]:::step
+        d1 --> d2
+    end
+
+    J1 --> J3
+    J2 --> J3
 ```
 
-No concurrency group defined. Two PRs opened simultaneously fan out into two parallel review runs. The 15-minute timeout caps cost at roughly half an agent-run.
+No concurrency group defined. Two PRs opened simultaneously fan out into two parallel review+tests runs. The test matrix mirrors `tests.yml` (Node 18, 20, 22, 24, fail-fast: false). Coverage upload is omitted here; that is `tests.yml`'s responsibility.
 
 [Back to top](#navigate)
 
@@ -170,13 +200,14 @@ No concurrency group defined. Two PRs opened simultaneously fan out into two par
 
 ## 4. Step-by-step lifecycle
 
-One review run from PR open to verdict.
+One review run from PR open to verdict. `tests` and `review` start simultaneously; `decide` runs after both complete.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant E as Event (PR opened)
-    participant J as review job
+    participant TJ as tests job (matrix)
+    participant RJ as review job
     participant T as Token mint
     participant G as Git
     participant N as Node + npm
@@ -186,30 +217,43 @@ sequenceDiagram
     participant TMP as /tmp/review-prompt.txt
     participant CCA as claude-code-action@v1
     participant API as Anthropic + GitHub
+    participant DJ as decide job
+    participant GH as GitHub API
 
-    E->>J: head_ref starts with agent/, job runs
-    J->>T: create-github-app-token@v1 (APP_ID, APP_PRIVATE_KEY)
-    T-->>J: bot token (short-lived)
-    J->>G: checkout fetch-depth 0 with bot token
-    J->>N: setup-node@v4 + npm ci
-    J->>C: source scripts/agents/config.sh
+    E->>TJ: base_ref == development, tests start (4 Node versions)
+    E->>RJ: base_ref == development, review starts
+    Note over TJ: checkout, setup-node, cache, npm install, npm test (x4 matrix legs)
+    RJ->>T: create-github-app-token@v1 (APP_ID, APP_PRIVATE_KEY)
+    T-->>RJ: bot token (short-lived)
+    RJ->>G: checkout fetch-depth 0 with bot token
+    RJ->>N: setup-node@v4 + npm ci
+    RJ->>C: source scripts/agents/config.sh
     C->>L: clock_in "reviewer" "PR #N" writes skeleton .md
     L-->>C: log file path
-    C->>P: sed substitute $PR_NUMBER and $LOG_FILE
+    C->>P: sed substitute $PR_NUMBER, $LOG_FILE, $PR_CONTEXT
     P-->>C: rendered template
     C->>TMP: write rendered prompt
-    J->>CCA: run prompt = "Read /tmp/review-prompt.txt"
+    RJ->>CCA: run prompt = "Read /tmp/review-prompt.txt"
     CCA->>API: streaming inference (claude-opus-4-6)
     API-->>CCA: tool calls (Bash, Read, Glob, Grep, WebFetch)
-    CCA->>API: gh pr diff N
-    CCA->>API: gh pr view N
+    CCA->>API: gh pr diff N, gh pr view N
     CCA->>API: gh pr review N --approve OR --request-changes OR gh pr close N
     CCA->>L: rewrite Summary, Files Changed, Next Steps
-    J->>C: clock_out (always) maps job.status to exit code
+    RJ->>RJ: read /tmp/review-verdict.txt to job output
+    RJ->>C: clock_out (always) maps job.status to exit code
     C->>L: stamp Finished UTC + Status completed or interrupted
+    Note over TJ: all matrix legs complete
+    TJ-->>DJ: tests result (success or failure)
+    RJ-->>DJ: verdict output (approve, request-changes, close, or no-verdict)
+    DJ->>T: mint bot App token (for gh pr ready)
+    Note over DJ: approve only when verdict==approve AND tests==success
+    DJ->>GH: gh pr review --approve (uses GITHUB_TOKEN)
+    DJ->>GH: gh pr ready (uses bot token, if PR is draft)
 ```
 
-Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 14-71.
+Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml).
+
+The split-token pattern in the `decide` job is critical: `GITHUB_TOKEN` (github-actions[bot]) is used for `gh pr review --approve` because the bot token cannot approve its own PRs. The bot App token is used for `gh pr ready` because `GITHUB_TOKEN` cannot call `markPullRequestReadyForReview`.
 
 [Back to top](#navigate)
 
@@ -229,12 +273,15 @@ flowchart TB
     B["LAYER 2: Substitutions via sed"]:::sub
     B1["$PR_NUMBER\nfrom github.event.pull_request.number"]:::sub
     B2["$LOG_FILE\nfrom clock_in stdout"]:::sub
+    B3["$PR_CONTEXT\nbot agent vs human contributor\n(detected from head_ref prefix)"]:::sub
 
     A --> X[("write /tmp/review-prompt.txt")]
     B1 --> X
     B2 --> X
+    B3 --> X
     B --> B1
     B --> B2
+    B --> B3
     X --> R[("Claude reads it as its only prompt")]
     R --> Q1["pull diff with gh pr diff"]:::l2
     R --> Q2["pull description with gh pr view"]:::l2
@@ -292,7 +339,7 @@ flowchart LR
 
 Notice what's missing: no `Write`, no `Edit` in the allowlist. The reviewer cannot modify source, tests, or docs. It can only emit GitHub side effects via the `gh` CLI through `Bash`, plus log file updates the action handles via its own GitHub identity.
 
-Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) line 62.
+Source: [.github/workflows/agent-review-pr.yml](../workflows/agent-review-pr.yml) lines 97-109.
 
 [Back to top](#navigate)
 
@@ -389,7 +436,7 @@ The prompt explicitly forbids vague "consider improving" feedback. Request-chang
 
 ## 9. Output cascade
 
-What each verdict triggers downstream.
+What each verdict triggers downstream. The `decide` job gates approval on both the review verdict and test results.
 
 ```mermaid
 flowchart LR
@@ -399,14 +446,21 @@ flowchart LR
     classDef close fill:#581c87,color:#fff,stroke:#000
     classDef cons fill:#374151,color:#fff,stroke:#000
     classDef human fill:#7c2d12,color:#fff,stroke:#000
+    classDef gate fill:#0e7490,color:#fff,stroke:#000
 
-    AR["agent-review-pr.yml\nverdict emitted"]:::src
+    RV["review job\nverdict output"]:::src
+    TST["tests job\nmatrix result"]:::src
 
-    AR --> V1[approve]:::good
-    AR --> V2[request-changes]:::bad
-    AR --> V3[close]:::close
+    RV --> DEC["decide job\nchecks verdict + tests"]:::gate
+    TST --> DEC
 
-    V1 --> C1["PR enters 'approved' state\non GitHub"]:::cons
+    DEC -->|verdict=approve AND tests=success| V1[approve + mark ready]:::good
+    DEC -->|otherwise| SKIP["no approval submitted"]:::cons
+
+    RV -->|reviewer agent action| V2[request-changes review]:::bad
+    RV -->|reviewer agent action| V3[close]:::close
+
+    V1 --> C1["PR approved and marked ready\n(if it was a draft)"]:::cons
     C1 --> M1["maintainer sees green check\nin review queue"]:::human
     M1 --> M2["maintainer merges to development"]:::human
     M2 --> D1["draft-main-pr.yml\nupdates dev to main draft"]:::cons
@@ -420,11 +474,11 @@ flowchart LR
     C3 --> N2["next agent-run starts fresh\nfrom development"]:::cons
     C3 --> X[("noise pruned without\nmaintainer attention")]:::cons
 
-    AR --> L["reviewer log file committed\nscripts/agents/logs/reviewer/&lt;ts&gt;.md"]:::cons
+    RV --> L["reviewer log file committed\nscripts/agents/logs/reviewer/&lt;ts&gt;.md"]:::cons
     L --> DG["agent-digest.yml\nweekly summary includes reviews"]:::cons
 ```
 
-The close verdict is the asymmetric value of this workflow: it discards low-quality bot output before a human ever sees it, which is the entire point of having an automated reviewer.
+The close verdict is the asymmetric value of this workflow: it discards low-quality bot output before a human ever sees it, which is the entire point of having an automated reviewer. The `decide` job ensures approvals only happen when tests also pass, preventing green-check approvals on broken code.
 
 [Back to top](#navigate)
 
@@ -432,37 +486,40 @@ The close verdict is the asymmetric value of this workflow: it discards low-qual
 
 ## 10. State machine
 
-A single review run as a finite state machine.
+A single review run as a finite state machine. The tests and review jobs run in parallel; the decide job waits for both.
 
 ```mermaid
 stateDiagram-v2
     [*] --> Queued: PR opened on main or development
     Queued --> Filtered: job-level if evaluated
-    Filtered --> Skipped: head_ref not starting with agent/
-    Filtered --> Ready: head_ref starts with agent/
-    Ready --> Booting: review job starts
-    Booting --> Setup: checkout + node + npm ci
-    Setup --> PromptBuilt: config.sh writes log skeleton + /tmp/review-prompt.txt
-    PromptBuilt --> Running: claude-code-action started
-    Running --> Reading: gh pr diff + gh pr view + CLAUDE.md
-    Reading --> Analyzing: scope + correctness + test/doc quality
-    Analyzing --> Approved: gh pr review --approve
-    Analyzing --> RequestedChanges: gh pr review --request-changes
-    Analyzing --> Closed: gh pr close
-    Approved --> Logging: rewrite Summary / Files Changed / Next Steps
-    RequestedChanges --> Logging
-    Closed --> Logging
-    Logging --> ClockOut: status mapped to exit code
-    ClockOut --> Completed: exit 0
-    ClockOut --> Interrupted: any non-zero
-    Running --> TimedOut: 15-minute job timeout OR max-turns 30
-    TimedOut --> ClockOut
+    Filtered --> Skipped: base_ref is not development
+    Filtered --> Parallel: base_ref is development
+
+    state Parallel {
+        [*] --> TestsRunning: tests matrix starts (Node 18/20/22/24)
+        [*] --> ReviewBooting: review job starts
+        TestsRunning --> TestsPassed: all matrix legs pass
+        TestsRunning --> TestsFailed: any leg fails
+        ReviewBooting --> Setup: checkout + node + npm ci
+        Setup --> PromptBuilt: config.sh writes log skeleton + prompt
+        PromptBuilt --> Reviewing: claude-code-action started
+        Reviewing --> VerdictEmitted: reviewer writes verdict file
+        Reviewing --> ReviewTimedOut: 15-min timeout or max-turns 30
+        ReviewTimedOut --> ClockOut
+        VerdictEmitted --> ClockOut: clock_out stamps finish
+    }
+
+    Parallel --> Deciding: decide job starts (needs tests + review)
+    Deciding --> Approved: verdict=approve AND tests=success
+    Deciding --> NoApproval: any other combination
+    Approved --> MarkReady: if PR is draft, mark ready
+    MarkReady --> [*]
+    NoApproval --> [*]
     Skipped --> [*]
-    Completed --> [*]
-    Interrupted --> [*]
+    ClockOut --> [*]
 ```
 
-`if: always()` on the clock-out step means even `TimedOut` and `Interrupted` paths stamp a finish time. The reviewer log file is never left in `running` state.
+`if: always()` on the clock-out step and the decide job means even timed-out and interrupted paths stamp a finish time. The decide job uses `if: always() && github.base_ref == 'development'` so it always evaluates the verdict even when tests or review fail.
 
 [Back to top](#navigate)
 
@@ -478,9 +535,9 @@ flowchart TB
     classDef effect fill:#374151,color:#fff,stroke:#000
     classDef fix fill:#064e3b,color:#fff,stroke:#000
 
-    F1["Human opens PR from agent/* branch"]:::fail
-    F1 --> F1E["filter still matches, reviewer runs\non a human PR"]:::effect
-    F1E --> F1X["rename branch off agent/* prefix\nor accept the review as bonus signal"]:::fix
+    F1["Any PR opened targeting development"]:::fail
+    F1 --> F1E["all three jobs run regardless\nof head branch prefix"]:::effect
+    F1E --> F1X["filter is on base_ref, not head_ref;\nhuman PRs to development get reviewed too"]:::fix
 
     F2["Bot token mint fails\nAPP_ID or APP_PRIVATE_KEY wrong"]:::fail
     F2 --> F2E["job fails at token step\nno log file written"]:::effect
@@ -514,16 +571,26 @@ flowchart TB
 
     F8["allowed_bots input missing"]:::fail
     F8 --> F8E["claude-code-action refuses to act\non bot-authored PR"]:::effect
-    F8X["keep allowed_bots: llm-exe-bot[bot]\nin yaml line 58"]:::fix
+    F8X["keep allowed_bots: llm-exe-bot[bot]\nin the review job yaml"]:::fix
     F8E --> F8X
 
     F9["Anthropic API outage"]:::fail
     F9 --> F9E["claude-code-action returns error\nclock_out marks interrupted"]:::effect
     F9X["re-run workflow when API recovers"]:::fix
     F9E --> F9X
+
+    F10["Tests fail but reviewer approves"]:::fail
+    F10 --> F10E["decide job sees tests=failure\nno approval submitted"]:::effect
+    F10X["tests gate prevents approval on\nbroken code; reviewer verdict is preserved\nin output for diagnostic"]:::fix
+    F10E --> F10X
+
+    F11["GITHUB_TOKEN cannot mark PR ready"]:::fail
+    F11 --> F11E["markPullRequestReadyForReview\nreturns 'Resource not accessible'"]:::effect
+    F11X["decide job uses bot App token\nfor gh pr ready (split-token pattern)"]:::fix
+    F11E --> F11X
 ```
 
-Critical asymmetry: a wrong approval is cheap because branch protection still requires human merge. A wrong close is more annoying but the branch persists on origin, so nothing is lost.
+Critical asymmetry: a wrong approval is cheap because branch protection still requires human merge. A wrong close is more annoying but the branch persists on origin, so nothing is lost. The decide job adds a second safety net: even if the reviewer agent approves, the PR is not formally approved on GitHub unless the test matrix also passes.
 
 [Back to top](#navigate)
 
@@ -538,20 +605,22 @@ flowchart LR
 
     K1["File"]:::k --- V1[".github/workflows/agent-review-pr.yml"]:::v
     K2["Trigger"]:::k --- V2["pull_request opened on main or development"]:::v
-    K3["Job filter"]:::k --- V3["startsWith(head_ref, 'agent/')"]:::v
+    K3["Job filter"]:::k --- V3["base_ref == 'development'"]:::v
     K4["Permissions"]:::k --- V4["contents: read, PR/issues: write, id-token: write"]:::v
-    K5["Timeout"]:::k --- V5["15 minutes"]:::v
+    K5["Jobs"]:::k --- V5["tests (20m), review (15m), decide (5m)"]:::v
     K6["Concurrency"]:::k --- V6["none (parallel reviews allowed)"]:::v
-    K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token"]:::v
+    K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token + GITHUB_TOKEN"]:::v
     K8["Model"]:::k --- V8["claude-opus-4-6"]:::v
     K9["Max turns"]:::k --- V9["30"]:::v
     K10["Tool allowlist"]:::k --- V10["Bash, Read, Glob, Grep, WebFetch (read-only)"]:::v
     K11["allowed_bots"]:::k --- V11["llm-exe-bot[bot]"]:::v
-    K12["Verdicts"]:::k --- V12["approve, request-changes, close"]:::v
+    K12["Verdicts"]:::k --- V12["approve, request-changes, close, no-verdict"]:::v
     K13["Prompt file"]:::k --- V13["scripts/agents/prompts/reviewer.md"]:::v
     K14["Assembled prompt"]:::k --- V14["/tmp/review-prompt.txt"]:::v
-    K15["Substitutions"]:::k --- V15["$PR_NUMBER, $LOG_FILE"]:::v
+    K15["Substitutions"]:::k --- V15["$PR_NUMBER, $LOG_FILE, $PR_CONTEXT"]:::v
     K16["Log path"]:::k --- V16["scripts/agents/logs/reviewer/&lt;ts&gt;.md"]:::v
+    K17["Test matrix"]:::k --- V17["Node 18.x, 20.x, 22.x, 24.x (fail-fast: false)"]:::v
+    K18["Approval gate"]:::k --- V18["decide job: verdict=approve AND tests=success"]:::v
 ```
 
 Direct links:
