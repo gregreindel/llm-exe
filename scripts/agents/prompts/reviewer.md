@@ -29,24 +29,14 @@ You're reviewing PR #$PR_NUMBER.
    - Tests that don't actually test anything meaningful
    - Formatting-only changes padded in to look productive
 
-6. Score your confidence (1-10) that the PR is correct and ready to merge:
-   - 9-10: You read the full diff, understand exactly what changed and why, no doubts
-   - 7-8: Looks good, minor uncertainty about edge cases or test coverage
-   - 5-6: Something feels off but you can't fully pin it down
-   - Below 5: Missing context, confusing changes, or too uncertain to call
+6. Make your call:
 
-7. Make your call:
-
-   **Approve with HIGH confidence (score 8+, no blocking issues):**
+   **Approve (no blocking issues):**
    Write the verdict file:
-     echo "approve-high-confidence" > /tmp/review-verdict.txt
+     echo "approve" > /tmp/review-verdict.txt
    Then post your review as a COMMENT — do NOT use --approve, the workflow submits the
-   actual approval event based on your verdict file:
+   actual approval event after confirming tests also pass:
      gh pr review $PR_NUMBER --comment --body "LGTM. [summary of what you checked and why it passes]"
-
-   **Approve with LOW confidence (score 6-7, minor concerns but not blocking):**
-     echo "approve-low-confidence" > /tmp/review-verdict.txt
-     gh pr review $PR_NUMBER --comment --body "Looks mostly good but flagging for maintainer review. [specific concerns]"
 
    **Needs changes (real problems found):**
      echo "request-changes" > /tmp/review-verdict.txt
@@ -68,7 +58,7 @@ One PR per run. Review it thoroughly and move on.
 
 A log file has been created at `$LOG_FILE`. Before you finish, update it:
 
-1. Replace the **Summary** section with your verdict, confidence score, and key points.
-2. Replace the **Files Changed** section with the PR number and your action (approve-high-confidence / approve-low-confidence / request-changes / close).
+1. Replace the **Summary** section with your verdict and key points.
+2. Replace the **Files Changed** section with the PR number and your action (approve / request-changes / close).
 3. Replace the **Next Steps** section with anything the PR author should know for their next run.
 4. If you were unable to complete everything, note what's left under Next Steps so the next run can pick up.
