@@ -134,7 +134,10 @@ jobs:
           clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"
 
   # Waits for both tests and review. Approves only when both pass.
-  # Uses GITHUB_TOKEN (github-actions[bot]) because the bot token cannot approve its own PRs.
+  # Split-token pattern:
+  #   --approve uses GITHUB_TOKEN (github-actions[bot]) because the bot token cannot approve its own PRs.
+  #   gh pr ready uses the bot App token because GITHUB_TOKEN cannot call markPullRequestReadyForReview
+  #   ("Resource not accessible by integration" error).
   decide:
     needs: [tests, review]
     if: always() && github.base_ref == 'development'
@@ -142,9 +145,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Approve or skip
         env:
           GH_TOKEN: ${{ github.token }}
+          BOT_TOKEN: ${{ steps.bot-token.outputs.token }}
         run: |
           verdict="${{ needs.review.outputs.verdict }}"
           tests_result="${{ needs.tests.result }}"
@@ -162,7 +173,7 @@ jobs:
               --json isDraft --jq '.isDraft' \
               --repo ${{ github.repository }})
             if [ "$IS_DRAFT" = "true" ]; then
-              gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
+              GH_TOKEN="$BOT_TOKEN" gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
               echo "PR marked as ready for review."
             fi
 
