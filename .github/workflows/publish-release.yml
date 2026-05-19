@@ -24,9 +24,62 @@ jobs:
             exit 1
           fi
 
-  publish-npm-package:
+  run-examples-tests:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
     needs: check-release-branch
+    name: Run Examples Tests
+    runs-on: ubuntu-latest
+    environment: Examples Test
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Latest Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
+
+      - name: Cache npm dependencies
+        uses: ./.github/actions/cache
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build package and pack package
+        run: npm run build:package && npm pack
+
+      - name: Copy path of packed package
+        run: |
+          echo "PACKED_PACKAGE_PATH=$(find . -maxdepth 1 -type f -name 'llm-exe-*.tgz')" >> $GITHUB_ENV
+
+      - name: Extract tarball and replace dist folder
+        run: |
+          mkdir -p temp_extract
+          tar -xzf ${{ env.PACKED_PACKAGE_PATH }} -C temp_extract
+          rm -rf dist
+          cp -r temp_extract/package/dist .
+          rm -rf temp_extract
+
+      - name: Install dependencies in examples directory
+        run: cd examples && npm install
+
+      - name: Run examples tests
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096 --experimental-vm-modules"
+          npm run test-examples
+
+  publish-npm-package:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
+    needs: [check-release-branch, run-examples-tests]
     name: Publish Main/Beta Package version
     runs-on: ubuntu-latest
     steps:
