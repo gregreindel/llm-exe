@@ -238,10 +238,10 @@ Every system outside this repository that one or more workflows depend on at run
 
 | Dependency | Used by | Authentication | Purpose |
 |------------|---------|----------------|---------|
-| GitHub API (REST and GraphQL) | every workflow that talks to issues, PRs, releases, caches | Either the workflow-default `GITHUB_TOKEN` or an App-generated `llm-exe-bot[bot]` token | Creating PRs, listing issues, posting comments, reviewing PRs, creating releases, deleting cache entries |
+| GitHub API (REST and GraphQL) | every workflow that talks to issues, PRs, releases, caches | Either the workflow-default `GITHUB_TOKEN`, an App-generated `llm-exe-bot[bot]` token, or the dedicated `llm-exe-review-bot[bot]` token | Creating PRs, listing issues, posting comments, reviewing PRs, creating releases, deleting cache entries |
 | Anthropic Claude API | `agent-run`, `coder-run`, `personas-run`, `agent-review-pr`, `agent-digest`, `bot-respond` | `CLAUDE_CODE_OAUTH_TOKEN` secret passed to `anthropics/claude-code-action@v1` | Runs the agent. Models used: `claude-opus-4-6` for all task agents, persona runners, curator, reviewer, and bot responder; `claude-sonnet-4-6` for the weekly digest. |
-| `anthropics/claude-code-action@v1` Marketplace action | every agent workflow | OAuth token above plus the bot GitHub token | The harness that executes Claude with a constrained tool allowlist and a `--max-turns` budget. |
-| `actions/create-github-app-token@v1` | every agent workflow plus the release and hygiene workflows that need write access beyond `GITHUB_TOKEN` | `APP_ID` and `APP_PRIVATE_KEY` secrets | Mints a short-lived installation token for the GitHub App `llm-exe-bot[bot]`. Used wherever workflow runs must trigger downstream workflows (the default token cannot), or wherever the bot must author commits, PRs, comments, or reviews. |
+| `anthropics/claude-code-action@v1` Marketplace action | every agent workflow | OAuth token above plus an App-generated GitHub token | The harness that executes Claude with a constrained tool allowlist and a `--max-turns` budget. |
+| `actions/create-github-app-token@v1` | every agent workflow plus the release and hygiene workflows that need write access beyond `GITHUB_TOKEN` | `APP_ID`/`APP_PRIVATE_KEY`, or `LLM_EXE_REVIEW_BOT_APP_ID`/`LLM_EXE_REVIEW_BOT_PRIVATE_KEY` for reviews | Mints short-lived GitHub App installation tokens. The main bot authors work and triggers downstream workflows; the review bot posts reviews and approvals. |
 | npm registry (`registry.npmjs.org`) | `publish-release.yml` | NPM token configured via npm scripts (`publish-main` and `publish-beta` in `package.json`); OIDC `id-token: write` is requested for provenance | Publishing the `llm-exe` package on every release. |
 | AWS S3 | `deploy-docs.yml` | OIDC federation via `aws-actions/configure-aws-credentials@v4`, assuming role from `AWS_ROLE_DEPLOY_ARN`, region from `AWS_REGION`, bucket from `AWS_S3_BUCKET` | Stores versioned docs at `s3://<bucket>/docs/<version>-<timestamp>/`. |
 | AWS CloudFront | `deploy-docs.yml` | Same OIDC federation, distribution ID from `AWS_CLOUDFRONT_DISTRIBUTION_ID` | Rotates the `OriginPath` to the new versioned folder and invalidates `/*`. |
@@ -254,12 +254,13 @@ Every system outside this repository that one or more workflows depend on at run
 
 ## 5. Secrets, Variables, and Identities
 
-Two identities operate this repository, and they are not interchangeable.
+Three identities operate this repository, and they are not interchangeable.
 
 | Identity | Created by | Used for | Why it matters |
 |----------|-----------|----------|----------------|
 | `github-actions[bot]` (the default `GITHUB_TOKEN`) | GitHub | Read operations, simple writes inside `tests.yml`, `check-semantic-versioning.yml`, `create-draft-release.yml`, `publish-release.yml`, `deploy-docs.yml` | Writes by this identity do not trigger further workflows. That is why agent workflows do not use it. |
-| `llm-exe-bot[bot]` (GitHub App installation token) | `actions/create-github-app-token@v1` reading `APP_ID` and `APP_PRIVATE_KEY` | All agent operations and any release-pipeline write that must trigger another workflow. Configured git author when committing from CI: `llm-exe-bot[bot]` with email `${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com`. | Writes by this identity DO trigger downstream workflows (for example, a bot PR fires `tests.yml` and `agent-review-pr.yml`). |
+| `llm-exe-bot[bot]` (GitHub App installation token) | `actions/create-github-app-token@v1` reading `APP_ID` and `APP_PRIVATE_KEY` | Work-producing agent operations and any release-pipeline write that must trigger another workflow. Configured git author when committing from CI: `llm-exe-bot[bot]` with email `${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com`. | Writes by this identity DO trigger downstream workflows (for example, a bot PR fires `tests.yml` and `agent-review-pr.yml`). It does not approve its own PRs. |
+| `llm-exe-review-bot[bot]` (GitHub App installation token) | `actions/create-github-app-token@v1` reading `LLM_EXE_REVIEW_BOT_APP_ID` and `LLM_EXE_REVIEW_BOT_PRIVATE_KEY` | `agent-review-pr.yml` only: review comments, request-changes, close decisions, and approvals. | Dedicated review identity, separate from the bot that authored the PR, so GitHub accepts approvals on `llm-exe-bot[bot]` PRs. |
 
 ### Secret inventory
 
@@ -269,6 +270,8 @@ Stored under repository or organization secrets:
 |--------|------------------|
 | `APP_ID` | App-token minting in every workflow that needs the bot. |
 | `APP_PRIVATE_KEY` | Same. |
+| `LLM_EXE_REVIEW_BOT_APP_ID` | App-token minting in `agent-review-pr.yml` for the dedicated review bot. |
+| `LLM_EXE_REVIEW_BOT_PRIVATE_KEY` | Same. |
 | `CLAUDE_CODE_OAUTH_TOKEN` | Every agent workflow that invokes `anthropics/claude-code-action@v1`. |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY` | `test-package.yml` only, scoped to the `Examples Test` environment. |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | `agent-digest.yml` token exchange against Microsoft identity. |
@@ -293,6 +296,13 @@ Minimum scopes required by `llm-exe-bot[bot]`:
 - actions: write (for cache cleanup only)
 - id-token: write
 - workflows: write (only if any agent edits files under `.github/workflows/`; this is generally avoided)
+- metadata: read
+
+Minimum scopes required by `llm-exe-review-bot[bot]`:
+
+- contents: read
+- issues: write
+- pull-requests: write
 - metadata: read
 
 ---
@@ -534,7 +544,7 @@ flowchart TB
 
     subgraph gatekeepers["Gatekeepers"]
         curator["curator\nreads persona logs\npromotes signal, files issues"]:::meta
-        reviewer["reviewer\nreviews every agent/* PR\napprove, request changes, or close"]:::meta
+        reviewer["reviewer\nreviews development PRs\napprove, request changes, or close"]:::meta
     end
 
     subgraph human["Human"]
@@ -564,7 +574,7 @@ flowchart TB
 | scout | `agent-run.yml` cron `0 11 * * 1` or dispatch | src/llm/**, provider documentation URLs, `/tmp/all-issues.json` | Issues only; comments on existing issues when duplicate detected | Zero or more issues with labels `enhancement`, `bug`, `needs-discussion`, or `breaking`. Tags `@gregreindel` for breaking or imminent deprecations. |
 | beginner / harsh-critic / speed-runner / enterprise | `personas-run.yml` (random subset by dispatch, all four on cron Sunday) | CLAUDE.md, README.md, docs/, examples/ | log file only | A persona log file with categorized findings (`genuine-bug`, `confusing`, `rough-edge`, `suggestion`). |
 | curator | `personas-run.yml` final job (waits for persona matrix) or local `maintain.sh curator` | All persona logs, `/tmp/all-issues.json`, CLAUDE.md | Issues plus comments on existing issues; updates own log | Triaged issues with labels `bug`, `documentation`, `enhancement`, `testing`. |
-| reviewer | `agent-review-pr.yml` on `opened` PRs whose head ref starts `agent/` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log | Verdict on the PR. Does not push commits. |
+| reviewer | `agent-review-pr.yml` on `opened` PRs targeting `development` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log | Verdict on the PR. Does not push commits. |
 | bot-respond | `bot-respond.yml` on issue or PR comment mentioning `@llm-exe-bot` from OWNER/MEMBER/COLLABORATOR | The comment body and any referenced PR diff | Comments on the issue or PR; if asked to fix, commits and pushes to the existing PR branch (never creates a new PR) | A reply comment; optionally code commits on the existing branch. |
 | digest | `agent-digest.yml` Monday cron | Last 7 days of issues, last 20 PRs, recent agent logs, last 3 releases | `/tmp/digest.html` only | HTML body posted via Microsoft Graph to `MARKETING_EMAILS`. |
 
@@ -662,8 +672,8 @@ Three jobs: `tests`, `review`, `decide`. Tests and review run in parallel; decid
 | Triggers | `pull_request` `opened` and `synchronize` on `main` or `development` |
 | Job filters | `tests`: `base_ref == 'development'` (runs on both opened and synchronize). `review`: `base_ref == 'development' && action == 'opened'` (review only on initial open). `decide`: `always() && base_ref == 'development'` (waits for both). |
 | Tests job | Node 18/20/22/24 matrix, mirrors `tests.yml`. Timeout 20m. Runs on opened AND synchronize so re-pushes re-test. |
-| Review job | Auth via App token. `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
-| Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Uses split-token pattern: `GITHUB_TOKEN` for `--approve` (bot cannot approve its own PRs), App token for `gh pr ready` (`GITHUB_TOKEN` lacks that permission). Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
+| Review job | Auth via `llm-exe-review-bot[bot]` App token. `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
+| Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Uses the review bot token for `--approve` and the regular bot App token only for `gh pr ready`. Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
 | Prompt substitutions | `$PR_NUMBER`, `$LOG_FILE`, `$PR_CONTEXT` (bot agent vs human contributor, computed from head_ref prefix). |
 | Output | Exactly one of: `gh pr review --approve` (with optional `gh pr ready`), `gh pr review --request-changes`, `gh pr close`. Plus a log file in `scripts/agents/logs/reviewer/`. |
 
@@ -1123,7 +1133,7 @@ In every agent workflow, the call looks like this (use as a literal template):
       --model claude-opus-4-6
 ```
 
-For the reviewer, also pass `allowed_bots: "<your-bot>[bot]"` so the action does not refuse to operate on a bot PR.
+For the reviewer, pass the dedicated review-bot token as `github_token` and also pass `allowed_bots: "<your-work-bot>[bot]"` so the action does not refuse to operate on bot-authored PRs.
 
 ### 13.6. Bake in the backlog gate
 
