@@ -15,6 +15,11 @@ on:
         description: "Comma-separated paths to sync docs for. Leave empty to diff HEAD against its parent."
         required: false
         type: string
+      full_refresh:
+        description: "Refresh ALL docs regardless of recent changes. Overrides target."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: docs-sync
@@ -67,8 +72,22 @@ jobs:
       - name: Detect changed files
         id: detect
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
+          if [ "${{ inputs.full_refresh }}" = "true" ]; then
+            # Full-refresh mode: list every tracked source file so the agent
+            # audits all deep dives for drift, not just recently changed ones.
+            {
+              find .github/workflows -maxdepth 1 -name '*.yml' | sort
+              find .github/actions   -name '*.yml'              | sort
+              find .github/vitals    -type f                     | sort
+              echo scripts/maintain.sh
+              echo scripts/agents/config.sh
+              find scripts/agents/prompts -type f               | sort
+              echo package.json
+            } | grep -v '^$' > /tmp/changed-files.txt
+
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
             echo "${{ inputs.target }}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > /tmp/changed-files.txt
+
           else
             base="${{ github.event.before }}"
             if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
