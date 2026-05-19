@@ -201,7 +201,7 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `agent-run.yml` | yes, with `agent` (choice) and `instructions` (string) inputs | `0 9 * * 1,4` tester, `0 10 * * 2,5` docs, `0 11 * * 1` scout | none | none | none |
 | `coder-run.yml` | yes, no inputs | `0 8 * * 1,4` | none | none | none |
 | `personas-run.yml` | yes, with `count` choice input (1..4) | `0 6 * * 0` Sunday full sweep | none | none | none |
-| `agent-review-pr.yml` | no | none | `opened` on `main` or `development`; job-level filter `github.base_ref == 'development'` | none | none |
+| `agent-review-pr.yml` | no | none | `opened, synchronize` on `main` or `development`; job-level filter `base_ref == 'development'`; review gated to `opened` only | none | none |
 | `agent-digest.yml` | yes, no inputs | `0 11 * * 1` Monday morning | none | none | none |
 | `bot-respond.yml` | no | none | none | none | `issue_comment` `created`; filter requires `@llm-exe-bot` mention plus `OWNER`/`MEMBER`/`COLLABORATOR` association and excludes bot self-comments |
 | `tests.yml` | yes, no inputs | none | `pull_request` on `main` or `development` | none | bypass when head branch is `bump-version-branch` |
@@ -225,6 +225,7 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `check-semantic-versioning.yml` | `${{ github.workflow }}-${{ github.ref }}` | true |
 | `tests.yml` | `${{ github.workflow }}-${{ github.ref }}` | true |
 | `test-package.yml` | `${{ github.workflow }}-${{ github.ref }}` | true |
+| `docs-sync.yml` | `docs-sync` | false |
 | all others | not set | n/a |
 
 Concurrency on `agent-run.yml` is keyed by agent identity (not by ref), so two different agents can run side by side but a tester run cannot collide with another tester run.
@@ -406,7 +407,7 @@ sequenceDiagram
     Cfg->>Prompt: sed -e 's|$BRANCH|...|g' -e 's|$LOG_FILE|...|g'
     Cfg->>Logs: build_prior_context cat last 3 logs (excluding current)
     Cfg->>Runner: write /tmp/agent-prompt.txt = template + prior context + Time Budget + Maintainer Instructions
-    Runner->>CCA: run with --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" --max-turns 50 --model claude-opus-4-6 (or 30 turns for the reviewer)
+    Runner->>CCA: run with --allowedTools "..." --max-turns N --model claude-opus-4-6 (50 default, 80 docs-sync, 30 reviewer)
     CCA->>Claude: streaming inference
     Claude-->>CCA: tool calls (Bash, Read, Write, Edit, etc.)
     CCA->>GH: gh api (issues, PRs, comments) using bot token
@@ -563,7 +564,7 @@ flowchart TB
 | scout | `agent-run.yml` cron `0 11 * * 1` or dispatch | src/llm/**, provider documentation URLs, `/tmp/all-issues.json` | Issues only; comments on existing issues when duplicate detected | Zero or more issues with labels `enhancement`, `bug`, `needs-discussion`, or `breaking`. Tags `@gregreindel` for breaking or imminent deprecations. |
 | beginner / harsh-critic / speed-runner / enterprise | `personas-run.yml` (random subset by dispatch, all four on cron Sunday) | CLAUDE.md, README.md, docs/, examples/ | log file only | A persona log file with categorized findings (`genuine-bug`, `confusing`, `rough-edge`, `suggestion`). |
 | curator | `personas-run.yml` final job (waits for persona matrix) or local `maintain.sh curator` | All persona logs, `/tmp/all-issues.json`, CLAUDE.md | Issues plus comments on existing issues; updates own log | Triaged issues with labels `bug`, `documentation`, `enhancement`, `testing`. |
-| reviewer | `agent-review-pr.yml` on `opened` PRs targeting `development` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log; decide job gates formal approval on both verdict and test matrix results | Verdict on the PR. Does not push commits. |
+| reviewer | `agent-review-pr.yml` on `opened` PRs whose head ref starts `agent/` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log | Verdict on the PR. Does not push commits. |
 | bot-respond | `bot-respond.yml` on issue or PR comment mentioning `@llm-exe-bot` from OWNER/MEMBER/COLLABORATOR | The comment body and any referenced PR diff | Comments on the issue or PR; if asked to fix, commits and pushes to the existing PR branch (never creates a new PR) | A reply comment; optionally code commits on the existing branch. |
 | digest | `agent-digest.yml` Monday cron | Last 7 days of issues, last 20 PRs, recent agent logs, last 3 releases | `/tmp/digest.html` only | HTML body posted via Microsoft Graph to `MARKETING_EMAILS`. |
 
@@ -654,18 +655,17 @@ Four jobs: `gate`, `pick-personas`, `run-persona` (matrix), `run-curator`.
 
 ### 9.4. `agent-review-pr.yml` - Reviewer
 
-Three jobs: `tests`, `review`, `decide`.
+Three jobs: `tests`, `review`, `decide`. Tests and review run in parallel; decide waits for both.
 
 | Field | Value |
 |-------|-------|
-| Triggers | `pull_request` `opened` on `main` or `development` |
-| Job filter | `if: github.base_ref == 'development'` on all three jobs (decide adds `always()`). PRs targeting `main` skip entirely. |
-| Jobs | `tests` (Node 18/20/22/24 matrix, 20m timeout, mirrors tests.yml), `review` (LLM review, 15m timeout), `decide` (approval gate, 5m timeout, needs both). |
-| Auth | App token for review and decide (so the review comes from `llm-exe-bot[bot]`). Decide uses split-token pattern: `GITHUB_TOKEN` for `gh pr review --approve` (bot cannot approve its own PRs), bot App token for `gh pr ready` (`GITHUB_TOKEN` cannot call `markPullRequestReadyForReview`). |
-| Bot allowlist | `allowed_bots: "llm-exe-bot[bot]"` is passed to `claude-code-action`. This tells the action that it is acceptable to act on a PR whose author is this bot. Without that, the action would refuse. |
-| Tools | `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict is written to `/tmp/review-verdict.txt` and exposed as a job output. |
-| Approval gate | `decide` job approves only when `review.outputs.verdict == 'approve'` AND `tests.result == 'success'`. Also marks draft PRs as ready for review. |
-| Output | Reviewer agent: `gh pr review --approve` or `--request-changes`, or `gh pr close`. Decide job: formal `gh pr review --approve` + `gh pr ready` (when gated conditions are met). Plus a log file in `scripts/agents/logs/reviewer/`. |
+| Triggers | `pull_request` `opened` and `synchronize` on `main` or `development` |
+| Job filters | `tests`: `base_ref == 'development'` (runs on both opened and synchronize). `review`: `base_ref == 'development' && action == 'opened'` (review only on initial open). `decide`: `always() && base_ref == 'development'` (waits for both). |
+| Tests job | Node 18/20/22/24 matrix, mirrors `tests.yml`. Timeout 20m. Runs on opened AND synchronize so re-pushes re-test. |
+| Review job | Auth via App token. `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
+| Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Uses split-token pattern: `GITHUB_TOKEN` for `--approve` (bot cannot approve its own PRs), App token for `gh pr ready` (`GITHUB_TOKEN` lacks that permission). Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
+| Prompt substitutions | `$PR_NUMBER`, `$LOG_FILE`, `$PR_CONTEXT` (bot agent vs human contributor, computed from head_ref prefix). |
+| Output | Exactly one of: `gh pr review --approve` (with optional `gh pr ready`), `gh pr review --request-changes`, `gh pr close`. Plus a log file in `scripts/agents/logs/reviewer/`. |
 
 ### 9.5. `agent-digest.yml` - Weekly HTML email
 

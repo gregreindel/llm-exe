@@ -38,21 +38,21 @@ flowchart LR
     classDef out fill:#581c87,color:#fff,stroke:#000
 
     subgraph T["Triggers"]
-        p1["push to development\nwith narrow paths filter"]:::trig
-        d1["workflow_dispatch\ninputs.target (optional)"]:::trig
+        d1["workflow_dispatch\ninputs.target or inputs.full_refresh"]:::trig
     end
 
     subgraph A["docs-sync.yml"]
         S["sync job\ntimeout 30m"]:::job
     end
 
-    subgraph SRC["Watched source paths"]
+    subgraph SRC["Watched source paths (used by diff detection)"]
         s1[".github/workflows/**"]:::file
         s2[".github/actions/**"]:::file
-        s3["scripts/maintain.sh"]:::file
-        s4["scripts/agents/config.sh"]:::file
-        s5["scripts/agents/prompts/**"]:::file
-        s6["package.json"]:::file
+        s3[".github/vitals/**"]:::file
+        s4["scripts/maintain.sh"]:::file
+        s5["scripts/agents/config.sh"]:::file
+        s6["scripts/agents/prompts/**"]:::file
+        s7["package.json"]:::file
     end
 
     subgraph F["Files read/written"]
@@ -75,13 +75,6 @@ flowchart LR
         maint["maintainer merges PR"]:::out
     end
 
-    s1 --> p1
-    s2 --> p1
-    s3 --> p1
-    s4 --> p1
-    s5 --> p1
-    s6 --> p1
-    p1 --> S
     d1 --> S
     S --> cfg
     cfg --> pr
@@ -104,31 +97,28 @@ flowchart LR
 
 ## 2. Triggers and what each one does
 
+The workflow only accepts `workflow_dispatch`. Push detection is handled by a separate trigger workflow (`docs-sync-trigger.yml`) that dispatches this workflow with the changed file list pre-computed. This separation exists because `claude-code-action@v1` does not support the `push` event type.
+
 ```mermaid
 flowchart TB
-    classDef push fill:#0e7490,color:#fff,stroke:#000
     classDef manual fill:#9333ea,color:#fff,stroke:#000
     classDef skip fill:#7c2d12,color:#fff,stroke:#000
 
-    start([event arrives])
-    start --> ev{event_name?}
+    start([workflow_dispatch event])
+    start --> fr{inputs.full_refresh?}
 
-    ev -->|push| pb{branch == development?}
-    pb -->|no| sk1([skip: trigger only listens to development]):::skip
-    pb -->|yes| pp{any changed path matches\nthe paths filter?}
-    pp -->|no| sk2([skip: nothing relevant changed]):::skip
-    pp -->|yes| run1[(diff base = github.event.before\ndiff head = github.sha)]:::push
+    fr -->|yes| run1[(list ALL tracked source files\naudits every deep dive)]:::manual
 
-    ev -->|workflow_dispatch| ti{inputs.target set?}
+    fr -->|no| ti{inputs.target set?}
     ti -->|yes| run2[(use the comma-separated list verbatim)]:::manual
-    ti -->|no| run3[(diff base = HEAD~1\ndiff head = HEAD)]:::manual
+    ti -->|no| run3[(diff base = HEAD~1 or event.before\ndiff head = HEAD)]:::manual
 
-    run1 --> proceed[(run sync job)]:::push
+    run1 --> proceed[(run sync job)]:::manual
     run2 --> proceed
     run3 --> proceed
 ```
 
-Source: [.github/workflows/docs-sync.yml](../workflows/docs-sync.yml) lines 12-29 (triggers + paths).
+Source: [.github/workflows/docs-sync.yml](../workflows/docs-sync.yml) lines 10-22 (trigger + inputs).
 
 [Back to top](#navigate)
 
@@ -136,7 +126,7 @@ Source: [.github/workflows/docs-sync.yml](../workflows/docs-sync.yml) lines 12-2
 
 ## 3. Loop prevention
 
-This workflow is exposed to one specific failure mode: the bot's own output retriggering itself. The paths filter provides two independent guards.
+This workflow cannot retrigger itself because it only fires on `workflow_dispatch`, never on `push`. The bot's doc edits merge to `development` but that merge event does not dispatch this workflow. Two independent guards reinforce this.
 
 ```mermaid
 flowchart LR
@@ -146,14 +136,14 @@ flowchart LR
     R1["Bot PR merges include\n.github/*_DEEP_DIVE.md edits"]:::risk
     R2["Bot PR merges include\nscripts/agents/logs/docs-sync/*.md"]:::risk
 
-    G1["Guard 1: paths filter\nexcludes .github/*.md\nexcludes scripts/agents/logs/**"]:::guard
-    G2["Guard 2: paths filter is\nan allowlist of source paths only\n(workflows/actions/prompts/config/maintain/package.json)"]:::guard
+    G1["Guard 1: trigger is dispatch-only\nno push trigger exists on this workflow"]:::guard
+    G2["Guard 2: diff detection pathspec\nis an allowlist of source paths only\n(workflows/actions/vitals/prompts/config/maintain/package.json)"]:::guard
 
     R1 -. blocked by .-> G1
     R2 -. blocked by .-> G2
 ```
 
-The path filter is an allowlist by intent, not a denylist. Adding `scripts/**` (broader) would silently re-include the log directory and break the system.
+Push detection is handled by a separate trigger workflow (`docs-sync-trigger.yml`) that only dispatches when workflow/action/script source files change, not when doc markdown changes.
 
 [Back to top](#navigate)
 
@@ -168,27 +158,29 @@ flowchart LR
     classDef out fill:#064e3b,color:#fff,stroke:#000
 
     subgraph Inputs
-        I1["inputs.target\n(comma-separated paths, optional)"]:::inp
-        I2["github.event_name\n(push vs workflow_dispatch)"]:::inp
-        I3["github.event.before\n(push events only)"]:::inp
+        I1["inputs.full_refresh\n(boolean, default false)"]:::inp
+        I2["inputs.target\n(comma-separated paths, optional)"]:::inp
+        I3["github.event.before\n(when dispatched by trigger workflow)"]:::inp
     end
 
     subgraph Effects
-        E1["Bypasses git diff\nuses provided list verbatim"]:::use
-        E2["Selects diff strategy\n(github.event.before vs HEAD~1)"]:::use
-        E3["Skips diff detection\nif before == 0000... (initial push)"]:::use
+        E1["Lists ALL tracked source files\noverrides inputs.target"]:::use
+        E2["Bypasses git diff\nuses provided list verbatim"]:::use
+        E3["Selects diff base\n(github.event.before vs HEAD~1)"]:::use
     end
 
     subgraph Outputs
-        O1["Targeted sync for specific files\n(manual escape hatch)"]:::out
-        O2["Correct diff range\nacross merge commits and squash merges"]:::out
-        O3["Avoids crashing on first-ever push"]:::out
+        O1["Full audit of every deep dive\nfor comprehensive drift detection"]:::out
+        O2["Targeted sync for specific files\n(manual escape hatch)"]:::out
+        O3["Correct diff range\nacross merge commits and squash merges"]:::out
     end
 
     I1 --> E1 --> O1
     I2 --> E2 --> O2
     I3 --> E3 --> O3
 ```
+
+When `full_refresh` is true, the detect step enumerates every tracked source file (all workflows, actions, vitals, scripts, prompts, and package.json) so the agent audits all deep dives for drift regardless of what recently changed. This overrides `inputs.target`.
 
 [Back to top](#navigate)
 
@@ -214,9 +206,10 @@ flowchart TB
         r6["Detect changed files\n(writes /tmp/changed-files.txt)"]:::step
         r7["Skip if nothing relevant changed"]:::step
         r8["Build prompt\n(only if count != 0)"]:::step
-        r9["Run docs-sync agent\nclaude-code-action@v1\nopus-4-6 max-turns 50"]:::step
-        r10["Clock out (if: always())"]:::step
-        r1 --> r2 --> r3 --> r4 --> r5 --> r6 --> r7 --> r8 --> r9 --> r10
+        r9["Run docs-sync agent\nclaude-code-action@v1\nopus-4-6 max-turns 80"]:::step
+        r10["Upload agent prompt\n(artifact, 7-day retention)"]:::step
+        r11["Clock out (if: always())"]:::step
+        r1 --> r2 --> r3 --> r4 --> r5 --> r6 --> r7 --> r8 --> r9 --> r10 --> r11
     end
 ```
 
@@ -289,14 +282,17 @@ flowchart TB
     classDef act fill:#1e3a8a,color:#fff,stroke:#000
 
     start([Detect step starts])
-    start --> q1{event_name == workflow_dispatch\nAND inputs.target non-empty?}
+    start --> q0{inputs.full_refresh == true?}
+    q0 -->|yes| a0["find all tracked source files\n(workflows, actions, vitals,\nmaintain.sh, config.sh, prompts,\npackage.json)\n> /tmp/changed-files.txt"]:::act
+    q0 -->|no| q1{inputs.target non-empty?}
     q1 -->|yes| a1["echo target | tr ',' '\\n' | trim |\nfilter empty > /tmp/changed-files.txt"]:::act
     q1 -->|no| q2{github.event.before is empty\nor all zeros?}
     q2 -->|yes| a2["base = HEAD~1"]:::act
     q2 -->|no| a3["base = github.event.before"]:::act
     a2 --> a4["git diff --name-only base HEAD --\n.github/workflows/\n.github/actions/\n.github/vitals/\nscripts/maintain.sh\nscripts/agents/config.sh\nscripts/agents/prompts/\npackage.json\n> /tmp/changed-files.txt"]:::act
     a3 --> a4
-    a1 --> a5["count = wc -l < /tmp/changed-files.txt"]:::act
+    a0 --> a5["count = wc -l < /tmp/changed-files.txt"]:::act
+    a1 --> a5
     a4 --> a5
     a5 --> q3{count == 0?}
     q3 -->|yes| stop([exit early, no agent run]):::cond
@@ -444,7 +440,7 @@ flowchart LR
     end
 
     subgraph During["While the agent runs"]
-        d1["api.anthropic.com\nauth: CLAUDE_CODE_OAUTH_TOKEN\nmodel: claude-opus-4-6\n--max-turns 50"]:::llm
+        d1["api.anthropic.com\nauth: CLAUDE_CODE_OAUTH_TOKEN\nmodel: claude-opus-4-6\n--max-turns 80"]:::llm
         d2["api.github.com (gh CLI)\nauth: bot token\nwhy: gh pr create, optionally gh issue create"]:::gh
         d3["origin remote (git push)\nauth: bot token\nwhy: push agent/docs-sync/&lt;date&gt;"]:::gh
     end
@@ -453,7 +449,7 @@ flowchart LR
     d1 --> d3
 ```
 
-Tool allowlist: `Bash,Read,Write,Edit,Glob,Grep,WebFetch`. No `WebSearch` is needed; the agent only reads local files. `allowed_bots: "llm-exe-bot[bot]"` is passed to `claude-code-action` so the action operates on commits authored by the bot.
+Tool allowlist: `Bash,Read,Write,Edit,Glob,Grep,WebFetch`. No `WebSearch` is needed; the agent only reads local files.
 
 [Back to top](#navigate)
 
@@ -515,7 +511,7 @@ stateDiagram-v2
     Logging --> ClockOut: status mapped to exit code
     ClockOut --> Completed: exit 0
     ClockOut --> Interrupted: any non-zero
-    Working --> TimedOut: 30-minute timeout or max-turns 50
+    Working --> TimedOut: 30-minute timeout or max-turns 80
     TimedOut --> ClockOut
     NoChanges --> [*]
     Skipped --> [*]
@@ -581,15 +577,15 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/docs-sync.yml"]:::v
-    K2["Triggers"]:::k --- V2["push to development on source paths + dispatch"]:::v
-    K3["Inputs"]:::k --- V3["target (comma-separated paths, optional)"]:::v
-    K4["Path filter"]:::k --- V4["workflows, actions, vitals, maintain.sh, config.sh, prompts, package.json"]:::v
+    K2["Triggers"]:::k --- V2["workflow_dispatch only (push detection in separate trigger workflow)"]:::v
+    K3["Inputs"]:::k --- V3["target (comma-separated paths), full_refresh (boolean)"]:::v
+    K4["Path filter"]:::k --- V4["workflows, actions, maintain.sh, config.sh, prompts, package.json"]:::v
     K5["Permissions"]:::k --- V5["contents/PR/issues: write"]:::v
     K6["Timeout"]:::k --- V6["30 minutes"]:::v
     K7["Concurrency"]:::k --- V7["docs-sync, no cancel"]:::v
     K8["Identity"]:::k --- V8["llm-exe-bot[bot] via App token"]:::v
     K9["Model"]:::k --- V9["claude-opus-4-6"]:::v
-    K10["Max turns"]:::k --- V10["50"]:::v
+    K10["Max turns"]:::k --- V10["80"]:::v
     K11["Tool allowlist"]:::k --- V11["Bash, Read, Write, Edit, Glob, Grep, WebFetch"]:::v
     K12["Branch"]:::k --- V12["agent/docs-sync/&lt;YYYY-MM-DD&gt;"]:::v
     K13["Log path"]:::k --- V13["scripts/agents/logs/docs-sync/&lt;ts&gt;.md"]:::v
@@ -634,7 +630,7 @@ Defense in depth:
 
 | Boundary | Mechanism |
 |----------|-----------|
-| Triggering | Only fires via `workflow_dispatch` (either manually or from `docs-sync-trigger.yml` on push to `development`). No direct PR or `issue_comment` triggers. Loop prevention is handled by the paths allowlist in the trigger workflow: see [section 3](#3-loop-prevention). |
+| Triggering | Only fires on `workflow_dispatch` (no push trigger on this workflow). Push detection is handled by a separate trigger workflow. No PR or `issue_comment` triggers. Loop prevention is inherent: dispatch-only means the bot's own merged output cannot retrigger this workflow. See [section 3](#3-loop-prevention). |
 | Scope | Prompt explicitly forbids touching `.github/workflows/`, `.github/actions/`, `scripts/`, `src/`, `docs/`, `package.json`. |
 | Verification | Reviewer agent ([AGENT_REVIEW_PR_DEEP_DIVE.md](AGENT_REVIEW_PR_DEEP_DIVE.md)) reads every `agent/*` PR before merge. Its tool allowlist is read-only so it cannot be prompt-injected to make changes. |
 | Token scope | App-minted token with `contents`, `pull-requests`, and `issues` write. No `id-token`, no `actions`, no admin. |
