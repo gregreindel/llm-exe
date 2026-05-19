@@ -96,11 +96,11 @@ flowchart LR
 
 | Workflow | Triggers | Purpose | Deep dive |
 |----------|----------|---------|-----------|
-| [tests.yml](../workflows/tests.yml) | PR on main or development + dispatch | Jest matrix on Node 18/20/22/24; coverage uploaded on Node 24 | [TESTS_DEEP_DIVE.md](TESTS_DEEP_DIVE.md) |
+| [tests.yml](../workflows/tests.yml) | PR on main + dispatch | Jest matrix on Node 18/20/22/24; coverage uploaded on Node 24 | [TESTS_DEEP_DIVE.md](TESTS_DEEP_DIVE.md) |
 | [test-package.yml](../workflows/test-package.yml) | Dispatch only (gregreindel) | Runs examples/ against a packed tarball with real provider keys | [TEST_PACKAGE_DEEP_DIVE.md](TEST_PACKAGE_DEEP_DIVE.md) |
 | [pack-package.yml](../workflows/pack-package.yml) | PR closed to development + dispatch | Build + npm pack, uploads .tgz artifact (30-day retention) | [PACK_PACKAGE_DEEP_DIVE.md](PACK_PACKAGE_DEEP_DIVE.md) |
 | [cache-cleanup.yml](../workflows/cache-cleanup.yml) | PR closed + release published + dispatch | Deletes Actions caches scoped to the closed PR or release ref | [CACHE_CLEANUP_DEEP_DIVE.md](CACHE_CLEANUP_DEEP_DIVE.md) |
-| [update-prs-with-development.yml](../workflows/update-prs-with-development.yml) | Weekday cron + dispatch | Rebases every open PR targeting development to keep them current | [UPDATE_PRS_DEEP_DIVE.md](UPDATE_PRS_DEEP_DIVE.md) |
+| [update-prs-with-development.yml](../workflows/update-prs-with-development.yml) | Dispatch only | Rebases every non-draft open PR targeting development | [UPDATE_PRS_DEEP_DIVE.md](UPDATE_PRS_DEEP_DIVE.md) |
 
 ---
 
@@ -139,7 +139,7 @@ flowchart LR
     end
 ```
 
-Totals: 17 deep dives, 9,238 lines, 194 mermaid diagrams.
+Totals: 19 deep dives (docs-sync-trigger shares the DOCS_SYNC deep dive).
 
 ## Conventions every deep dive follows
 

@@ -34,7 +34,7 @@ The repository runs three layers of automation, each with a different cadence an
 | Release pipeline | Promote work from `development` to `main`, bump versions, draft releases, publish to npm, deploy docs to AWS S3 plus CloudFront. | Pull request events, release events, manual dispatch | End users of the npm package |
 | Infrastructure hygiene | Test matrix on PRs, cache cleanup on PR close, weekly email digest, bot mention responder. | PR events, release events, scheduled crons, issue comments | CI health and maintainer awareness |
 
-There are sixteen GitHub Actions workflow files, two reusable composite actions, one shell entry point (`scripts/maintain.sh`), one shared config library (`scripts/agents/config.sh`), nine Markdown prompt files, and a writable `scripts/agents/logs/` directory that the agents both read from and append to across runs.
+There are nineteen GitHub Actions workflow files, two reusable composite actions, one shell entry point (`scripts/maintain.sh`), one shared config library (`scripts/agents/config.sh`), nine Markdown prompt files, and a writable `scripts/agents/logs/` directory that the agents both read from and append to across runs.
 
 ---
 
@@ -53,7 +53,7 @@ flowchart LR
     classDef ext fill:#374151,color:#fff,stroke:#000
 
     T["Events<br/>cron, dispatch, PR, release,<br/>issue_comment, workflow_run, push"]:::trig
-    A["Agent layer<br/>7 workflows, LLM-driven"]:::agent
+    A["Agent layer<br/>8 workflows, LLM-driven"]:::agent
     R["Release pipeline<br/>6 workflows, development to npm + S3"]:::rel
     H["CI hygiene<br/>5 workflows, tests + caches + rebases"]:::hyg
     X["External services<br/>Anthropic, GitHub, npm, AWS, Microsoft Graph"]:::ext
@@ -89,14 +89,17 @@ flowchart LR
     DG[agent-digest]:::job
     BR[bot-respond]:::job
     DS[docs-sync]:::job
+    VT[vitals]:::job
 
     c --> AR
     c --> CR
     c --> PR
     c --> DG
+    c --> VT
     d --> AR
     d --> CR
     d --> PR
+    d --> VT
     p --> RV
     cm --> BR
     ph --> DS
@@ -151,13 +154,12 @@ flowchart LR
     T2["test-package<br/>examples vs packed tarball"]:::job
     T3["pack-package<br/>tarball artifact"]:::job
     T4["cache-cleanup<br/>Actions cache GC"]:::job
-    T5["update-prs-with-development<br/>weekday rebase"]:::job
+    T5["update-prs-with-development<br/>on-demand rebase"]:::job
 
     p --> T1
     p --> T3
     p --> T4
     r --> T4
-    c --> T5
     d --> T2
     d --> T1
     d --> T3
@@ -204,17 +206,20 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `agent-review-pr.yml` | no | none | `opened, synchronize` on `main` or `development`; job-level filter `base_ref == 'development'`; review gated to `opened` only | none | none |
 | `agent-digest.yml` | yes, no inputs | `0 11 * * 1` Monday morning | none | none | none |
 | `bot-respond.yml` | no | none | none | none | `issue_comment` `created`; filter requires `@llm-exe-bot` mention plus `OWNER`/`MEMBER`/`COLLABORATOR` association and excludes bot self-comments |
-| `tests.yml` | yes, no inputs | none | `pull_request` on `main` or `development` | none | bypass when head branch is `bump-version-branch` |
-| `test-package.yml` | yes, no inputs | none | none (currently commented out) | none | guarded by `gregreindel` actor check on dispatch |
+| `tests.yml` | yes, no inputs | none | `pull_request` on `main` only | none | bypass when head branch is `bump-version-branch` |
+| `test-package.yml` | yes, no inputs | none | none | none | guarded by `gregreindel` actor check on dispatch |
 | `pack-package.yml` | yes, no inputs | none | `pull_request` `closed` on `development` (skips `bump-version-branch`) | none | none |
 | `cache-cleanup.yml` | yes, with `branch` optional input | none | `pull_request` `closed` | `published` | none |
-| `update-prs-with-development.yml` | yes, no inputs | `0 8 * * 1-5` weekdays | none | none | none |
+| `update-prs-with-development.yml` | yes, no inputs | none (cron removed) | none | none | skips draft PRs |
 | `check-semantic-versioning.yml` | no | none | `pull_request` on `main` only | none | none |
 | `draft-main-pr.yml` | no | none | `pull_request` `closed` on `development` (skips `bump-version-branch` head) | `published` | none |
 | `create-draft-release.yml` | yes, no inputs | none | `pull_request` `closed` on `main` (only when `merged == true`) | none | none |
-| `auto-merge-main-pr.yml` | no | none | `pull_request` `ready_for_review` or `synchronize` on `main` | none | `workflow_run` on `Enforce release semantic version` completion |
+| `auto-merge-main-pr.yml` | no | none | `pull_request` `ready_for_review` or `synchronize` on `main` | none | `workflow_run` on `Release / Check Semver` completion |
 | `publish-release.yml` | yes, no inputs (requires `gregreindel` actor) | none | none | `published` (must target `main`) | none |
 | `deploy-docs.yml` | yes, no inputs (must run from `development` or `main`) | none | none | `published` (must target `main`) | none |
+| `docs-sync-trigger.yml` | no | none | none | none | `push` to `development` on workflow/action/script paths; dispatches `docs-sync.yml` |
+| `docs-sync.yml` | yes, with `target` (string) and `full_refresh` (boolean) inputs | none | none | none | invoked by `docs-sync-trigger.yml` or manual dispatch |
+| `vitals.yml` | yes, no inputs | `0 8 * * *` daily | none | none | regenerates AUTOMATION.md on development |
 
 ### Concurrency groups
 
@@ -226,6 +231,8 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `tests.yml` | `${{ github.workflow }}-${{ github.ref }}` | true |
 | `test-package.yml` | `${{ github.workflow }}-${{ github.ref }}` | true |
 | `docs-sync.yml` | `docs-sync` | false |
+| `docs-sync-trigger.yml` | `docs-sync-trigger` | false |
+| `vitals.yml` | `vitals` | true |
 | all others | not set | n/a |
 
 Concurrency on `agent-run.yml` is keyed by agent identity (not by ref), so two different agents can run side by side but a tester run cannot collide with another tester run.
@@ -270,7 +277,8 @@ Stored under repository or organization secrets:
 | `APP_ID` | App-token minting in every workflow that needs the bot. |
 | `APP_PRIVATE_KEY` | Same. |
 | `CLAUDE_CODE_OAUTH_TOKEN` | Every agent workflow that invokes `anthropics/claude-code-action@v1`. |
-| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY` | `test-package.yml` only, scoped to the `Examples Test` environment. |
+| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY` | `test-package.yml` and `publish-release.yml` (run-examples-tests job), scoped to the `Examples Test` environment. |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (env-scoped) | `publish-release.yml` run-examples-tests job, scoped to `Examples Test` environment. |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | `agent-digest.yml` token exchange against Microsoft identity. |
 | `SMTP_USERNAME` | `agent-digest.yml` Graph mail sender. |
 | `MARKETING_EMAILS` | Comma-separated recipient list for the digest. |
@@ -311,20 +319,23 @@ The minimal tree, annotated with why each path exists. A replica must reproduce 
 │   │   ├── agent-run.yml                 task agents (docs, tester, coder, scout) on cron plus dispatch
 │   │   ├── coder-run.yml                 fans the coder out across up to 5 unclaimed issues in a matrix
 │   │   ├── personas-run.yml              persona agents plus curator (Sunday full sweep, dispatch picks count)
-│   │   ├── agent-review-pr.yml           reviewer agent, fires on opened agent/* PRs
+│   │   ├── agent-review-pr.yml           tests + reviewer agent + decide job; fires on opened/synchronize PRs to development
 │   │   ├── agent-digest.yml              weekly HTML email digest via Microsoft Graph
 │   │   ├── bot-respond.yml               replies when a maintainer mentions @llm-exe-bot in a comment
 │   │   ├── tests.yml                     jest matrix on Node 18, 20, 22, 24 plus coverage on 24
 │   │   ├── test-package.yml              examples/ run against a packed tarball using real provider keys
 │   │   ├── pack-package.yml              build plus npm pack on PR close to development; uploads tarball artifact
 │   │   ├── cache-cleanup.yml             deletes Actions caches scoped to PR ref, branch ref, tag ref
-│   │   ├── update-prs-with-development.yml weekday rebase of every open PR against development
+│   │   ├── update-prs-with-development.yml dispatch-only rebase of every non-draft open PR against development
 │   │   ├── check-semantic-versioning.yml  blocks PRs to main whose package.json version is not greater than latest v* tag
 │   │   ├── draft-main-pr.yml             on PR closed to development or on release published: bumps patch if package.json is behind, creates or updates a draft PR from development to main
 │   │   ├── create-draft-release.yml      on PR merged to main: wipes existing drafts and creates a fresh draft release
-│   │   ├── auto-merge-main-pr.yml        on Enforce release semantic version success or PR sync: waits for checks, merges development to main with admin merge
+│   │   ├── auto-merge-main-pr.yml        on Release / Check Semver success or PR sync: waits for checks, merges development to main with admin merge
 │   │   ├── publish-release.yml           on release published from main: npm publish (beta or main script chosen by version string); on failure reverts release to draft and re-attaches a warning banner
-│   │   └── deploy-docs.yml               on release published from main or manual dispatch from development or main: builds VitePress docs, ships to S3 versioned folder, rotates CloudFront OriginPath, invalidates /*
+│   │   ├── deploy-docs.yml               on release published from main or manual dispatch from development or main: builds VitePress docs, ships to S3 versioned folder, rotates CloudFront OriginPath, invalidates /*
+│   │   ├── docs-sync-trigger.yml        detects workflow/script changes on push to development, dispatches docs-sync.yml
+│   │   ├── docs-sync.yml                keeps workflow deep-dive markdown in sync with source; invoked by trigger or manual dispatch
+│   │   └── vitals.yml                   daily cron + dispatch; regenerates AUTOMATION.md on development
 │   └── WORKFLOW_ARCHITECTURE.md          this document
 ├── scripts/
 │   ├── maintain.sh                       local entry point; same prompt assembly as CI but runs claude interactively
@@ -339,6 +350,7 @@ The minimal tree, annotated with why each path exists. A replica must reproduce 
 │       │   ├── scout.md                  scout prompt (no $BRANCH; scout files no PRs)
 │       │   ├── curator.md                curator prompt
 │       │   ├── reviewer.md               reviewer prompt (uses $PR_NUMBER and $LOG_FILE)
+│       │   ├── docs-sync.md             docs-sync prompt (uses $BRANCH and $LOG_FILE)
 │       │   ├── _persona.md               base template for personas (contains $PERSONA marker)
 │       │   └── personas/
 │       │       ├── beginner.md           personality block, replaces $PERSONA in _persona.md
@@ -450,6 +462,7 @@ Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exac
 | curator | same | 40 | `claude-opus-4-6` |
 | reviewer | `Bash,Read,Glob,Grep,WebFetch` (read-only set) | 30 | `claude-opus-4-6` |
 | bot-respond | `Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch` | 30 | `claude-opus-4-6` |
+| docs-sync | `Bash,Read,Write,Edit,Glob,Grep,WebFetch` | 80 | `claude-opus-4-6` |
 | digest | `Bash,Read,Glob,Grep,Write` | 15 | `claude-sonnet-4-6` |
 
 The reviewer is intentionally read-only at the tool level; it expresses its verdict via the `gh` CLI which is still routed through `Bash`. The digest writes only `/tmp/digest.html` and the subsequent step posts it via Microsoft Graph.
@@ -564,7 +577,7 @@ flowchart TB
 | scout | `agent-run.yml` cron `0 11 * * 1` or dispatch | src/llm/**, provider documentation URLs, `/tmp/all-issues.json` | Issues only; comments on existing issues when duplicate detected | Zero or more issues with labels `enhancement`, `bug`, `needs-discussion`, or `breaking`. Tags `@gregreindel` for breaking or imminent deprecations. |
 | beginner / harsh-critic / speed-runner / enterprise | `personas-run.yml` (random subset by dispatch, all four on cron Sunday) | CLAUDE.md, README.md, docs/, examples/ | log file only | A persona log file with categorized findings (`genuine-bug`, `confusing`, `rough-edge`, `suggestion`). |
 | curator | `personas-run.yml` final job (waits for persona matrix) or local `maintain.sh curator` | All persona logs, `/tmp/all-issues.json`, CLAUDE.md | Issues plus comments on existing issues; updates own log | Triaged issues with labels `bug`, `documentation`, `enhancement`, `testing`. |
-| reviewer | `agent-review-pr.yml` on `opened` PRs whose head ref starts `agent/` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log | Verdict on the PR. Does not push commits. |
+| reviewer | `agent-review-pr.yml` on `opened` PRs targeting `development` | The PR diff, the PR description, CLAUDE.md | A single `gh pr review` call (approve, request-changes, or close) plus own log; decide job auto-approves when tests pass and verdict is approve | Verdict on the PR. Does not push commits. |
 | bot-respond | `bot-respond.yml` on issue or PR comment mentioning `@llm-exe-bot` from OWNER/MEMBER/COLLABORATOR | The comment body and any referenced PR diff | Comments on the issue or PR; if asked to fix, commits and pushes to the existing PR branch (never creates a new PR) | A reply comment; optionally code commits on the existing branch. |
 | digest | `agent-digest.yml` Monday cron | Last 7 days of issues, last 20 PRs, recent agent logs, last 3 releases | `/tmp/digest.html` only | HTML body posted via Microsoft Graph to `MARKETING_EMAILS`. |
 
@@ -711,7 +724,7 @@ Body must be HTML fragment (no `<html>` / `<body>` tags) and must be the only th
 
 | Field | Value |
 |-------|-------|
-| Trigger | `pull_request` on `main` or `development`, plus dispatch |
+| Trigger | `pull_request` on `main` only, plus dispatch |
 | Bypass | Skip when head ref is `bump-version-branch` (the version-bump PR is auto-generated and intentionally trivial) |
 | Matrix | Node 18, 20, 22, 24 |
 | Steps | `actions/checkout@v4` -> `actions/setup-node@v4` with `cache: npm` -> reusable cache action -> `npm install` -> `npm run test` -> coverage upload on Node 24 only |
@@ -745,12 +758,13 @@ This is the only place real provider keys are used. It exists so the maintainer 
 | Auth | App token (cache deletion needs write to Actions) |
 | Behavior | Resolves three refs: `pr_ref` (`refs/pull/<N>/merge` on PR events), `branch_ref` (head ref on PR, target commitish on release, input or current ref on dispatch), and `tag_ref` (`refs/tags/<tag>` on release). For each non-empty ref it lists caches with `gh actions-cache list -B <ref> -L 100`, deduplicates keys, and deletes them. The `development` branch is explicitly skipped. |
 
-### 9.11. `update-prs-with-development.yml` - Weekday rebase nudger
+### 9.11. `update-prs-with-development.yml` - On-demand rebase nudger
 
 | Field | Value |
 |-------|-------|
-| Trigger | Cron `0 8 * * 1-5` (weekdays) and dispatch |
-| Action | For every open PR targeting `development`, call `gh pr update-branch <N>`. Failures (conflicts or already-up-to-date) are silently skipped. |
+| Trigger | `workflow_dispatch` only (cron removed, push trigger commented out) |
+| Permissions | `contents: write`, `pull-requests: write` |
+| Action | For every non-draft open PR targeting `development`, call `gh pr update-branch <N>`. Draft PRs are skipped. Failures (conflicts or already-up-to-date) are silently skipped. |
 | Output | Open PRs are kept in lockstep with `development`, so when a developer (or another agent) comes back to a stale PR, they do not face an avalanche of merge conflicts. |
 
 ### 9.12. `check-semantic-versioning.yml` - Block stale PRs into main
@@ -803,7 +817,7 @@ PR body truncation: capped at 65000 characters.
 
 | Field | Value |
 |-------|-------|
-| Triggers | `workflow_run` on `Enforce release semantic version` completion; `pull_request` `ready_for_review` or `synchronize` on `main` |
+| Triggers | `workflow_run` on `Release / Check Semver` completion; `pull_request` `ready_for_review` or `synchronize` on `main` |
 | Run filter | `workflow_run` must be `success` and head branch must be `development`; or any pull_request event. |
 | Steps | Resolves the open PR with base `main` head `development` that is NOT draft; polls every 30 seconds up to 10 times for non-`auto-merge` checks to settle; if any FAILURE among them, exits 1; otherwise `gh pr merge <N> --merge --admin --repo <owner>/<repo>`. |
 | Identity | App token. |
@@ -814,6 +828,7 @@ PR body truncation: capped at 65000 characters.
 |-------|-------|
 | Triggers | `release` `published` and dispatch |
 | Pre-checks | Release must target `main`; dispatch actor must equal `gregreindel`. |
+| Examples tests | New `run-examples-tests` job runs before publish. Uses the `Examples Test` environment with real provider keys (OpenAI, Anthropic, Gemini, xAI, DeepSeek, AWS). Builds, packs, extracts tarball, replaces dist/, installs examples deps, runs `npm run test-examples`. |
 | Build | `npm install` then `npm run build:package`. |
 | Publish step | Reads `package.json .version`; if it contains the literal substring `beta`, runs `npm run publish-beta`; otherwise `npm run publish-main`. |
 | Failure rollback | `if: failure() && github.event_name == 'release'` patches the release back to `draft: true` and prepends a warning banner with the failed workflow URL. |
@@ -1098,11 +1113,14 @@ Stagger crons so no two agents fight for the same backlog gate window. The curre
 | Day (UTC) | 06:00 | 08:00 | 09:00 | 10:00 | 11:00 |
 |-----------|-------|-------|-------|-------|-------|
 | Sunday | personas + curator | | | | |
-| Monday | | coder, update-prs | tester | | scout, digest |
-| Tuesday | | update-prs | | docs | |
-| Wednesday | | update-prs | | | |
-| Thursday | | coder, update-prs | tester | | |
-| Friday | | update-prs | | docs | |
+| Monday | | coder, vitals | tester | | scout, digest |
+| Tuesday | | vitals | | docs | |
+| Wednesday | | vitals | | | |
+| Thursday | | coder, vitals | tester | | |
+| Friday | | vitals | | docs | |
+| Saturday | | vitals | | | |
+
+Note: `update-prs-with-development.yml` no longer has a cron schedule; it runs on dispatch only.
 
 ### 13.5. Wire the action
 
