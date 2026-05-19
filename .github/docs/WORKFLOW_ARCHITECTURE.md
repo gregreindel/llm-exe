@@ -111,6 +111,7 @@ flowchart LR
     DG --> O4[weekly HTML email]:::out
     O1 --> RV
     O3 --> RV
+    BR -->|re-review dispatch| RV
     RV --> O5[approve / request-changes / close]:::out
 ```
 
@@ -690,9 +691,9 @@ Three jobs: `tests`, `review`, `decide`. Tests and review run in parallel; decid
 | Triggers | `pull_request` `opened` and `synchronize` on `main` or `development`; `workflow_dispatch` with `pr_number`, `base_ref`, `head_ref` inputs (dispatched by `bot-respond.yml` for re-review) |
 | Job filters | `tests`: `base_ref == 'development'` OR dispatch with `inputs.base_ref == 'development'`. `review`: `(base_ref == 'development' && action == 'opened')` OR dispatch with `inputs.base_ref == 'development'`. `decide`: `always() && (base_ref == 'development'` OR dispatch equivalent`)`. |
 | Tests job | Node 18/20/22/24 matrix, mirrors `tests.yml`. Timeout 20m. Runs on opened, synchronize, and dispatch. On `workflow_dispatch`, an extra `gh pr checkout` step checks out the PR code. |
-| Review job | Auth via App token. `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
-| Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Uses split-token pattern: `GITHUB_TOKEN` for `--approve` (bot cannot approve its own PRs), App token for `gh pr ready` (`GITHUB_TOKEN` lacks that permission). Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
-| Prompt substitutions | `$PR_NUMBER`, `$LOG_FILE`, `$PR_CONTEXT` (bot agent vs human contributor, computed from head_ref prefix). |
+| Review job | Auth via `llm-exe-review-bot[bot]` App token (`LLM_EXE_REVIEW_BOT_APP_ID`/`LLM_EXE_REVIEW_BOT_PRIVATE_KEY`). `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
+| Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Mints its own review bot token for `--approve` and a regular bot App token (`APP_ID`/`APP_PRIVATE_KEY`) only for `gh pr ready`. Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
+| Prompt substitutions | `$PR_NUMBER`, `$LOG_FILE`, `$PR_CONTEXT` (bot agent vs human contributor, computed from head_ref prefix). Substitution uses `perl -0pe` with env vars (not `sed`). |
 | Output | Exactly one of: `gh pr review --approve` (with optional `gh pr ready`), `gh pr review --request-changes`, `gh pr close`. Plus a log file in `scripts/agents/logs/reviewer/`. |
 
 ### 9.5. `agent-digest.yml` - Weekly HTML email
@@ -1234,9 +1235,10 @@ Order of manual verifications, from cheapest to most invasive:
 | `$BRANCH` | The branch created by `create_agent_branch` (e.g. `agent/coder/2026-05-14-issue-42`) | All task agent prompts (`docs`, `tester`, `coder`, `curator`) |
 | `$LOG_FILE` | Absolute path to the run log (e.g. `scripts/agents/logs/coder/2026-05-14T11-15-48.md`) | All agent prompts |
 | `$PR_NUMBER` | The PR number being reviewed | `reviewer.md` |
+| `$PR_CONTEXT` | Context string describing whether the PR was opened by a bot agent or a human contributor (computed from the head_ref branch prefix) | `reviewer.md` |
 | `$PERSONA` | Verbatim contents of `prompts/personas/<persona>.md` | `_persona.md` only |
 
-The substitution is a literal `sed` replace, not a templating engine. Do not put characters that conflict with `sed`'s delimiter in the values; the workflows use `|` as the delimiter for that reason.
+The substitution is a literal `sed` replace for most agents, not a templating engine. Do not put characters that conflict with `sed`'s delimiter in the values; the workflows use `|` as the delimiter for that reason. The reviewer workflow uses `perl -0pe` with environment variables instead of `sed` for multi-line safety.
 
 ## Appendix B: Reusable composite actions
 

@@ -36,6 +36,7 @@ flowchart LR
 
     subgraph U["Upstream producer"]
         AR["agent-run.yml\nopens PR from agent/*"]:::trig
+        BRU["bot-respond.yml\nre-review dispatch"]:::trig
     end
 
     subgraph T["Trigger"]
@@ -84,6 +85,7 @@ flowchart LR
     end
 
     AR --> t1
+    BRU --> t2
     t1 --> f1
     t2 --> f1
     f1 -->|base is development| TS
@@ -189,7 +191,7 @@ flowchart TB
         s2["Checkout (fetch-depth: 0)"]:::step
         s3["Setup Node 20"]:::step
         s4["npm ci"]:::step
-        s5["Build review prompt\nclock_in + sed substitution"]:::step
+        s5["Build review prompt\nclock_in + perl substitution"]:::step
         s6["Review PR\nclaude-code-action@v1\n(max-turns 30)"]:::step
         s7["Upload agent prompt artifact"]:::step
         s8["Read verdict from /tmp/review-verdict.txt"]:::step
@@ -243,7 +245,7 @@ sequenceDiagram
     J->>C: source scripts/agents/config.sh
     C->>L: clock_in "reviewer" "PR #N" writes skeleton .md
     L-->>C: log file path
-    C->>P: sed substitute $PR_NUMBER, $LOG_FILE, and $PR_CONTEXT
+    C->>P: perl substitute $PR_NUMBER, $LOG_FILE, and $PR_CONTEXT
     P-->>C: rendered template
     C->>TMP: write rendered prompt
     J->>CCA: run prompt = "Read /tmp/review-prompt.txt"
@@ -274,7 +276,7 @@ flowchart TB
     classDef sub fill:#7c2d12,color:#fff,stroke:#000
 
     A["LAYER 1: Reviewer template\nscripts/agents/prompts/reviewer.md"]:::l1
-    B["LAYER 2: Substitutions via sed"]:::sub
+    B["LAYER 2: Substitutions via perl"]:::sub
     B1["$PR_NUMBER\nfrom github.event.pull_request.number"]:::sub
     B2["$LOG_FILE\nfrom clock_in stdout"]:::sub
     B3["$PR_CONTEXT\nbot agent vs human contributor\n(computed from head_ref prefix)"]:::sub
