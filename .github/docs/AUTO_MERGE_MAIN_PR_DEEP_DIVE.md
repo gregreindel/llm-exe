@@ -37,11 +37,11 @@ flowchart LR
 
     subgraph Up["Upstream"]
         U1["draft-main-pr.yml\nopens or refreshes dev to main PR"]:::job
-        U2["check-semantic-versioning.yml\nworkflow_run source\nname: Enforce release semantic version"]:::gate
+        U2["check-semantic-versioning.yml\nworkflow_run source\nname: Release / Check Semver"]:::gate
     end
 
     subgraph T["Triggers on auto-merge-main-pr.yml"]
-        t1["workflow_run\nworkflows: Enforce release semantic version\ntypes: completed"]:::trig
+        t1["workflow_run\nworkflows: Release / Check Semver\ntypes: completed"]:::trig
         t2["pull_request\ntypes: ready_for_review, synchronize\nbranches: main"]:::trig
     end
 
@@ -103,7 +103,7 @@ flowchart TB
     start([event arrives])
     start --> ev{event_name?}
 
-    ev -->|workflow_run| wrPath["fired by completion of\nEnforce release semantic version"]:::wr
+    ev -->|workflow_run| wrPath["fired by completion of\nRelease / Check Semver"]:::wr
     ev -->|pull_request| prPath["ready_for_review OR synchronize\non branches: main"]:::pr
 
     wrPath --> wrChk{conclusion == success\nAND head_branch == development?}:::gate
@@ -118,7 +118,7 @@ Why two triggers exist:
 
 | Trigger | What it catches |
 |---------|-----------------|
-| `workflow_run` on Enforce release semantic version | The semver gate just passed on a `development` to `main` PR. Time to merge. |
+| `workflow_run` on Release / Check Semver | The semver gate just passed on a `development` to `main` PR. Time to merge. |
 | `pull_request` ready_for_review on `main` | A draft dev to main PR flipped to ready. Or new commits arrived on `development`. Re-evaluate. |
 
 The `workflow_run` trigger needs the secondary `head_branch == 'development'` guard because the semver workflow itself fires on any PR targeting `main`, but auto-merge should only fire for the dev to main PR.
@@ -539,7 +539,7 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/auto-merge-main-pr.yml"]:::v
-    K2["Triggers"]:::k --- V2["workflow_run (Enforce release semantic version) + pull_request (main: ready_for_review, synchronize)"]:::v
+    K2["Triggers"]:::k --- V2["workflow_run (Release / Check Semver) + pull_request (main: ready_for_review, synchronize)"]:::v
     K3["Run condition"]:::k --- V3["wr.success && wr.head_branch=development OR event=pull_request"]:::v
     K4["Permissions"]:::k --- V4["id-token, checks, contents, pull-requests, actions: all write"]:::v
     K5["Concurrency"]:::k --- V5["workflow-ref scoped, cancel-in-progress: true"]:::v

@@ -18,7 +18,7 @@ hero:
       link: /examples
     - theme: text
       text: Github
-      link: https://github.com/gregreindel/llm-exe
+      link: https://github.com/llm-exe/llm-exe
 
 features:
   - title: Type-Safe Everything

@@ -51,13 +51,13 @@ In addition to the generic options, the following options are Deepseek-specific 
 
 | Option           | Type    | Default       | Description                                                    |
 | ---------------- | ------- | ------------- | -------------------------------------------------------------- |
-| model            | string  | deepseek-chat | The model to use. Can be any valid chat model. See Deepseek Docs |
+| model            | string  | —             | The model to use. Must be specified when using `deepseek.chat.v1`. Can be any valid chat model. See Deepseek Docs |
 | deepseekApiKey   | string  | undefined     | API key for Deepseek. See [authentication](/llm/deepseek#authentication) |
 | topP             | number  | undefined     | Maps to `top_p`. See Deepseek Docs                             |
 | stopSequences    | array   | undefined     | Maps to `stop`. See Deepseek Docs                              |
 | frequencyPenalty | number  | undefined     | Maps to `frequency_penalty`. See Deepseek Docs                 |
 | logitBias        | object  | undefined     | Maps to `logit_bias`. See Deepseek Docs                        |
 | useJson          | boolean | undefined     | When `true`, sets `response_format` to `json_object`           |
-| effort           | string  | undefined     | Maps to `reasoning_effort`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. |
+| effort           | string  | undefined     | Maps to `reasoning_effort`. Valid values: `"minimal"`, `"low"`, `"medium"`, `"high"`. Currently not supported by Deepseek models and will be silently ignored. |
 
 See [Deepseek API Reference](https://api-docs.deepseek.com/) for details on these parameters.

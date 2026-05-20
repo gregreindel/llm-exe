@@ -1,0 +1,63 @@
+name: Test GitHub Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: "llm-exe provider key"
+        required: true
+        default: "openai.chat.v1"
+        type: choice
+        options:
+          - openai.chat.v1
+          - anthropic.chat.v1
+      model:
+        description: "Model"
+        required: true
+        default: "gpt-4o-mini"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Run llm-exe action
+        id: llm
+        uses: llm-exe/github-action@v1
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        with:
+          provider: ${{ inputs.provider }}
+          model: ${{ inputs.model }}
+          system: "You are a precise CI smoke-test assistant. Follow the requested output exactly."
+          message: "Return exactly this text and nothing else: llm-exe action smoke test for {{name}}"
+          data: |
+            {
+              "name": "GitHub Actions"
+            }
+          parser: string
+
+      - name: Assert action output
+        env:
+          RESULT: ${{ steps.llm.outputs.result }}
+          JSON_RESULT: ${{ steps.llm.outputs.json }}
+        run: |
+          test -n "$RESULT"
+          test -n "$JSON_RESULT"
+          case "$RESULT" in
+            *"llm-exe action smoke test for GitHub Actions"*) ;;
+            *)
+              echo "Unexpected result output:"
+              echo "$RESULT"
+              exit 1
+              ;;
+          esac
+
+      - name: Print result
+        run: echo '${{ steps.llm.outputs.result }}'

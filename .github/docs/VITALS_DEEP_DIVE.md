@@ -435,7 +435,7 @@ flowchart LR
     K2["Generator"]:::k --- V2[".github/vitals/generate.sh"]:::v
     K3["Output"]:::k --- V3["AUTOMATION.md at repo root"]:::v
     K4["Triggers"]:::k --- V4["cron 0 8 * * * + workflow_dispatch"]:::v
-    K5["Permissions"]:::k --- V5["contents: write, actions/issues/PRs: read, id-token: write"]:::v
+    K5["Permissions"]:::k --- V5["contents: write, pull-requests: read, issues: read"]:::v
     K6["Timeout"]:::k --- V6["10 minutes"]:::v
     K7["Concurrency"]:::k --- V7["vitals, cancel-in-progress: true"]:::v
     K8["Identity"]:::k --- V8["llm-exe-bot[bot] via App token"]:::v
