@@ -1,4 +1,4 @@
-name: Pack Package
+name: CI / Pack
 
 on:
   workflow_dispatch:
