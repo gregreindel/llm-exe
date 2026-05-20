@@ -1,4 +1,4 @@
-name: Agent Run
+name: Agent / Run
 
 on:
   workflow_dispatch:

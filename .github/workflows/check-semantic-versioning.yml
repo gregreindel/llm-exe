@@ -1,4 +1,4 @@
-name: Enforce release semantic version
+name: Release / Check Semver
 
 on:
   pull_request:

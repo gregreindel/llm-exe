@@ -1,9 +1,9 @@
-name: Auto Merge PR from Development to Main
+name: Release / Auto Merge
 
 on:
   workflow_run:
     workflows: 
-      - "Enforce release semantic version"
+      - "Release / Check Semver"
     types:
       - completed
   pull_request:

@@ -27,7 +27,7 @@ You have high standards but you're fair. You kill noise and promote signal.
    b. Search both /tmp/all-issues.json AND the GitHub search index for each term:
       ```
       jq -r '.[] | "\(.number) \(.state) \(.title)"' /tmp/all-issues.json | grep -i "<term>"
-      gh search issues "<term>" --repo gregreindel/llm-exe --state all --limit 20
+      gh search issues "<term>" --repo llm-exe/llm-exe --state all --limit 20
       ```
 
    c. Apply this match rule: if ANY existing issue (open OR closed) describes the same root behavior — even if the title is worded differently — DO NOT file a new issue. Comment on the existing one instead:

@@ -40,6 +40,7 @@ flowchart LR
         H3["pack-package"]:::hyg
         H4["cache-cleanup"]:::hyg
         H5["update-prs-with-development"]:::hyg
+        H6["test-github-action"]:::hyg
     end
 
     A1 -- opens PR --> A4
@@ -75,9 +76,9 @@ flowchart LR
 | [agent-run.yml](../workflows/agent-run.yml) | 3 crons + dispatch | Task agents (docs, tester, scout) on a schedule | [AGENT_RUN_DEEP_DIVE.md](AGENT_RUN_DEEP_DIVE.md) |
 | [coder-run.yml](../workflows/coder-run.yml) | cron + dispatch | Fans the coder out across up to 5 unclaimed issues in a matrix | [CODER_RUN_DEEP_DIVE.md](CODER_RUN_DEEP_DIVE.md) |
 | [personas-run.yml](../workflows/personas-run.yml) | Sunday cron + dispatch | Persona agents (beginner, harsh-critic, speed-runner, enterprise) plus curator | [PERSONAS_RUN_DEEP_DIVE.md](PERSONAS_RUN_DEEP_DIVE.md) |
-| [agent-review-pr.yml](../workflows/agent-review-pr.yml) | PR opened on agent/* branches | Reviewer agent: approve, request changes, or close every bot PR | [AGENT_REVIEW_PR_DEEP_DIVE.md](AGENT_REVIEW_PR_DEEP_DIVE.md) |
+| [agent-review-pr.yml](../workflows/agent-review-pr.yml) | PR opened/synchronize on development + workflow_dispatch | Tests (Node matrix) + reviewer agent + decide job: approve, request changes, or close | [AGENT_REVIEW_PR_DEEP_DIVE.md](AGENT_REVIEW_PR_DEEP_DIVE.md) |
 | [agent-digest.yml](../workflows/agent-digest.yml) | Monday cron + dispatch | Weekly HTML email digest sent via Microsoft Graph | [AGENT_DIGEST_DEEP_DIVE.md](AGENT_DIGEST_DEEP_DIVE.md) |
-| [bot-respond.yml](../workflows/bot-respond.yml) | issue_comment mentioning @llm-exe-bot | Conversational responder; can revise PR branches on explicit ask | [BOT_RESPOND_DEEP_DIVE.md](BOT_RESPOND_DEEP_DIVE.md) |
+| [bot-respond.yml](../workflows/bot-respond.yml) | issue_comment mentioning @llm-exe-bot | Conversational responder; can dispatch review pipeline, answer questions, or revise PR branches on explicit ask | [BOT_RESPOND_DEEP_DIVE.md](BOT_RESPOND_DEEP_DIVE.md) |
 | [docs-sync.yml](../workflows/docs-sync.yml) | push to development on workflow/script/action changes + dispatch | Keeps the workflow deep-dive docs in sync with their source files | [DOCS_SYNC_DEEP_DIVE.md](DOCS_SYNC_DEEP_DIVE.md) |
 | [vitals.yml](../workflows/vitals.yml) | daily cron + dispatch | Regenerates [AUTOMATION.md](../../AUTOMATION.md), the live dashboard at the repo root | [VITALS_DEEP_DIVE.md](VITALS_DEEP_DIVE.md) |
 
@@ -96,11 +97,12 @@ flowchart LR
 
 | Workflow | Triggers | Purpose | Deep dive |
 |----------|----------|---------|-----------|
-| [tests.yml](../workflows/tests.yml) | PR on main or development + dispatch | Jest matrix on Node 18/20/22/24; coverage uploaded on Node 24 | [TESTS_DEEP_DIVE.md](TESTS_DEEP_DIVE.md) |
+| [tests.yml](../workflows/tests.yml) | PR on main + dispatch | Jest matrix on Node 18/20/22/24; coverage uploaded on Node 24 | [TESTS_DEEP_DIVE.md](TESTS_DEEP_DIVE.md) |
 | [test-package.yml](../workflows/test-package.yml) | Dispatch only (gregreindel) | Runs examples/ against a packed tarball with real provider keys | [TEST_PACKAGE_DEEP_DIVE.md](TEST_PACKAGE_DEEP_DIVE.md) |
 | [pack-package.yml](../workflows/pack-package.yml) | PR closed to development + dispatch | Build + npm pack, uploads .tgz artifact (30-day retention) | [PACK_PACKAGE_DEEP_DIVE.md](PACK_PACKAGE_DEEP_DIVE.md) |
 | [cache-cleanup.yml](../workflows/cache-cleanup.yml) | PR closed + release published + dispatch | Deletes Actions caches scoped to the closed PR or release ref | [CACHE_CLEANUP_DEEP_DIVE.md](CACHE_CLEANUP_DEEP_DIVE.md) |
-| [update-prs-with-development.yml](../workflows/update-prs-with-development.yml) | Weekday cron + dispatch | Rebases every open PR targeting development to keep them current | [UPDATE_PRS_DEEP_DIVE.md](UPDATE_PRS_DEEP_DIVE.md) |
+| [update-prs-with-development.yml](../workflows/update-prs-with-development.yml) | Dispatch only | Rebases every non-draft open PR targeting development | [UPDATE_PRS_DEEP_DIVE.md](UPDATE_PRS_DEEP_DIVE.md) |
+| [test-github-action.yml](../workflows/test-github-action.yml) | Dispatch only | Smoke-tests the external llm-exe/github-action with a real LLM call | [TEST_GITHUB_ACTION_DEEP_DIVE.md](TEST_GITHUB_ACTION_DEEP_DIVE.md) |
 
 ---
 
@@ -112,11 +114,12 @@ flowchart LR
     classDef md fill:#1e3a8a,color:#fff,stroke:#000
     classDef lg fill:#581c87,color:#fff,stroke:#000
 
-    subgraph Small["5-9 diagrams"]
+    subgraph Small["5-8 diagrams"]
         S1["pack-package: 356 lines, 8"]:::sm
         S2["tests: 377 lines, 9"]:::sm
         S3["update-prs: 367 lines, 9"]:::sm
         S4["check-semver: 383 lines, 9"]:::sm
+        S5["test-github-action: 7 diagrams"]:::sm
     end
 
     subgraph Medium["11-12 diagrams"]
@@ -139,7 +142,7 @@ flowchart LR
     end
 ```
 
-Totals: 17 deep dives, 9,238 lines, 194 mermaid diagrams.
+Totals: 20 deep dives.
 
 ## Conventions every deep dive follows
 

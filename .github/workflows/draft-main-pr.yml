@@ -1,4 +1,4 @@
-name: Draft Dev to Main PR
+name: Release / Draft PR
 
 on:
   pull_request:
