@@ -85,13 +85,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate bot token
-        id: bot-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Validate Publisher
         run: |
           ALLOWED_PUBLISHERS="gregreindel"
@@ -126,25 +119,48 @@ jobs:
             npm run publish-main
           fi
 
-      - name: Revert release to draft on failure
-        if: failure() && github.event_name == 'release'
+  # Reverts the GitHub release back to draft if examples tests or npm publish fail.
+  # Runs after both jobs complete (in any state) so it catches failures from either.
+  revert-to-draft:
+    if: |
+      always() &&
+      github.event_name == 'release' &&
+      (needs.run-examples-tests.result == 'failure' || needs.publish-npm-package.result == 'failure')
+    needs: [run-examples-tests, publish-npm-package]
+    name: Revert Release to Draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Revert release to draft
         run: |
           RELEASE_ID=$(jq -r .release.id "$GITHUB_EVENT_PATH")
           ORIGINAL_BODY=$(jq -r .release.body "$GITHUB_EVENT_PATH")
-          echo "Publishing failed. Reverting release ID $RELEASE_ID back to draft status..."
-          # Create warning banner and combine with original body
+
+          if [ "${{ needs.run-examples-tests.result }}" = "failure" ]; then
+            FAILURE_REASON="the examples tests failed before publishing"
+          else
+            FAILURE_REASON="the package failed to publish to npm"
+          fi
+
+          echo "Reverting release ID $RELEASE_ID to draft — reason: $FAILURE_REASON"
+
           cat > release_body.txt <<'EOF'
           > [!WARNING]
           > **Release Publishing Failed**
-          > This release has been automatically reverted to draft status because the package failed to publish to npm.
+          > This release has been automatically reverted to draft status because FAILURE_REASON.
           > Please review the [workflow logs](WORKFLOW_URL) and address any issues before attempting to publish again.
           ---
           EOF
-          # Replace placeholder with actual workflow URL
+          sed -i "s|FAILURE_REASON|$FAILURE_REASON|g" release_body.txt
           sed -i "s|WORKFLOW_URL|${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|g" release_body.txt
-          # Append original body
           echo "$ORIGINAL_BODY" >> release_body.txt
-          # Convert to JSON string and update release (same approach as create-draft-release.yml)
+
           BODY_JSON=$(jq -Rs '.' < release_body.txt)
           response=$(curl -s -X PATCH \
             -H "Accept: application/vnd.github+json" \
@@ -154,7 +170,7 @@ jobs:
           if echo "$response" | jq -e '.id' > /dev/null; then
             echo "✅ Release reverted to draft with original notes preserved"
           else
-            echo "⚠️  Warning: Failed to update release"
+            echo "⚠️  Warning: Failed to revert release"
             echo "$response" | jq '.'
           fi
         env:
