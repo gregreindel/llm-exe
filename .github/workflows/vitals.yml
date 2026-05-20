@@ -1,4 +1,4 @@
-name: Vitals
+name: Agent / Vitals
 
 # Refreshes AUTOMATION.md (the live dashboard at the repo root) so anyone
 # landing on the repo sees the actual current state of the automation

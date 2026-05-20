@@ -44,7 +44,7 @@ flowchart LR
     end
 
     subgraph O["Outputs"]
-        o1["status check\nname: Enforce release semantic version"]:::out
+        o1["status check\nname: Release / Check Semver"]:::out
         o2["exit 0\n(version bumped)"]:::out
         o3["exit 1\n(version stale or equal)"]:::out
     end
@@ -64,7 +64,7 @@ flowchart LR
     o1 --> d2
 ```
 
-The string `Enforce release semantic version` (the `name:` at the top of the YAML) is **the contract**. Both `auto-merge-main-pr.yml` (via `workflow_run.workflows`) and any branch protection rule on `main` reference that exact string. Renaming the workflow breaks the release pipeline silently.
+The string `Release / Check Semver` (the `name:` at the top of the YAML) is **the contract**. Both `auto-merge-main-pr.yml` (via `workflow_run.workflows`) and any branch protection rule on `main` reference that exact string. Renaming the workflow breaks the release pipeline silently.
 
 [Back to top](#navigate)
 
@@ -232,7 +232,7 @@ Why pack into `%d%03d%03d`? Bash's `[ a -le b ]` is integer-only; it cannot comp
 
 ## 6. Output cascade
 
-The job emits a single observable thing: a status check named `Enforce release semantic version` on the PR head SHA. Two consumers care.
+The job emits a single observable thing: a status check named `Release / Check Semver` on the PR head SHA. Two consumers care.
 
 ```mermaid
 flowchart LR
@@ -242,9 +242,9 @@ flowchart LR
     classDef human fill:#7c2d12,color:#fff,stroke:#000
 
     SV["check-semantic-versioning.yml\nrun completes"]:::src
-    SV --> O1["status check\nname: 'Enforce release semantic version'\nconclusion: success | failure"]:::out
+    SV --> O1["status check\nname: 'Release / Check Semver'\nconclusion: success | failure"]:::out
 
-    O1 --> C1["auto-merge-main-pr.yml\non: workflow_run\nworkflows: ['Enforce release semantic version']\ntypes: [completed]"]:::cons
+    O1 --> C1["auto-merge-main-pr.yml\non: workflow_run\nworkflows: ['Release / Check Semver']\ntypes: [completed]"]:::cons
     O1 --> C2["branch protection on main\n(required status check)"]:::cons
     O1 --> C3["PR UI red/green badge"]:::human
 
@@ -263,12 +263,12 @@ The coupling is **by name string**, not by file path or workflow ID. `auto-merge
 on:
   workflow_run:
     workflows:
-      - "Enforce release semantic version"
+      - "Release / Check Semver"
     types:
       - completed
 ```
 
-Change line 1 of `check-semantic-versioning.yml` (`name: Enforce release semantic version`) and the auto-merge trigger goes silent without any GitHub-side error.
+Change line 1 of `check-semantic-versioning.yml` (`name: Release / Check Semver`) and the auto-merge trigger goes silent without any GitHub-side error.
 
 [Back to top](#navigate)
 
@@ -331,7 +331,7 @@ flowchart TB
 
     F6["Workflow renamed in YAML"]:::fail
     F6 --> F6E["auto-merge-main-pr.yml workflow_run\nno longer matches\nbranch protection check name drifts"]:::effect
-    F6X["keep 'Enforce release semantic version' verbatim\nor update all consumers together"]:::fix
+    F6X["keep 'Release / Check Semver' verbatim\nor update all consumers together"]:::fix
     F6E --> F6X
 
     F7["Concurrency cancels mid-run\n(force-push to PR)"]:::fail
@@ -357,7 +357,7 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/check-semantic-versioning.yml"]:::v
-    K2["Workflow name"]:::k --- V2["Enforce release semantic version"]:::v
+    K2["Workflow name"]:::k --- V2["Release / Check Semver"]:::v
     K3["Triggers"]:::k --- V3["pull_request, branches: main"]:::v
     K4["Permissions"]:::k --- V4["id-token: write, contents: read"]:::v
     K5["Concurrency"]:::k --- V5["workflow + ref, cancel-in-progress: true"]:::v

@@ -1,4 +1,4 @@
-name: Coder Run
+name: Agent / Coder
 
 on:
   workflow_dispatch:

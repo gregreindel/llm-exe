@@ -60,7 +60,7 @@ Check the official docs/changelogs for each provider llm-exe supports:
    b. Search both /tmp/all-issues.json AND the GitHub search index for each term:
       ```
       jq -r '.[] | "\(.number) \(.state) \(.title)"' /tmp/all-issues.json | grep -i "<term>"
-      gh search issues "<term>" --repo gregreindel/llm-exe --state all --limit 20
+      gh search issues "<term>" --repo llm-exe/llm-exe --state all --limit 20
       ```
 
    c. Match rule: if an existing issue (open OR closed) covers the same model/provider/change, DO NOT file a new issue. Comment on the existing one instead with new context (changed timeline, new docs link, etc.):
