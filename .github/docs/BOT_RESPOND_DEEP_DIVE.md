@@ -12,7 +12,7 @@ Minimum prose. Maximum diagrams.
 - [2. Triggers and the three-part filter](#2-triggers-and-the-three-part-filter)
 - [3. The one-job DAG](#3-the-one-job-dag)
 - [4. Step-by-step lifecycle](#4-step-by-step-lifecycle)
-- [5. The two modes](#5-the-two-modes)
+- [5. The three modes](#5-the-three-modes)
 - [6. Anatomy of the inline prompt](#6-anatomy-of-the-inline-prompt)
 - [7. Filesystem reads and writes](#7-filesystem-reads-and-writes)
 - [8. External calls](#8-external-calls)
@@ -74,7 +74,7 @@ flowchart LR
 
     subgraph D["Downstream workflows"]
         tst["tests.yml\nfires on PR sync"]:::job
-        rev["agent-review-pr.yml\nfires on agent/* PR sync"]:::job
+        rev["agent-review-pr.yml\nfires on agent/* PR sync\nOR dispatched by bot for re-review"]:::job
     end
 
     c1 --> f1 --> f2 --> f3 --> R
@@ -90,6 +90,7 @@ flowchart LR
     R --> gh
     R --> cmt
     R --> commits
+    R -->|"Mode 1: gh workflow run\nagent-review-pr.yml"| rev
     commits --> tst
     commits --> rev
 ```
@@ -196,10 +197,14 @@ sequenceDiagram
     CCA->>API: read CLAUDE.md (Read tool)
     CCA->>API: gh pr view / gh pr diff (Bash tool)
     Note over CCA: decide mode by re-reading the mention
-    alt Mode 1: read-only Q and A
+    alt Mode 1: PR review requested
+        CCA->>API: gh pr view (number) to get base and head refs
+        CCA->>API: gh workflow run agent-review-pr.yml with pr_number, base_ref, head_ref
+        CCA->>API: post acknowledgment comment
+    else Mode 2: read-only Q and A
         CCA->>API: read source, run npm test if needed
         CCA->>API: post reply comment
-    else Mode 2: write
+    else Mode 3: write
         CCA->>G: gh pr checkout (number)
         CCA->>API: read diff, comments, reviews
         CCA->>G: edit files, npm test, npm run typecheck
@@ -209,30 +214,37 @@ sequenceDiagram
     API-->>U: notification of bot reply (and PR sync if write)
 ```
 
-Source: [.github/workflows/bot-respond.yml](../workflows/bot-respond.yml) lines 26-99.
+Source: [.github/workflows/bot-respond.yml](../workflows/bot-respond.yml) lines 26-114.
 
 [Back to top](#navigate)
 
 ---
 
-## 5. The two modes
+## 5. The three modes
 
-The bot decides between read-only Q and A and write mode based on the verbatim wording of the mention. Ambiguous wording forces a clarification reply.
+The bot decides between three modes based on the verbatim wording of the mention. Ambiguous wording forces a clarification reply.
 
 ```mermaid
 flowchart TB
     classDef start fill:#0e7490,color:#fff,stroke:#000
     classDef ask fill:#7c2d12,color:#fff,stroke:#000
+    classDef disp fill:#155e75,color:#fff,stroke:#000
     classDef ro fill:#1e3a8a,color:#fff,stroke:#000
     classDef wr fill:#581c87,color:#fff,stroke:#000
     classDef out fill:#064e3b,color:#fff,stroke:#000
 
     A([read the mention]):::start
-    A --> Q1{explicit ask to\nfix, revise, address,\nupdate, make changes?}:::ask
-    Q1 -->|yes| W1[Mode 2: WRITE]:::wr
-    Q1 -->|no| Q2{question, review,\nopinion, or status?}:::ask
-    Q2 -->|yes| R1[Mode 1: READ-ONLY]:::ro
+    A --> Q0{review, re-review,\ntake another look,\ncheck the PR?}:::ask
+    Q0 -->|yes, on a PR| D1[Mode 1: DISPATCH REVIEW]:::disp
+    Q0 -->|no| Q1{explicit ask to\nfix, revise, address,\nupdate, make changes?}:::ask
+    Q1 -->|yes| W1[Mode 3: WRITE]:::wr
+    Q1 -->|no| Q2{question, opinion,\nor status?}:::ask
+    Q2 -->|yes| R1[Mode 2: READ-ONLY]:::ro
     Q2 -->|ambiguous| C1[reply asking for clarification\nno code touched]:::out
+
+    D1 --> D2["gh pr view (number)\nfetch baseRefName, headRefName"]:::disp
+    D2 --> D3["gh workflow run agent-review-pr.yml\n-f pr_number -f base_ref -f head_ref"]:::disp
+    D3 --> D4["post acknowledgment comment"]:::out
 
     R1 --> R2["read source, gh pr view, gh pr diff"]:::ro
     R2 --> R3["run npm test / typecheck if helpful"]:::ro
@@ -246,7 +258,7 @@ flowchart TB
     W6 --> W7["post summary comment"]:::out
 ```
 
-Key invariant: write mode never creates a new branch or a new PR. The bot always pushes to the existing PR branch. If there is no PR branch in context, write mode cannot proceed and the bot must ask for clarification.
+Key invariants: write mode never creates a new branch or a new PR. The bot always pushes to the existing PR branch. If there is no PR branch in context, write mode cannot proceed and the bot must ask for clarification. Review dispatch (Mode 1) delegates to `agent-review-pr.yml` via `gh workflow run` rather than doing an inline review.
 
 [Back to top](#navigate)
 
@@ -265,13 +277,16 @@ flowchart TB
     classDef l5 fill:#374151,color:#fff,stroke:#000
 
     A["BLOCK 1: Identity + context\n'You are llm-exe-bot...'\n'Read CLAUDE.md for project context.'"]:::l1
-    B["BLOCK 2: Determine what's being asked\nsplits into Mode 1 vs Mode 2"]:::l2
-    C["BLOCK 3: Mode 1 spec (read-only)\nread code, gh pr diff/view,\nnpm test/typecheck if needed,\nreply concisely"]:::l3
-    D["BLOCK 4: Mode 2 spec (write)\ngh pr checkout, read diff/comments/reviews,\nedit, test + typecheck,\ncommit without Co-Authored-By,\npush to existing branch, summarize"]:::l4
-    E["BLOCK 5: Rules\nexplicit-ask only, clarify if ambiguous,\nstay scoped, no new PRs or branches,\nno close unless told, be concise"]:::l5
+    B["BLOCK 2: Determine what's being asked\nsplits into Mode 1, 2, or 3"]:::l2
+    B1["BLOCK 3: Mode 1 spec (dispatch review)\ngh pr view to get refs,\ngh workflow run agent-review-pr.yml,\npost acknowledgment, stop"]:::l3
+    C["BLOCK 4: Mode 2 spec (read-only)\nread code, gh pr diff/view,\nnpm test/typecheck if needed,\nreply concisely"]:::l3
+    D["BLOCK 5: Mode 3 spec (write)\ngh pr checkout, read diff/comments/reviews,\nedit, test + typecheck,\ncommit without Co-Authored-By,\npush to existing branch, summarize"]:::l4
+    E["BLOCK 6: Rules\nexplicit-ask only, clarify if ambiguous,\nstay scoped, no new PRs or branches,\nno close unless told, be concise"]:::l5
 
-    A --> B --> C
+    A --> B --> B1
+    B --> C
     B --> D
+    B1 --> E
     C --> E
     D --> E
     E --> X[("Claude receives this as its prompt\nplus the comment event payload\nvia GITHUB_EVENT_PATH")]
@@ -282,10 +297,11 @@ Each block answers one question:
 | Block | Question it answers |
 |-------|---------------------|
 | 1. Identity | "Who am I and where do I get context?" |
-| 2. Determine | "Is this Mode 1 or Mode 2?" |
-| 3. Mode 1 spec | "How do I answer without touching code?" |
-| 4. Mode 2 spec | "How do I revise without breaking PR conventions?" |
-| 5. Rules | "What am I forbidden from doing?" |
+| 2. Determine | "Which of the three modes applies?" |
+| 3. Mode 1 spec | "How do I dispatch a review pipeline?" |
+| 4. Mode 2 spec | "How do I answer without touching code?" |
+| 5. Mode 3 spec | "How do I revise without breaking PR conventions?" |
+| 6. Rules | "What am I forbidden from doing?" |
 
 [Back to top](#navigate)
 
@@ -387,10 +403,11 @@ flowchart TB
     classDef cond fill:#1e3a8a,color:#fff,stroke:#000
 
     subgraph MAY["MAY do"]
-        m1["answer questions / review code\n(Mode 1, always allowed)"]:::may
+        m1["dispatch agent-review-pr.yml\n(Mode 1, when review requested on a PR)"]:::may
+        m1b["answer questions\n(Mode 2, always allowed)"]:::may
         m2["read any source file"]:::may
         m3["run npm test, npm run typecheck"]:::may
-        m4["commit + push to existing PR branch\n(only when explicitly asked)"]:::may
+        m4["commit + push to existing PR branch\n(only when explicitly asked, Mode 3)"]:::may
         m5["ask for clarification on ambiguous asks"]:::may
         m6["reply with concise comment + file:line refs"]:::may
     end
@@ -414,7 +431,7 @@ flowchart TB
     m4 --- w2
 ```
 
-Source: [.github/workflows/bot-respond.yml](../workflows/bot-respond.yml) lines 89-95 plus the mode bodies above.
+Source: [.github/workflows/bot-respond.yml](../workflows/bot-respond.yml) lines 103-109 plus the mode bodies above.
 
 [Back to top](#navigate)
 
@@ -433,8 +450,9 @@ flowchart LR
 
     BR["bot-respond.yml\nrun completes"]:::src
 
-    BR --> O1["reply comment on issue/PR\n(always, both modes)"]:::out
+    BR --> O1["reply comment on issue/PR\n(always, all modes)"]:::out
     BR --> O2["commits pushed to existing PR branch\n(write mode only)"]:::out
+    BR --> O3["gh workflow run agent-review-pr.yml\n(review dispatch mode only)"]:::out
 
     O1 --> H1["maintainer reads reply"]:::human
     O1 --> H2["may post another @llm-exe-bot mention\n(re-enters this workflow)"]:::human
@@ -442,6 +460,8 @@ flowchart LR
     O2 --> C1["tests.yml\nfires on PR sync\nNode 18, 20, 22, 24"]:::cons
     O2 --> C2["agent-review-pr.yml\nfires on agent/* PR sync"]:::cons
     O2 --> H3["maintainer reviews the new commits\nand merges or requests more changes"]:::human
+
+    O3 --> C3["agent-review-pr.yml\ntests + review + decide pipeline"]:::cons
 
     H2 -.loop.-> BR
 ```
@@ -464,8 +484,10 @@ stateDiagram-v2
     Booting --> Setup: token + checkout + node + npm ci
     Setup --> Reading: action starts, reads CLAUDE.md and the mention
     Reading --> Clarifying: ambiguous ask
-    Reading --> ReadOnly: question or review
+    Reading --> Dispatching: review request on a PR
+    Reading --> ReadOnly: question or opinion
     Reading --> Writing: explicit fix / revise / update
+    Dispatching --> Replying: post acknowledgment after gh workflow run
     Clarifying --> Replying
     ReadOnly --> Investigating: gh pr view, gh pr diff, code reads
     Investigating --> Replying
@@ -564,7 +586,7 @@ flowchart LR
     K9["Max turns"]:::k --- V9["30"]:::v
     K10["Tool allowlist"]:::k --- V10["Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch"]:::v
     K11["Prompt source"]:::k --- V11["inline in yml (no template file)"]:::v
-    K12["Modes"]:::k --- V12["1 read-only Q and A, 2 write to existing PR"]:::v
+    K12["Modes"]:::k --- V12["1 dispatch review pipeline, 2 read-only Q and A, 3 write to existing PR"]:::v
     K13["Branch policy"]:::k --- V13["never create new; push to existing PR branch only"]:::v
     K14["Commit policy"]:::k --- V14["no Co-Authored-By; tests + typecheck must pass"]:::v
     K15["Reply policy"]:::k --- V15["always reply with concise comment + file:line refs"]:::v
