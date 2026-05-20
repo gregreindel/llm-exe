@@ -847,7 +847,7 @@ PR body truncation: capped at 65000 characters.
 | Examples tests | New `run-examples-tests` job runs before publish. Uses the `Examples Test` environment with real provider keys (OpenAI, Anthropic, Gemini, xAI, DeepSeek, AWS). Builds, packs, extracts tarball, replaces dist/, installs examples deps, runs `npm run test-examples`. |
 | Build | `npm install` then `npm run build:package`. |
 | Publish step | Reads `package.json .version`; if it contains the literal substring `beta`, runs `npm run publish-beta`; otherwise `npm run publish-main`. |
-| Failure rollback | `if: failure() && github.event_name == 'release'` patches the release back to `draft: true` and prepends a warning banner with the failed workflow URL. |
+| Failure rollback | Separate `revert-to-draft` job: `if: always() && github.event_name == 'release' && (needs.run-examples-tests.result == 'failure' \|\| needs.publish-npm-package.result == 'failure')`. Mints its own bot token, patches the release back to `draft: true`, and prepends a warning banner with the specific failure reason and workflow URL. |
 
 ### 9.17. `deploy-docs.yml` - VitePress to S3 plus CloudFront
 
