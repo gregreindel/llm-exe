@@ -827,7 +827,7 @@ PR body truncation: capped at 65000 characters.
 | Field | Value |
 |-------|-------|
 | Trigger | `pull_request` `closed` to `main` (`merged == true`) and dispatch |
-| Behavior | Lists every release with `draft == true` and deletes each one via `gh api -X DELETE`. Then reads `package.json .version`, formats `vMAJOR.MINOR.PATCH`, creates a draft release with `generate_release_notes: true`, then cleans the auto-generated body by removing lines matching `chore: bump version`, `Draft PR for release`, `Bump Version on PR to Main` (case-insensitive) and stripping ` by @user in ` attributions. The cleaned body is PATCHed back onto the release. |
+| Behavior | Lists every release with `draft == true` and deletes each one via `gh api -X DELETE`. Then reads `package.json .version`, formats `vMAJOR.MINOR.PATCH`, creates a draft release with `generate_release_notes: true`, then cleans the auto-generated body by removing lines matching `chore: bump version`, `Draft PR for release`, `Bump Version on PR to Main`, `docs: sync` (case-insensitive) and stripping ` by @user in ` attributions. The cleaned body is PATCHed back onto the release. |
 
 ### 9.15. `auto-merge-main-pr.yml` - Auto-merge gate
 
