@@ -1,0 +1,84 @@
+name: Agent / Docs Sync Trigger
+
+# Detects source file changes on push to development and dispatches the
+# docs-sync workflow. This separation exists because claude-code-action@v1
+# does not support the push event type — the agent must be invoked via
+# workflow_dispatch.
+#
+# Loop prevention: the paths filter intentionally EXCLUDES .github/docs/*.md
+# and scripts/agents/logs/** so the bot's own doc PRs do not retrigger this
+# workflow when merged. Do not add those paths.
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/**'
+      - '.github/actions/**'
+      - '.github/vitals/**'
+      - 'scripts/maintain.sh'
+      - 'scripts/agents/config.sh'
+      - 'scripts/agents/prompts/**'
+      - 'package.json'
+
+concurrency:
+  group: docs-sync-trigger
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Detect changed files
+        id: detect
+        run: |
+          base="${{ github.event.before }}"
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base="HEAD~1"
+          fi
+          git diff --name-only "$base" HEAD -- \
+            '.github/workflows/' \
+            '.github/actions/' \
+            '.github/vitals/' \
+            'scripts/maintain.sh' \
+            'scripts/agents/config.sh' \
+            'scripts/agents/prompts/' \
+            'package.json' \
+            > /tmp/changed-files.txt
+
+          count=$(wc -l < /tmp/changed-files.txt | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "::notice::Detected $count changed source file(s)"
+          cat /tmp/changed-files.txt
+
+          if [ "$count" -gt 0 ]; then
+            # Comma-separate for the target input field
+            target=$(tr '\n' ',' < /tmp/changed-files.txt | sed 's/,$//')
+            echo "target=$target" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dispatch docs-sync
+        if: steps.detect.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          gh workflow run docs-sync.yml \
+            --repo ${{ github.repository }} \
+            --ref development \
+            --field target="${{ steps.detect.outputs.target }}"

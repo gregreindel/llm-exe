@@ -2,12 +2,12 @@
 
 Concentrated diagrams for [.github/workflows/update-prs-with-development.yml](../workflows/update-prs-with-development.yml). Companion to [WORKFLOW_ARCHITECTURE.md](WORKFLOW_ARCHITECTURE.md).
 
-This workflow is intentionally simple. One job, one loop, weekday mornings. Its purpose is to keep open PRs from rotting against `development` by rebasing them daily before the maintainer wakes up.
+This workflow is intentionally simple. One job, one loop, dispatch only. Its purpose is to keep open PRs from rotting against `development` by rebasing them on demand. Draft PRs are skipped.
 
 ## Navigate
 
 - [1. The whole picture](#1-the-whole-picture)
-- [2. Triggers (weekday cron and dispatch)](#2-triggers-weekday-cron-and-dispatch)
+- [2. Triggers (dispatch only)](#2-triggers-dispatch-only)
 - [3. The one-job DAG](#3-the-one-job-dag)
 - [4. Step-by-step lifecycle](#4-step-by-step-lifecycle)
 - [5. The PR update loop](#5-the-pr-update-loop)
@@ -31,7 +31,6 @@ flowchart LR
     classDef out fill:#581c87,color:#fff,stroke:#000
 
     subgraph T["Triggers"]
-        c1["cron 0 8 * * 1-5\n(weekdays 8am UTC, 3am CT)"]:::trig
         d1["workflow_dispatch\n(no inputs)"]:::trig
     end
 
@@ -57,7 +56,6 @@ flowchart LR
         rev["agent-review-pr.yml\nfires on agent/* synchronize"]:::job
     end
 
-    c1 --> J
     d1 --> J
     s1 --> bot
     bot --> J
@@ -71,32 +69,27 @@ flowchart LR
 
 ---
 
-## 2. Triggers (weekday cron and dispatch)
+## 2. Triggers (dispatch only)
 
-Two entry points. Neither carries inputs. The cron is the load-bearing one.
+One entry point. No cron, no push trigger (both are commented out in the YAML). The workflow runs only on manual dispatch.
 
 ```mermaid
 flowchart TB
-    classDef cron fill:#0e7490,color:#fff,stroke:#000
     classDef manual fill:#9333ea,color:#fff,stroke:#000
     classDef out fill:#1f2937,color:#fff,stroke:#000
 
     start([event arrives])
     start --> ev{event_name?}
 
-    ev -->|schedule| sch{which cron?}
     ev -->|workflow_dispatch| disp[on-demand run\nany day, any time]:::manual
+    ev -->|other| skip([no trigger registered])
 
-    sch -->|0 8 * * 1-5| wk[weekday morning sweep\n8am UTC = 3am CT]:::cron
-    sch -->|weekend| skip([no trigger registered])
-
-    wk --> run[(start update-prs job)]:::out
-    disp --> run
+    disp --> run[(start update-prs job)]:::out
 ```
 
-Why weekdays only: the maintainer reviews on weekdays. Weekend rebases would land on quiet branches and waste CI minutes. The 3am CT timing means PRs are fresh by the time the maintainer opens their laptop.
+The cron schedule (`0 8 * * 1-5`) was removed. The push trigger on development is commented out. The maintainer dispatches this workflow manually when they want PRs rebased.
 
-Source: [.github/workflows/update-prs-with-development.yml](../workflows/update-prs-with-development.yml) lines 3-6.
+Source: [.github/workflows/update-prs-with-development.yml](../workflows/update-prs-with-development.yml) lines 3-5.
 
 [Back to top](#navigate)
 
@@ -131,9 +124,8 @@ Permissions granted to this single job:
 |-------|-------|-----|
 | `contents` | write | `gh pr update-branch` rewrites the PR head branch |
 | `pull-requests` | write | required by `gh pr update-branch` API |
-| `id-token` | write | OIDC token minting for the app credential |
 
-Source: [.github/workflows/update-prs-with-development.yml](../workflows/update-prs-with-development.yml) lines 8-16.
+Source: [.github/workflows/update-prs-with-development.yml](../workflows/update-prs-with-development.yml) lines 7-14.
 
 [Back to top](#navigate)
 
@@ -153,7 +145,7 @@ sequenceDiagram
     participant GH as GitHub API
     participant PR as Open PRs
 
-    E->>J: schedule (weekday 8am UTC) or dispatch
+    E->>J: workflow_dispatch
     J->>T: create-github-app-token@v1 (APP_ID, APP_PRIVATE_KEY)
     T-->>J: bot token (short-lived)
     J->>G: actions/checkout@v4 with bot token
@@ -196,7 +188,10 @@ flowchart TB
     A --> B{PR_NUMBERS empty?}:::dec
     B -->|yes| E["echo 'No open PRs'\nexit 0"]:::skip
     B -->|no| C[loop: for PR in PR_NUMBERS]:::step
-    C --> D["echo 'Attempting to update PR #(N)'"]:::step
+    C --> DRAFT{gh pr view N\nisDraft?}:::dec
+    DRAFT -->|true| SKIP_D["echo 'PR #(N) is a draft - skipping'"]:::skip
+    DRAFT -->|false| D["echo 'Attempting to update PR #(N)'"]:::step
+    SKIP_D --> J
     D --> F["gh pr update-branch (N) 2&gt;&amp;1"]:::step
     F --> G{exit code?}:::dec
     G -->|0| H["echo 'PR #(N) updated successfully'"]:::ok
@@ -343,9 +338,9 @@ flowchart LR
     classDef v fill:#374151,color:#fff,stroke:#000
 
     K1["File"]:::k --- V1[".github/workflows/update-prs-with-development.yml"]:::v
-    K2["Triggers"]:::k --- V2["cron 0 8 * * 1-5 + workflow_dispatch"]:::v
+    K2["Triggers"]:::k --- V2["workflow_dispatch only (cron commented out)"]:::v
     K3["Inputs"]:::k --- V3["none"]:::v
-    K4["Permissions"]:::k --- V4["contents/PR: write, id-token: write"]:::v
+    K4["Permissions"]:::k --- V4["contents: write, pull-requests: write"]:::v
     K5["Timeout"]:::k --- V5["15 minutes"]:::v
     K6["Concurrency"]:::k --- V6["none (default group, no overlap risk)"]:::v
     K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token"]:::v
@@ -354,7 +349,7 @@ flowchart LR
     K10["Per-PR action"]:::k --- V10["gh pr update-branch (N)"]:::v
     K11["Failure handling"]:::k --- V11["per-PR errors swallowed, loop continues"]:::v
     K12["Downstream fired"]:::k --- V12["tests.yml + agent-review-pr.yml"]:::v
-    K13["Schedule (local)"]:::k --- V13["weekdays 3am CT / 4am ET"]:::v
+    K13["Schedule (local)"]:::k --- V13["dispatch only (no cron schedule)"]:::v
 ```
 
 Direct links:
