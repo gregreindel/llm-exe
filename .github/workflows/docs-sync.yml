@@ -1,30 +1,25 @@
-name: Docs Sync
+name: Agent / Docs Sync
 
 # Keeps the workflow deep-dive markdown files in sync with the workflow YAML
-# and its dependencies. Triggered when source files change; the docs-sync
-# agent opens a PR with the matching doc updates.
+# and its dependencies. Always invoked via workflow_dispatch — either manually
+# or by docs-sync-trigger.yml which handles the push detection.
 #
-# Loop prevention: the paths filter intentionally EXCLUDES .github/docs/*.md and
-# scripts/agents/logs/** so the bot's own doc PRs do not retrigger this
-# workflow when merged. Do not add those paths.
+# claude-code-action@v1 does not support the push event type, so push
+# detection is separated into docs-sync-trigger.yml which dispatches this
+# workflow with the changed file list pre-computed.
 
 on:
-  push:
-    branches: [development]
-    paths:
-      - '.github/workflows/**'
-      - '.github/actions/**'
-      - '.github/vitals/**'
-      - 'scripts/maintain.sh'
-      - 'scripts/agents/config.sh'
-      - 'scripts/agents/prompts/**'
-      - 'package.json'
   workflow_dispatch:
     inputs:
       target:
         description: "Comma-separated paths to sync docs for. Leave empty to diff HEAD against its parent."
         required: false
         type: string
+      full_refresh:
+        description: "Refresh ALL docs regardless of recent changes. Overrides target."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: docs-sync
@@ -77,8 +72,22 @@ jobs:
       - name: Detect changed files
         id: detect
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
+          if [ "${{ inputs.full_refresh }}" = "true" ]; then
+            # Full-refresh mode: list every tracked source file so the agent
+            # audits all deep dives for drift, not just recently changed ones.
+            {
+              find .github/workflows -maxdepth 1 -name '*.yml' | sort
+              find .github/actions   -name '*.yml'              | sort
+              find .github/vitals    -type f                     | sort
+              echo scripts/maintain.sh
+              echo scripts/agents/config.sh
+              find scripts/agents/prompts -type f               | sort
+              echo package.json
+            } | grep -v '^$' > /tmp/changed-files.txt
+
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
             echo "${{ inputs.target }}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > /tmp/changed-files.txt
+
           else
             base="${{ github.event.before }}"
             if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
@@ -134,7 +143,7 @@ jobs:
           Run \`date -u +%H:%M\` periodically to check how much time you have left.
           If you're running low on time, commit what you have, update your log file, and stop. A partial result is better than getting killed mid-work.
 
-          ## Changed Source Files
+          ## Changed Source Files 
           The following files changed in the triggering commit range. Map each to the affected deep-dive(s) using the table in your prompt, then update those docs:
 
           $(cat /tmp/changed-files.txt)"
@@ -148,11 +157,12 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.bot-token.outputs.token }}
           display_report: "false"
+          allowed_bots: "llm-exe-bot[bot]"
           prompt: |
             Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
           claude_args: |
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch"
-            --max-turns 50
+            --max-turns 80
             --model claude-opus-4-6
 
       - name: Upload agent prompt

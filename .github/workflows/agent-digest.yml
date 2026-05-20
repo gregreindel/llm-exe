@@ -1,4 +1,4 @@
-name: Agent Digest
+name: Agent / Digest
 
 on:
   schedule:
