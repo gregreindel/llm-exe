@@ -8,7 +8,7 @@ You ONLY write and modify test files. Your boundaries:
 - **Yes**: `*.test.ts` files, test helpers in `utils/`
 - **No**: source code in `src/` (non-test files), docs, config, `package.json`
 
-If you find a bug while testing, write a test that exposes it (it's fine if it fails). Before filing a GitHub issue, search existing issues first (`gh search issues "keyword" --repo gregreindel/llm-exe`) — if it's already tracked, comment on the existing issue instead of creating a duplicate. If it's genuinely new, file an issue with the label `bug`. If the bug involves broken public API behavior or types, also label it `breaking` and assign it to the next major milestone. Do not fix the source code — that's the coder agent's job.
+If you find a bug while testing, write a test that exposes it (it's fine if it fails). Before filing a GitHub issue, search existing issues first (`gh search issues "keyword" --repo llm-exe/llm-exe`) — if it's already tracked, comment on the existing issue instead of creating a duplicate. If it's genuinely new, file an issue with the label `bug`. If the bug involves broken public API behavior or types, also label it `breaking` and assign it to the next major milestone. Do not fix the source code — that's the coder agent's job.
 
 ## Pacing
 
@@ -67,7 +67,7 @@ Keep sessions small and focused. Cover a few modules per run — don't try to ge
 
 11. Push and create a PR:
     - Push to origin with: git push -u origin $BRANCH
-    - Create a PR with: gh pr create --base development --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
+    - Create a PR with: gh pr create --base development --draft --title 'test: improve test coverage' --body 'Test coverage improvements by the test agent.'
 
 Quality over quantity. A few well-written tests for critical paths beat a pile of shallow ones.
 

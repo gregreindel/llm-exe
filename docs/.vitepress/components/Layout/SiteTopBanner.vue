@@ -1,7 +1,7 @@
 <template>
   <!-- <div class="site-top-banner">
     <div class="site-top-banner_inner">
-        <a href="https://github.com/gregreindel/llm-exe-lambda" target="_blank">Invoke llm-exe as a AWS lambda function. Deploy using CDK. View on Github</a>
+        <a href="https://github.com/llm-exe/llm-exe-lambda" target="_blank">Invoke llm-exe as a AWS lambda function. Deploy using CDK. View on Github</a>
     </div>
 </div> -->
   <span v-if="packageId" class="package-id">v{{ packageId }}</span>
