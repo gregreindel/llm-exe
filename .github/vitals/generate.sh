@@ -48,8 +48,9 @@ md_escape() {
     | tr '\n\r' '  '
 }
 NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-SEVEN_DAYS_AGO=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
-SEVENTYTWO_HOURS_AGO=$(date -u -d '72 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+# SEVENTYTWO_HOURS_AGO is an ISO-8601 string used only for jq string comparison.
+# GNU date (-d) is available on ubuntu-latest; the || fallback covers transient failures.
+SEVENTYTWO_HOURS_AGO=$(date -u -d '72 hours ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v -72H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "")
 
 # --- Data gathering (resilient: any gh failure falls back to a neutral value) ---
 
@@ -181,8 +182,8 @@ for dir in scripts/agents/logs/*/; do
   if [ "$agent" = "personas" ]; then
     for p in "$dir"*/; do
       pname=$(basename "$p")
-      count=$(find "$p" -name '*.md' -newermt "$SEVEN_DAYS_AGO" 2>/dev/null | wc -l | tr -d ' ')
-      latest=$(ls -t "$p"*.md 2>/dev/null | head -1)
+      count=$(find "$p" -name '*.md' -mtime -7 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+      latest=$(ls -t "$p"*.md 2>/dev/null | head -1 || true)
       if [ -n "$latest" ]; then
         status=$(grep -m1 '^\- \*\*Status\*\*:' "$latest" 2>/dev/null | sed 's/.*Status\*\*: //' || echo "unknown")
       else
@@ -193,8 +194,8 @@ for dir in scripts/agents/logs/*/; do
     continue
   fi
 
-  count=$(find "$dir" -name '*.md' -newermt "$SEVEN_DAYS_AGO" 2>/dev/null | wc -l | tr -d ' ')
-  latest=$(ls -t "$dir"*.md 2>/dev/null | head -1)
+  count=$(find "$dir" -name '*.md' -mtime -7 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+  latest=$(ls -t "$dir"*.md 2>/dev/null | head -1 || true)
   if [ -n "$latest" ]; then
     status=$(grep -m1 '^\- \*\*Status\*\*:' "$latest" 2>/dev/null | sed 's/.*Status\*\*: //' || echo "unknown")
   else

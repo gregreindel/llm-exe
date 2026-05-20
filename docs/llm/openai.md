@@ -44,7 +44,7 @@ In addition to the [generic options](/llm/generic.html), the following options a
 
 | Option           | Type    | Default     | Description                                                    |
 | ---------------- | ------- | ----------- | -------------------------------------------------------------- |
-| model            | string  | gpt-4o-mini | The model to use. Can be any valid chat model. See OpenAI Docs |
+| model            | string  | —           | The model to use. Must be specified when using `openai.chat.v1`. Can be any valid chat model. See OpenAI Docs |
 | openAIApiKey     | string  | undefined   | API key for OpenAi. See [authentication](/llm/openai#authentication)   |
 | topP             | number  | undefined   | Maps to `top_p`. See OpenAI Docs                               |
 | stopSequences    | array   | undefined   | Maps to `stop`. See OpenAI Docs                                |

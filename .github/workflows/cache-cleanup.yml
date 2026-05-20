@@ -1,4 +1,4 @@
-name: Cleanup Caches
+name: CI / Cache Cleanup
 
 on:
   pull_request:

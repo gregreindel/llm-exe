@@ -99,7 +99,7 @@ Also check `.github/docs/WORKFLOWS_INDEX.md`:
 
 8. Push and create a PR:
    - `git push -u origin $BRANCH`
-   - `gh pr create --base development --title 'docs: sync workflow deep dives' --body 'Updates the following deep dives to reflect recent changes:\n\n- list each one with a one-line summary'`
+   - `gh pr create --base development --draft --title 'docs: sync workflow deep dives' --body 'Updates the following deep dives to reflect recent changes:\n\n- list each one with a one-line summary'`
 
 If after analysis you determine NO docs need updating (the source change does not affect anything documented), say so in your log under Summary and skip the PR. Do not manufacture changes.
 

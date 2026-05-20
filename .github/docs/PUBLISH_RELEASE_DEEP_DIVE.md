@@ -8,7 +8,7 @@ Minimum prose. Maximum diagrams.
 
 - [1. The whole picture](#1-the-whole-picture)
 - [2. Triggers](#2-triggers)
-- [3. The two-job DAG](#3-the-two-job-dag)
+- [3. The four-job DAG](#3-the-four-job-dag)
 - [4. The two-layer guard](#4-the-two-layer-guard)
 - [5. Step-by-step lifecycle](#5-step-by-step-lifecycle)
 - [6. Version routing](#6-version-routing)
@@ -42,14 +42,16 @@ flowchart LR
 
     subgraph W["publish-release.yml"]
         J1["check-release-branch\ntarget_commitish == 'main'?"]:::gate
-        J2["publish-npm-package\nactor in ALLOWED_PUBLISHERS?"]:::job
+        J2["run-examples-tests\nExamples Test environment\nreal provider keys"]:::job
+        J3["publish-npm-package\nactor in ALLOWED_PUBLISHERS?"]:::job
+        J4["revert-to-draft\n(on failure of J2 or J3)"]:::bad
     end
 
     subgraph S["Secrets and Identity"]
-        s1["APP_ID + APP_PRIVATE_KEY"]:::file
+        s1["APP_ID + APP_PRIVATE_KEY\n(used only by revert job)"]:::file
         s2["NODE_AUTH_TOKEN\n(npm auth via registry-url)"]:::file
         s3["OIDC token\nid-token: write"]:::file
-        bot["llm-exe-bot[bot]\nshort-lived GitHub token"]:::file
+        s4["Provider API keys\n(OpenAI, Anthropic, Gemini,\nxAI, DeepSeek, AWS)"]:::file
     end
 
     subgraph F["Local artifacts"]
@@ -60,11 +62,12 @@ flowchart LR
     subgraph X["External"]
         npm["registry.npmjs.org\n(npm publish)"]:::ext
         gh["api.github.com\n(PATCH releases on failure)"]:::ext
+        prov["Provider APIs\n(examples tests)"]:::ext
     end
 
     subgraph O["Outputs"]
         ok["npm tarball\n(latest or beta tag)"]:::out
-        prov["sigstore provenance\n(OIDC attestation)"]:::out
+        provA["sigstore provenance\n(OIDC attestation)"]:::out
         rel["GitHub Release\nremains published"]:::out
         bad1["GitHub Release\nreverted to draft + warning"]:::bad
     end
@@ -73,19 +76,23 @@ flowchart LR
     t2 --> J2
     J1 -->|main| J2
     J1 -->|not main| stop1([fail])
-    s1 --> bot
-    bot --> J2
-    s2 --> J2
-    s3 --> J2
-    J2 --> pkg
-    J2 --> dist
+    s4 --> J2
+    J2 --> J3
+    s2 --> J3
+    s3 --> J3
+    J3 --> pkg
+    J3 --> dist
     dist --> npm
     npm --> ok
-    s3 --> prov
-    npm --> prov
-    J2 --> rel
-    J2 -.failure + release event.-> gh
+    s3 --> provA
+    npm --> provA
+    J3 --> rel
+    J2 -.failure.-> J4
+    J3 -.failure.-> J4
+    s1 --> J4
+    J4 -.release event.-> gh
     gh --> bad1
+    J2 --> prov
 ```
 
 [Back to top](#navigate)
@@ -120,7 +127,7 @@ flowchart TB
     J1bypass --> ok1
 ```
 
-Source: [.github/workflows/publish-release.yml](../workflows/publish-release.yml) lines 3-8 (triggers), 18-25 (branch check).
+Source: [.github/workflows/publish-release.yml](../workflows/publish-release.yml) lines 3-8 (triggers), 18-26 (branch check).
 
 Note on the manual path: the branch check step's `if` clause requires `github.event_name == 'release'`, so a `workflow_dispatch` run hits an effectively empty `check-release-branch` job that always succeeds. The actor allowlist (Section 4) is what stops unauthorized manual republishes.
 
@@ -128,7 +135,7 @@ Note on the manual path: the branch check step's `if` clause requires `github.ev
 
 ---
 
-## 3. The two-job DAG
+## 3. The four-job DAG
 
 ```mermaid
 flowchart TB
@@ -147,22 +154,47 @@ flowchart TB
 
     J1 -->|needs| J2
 
-    subgraph J2["Job: publish-npm-package (ubuntu-latest)"]
+    subgraph J2["Job: run-examples-tests (ubuntu-latest, Examples Test env)"]
+        direction TB
+        e1["actions/checkout@v4"]:::step
+        e2["setup-node@v4 Node 22.x"]:::step
+        e3["./.github/actions/cache"]:::step
+        e4["npm install"]:::step
+        e5["npm run build:package && npm pack"]:::step
+        e6["Extract tarball, replace dist/"]:::step
+        e7["cd examples && npm install"]:::step
+        e8["npm run test-examples\n(real provider keys)"]:::step
+        e1 --> e2 --> e3 --> e4 --> e5 --> e6 --> e7 --> e8
+    end
+
+    J2 -->|needs| J3
+    J1 -->|needs| J3
+
+    subgraph J3["Job: publish-npm-package (ubuntu-latest)"]
         direction TB
         s1["actions/checkout@v4"]:::step
-        s2["Generate bot token\n(create-github-app-token@v1)"]:::step
-        s3["Validate Publisher\n(actor allowlist)"]:::gate
-        s4["./.github/actions/setup-node\n(Node 24.x + npm registry-url)"]:::step
-        s5["./.github/actions/cache\n(~/.npm + node_modules)"]:::step
-        s6["npm install"]:::step
-        s7["npm run build:package\n(tsup CJS+ESM+DTS)"]:::step
-        s8["Publish (route by version)"]:::step
-        s9["Revert release to draft on failure\nif: failure() && event_name == release"]:::cleanup
-        s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7 --> s8 --> s9
+        s2["Validate Publisher\n(actor allowlist)"]:::gate
+        s3["./.github/actions/setup-node\n(Node 24.x + npm registry-url)"]:::step
+        s4["./.github/actions/cache\n(~/.npm + node_modules)"]:::step
+        s5["npm install"]:::step
+        s6["npm run build:package\n(tsup CJS+ESM+DTS)"]:::step
+        s7["Publish (route by version)"]:::step
+        s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7
+    end
+
+    J2 -.->|needs| J4
+    J3 -.->|needs| J4
+
+    subgraph J4["Job: revert-to-draft (ubuntu-latest)"]
+        direction TB
+        r1["if: always() && release event &&\n(examples failed || publish failed)"]:::gate
+        r2["Generate bot token\n(create-github-app-token@v1)"]:::step
+        r3["Revert release to draft\n(PATCH with warning banner)"]:::cleanup
+        r1 --> r2 --> r3
     end
 ```
 
-`needs: check-release-branch` enforces sequential ordering. No concurrency group is declared, so two concurrent dispatch runs are theoretically possible but npm itself rejects duplicate versions.
+The DAG has four jobs: `check-release-branch` gates `run-examples-tests`, which gates `publish-npm-package`. The `revert-to-draft` job depends on both `run-examples-tests` and `publish-npm-package` and only fires when either fails during a release event. No concurrency group is declared, so two concurrent dispatch runs are theoretically possible but npm itself rejects duplicate versions.
 
 [Back to top](#navigate)
 
@@ -201,7 +233,7 @@ Why two layers?
 
 Together they cover both the automated and manual entry points. Neither alone is sufficient.
 
-Source: [publish-release.yml](../workflows/publish-release.yml) lines 18-25 (Layer 1), 42-50 (Layer 2).
+Source: [publish-release.yml](../workflows/publish-release.yml) lines 18-26 (Layer 1), 88-95 (Layer 2).
 
 [Back to top](#navigate)
 
@@ -209,15 +241,16 @@ Source: [publish-release.yml](../workflows/publish-release.yml) lines 18-25 (Lay
 
 ## 5. Step-by-step lifecycle
 
-One successful publish from event to npm registry.
+One successful publish from event to npm registry, including the examples tests gate.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant E as Event
     participant C1 as check-release-branch
+    participant EX as run-examples-tests
+    participant P as Provider APIs
     participant J as publish-npm-package
-    participant T as Token mint
     participant N as Node + npm
     participant B as tsup build
     participant R as registry.npmjs.org
@@ -225,12 +258,17 @@ sequenceDiagram
 
     E->>C1: release.published (target_commitish=main)
     C1->>C1: jq target_commitish from GITHUB_EVENT_PATH
-    C1-->>J: needs satisfied
+    C1-->>EX: needs satisfied
+    EX->>EX: checkout, setup-node 22.x, cache, npm install
+    EX->>EX: npm run build:package && npm pack
+    EX->>EX: extract tarball, replace dist/
+    EX->>EX: cd examples && npm install
+    EX->>P: npm run test-examples (real provider keys)
+    P-->>EX: examples pass
+    EX-->>J: needs satisfied
     J->>J: actions/checkout@v4
-    J->>T: create-github-app-token@v1 (APP_ID, APP_PRIVATE_KEY)
-    T-->>J: bot token (used later on failure)
     J->>J: Validate Publisher (actor in allowlist)
-    J->>N: setup-node@v4 Node 24.x, registry-url npmjs.org
+    J->>N: setup-node composite (Node 24.x, registry-url npmjs.org)
     Note over N: registry-url makes npm write an .npmrc with NODE_AUTH_TOKEN
     J->>N: cache restore (~/.npm + node_modules)
     J->>N: npm install
@@ -247,7 +285,7 @@ sequenceDiagram
     R-->>J: 200 OK, tarball live
 ```
 
-Source: [publish-release.yml](../workflows/publish-release.yml) lines 32-74.
+Source: [publish-release.yml](../workflows/publish-release.yml) lines 27-121.
 
 [Back to top](#navigate)
 
@@ -276,7 +314,7 @@ flowchart LR
     M2 --> M3["dist-tag: latest\n(default)"]:::main
 ```
 
-Source: [publish-release.yml](../workflows/publish-release.yml) lines 64-74. Scripts in [package.json](../../package.json) lines 56-57.
+Source: [publish-release.yml](../workflows/publish-release.yml) lines 110-121. Scripts in [package.json](../../package.json).
 
 Why this matters: `npm publish` with no flag overwrites the `latest` dist-tag. Beta releases must use `--tag beta` so they do not become the default install for `npm i llm-exe`. The check is a plain substring match; a version like `2.3.6-beta.0` matches, while `2.3.6` does not.
 
@@ -291,14 +329,20 @@ Who is contacted, with what credential, why.
 ```mermaid
 flowchart LR
     classDef pre fill:#155e75,color:#fff,stroke:#000
+    classDef test fill:#1e3a8a,color:#fff,stroke:#000
     classDef pub fill:#064e3b,color:#fff,stroke:#000
     classDef rb fill:#7c2d12,color:#fff,stroke:#000
 
-    subgraph Pre["Before the publish step"]
-        c1["actions/create-github-app-token@v1\nauth: APP_ID + APP_PRIVATE_KEY\nwhy: bot token for rollback PATCH (used only on failure)"]:::pre
-        c2["actions/checkout@v4\nauth: GITHUB_TOKEN (default)\nwhy: source for build"]:::pre
-        c3["actions/setup-node@v4 (composite)\nauth: none\nwhy: Node 24.x + npm registry-url"]:::pre
-        c4["actions/cache@v4 (composite)\nauth: none\nwhy: speed up npm install"]:::pre
+    subgraph ExTest["Examples tests job"]
+        e1["actions/checkout@v4\nauth: GITHUB_TOKEN (default)\nwhy: source for build + pack"]:::test
+        e2["actions/setup-node@v4\nauth: none\nwhy: Node 22.x"]:::test
+        e3["Provider APIs (OpenAI, Anthropic,\nGemini, xAI, DeepSeek)\nauth: per-provider API keys\nwhy: real integration tests"]:::test
+    end
+
+    subgraph Pre["Publish job setup"]
+        c1["actions/checkout@v4\nauth: GITHUB_TOKEN (default)\nwhy: source for build"]:::pre
+        c2["actions/setup-node@v4 (composite)\nauth: none\nwhy: Node 24.x + npm registry-url"]:::pre
+        c3["actions/cache@v4 (composite)\nauth: none\nwhy: speed up npm install"]:::pre
     end
 
     subgraph Pub["Publish"]
@@ -306,16 +350,21 @@ flowchart LR
         d2["sigstore via OIDC\nauth: GitHub-issued id-token\nwhy: npm provenance attestation"]:::pub
     end
 
-    subgraph Rb["Failure rollback (release event only)"]
-        d3["api.github.com PATCH /releases/:id\nauth: bot token from step 'bot-token'\nwhy: flip published release to draft and prepend warning"]:::rb
+    subgraph Rb["Failure rollback (separate job, release event only)"]
+        d3["actions/create-github-app-token@v1\nauth: APP_ID + APP_PRIVATE_KEY\nwhy: mint bot token for PATCH"]:::rb
+        d4["api.github.com PATCH /releases/:id\nauth: bot token from step 'bot-token'\nwhy: flip published release to draft and prepend warning"]:::rb
+        d3 --> d4
     end
 
-    c1 --> c2 --> c3 --> c4 --> d1
+    e1 --> e2 --> e3
+    e3 --> c1
+    c1 --> c2 --> c3 --> d1
     d1 --> d2
+    e3 -.failure.-> d3
     d1 -.failure.-> d3
 ```
 
-The npm token (used by `npm publish`) is configured by `setup-node@v4` consuming the `registry-url` and the `NODE_AUTH_TOKEN` env var. Provenance is automatic when both `id-token: write` is granted (top of file) and the registry supports it. The bot token from `create-github-app-token@v1` is only used by the rollback step.
+The npm token (used by `npm publish`) is configured by the setup-node composite action consuming the `registry-url` and the `NODE_AUTH_TOKEN` env var. Provenance is automatic when both `id-token: write` is granted (top of file) and the registry supports it. The bot token from `create-github-app-token@v1` is minted only in the `revert-to-draft` job and only used by the rollback step.
 
 [Back to top](#navigate)
 
@@ -323,7 +372,7 @@ The npm token (used by `npm publish`) is configured by `setup-node@v4` consuming
 
 ## 8. The rollback path
 
-Triggered only on the failure of a release-event run. Preserves the original body.
+The `revert-to-draft` job is a dedicated rollback job that runs after both `run-examples-tests` and `publish-npm-package` complete (in any state). Preserves the original release body.
 
 ```mermaid
 flowchart TB
@@ -332,13 +381,20 @@ flowchart TB
     classDef out fill:#064e3b,color:#fff,stroke:#000
     classDef fail fill:#991b1b,color:#fff,stroke:#000
 
-    A["any earlier step failed\n(validate, install, build, publish)"]:::trig
-    A --> B{event_name == release?}
-    B -->|no, dispatch| skip([no rollback; failure surfaces in run logs]):::fail
-    B -->|yes| C["read release.id and release.body\nfrom GITHUB_EVENT_PATH via jq"]:::step
+    A["revert-to-draft job starts\nif: always() && release event &&\n(examples failed || publish failed)"]:::trig
+    A --> B{condition met?}
+    B -->|no: dispatch, or both passed| skip([job skipped]):::fail
+    B -->|yes| T["Generate bot token\n(create-github-app-token@v1)"]:::step
+    T --> C["read release.id and release.body\nfrom GITHUB_EVENT_PATH via jq"]:::step
 
-    C --> D["heredoc release_body.txt\nwith [!WARNING] banner referencing WORKFLOW_URL"]:::step
-    D --> E["sed -i replace WORKFLOW_URL with\nserver_url/repository/actions/runs/run_id"]:::step
+    C --> D0{which job failed?}
+    D0 -->|examples tests| D0a["FAILURE_REASON =\n'the examples tests failed before publishing'"]:::step
+    D0 -->|publish| D0b["FAILURE_REASON =\n'the package failed to publish to npm'"]:::step
+    D0a --> D
+    D0b --> D
+
+    D["heredoc release_body.txt\nwith WARNING banner referencing WORKFLOW_URL"]:::step
+    D --> E["sed -i replace FAILURE_REASON and WORKFLOW_URL"]:::step
     E --> F["append ORIGINAL_BODY to banner\n(separator line, then full original notes)"]:::step
     F --> G["jq -Rs '.' to JSON-escape the file"]:::step
     G --> H["curl PATCH /repos/:repo/releases/:id\nbody: {draft:true, body: BODY_JSON}\nAuth: bot token from step output"]:::step
@@ -347,14 +403,15 @@ flowchart TB
     I -->|no| WARN["log warning, dump response\n(workflow still marked failed)"]:::fail
 ```
 
-Source: [publish-release.yml](../workflows/publish-release.yml) lines 76-108.
+Source: [publish-release.yml](../workflows/publish-release.yml) lines 123-177.
 
 Key invariants:
 
 - Original release body is never lost. The banner is prepended; the original is appended verbatim from the event payload.
+- The warning banner includes a specific failure reason: examples tests or npm publish, so the maintainer knows which step to investigate.
 - The workflow URL is computed from `github.server_url`, `github.repository`, `github.run_id`. No magic strings.
 - The PATCH uses the bot token (App identity) rather than `GITHUB_TOKEN`, which lets the change look like the bot acted rather than the GitHub Actions service account.
-- `failure()` only fires for hard failures of earlier steps in the same job. A failure of `check-release-branch` short-circuits before `publish-npm-package` ever runs, so this rollback never executes for a wrong-branch release. That is intentional: a wrong-branch release should not be auto-drafted by this workflow.
+- The job uses `always()` combined with explicit `needs.*.result == 'failure'` checks to ensure it runs even when upstream jobs fail. A failure of `check-release-branch` short-circuits before examples or publish ever run, so the rollback never executes for a wrong-branch release. That is intentional: a wrong-branch release should not be auto-drafted by this workflow.
 
 [Back to top](#navigate)
 
@@ -402,7 +459,11 @@ stateDiagram-v2
     BranchChecking --> WrongBranch: target_commitish != main
     BranchChecking --> BranchOK: main OR dispatch (step skipped)
     WrongBranch --> [*]: workflow fails, no rollback
-    BranchOK --> ActorChecking: publish-npm-package starts
+    BranchOK --> ExamplesRunning: run-examples-tests starts
+    ExamplesRunning --> ExamplesFailed: test failure or build error
+    ExamplesRunning --> ExamplesOK: all examples pass
+    ExamplesFailed --> RollbackEligible: if release event
+    ExamplesOK --> ActorChecking: publish-npm-package starts
     ActorChecking --> WrongActor: actor not in allowlist
     ActorChecking --> ActorOK: actor == gregreindel
     WrongActor --> RollbackEligible: if release event
@@ -427,7 +488,7 @@ stateDiagram-v2
     DraftFailed --> [*]
 ```
 
-Failure of the publish step is the only path that produces a partial outcome (tarball pushed but provenance failed). npm's transactional semantics make this rare in practice.
+Failure of the publish step is the only path that produces a partial outcome (tarball pushed but provenance failed). npm's transactional semantics make this rare in practice. Examples test failures are caught before any npm publish attempt.
 
 [Back to top](#navigate)
 
@@ -442,8 +503,12 @@ flowchart TB
     classDef fix fill:#064e3b,color:#fff,stroke:#000
 
     F1["Release cut from non-main branch\n(target_commitish != main)"]:::fail
-    F1 --> F1E["check-release-branch exits 1\npublish-npm-package never starts\nno rollback fires"]:::effect
+    F1 --> F1E["check-release-branch exits 1\ndownstream jobs never start\nno rollback fires"]:::effect
     F1E --> F1X["delete/edit the release,\nrecreate it targeting main,\nor merge to main first"]:::fix
+
+    F1b["Examples tests fail\n(provider error, test assertion, build error)"]:::fail
+    F1b --> F1bE["run-examples-tests fails\npublish-npm-package never starts\nrollback fires on release event"]:::effect
+    F1bE --> F1bX["check provider keys and examples,\nfix and rerun via dispatch"]:::fix
 
     F2["workflow_dispatch by non-allowed actor"]:::fail
     F2 --> F2E["Validate Publisher step exits 1\nbefore install or build"]:::effect
@@ -494,11 +559,12 @@ flowchart LR
 
     K1["File"]:::k --- V1[".github/workflows/publish-release.yml"]:::v
     K2["Triggers"]:::k --- V2["release.published + workflow_dispatch"]:::v
-    K3["Jobs"]:::k --- V3["check-release-branch then publish-npm-package"]:::v
+    K3["Jobs"]:::k --- V3["check-release-branch, run-examples-tests,\npublish-npm-package, revert-to-draft"]:::v
     K4["Permissions"]:::k --- V4["id-token: write, contents: write"]:::v
     K5["Branch guard"]:::k --- V5["release.target_commitish == 'main'"]:::v
     K6["Actor guard"]:::k --- V6["ALLOWED_PUBLISHERS = gregreindel"]:::v
-    K7["Node version"]:::k --- V7["24.x via ./.github/actions/setup-node"]:::v
+    K6b["Examples tests"]:::k --- V6b["Node 22.x, Examples Test env,\nreal provider keys, npm run test-examples"]:::v
+    K7["Node version (publish)"]:::k --- V7["24.x via ./.github/actions/setup-node"]:::v
     K8["Registry"]:::k --- V8["registry.npmjs.org"]:::v
     K9["Cache"]:::k --- V9["~/.npm and node_modules (composite)"]:::v
     K10["Build"]:::k --- V10["npm run build:package (tsup CJS+ESM+DTS)"]:::v
@@ -508,7 +574,8 @@ flowchart LR
     K14["Provenance"]:::k --- V14["OIDC id-token, automatic on publish"]:::v
     K15["Bot identity"]:::k --- V15["llm-exe-bot[bot] via App token"]:::v
     K16["Rollback"]:::k --- V16["PATCH releases/:id draft=true, banner + original body"]:::v
-    K17["Rollback condition"]:::k --- V17["failure() && event_name == release"]:::v
+    K17["Rollback condition"]:::k --- V17["always() && release event &&\n(examples failed || publish failed)"]:::v
+    K18["Rollback job"]:::k --- V18["revert-to-draft (separate job,\nmints own bot token)"]:::v
 ```
 
 Direct links:
