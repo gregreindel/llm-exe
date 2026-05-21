@@ -121,6 +121,10 @@ export const anthropic = {
   ),
 
   // Claude 4.5 models
+  "anthropic.claude-opus-4-5": withDefaultModel(
+    anthropicChatV1,
+    "claude-opus-4-5"
+  ),
   "anthropic.claude-haiku-4-5": withDefaultModel(
     anthropicChatV1,
     "claude-haiku-4-5"
