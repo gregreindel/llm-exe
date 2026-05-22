@@ -276,9 +276,9 @@ sequenceDiagram
     B-->>J: dist/ ready
     J->>J: read package.json version
     alt version contains "beta"
-        J->>R: npm publish --tag beta
+        J->>R: npm publish --provenance --tag beta
     else
-        J->>R: npm publish
+        J->>R: npm publish --provenance
     end
     R->>S: request provenance attestation
     S-->>R: signed attestation (OIDC id-token)
@@ -306,17 +306,17 @@ flowchart LR
     A --> D{version string\ncontains 'beta'?}
 
     D -->|yes\ne.g. 2.4.0-beta.1| B1["echo Publishing beta version"]:::beta
-    B1 --> B2["npm run publish-beta\n= npm publish --tag beta"]:::beta
+    B1 --> B2["npm run publish-beta\n= npm publish --provenance --tag beta"]:::beta
     B2 --> B3["dist-tag: beta\nlatest unchanged"]:::beta
 
     D -->|no\ne.g. 2.3.6| M1["echo Publishing main version"]:::main
-    M1 --> M2["npm run publish-main\n= npm publish"]:::main
+    M1 --> M2["npm run publish-main\n= npm publish --provenance"]:::main
     M2 --> M3["dist-tag: latest\n(default)"]:::main
 ```
 
 Source: [publish-release.yml](../workflows/publish-release.yml) lines 110-121. Scripts in [package.json](../../package.json).
 
-Why this matters: `npm publish` with no flag overwrites the `latest` dist-tag. Beta releases must use `--tag beta` so they do not become the default install for `npm i llm-exe`. The check is a plain substring match; a version like `2.3.6-beta.0` matches, while `2.3.6` does not.
+Why this matters: `npm publish --provenance` with no `--tag` flag overwrites the `latest` dist-tag. Beta releases must use `--tag beta` so they do not become the default install for `npm i llm-exe`. Both scripts pass `--provenance` explicitly to request OIDC-based supply-chain attestation (this will error if the environment lacks `id-token: write`). The beta/main check is a plain substring match; a version like `2.3.6-beta.0` matches, while `2.3.6` does not.
 
 [Back to top](#navigate)
 
@@ -364,7 +364,7 @@ flowchart LR
     d1 -.failure.-> d3
 ```
 
-The npm token (used by `npm publish`) is configured by the setup-node composite action consuming the `registry-url` and the `NODE_AUTH_TOKEN` env var. Provenance is automatic when both `id-token: write` is granted (top of file) and the registry supports it. The bot token from `create-github-app-token@v1` is minted only in the `revert-to-draft` job and only used by the rollback step.
+The npm token (used by `npm publish`) is configured by the setup-node composite action consuming the `registry-url` and the `NODE_AUTH_TOKEN` env var. Provenance is explicitly requested via the `--provenance` flag in both publish scripts; this requires `id-token: write` (granted at the top of the file) and will fail if the OIDC token cannot be issued. The bot token from `create-github-app-token@v1` is minted only in the `revert-to-draft` job and only used by the rollback step.
 
 [Back to top](#navigate)
 
@@ -568,8 +568,8 @@ flowchart LR
     K8["Registry"]:::k --- V8["registry.npmjs.org"]:::v
     K9["Cache"]:::k --- V9["~/.npm and node_modules (composite)"]:::v
     K10["Build"]:::k --- V10["npm run build:package (tsup CJS+ESM+DTS)"]:::v
-    K11["Publish (main)"]:::k --- V11["npm publish (latest dist-tag)"]:::v
-    K12["Publish (beta)"]:::k --- V12["npm publish --tag beta"]:::v
+    K11["Publish (main)"]:::k --- V11["npm publish --provenance (latest dist-tag)"]:::v
+    K12["Publish (beta)"]:::k --- V12["npm publish --provenance --tag beta"]:::v
     K13["Routing key"]:::k --- V13["substring 'beta' in package.json version"]:::v
     K14["Provenance"]:::k --- V14["OIDC id-token, automatic on publish"]:::v
     K15["Bot identity"]:::k --- V15["llm-exe-bot[bot] via App token"]:::v
