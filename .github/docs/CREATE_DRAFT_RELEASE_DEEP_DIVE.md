@@ -151,7 +151,7 @@ flowchart TB
         s2["Delete old draft releases\nloop: gh api -X DELETE"]:::step
         s3["Determine next semantic version\njq -r .version package.json\nregex MAJOR.MINOR.PATCH\nformat vMAJOR.MINOR.PATCH\nexport NEW_VERSION"]:::step
         s4["Create Draft Release on GitHub\nPOST /releases\ngenerate_release_notes: true\nsave release_id + release_url\nwrite release_body.txt"]:::step
-        s5["Clean up release notes\nsed: drop 3 patterns\nstrip by @user in\nwrite cleaned_body.txt"]:::step
+        s5["Clean up release notes\nsed: drop 4 patterns\nstrip by @user in\nwrite cleaned_body.txt"]:::step
         s6["Update Draft Release with cleaned notes\nPATCH /releases/(id)\nbody: jq -Rs cleaned_body.txt"]:::step
         s0 --> s1 --> s2 --> s3 --> s4 --> s5 --> s6
     end
@@ -195,7 +195,7 @@ sequenceDiagram
     R->>API: POST /releases (tag NEW_VERSION, target main, draft true, generate_release_notes true)
     API-->>R: 201 with id, html_url, auto-generated body
     R->>FS: release_body.txt = body
-    R->>FS: sed drop 3 patterns then strip " by @user in" then cleaned_body.txt
+    R->>FS: sed drop 4 patterns then strip " by @user in" then cleaned_body.txt
     R->>FS: jq -Rs '.' cleaned_body.txt (JSON-encode)
     R->>API: PATCH /releases/(release_id) with cleaned body
     alt success
@@ -248,7 +248,7 @@ The pattern guarantees the **one-draft invariant**: after every successful run, 
 
 ## 6. The release notes cleaning rules
 
-GitHub's auto-generated notes include automation noise we never want shipped to users. Four sed rules clean them.
+GitHub's auto-generated notes include automation noise we never want shipped to users. Five sed rules clean them.
 
 ```mermaid
 flowchart TB
@@ -269,7 +269,11 @@ flowchart TB
 
     R3{line matches\n'Bump Version on PR to Main'\n(case insensitive)?}
     R3 -->|yes| D3["DROP entire line"]:::drop
-    R3 -->|no| K[KEEP line]
+    R3 -->|no| R4
+
+    R4{line matches\n'docs: sync'\n(case insensitive)?}
+    R4 -->|yes| D4["DROP entire line"]:::drop
+    R4 -->|no| K[KEEP line]
 
     K --> S{line contains\n' by @username in '?}
     S -->|yes| S1["STRIP the ' by @user in' segment\n(leaves PR link intact)"]:::strip
@@ -278,6 +282,7 @@ flowchart TB
     D1 --> Z[(cleaned_body.txt)]:::out
     D2 --> Z
     D3 --> Z
+    D4 --> Z
     S1 --> Z
     S2 --> Z
 ```
@@ -285,7 +290,7 @@ flowchart TB
 The actual sed pipeline:
 
 ```
-sed '/chore: bump version/Id; /Draft PR for release/Id; /Bump Version on PR to Main/Id' release_body.txt \
+sed '/chore: bump version/Id; /Draft PR for release/Id; /Bump Version on PR to Main/Id; /docs: sync/Id' release_body.txt \
   | sed -E 's/ by @[^ ]+ in/ /g'
 ```
 
@@ -470,7 +475,7 @@ flowchart LR
     K7["Step count"]:::k --- V7["6 (after checkout)"]:::v
     K8["Version source"]:::k --- V8["package.json .version, formatted as vMAJOR.MINOR.PATCH"]:::v
     K9["Notes source"]:::k --- V9["GitHub auto-generate (POST generate_release_notes: true)"]:::v
-    K10["Lines dropped"]:::k --- V10["chore: bump version, Draft PR for release, Bump Version on PR to Main"]:::v
+    K10["Lines dropped"]:::k --- V10["chore: bump version, Draft PR for release, Bump Version on PR to Main, docs: sync"]:::v
     K11["Pattern stripped"]:::k --- V11["' by @user in' segments inline"]:::v
     K12["Invariant"]:::k --- V12["exactly one draft release after success"]:::v
     K13["Target commitish"]:::k --- V13["main"]:::v

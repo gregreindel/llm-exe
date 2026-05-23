@@ -231,6 +231,22 @@ describe("embeddingConfigs", () => {
         transform(undefined, { model: "cohere.embed-english-v3" }, {})
       ).toBeUndefined();
     });
+
+    it("treats missing model in state as non-v3 (passes value through)", () => {
+      const transform = getTransform();
+      expect(transform(512, {}, {})).toBe(512);
+      expect(transform(1024, {}, {})).toBe(1024);
+    });
+
+    it("treats undefined state.model as non-v3", () => {
+      const transform = getTransform();
+      expect(transform(256, { model: undefined }, {})).toBe(256);
+    });
+
+    it("treats empty string model as non-v3", () => {
+      const transform = getTransform();
+      expect(transform(768, { model: "" }, {})).toBe(768);
+    });
   });
 
   it("input transform on 'amazon:cohere.embedding.v1' wraps strings into arrays", () => {

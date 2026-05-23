@@ -622,6 +622,9 @@ export type AllUseLlmOptions = AllLlm & {
   };
 
   // Anthropic - Claude 4.5 models
+  "anthropic.claude-opus-4-5": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   "anthropic.claude-haiku-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -670,6 +673,9 @@ export type AllUseLlmOptions = AllLlm & {
   "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
+  "google.gemini-3.1-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
   // Google - Deprecated
   "google.gemini-2.0-flash": {
     input: Omit<GeminiRequest, "model">;
@@ -698,6 +704,9 @@ export type AllUseLlmOptions = AllLlm & {
     input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-1-fast": {
+    input: Omit<XAiRequest, "model">;
+  };
+  "xai.grok-4.3": {
     input: Omit<XAiRequest, "model">;
   };
 
