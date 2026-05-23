@@ -253,7 +253,7 @@ Every system outside this repository that one or more workflows depend on at run
 | Anthropic Claude API | `agent-run`, `coder-run`, `personas-run`, `agent-review-pr`, `agent-digest`, `bot-respond` | `CLAUDE_CODE_OAUTH_TOKEN` secret passed to `anthropics/claude-code-action@v1` | Runs the agent. Models used: `claude-opus-4-6` for all task agents, persona runners, curator, reviewer, and bot responder; `claude-sonnet-4-6` for the weekly digest. |
 | `anthropics/claude-code-action@v1` Marketplace action | every agent workflow | OAuth token above plus an App-generated GitHub token | The harness that executes Claude with a constrained tool allowlist and a `--max-turns` budget. |
 | `actions/create-github-app-token@v1` | every agent workflow plus the release and hygiene workflows that need write access beyond `GITHUB_TOKEN` | `APP_ID`/`APP_PRIVATE_KEY`, or `LLM_EXE_REVIEW_BOT_APP_ID`/`LLM_EXE_REVIEW_BOT_PRIVATE_KEY` for reviews | Mints short-lived GitHub App installation tokens. The main bot authors work and triggers downstream workflows; the review bot posts reviews and approvals. |
-| npm registry (`registry.npmjs.org`) | `publish-release.yml` | NPM token configured via npm scripts (`publish-main` and `publish-beta` in `package.json`); OIDC `id-token: write` is requested for provenance | Publishing the `llm-exe` package on every release. |
+| npm registry (`registry.npmjs.org`) | `publish-release.yml` | NPM token configured via `NODE_AUTH_TOKEN` env var (set by `registry-url`); both publish scripts pass `--provenance` explicitly, which requires OIDC `id-token: write` | Publishing the `llm-exe` package on every release. |
 | AWS S3 | `deploy-docs.yml` | OIDC federation via `aws-actions/configure-aws-credentials@v4`, assuming role from `AWS_ROLE_DEPLOY_ARN`, region from `AWS_REGION`, bucket from `AWS_S3_BUCKET` | Stores versioned docs at `s3://<bucket>/docs/<version>-<timestamp>/`. |
 | AWS CloudFront | `deploy-docs.yml` | Same OIDC federation, distribution ID from `AWS_CLOUDFRONT_DISTRIBUTION_ID` | Rotates the `OriginPath` to the new versioned folder and invalidates `/*`. |
 | Microsoft Graph (`graph.microsoft.com/v1.0/users/<sender>/sendMail`) | `agent-digest.yml` | Client-credentials OAuth2 flow against `login.microsoftonline.com/<AZURE_TENANT_ID>/oauth2/v2.0/token` with `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, scope `https://graph.microsoft.com/.default` | Sends the weekly HTML digest to the marketing distribution list. |
@@ -827,7 +827,7 @@ PR body truncation: capped at 65000 characters.
 | Field | Value |
 |-------|-------|
 | Trigger | `pull_request` `closed` to `main` (`merged == true`) and dispatch |
-| Behavior | Lists every release with `draft == true` and deletes each one via `gh api -X DELETE`. Then reads `package.json .version`, formats `vMAJOR.MINOR.PATCH`, creates a draft release with `generate_release_notes: true`, then cleans the auto-generated body by removing lines matching `chore: bump version`, `Draft PR for release`, `Bump Version on PR to Main` (case-insensitive) and stripping ` by @user in ` attributions. The cleaned body is PATCHed back onto the release. |
+| Behavior | Lists every release with `draft == true` and deletes each one via `gh api -X DELETE`. Then reads `package.json .version`, formats `vMAJOR.MINOR.PATCH`, creates a draft release with `generate_release_notes: true`, then cleans the auto-generated body by removing lines matching `chore: bump version`, `Draft PR for release`, `Bump Version on PR to Main`, `docs: sync` (case-insensitive) and stripping ` by @user in ` attributions. The cleaned body is PATCHed back onto the release. |
 
 ### 9.15. `auto-merge-main-pr.yml` - Auto-merge gate
 
@@ -1015,7 +1015,7 @@ flowchart LR
 | 2. Verify | PR on `main` | Blocks if `package.json .version` is not strictly greater than the latest `v*` tag. | Version not bumped. |
 | 3. Merge | `workflow_run` on stage 2 success, or PR sync on `main` | Polls non-`auto-merge` checks (up to 10 x 30s), then `gh pr merge --admin`. | Any non-`auto-merge` check fails. |
 | 4. Stage | PR merged to `main` | Wipes existing drafts, creates a fresh draft release with cleaned auto-notes. | Empty draft list is OK; PATCH failure logs a warning only. |
-| 5. Publish | release published, target `main` | `npm publish` (beta or main script chosen by version string). Provenance via OIDC. | Wrong branch, wrong actor (only `gregreindel`), npm error. |
+| 5. Publish | release published, target `main` | `npm publish --provenance` (beta or main script chosen by version string). OIDC attestation is explicitly requested. | Wrong branch, wrong actor (only `gregreindel`), npm error, OIDC token failure. |
 | 6. Deploy | release published, target `main` | Builds VitePress docs, ships to S3, rotates CloudFront OriginPath, invalidates `/*`. | Branch guard, OIDC denied, stale ETag on CloudFront. |
 
 ### 11.3. Failure paths
