@@ -54,17 +54,28 @@ describe("openai configuration", () => {
     });
   });
 
+  describe("xai.grok-4.3", () => {
+    const config = xai["xai.grok-4.3"] as Config;
+
+    it("should have the correct default model", () => {
+      expect(config.options.model.default).toBe("grok-4.3");
+    });
+
+    it("should have the correct key, provider, endpoint, and method", () => {
+      expect(config.key).toBe("xai.chat.v1");
+      expect(config.provider).toBe("xai.chat");
+      expect(config.endpoint).toBe("https://api.x.ai/v1/chat/completions");
+      expect(config.method).toBe("POST");
+    });
+  });
+
   describe("effort transform", () => {
-    // Per xAI docs (checked 2026-05-13), reasoning_effort is only supported
-    // on grok-4.3 and grok-4.20-multi-agent. grok-4 specifically returns an
-    // error if reasoning_effort is sent. Since none of those models have
-    // shorthands here yet, effort must be dropped for every model we ship.
     const transform = xai["xai.chat.v1"].mapBody.effort.transform as (
       v: any,
       s: any
     ) => any;
 
-    it("drops effort for every currently-shipped xAI shorthand model", () => {
+    it("drops effort for non-reasoning xAI models", () => {
       for (const model of [
         "grok-2-latest",
         "grok-3",
@@ -76,6 +87,22 @@ describe("openai configuration", () => {
         expect(transform("low", { model })).toBeUndefined();
         expect(transform("high", { model })).toBeUndefined();
       }
+    });
+
+    it("passes through valid effort values for grok-4.3", () => {
+      for (const value of ["low", "medium", "high"]) {
+        expect(transform(value, { model: "grok-4.3" })).toBe(value);
+      }
+    });
+
+    it("passes through minimal effort for grok-4.3", () => {
+      expect(transform("minimal", { model: "grok-4.3" })).toBe("minimal");
+    });
+
+    it("drops invalid effort values for grok-4.3", () => {
+      expect(transform("none", { model: "grok-4.3" })).toBeUndefined();
+      expect(transform("xhigh", { model: "grok-4.3" })).toBeUndefined();
+      expect(transform(123, { model: "grok-4.3" })).toBeUndefined();
     });
   });
 });
