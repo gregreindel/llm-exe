@@ -617,9 +617,6 @@ export type AllUseLlmOptions = AllLlm & {
   };
 
   // Anthropic - Claude 4.6 models
-  "anthropic.claude-opus-4-6": {
-    input: Omit<AnthropicRequest, "model">;
-  };
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -636,6 +633,9 @@ export type AllUseLlmOptions = AllLlm & {
   };
   
   // Anthropic - Deprecated
+  "anthropic.claude-opus-4-6": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   "anthropic.claude-opus-4-1": {
     input: Omit<AnthropicRequest, "model">;
   };
