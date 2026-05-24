@@ -119,6 +119,9 @@ describe("getResultAsMessage", () => {
       expect(ctx.operation).toBe("getResultAsMessage");
       expect(ctx.expected).toBeDefined();
       expect(ctx.received).toBeDefined();
+      expect(typeof ctx.responseExcerpt).toBe("string");
+      expect(String(ctx.responseExcerpt).length).toBeLessThanOrEqual(500);
+      expect(String(ctx.responseExcerpt)).toContain("unsupported_type");
     }
   });
 });
