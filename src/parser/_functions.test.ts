@@ -103,21 +103,26 @@ describe("createParser", () => {
     }
   });
 
-  it("error message includes all valid types", () => {
+  it("error context includes all valid parser types in availableParsers", () => {
     try {
       createParser("bad" as any);
     } catch (e: any) {
-      expect(e.message).toContain("json");
-      expect(e.message).toContain("string");
-      expect(e.message).toContain("boolean");
-      expect(e.message).toContain("number");
-      expect(e.message).toContain("stringExtract");
-      expect(e.message).toContain("listToArray");
-      expect(e.message).toContain("listToJson");
-      expect(e.message).toContain("listToKeyValue");
-      expect(e.message).toContain("replaceStringTemplate");
-      expect(e.message).toContain("markdownCodeBlock");
-      expect(e.message).toContain("markdownCodeBlocks");
+      const available = (e.context?.availableParsers ?? []) as string[];
+      expect(available).toEqual(
+        expect.arrayContaining([
+          "json",
+          "string",
+          "boolean",
+          "number",
+          "stringExtract",
+          "listToArray",
+          "listToJson",
+          "listToKeyValue",
+          "replaceStringTemplate",
+          "markdownCodeBlock",
+          "markdownCodeBlocks",
+        ])
+      );
     }
   });
 });

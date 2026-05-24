@@ -157,6 +157,7 @@ export type RequestErrorContext = BaseErrorContext & {
   url?: string;
   status?: number;
   statusText?: string;
+  providerError?: NormalizedProviderError;
   providerErrorBody?: unknown;
   providerErrorRaw?: string;
   responseHeaders?: Record<string, string>;

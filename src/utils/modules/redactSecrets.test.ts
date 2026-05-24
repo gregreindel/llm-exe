@@ -1,4 +1,4 @@
-import { maskApiKeys } from "./redactSecrets";
+import { maskApiKeys, safeRequestUrl } from "./redactSecrets";
 
 describe("maskApiKeys", () => {
   describe("JWT Bearer tokens", () => {
@@ -261,5 +261,70 @@ Line 3: AKIAIOSFODNN7EXAMPLE`;
       );
       expect(out).not.toContain("AIzaSyntheticGoogleApiKeyAAAAAAAAAAAAAA");
     });
+  });
+});
+
+describe("safeRequestUrl", () => {
+  it("redacts Google-style ?key= query param", () => {
+    const out = safeRequestUrl(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyntheticGoogleApiKeyAAAAAAAAAAAAAA"
+    );
+    expect(out).not.toContain("AIzaSyntheticGoogleApiKeyAAAAAAAAAAAAAA");
+    expect(out).toContain("generativelanguage.googleapis.com");
+    expect(out).toContain("gemini-pro:generateContent");
+  });
+
+  it("redacts common secret-bearing query keys (case-insensitive)", () => {
+    const out = safeRequestUrl(
+      "https://api.example.com/x?API_KEY=syntheticApiKeyValueXXX&Token=syntheticTokenValueXXX&safe=ok"
+    );
+    expect(out).not.toContain("syntheticApiKeyValueXXX");
+    expect(out).not.toContain("syntheticTokenValueXXX");
+    expect(out).toContain("safe=ok");
+  });
+
+  it("redacts AWS Sig v4 query auth parameters", () => {
+    const out = safeRequestUrl(
+      "https://bucket.s3.amazonaws.com/object?X-Amz-Signature=syntheticAwsSignatureXXX&X-Amz-Security-Token=syntheticAwsTokenXXX"
+    );
+    expect(out).not.toContain("syntheticAwsSignatureXXX");
+    expect(out).not.toContain("syntheticAwsTokenXXX");
+  });
+
+  it("redacts OAuth-style access_token and refresh_token", () => {
+    const out = safeRequestUrl(
+      "https://api.example.com/x?access_token=syntheticOauthTokenXXX&refresh_token=syntheticRefreshXXX"
+    );
+    expect(out).not.toContain("syntheticOauthTokenXXX");
+    expect(out).not.toContain("syntheticRefreshXXX");
+  });
+
+  it("leaves non-secret query parameters alone", () => {
+    const out = safeRequestUrl(
+      "https://api.example.com/x?model=gpt-4&page=2"
+    );
+    expect(out).toContain("model=gpt-4");
+    expect(out).toContain("page=2");
+  });
+
+  it("runs redactSecrets on the path when URL parse succeeds", () => {
+    // Even after URL parsing, a secret embedded in the path should still be
+    // caught by the second-pass redactSecrets call.
+    const out = safeRequestUrl(
+      "https://api.example.com/sk-syntheticPathTokenAAAAAAAA/info"
+    );
+    expect(out).not.toContain("sk-syntheticPathTokenAAAAAAAA");
+  });
+
+  it("falls back to redactSecrets when URL parsing fails", () => {
+    const out = safeRequestUrl(
+      "not-a-url Bearer sk-syntheticFallbackTokenAAAAAAAA"
+    );
+    expect(out).not.toContain("sk-syntheticFallbackTokenAAAAAAAA");
+  });
+
+  it("returns empty/undefined inputs as-is", () => {
+    expect(safeRequestUrl("")).toBe("");
+    expect(safeRequestUrl(undefined as unknown as string)).toBe(undefined);
   });
 });

@@ -1,6 +1,19 @@
 import type { NormalizedProviderError } from "./types";
 import { redactSecrets } from "@/utils/modules/redactSecrets";
 
+const PROVIDER_MESSAGE_MAX_LENGTH = 240;
+
+export function safeProviderString(
+  value: string | undefined,
+  maxLength = PROVIDER_MESSAGE_MAX_LENGTH
+): string | undefined {
+  if (typeof value !== "string" || value.length === 0) return undefined;
+  const scrubbed = redactSecrets(value);
+  return scrubbed.length > maxLength
+    ? scrubbed.slice(0, maxLength) + "…(truncated)"
+    : scrubbed;
+}
+
 const SECRET_KEY_REGEX =
   /authorization|api[-_]?key|secret|token|password|cookie|set-cookie|x-amz/i;
 const REDACTED = "[redacted]";
@@ -40,7 +53,7 @@ export type SafeErrorContextOptions = {
   maxBodyBytes?: number;
 };
 
-function truncateString(value: string, max: number): string {
+export function truncateString(value: string, max: number): string {
   if (value.length <= max) return value;
   return value.slice(0, max) + "…(truncated)";
 }
@@ -167,10 +180,21 @@ export type ProviderErrorParser = (
   input: ProviderErrorParserInput,
 ) => NormalizedProviderError;
 
-function readStringField(obj: unknown, key: string): string | undefined {
+export function readStringField(obj: unknown, key: string): string | undefined {
   if (!obj || typeof obj !== "object") return undefined;
   const v = (obj as Record<string, unknown>)[key];
   return typeof v === "string" ? v : undefined;
+}
+
+export function readStringOrNumberField(
+  obj: unknown,
+  key: string
+): string | undefined {
+  if (!obj || typeof obj !== "object") return undefined;
+  const v = (obj as Record<string, unknown>)[key];
+  if (typeof v === "string") return v;
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  return undefined;
 }
 
 export const parseProviderErrorGeneric: ProviderErrorParser = (input) => {
@@ -199,11 +223,14 @@ export const parseProviderErrorGeneric: ProviderErrorParser = (input) => {
     providerType =
       readStringField(errObj, "type") ??
       readStringField(root, "type") ??
+      // Bedrock-style: top-level "__type" carries the exception class.
+      readStringField(root, "__type") ??
       readStringField(errObj, "status");
 
     providerCode =
-      readStringField(errObj, "code") ??
-      readStringField(root, "code") ??
+      // Accept numeric codes too (Gemini emits error.code: 400 as a number).
+      readStringOrNumberField(errObj, "code") ??
+      readStringOrNumberField(root, "code") ??
       readStringField(errObj, "status");
   }
 
@@ -224,10 +251,13 @@ export const parseProviderErrorGeneric: ProviderErrorParser = (input) => {
       status === 408 || status === 429 || (status >= 500 && status < 600);
   }
 
+  // Scrub every extracted string before exposing it. Providers can and do
+  // echo Authorization headers, API keys, and signed values back to us in
+  // their error responses.
   return {
-    message,
-    providerType,
-    providerCode,
+    message: safeProviderString(message),
+    providerType: safeProviderString(providerType),
+    providerCode: safeProviderString(providerCode),
     status,
     statusText,
     retryable,

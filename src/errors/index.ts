@@ -10,6 +10,7 @@ export { createLlmExeError } from "./createLlmExeError";
 export type { ErrorDefinition } from "./createLlmExeError";
 export {
   safeProviderErrorBody,
+  safeProviderString,
   safeResponseHeaders,
   parseRetryAfter,
   parseProviderErrorGeneric,

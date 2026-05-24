@@ -5,6 +5,10 @@ import {
   parseProviderErrorGeneric,
   statusToLlmProviderCode,
   statusToEmbeddingProviderCode,
+  safeProviderString,
+  truncateString,
+  readStringField,
+  readStringOrNumberField,
 } from "./providerErrors";
 import { serializeLlmExeError } from "./serialize";
 import { LlmExeError } from "./LlmExeError";
@@ -379,5 +383,111 @@ describe("secret-scrubbing fixtures end-to-end through serializeLlmExeError", ()
     }
     expect(json).toContain("req-abc");
     expect(json).toContain("[redacted]");
+  });
+});
+
+describe("truncateString", () => {
+  it("returns the input unchanged when at or below max", () => {
+    expect(truncateString("hello", 5)).toBe("hello");
+    expect(truncateString("hello", 10)).toBe("hello");
+  });
+
+  it("appends the truncation marker when over max", () => {
+    expect(truncateString("hello world", 5)).toBe("hello…(truncated)");
+  });
+
+  it("handles empty strings", () => {
+    expect(truncateString("", 5)).toBe("");
+  });
+
+  it("handles max of 0", () => {
+    expect(truncateString("hello", 0)).toBe("…(truncated)");
+  });
+});
+
+describe("safeProviderString", () => {
+  it("returns undefined for non-strings and empty strings", () => {
+    expect(safeProviderString(undefined)).toBeUndefined();
+    expect(safeProviderString("")).toBeUndefined();
+  });
+
+  it("returns the input unchanged when short and clean", () => {
+    expect(safeProviderString("hello")).toBe("hello");
+  });
+
+  it("scrubs secret-shaped tokens before returning", () => {
+    const out = safeProviderString(
+      "Got Authorization: Bearer sk-syntheticSafeProviderStringAAAA back"
+    );
+    expect(out).not.toContain("sk-syntheticSafeProviderStringAAAA");
+  });
+
+  it("truncates at the default max (240) with the truncation marker", () => {
+    const long = "a".repeat(500);
+    const out = safeProviderString(long);
+    expect(out!.length).toBeLessThanOrEqual(240 + "…(truncated)".length);
+    expect(out!.endsWith("…(truncated)")).toBe(true);
+  });
+
+  it("respects a custom max length", () => {
+    expect(safeProviderString("hello world", 5)).toBe("hello…(truncated)");
+  });
+
+  it("does not append the marker when scrubbed length is exactly the max", () => {
+    expect(safeProviderString("hello", 5)).toBe("hello");
+  });
+});
+
+describe("readStringField", () => {
+  it("returns the string when present", () => {
+    expect(readStringField({ a: "x" }, "a")).toBe("x");
+  });
+
+  it("returns undefined when the field is not a string", () => {
+    expect(readStringField({ a: 1 }, "a")).toBeUndefined();
+    expect(readStringField({ a: true }, "a")).toBeUndefined();
+    expect(readStringField({ a: null }, "a")).toBeUndefined();
+    expect(readStringField({ a: {} }, "a")).toBeUndefined();
+  });
+
+  it("returns undefined when the field is missing", () => {
+    expect(readStringField({}, "a")).toBeUndefined();
+  });
+
+  it("returns undefined for non-object inputs", () => {
+    expect(readStringField(null, "a")).toBeUndefined();
+    expect(readStringField(undefined, "a")).toBeUndefined();
+    expect(readStringField("string", "a")).toBeUndefined();
+    expect(readStringField(42, "a")).toBeUndefined();
+  });
+});
+
+describe("readStringOrNumberField", () => {
+  it("returns the string when present", () => {
+    expect(readStringOrNumberField({ code: "BAD" }, "code")).toBe("BAD");
+  });
+
+  it("stringifies finite numbers", () => {
+    expect(readStringOrNumberField({ code: 400 }, "code")).toBe("400");
+    expect(readStringOrNumberField({ code: 0 }, "code")).toBe("0");
+    expect(readStringOrNumberField({ code: -1 }, "code")).toBe("-1");
+    expect(readStringOrNumberField({ code: 3.14 }, "code")).toBe("3.14");
+  });
+
+  it("returns undefined for non-finite numbers", () => {
+    expect(readStringOrNumberField({ code: NaN }, "code")).toBeUndefined();
+    expect(readStringOrNumberField({ code: Infinity }, "code")).toBeUndefined();
+    expect(readStringOrNumberField({ code: -Infinity }, "code")).toBeUndefined();
+  });
+
+  it("returns undefined for other types", () => {
+    expect(readStringOrNumberField({ code: true }, "code")).toBeUndefined();
+    expect(readStringOrNumberField({ code: null }, "code")).toBeUndefined();
+    expect(readStringOrNumberField({ code: {} }, "code")).toBeUndefined();
+  });
+
+  it("returns undefined for non-object inputs", () => {
+    expect(readStringOrNumberField(null, "code")).toBeUndefined();
+    expect(readStringOrNumberField("x", "code")).toBeUndefined();
   });
 });
