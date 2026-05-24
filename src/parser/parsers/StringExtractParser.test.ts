@@ -1,5 +1,5 @@
 import { BaseParser, StringExtractParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the StringExtractParser class
@@ -36,18 +36,20 @@ describe("llm-exe:parser/StringExtractParser", () => {
     const badValue = {hello: "world"} as unknown as string;
     expect(() => parser.parse(badValue)).toThrow("Invalid input. Expected string. Received object.")
   });
-  it('throws LlmExeError with parser error code when no match', () => {
+  it('throws LlmExeError with parser.enum_extract_failed code when no match', () => {
     const parser = new StringExtractParser({enum: ["yes", "no"]})
     try {
       parser.parse("The answer is maybe");
       fail("Expected an error to be thrown");
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError);
-      expect((e as LlmExeError).code).toEqual("parser");
+      expect((e as LlmExeError).code).toEqual("parser.enum_extract_failed");
+      expect((e as LlmExeError).category).toEqual("parser");
       expect((e as LlmExeError).context).toEqual({
+        operation: "StringExtractParser.parse",
         parser: "stringExtract",
-        output: "The answer is maybe",
-        error: "No matching enum value found in input. Expected one of: yes, no",
+        outputExcerpt: "The answer is maybe",
+        expected: ["yes", "no"],
       });
     }
   });

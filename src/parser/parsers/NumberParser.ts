@@ -2,7 +2,7 @@ import { BaseParserOptions } from "@/types";
 import { BaseParser } from "../_base";
 import { isFinite } from "@/utils/modules/isFinite";
 import { toNumber } from "@/utils/modules/toNumber";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 export interface NumberParserOptions extends BaseParserOptions {}
 
@@ -15,14 +15,14 @@ export class NumberParser extends BaseParser<number> {
     if (match && isFinite(toNumber(match[0]))) {
       return toNumber(match[0]);
     }
-    throw new LlmExeError(
-      `No numeric value found in input.`,
-      "parser",
-      {
+    throw new LlmExeError(`No numeric value found in input.`, {
+      code: "parser.number_parse_failed",
+      context: {
+        operation: "NumberParser.parse",
         parser: "number",
-        output: text,
-        error: `No numeric value found in input.`,
-      }
-    );
+        outputExcerpt: text,
+        expected: "number",
+      },
+    });
   }
 }

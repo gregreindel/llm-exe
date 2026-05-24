@@ -1,5 +1,5 @@
 import { BaseParser, NumberParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the NumberParser class
@@ -46,18 +46,20 @@ describe("llm-exe:parser/NumberParser", () => {
     const parser = new NumberParser()
     expect(() => parser.parse("No Number")).toThrow(LlmExeError)
   });
-  it('throws LlmExeError with parser error code when no number found', () => {
+  it('throws LlmExeError with parser.number_parse_failed code when no number found', () => {
     const parser = new NumberParser()
     try {
       parser.parse("not a number");
       fail("Expected an error to be thrown");
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError);
-      expect((e as LlmExeError).code).toEqual("parser");
+      expect((e as LlmExeError).code).toEqual("parser.number_parse_failed");
+      expect((e as LlmExeError).category).toEqual("parser");
       expect((e as LlmExeError).context).toEqual({
+        operation: "NumberParser.parse",
         parser: "number",
-        output: "not a number",
-        error: "No numeric value found in input.",
+        outputExcerpt: "not a number",
+        expected: "number",
       });
     }
   });
