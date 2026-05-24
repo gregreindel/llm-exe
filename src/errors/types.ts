@@ -114,6 +114,7 @@ export type ProviderResponseContext = BaseErrorContext & {
   lineNumber?: number;
   lineExcerpt?: string;
   lineCount?: number;
+  availableProviders?: string[];
 };
 
 export type EmbeddingDimensionsContext = BaseErrorContext & {

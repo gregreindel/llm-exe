@@ -1,4 +1,5 @@
 import { OutputResultContent } from "@/interfaces";
+import { LlmExeError } from "@/errors";
 
 export function getResultAsMessage(content: OutputResultContent[]) {
   if (content.length === 1 && content.every((a) => a.type === "text")) {
@@ -29,5 +30,18 @@ export function getResultAsMessage(content: OutputResultContent[]) {
       ),
     };
   }
-  throw new Error("Invalid response");
+  throw new LlmExeError("Invalid response", {
+    code: "llm.invalid_response_shape",
+    context: {
+      operation: "getResultAsMessage",
+      expected:
+        "single text item, single function_use item, or text + function_use pair",
+      received: {
+        count: content.length,
+        types: content.map((a) => a?.type),
+      },
+      resolution:
+        "Check provider response normalization for unexpected content shapes.",
+    },
+  });
 }
