@@ -212,4 +212,21 @@ describe("llm-exe:prompt/TextPrompt", () => {
       "format() requires an input object"
     );
   });
+
+  it("throws LlmExeError with prompt.missing_input when format() is called without arguments", () => {
+    const { LlmExeError } = require("@/errors");
+    const prompt = new TextPrompt<{ name: string }>("Hello {{name}}");
+    try {
+      (prompt as any).format();
+      fail("Expected an error to be thrown");
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(LlmExeError);
+      expect(e.code).toBe("prompt.missing_input");
+      expect(e.category).toBe("prompt");
+      expect(e.context.operation).toBe("BasePrompt.getReplacements");
+      expect(e.context.promptType).toBe("text");
+      expect(e.context.expected).toBe("object");
+      expect(e.context.received).toBe("undefined");
+    }
+  });
 });

@@ -1,4 +1,5 @@
 import { createParser, createCustomParser } from "./_functions";
+import { LlmExeError } from "@/errors";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
 import { NumberParser } from "./parsers/NumberParser";
@@ -84,6 +85,22 @@ describe("createParser", () => {
     expect(() => createParser("invalid" as any)).toThrow(
       /Invalid parser type: "invalid"/
     );
+  });
+
+  it("throws LlmExeError with parser.invalid_type for an unknown parser type", () => {
+    try {
+      createParser("nope" as any);
+      fail("Expected an error to be thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError);
+      expect((e as LlmExeError).code).toBe("parser.invalid_type");
+      expect((e as LlmExeError).category).toBe("parser");
+      const ctx = (e as LlmExeError).context as Record<string, unknown>;
+      expect(ctx.operation).toBe("createParser");
+      expect(ctx.parser).toBe("nope");
+      expect(Array.isArray(ctx.availableParsers)).toBe(true);
+      expect((ctx.availableParsers as string[]).length).toBeGreaterThan(0);
+    }
   });
 
   it("error message includes all valid types", () => {
