@@ -144,7 +144,25 @@ export class CallableExecutor<I extends PlainObject | { input: string }, O> {
       }
       return { result: true, attributes: {} };
     } catch (error: any) {
-      return { result: false, attributes: { error: error.message } };
+      // Wrap the caught error in a typed LlmExeError. The wrap is internal —
+      // public return shape stays { result: false, attributes: { error: msg } }
+      // with the user's original message text preserved. The typed error is
+      // here for parity with the rest of the codebase and so a future opt-in
+      // API can surface structured detail through metadata without us having
+      // to revisit this site.
+      const wrapped =
+        error instanceof LlmExeError
+          ? error
+          : new LlmExeError(error?.message ?? String(error), {
+              code: "callable.validation_failed",
+              context: {
+                operation: "CallableExecutor.validateInput",
+                functionName: this.name,
+                key: this.key,
+              },
+              cause: error,
+            });
+      return { result: false, attributes: { error: wrapped.message } };
     }
   }
   visibilityHandler(input: any, attributes: any): boolean {
