@@ -38,7 +38,7 @@ describe("debug", () => {
       );
     });
 
-    it("masks Authorization headers in objects", () => {
+    it("redacts Authorization headers in objects", () => {
       debug({
         headers: {
           Authorization: "Bearer sk-1234567890abcdefghijklmnop",
@@ -46,7 +46,7 @@ describe("debug", () => {
       });
       const loggedStr = debugSpy.mock.calls[0][0];
       expect(loggedStr).not.toContain("sk-1234567890abcdefghijklmnop");
-      expect(loggedStr).toContain("***");
+      expect(loggedStr).toContain("[redacted]");
     });
 
     it("does not mask objects without Authorization header", () => {

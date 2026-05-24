@@ -99,6 +99,31 @@ describe("safeProviderErrorBody", () => {
     expect(safeProviderErrorBody(undefined)).toBe(undefined);
     expect(safeProviderErrorBody(true)).toBe(true);
   });
+
+  // Pattern-level scrubbing is exercised in redactSecrets.test.ts.
+  // These two cases prove the wiring: safeProviderErrorBody runs redactSecrets
+  // on both top-level raw strings and string values nested inside objects.
+
+  it("scrubs secrets in raw string bodies (wired through redactSecrets)", () => {
+    const out = safeProviderErrorBody(
+      "Server returned 401\nAuthorization: Bearer sk-syntheticEchoedTokenAAAAAAAA"
+    ) as string;
+    expect(out).not.toContain("sk-syntheticEchoedTokenAAAAAAAA");
+    expect(out).toContain("[redacted]");
+  });
+
+  it("scrubs secrets in string values nested inside objects", () => {
+    const body = {
+      requestPreview:
+        "POST /v1\nAuthorization: Bearer sk-syntheticInsideObjectAAAAAAAAA",
+      safeField: "still here",
+    };
+    const out = safeProviderErrorBody(body) as Record<string, string>;
+    expect(out.requestPreview).not.toContain(
+      "sk-syntheticInsideObjectAAAAAAAAA"
+    );
+    expect(out.safeField).toBe("still here");
+  });
 });
 
 describe("safeResponseHeaders", () => {

@@ -1,5 +1,5 @@
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
-import { maskApiKeys } from "./maskApiKeysInDebug";
+import { maskApiKeys } from "./redactSecrets";
 
 export function debug(...args: any[]) {
   const debugValue = getEnvironmentVariable("LLM_EXE_DEBUG");

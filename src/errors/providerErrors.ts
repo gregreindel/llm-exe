@@ -1,4 +1,5 @@
 import type { NormalizedProviderError } from "./types";
+import { redactSecrets } from "@/utils/modules/redactSecrets";
 
 const SECRET_KEY_REGEX =
   /authorization|api[-_]?key|secret|token|password|cookie|set-cookie|x-amz/i;
@@ -53,7 +54,8 @@ function scrub(
   if (value === null || value === undefined) return value;
 
   const t = typeof value;
-  if (t === "string") return truncateString(value as string, maxStringLength);
+  if (t === "string")
+    return redactSecrets(truncateString(value as string, maxStringLength));
   if (t === "number" || t === "boolean") return value;
   if (t === "bigint") return (value as bigint).toString();
   if (t === "symbol") return String(value);
@@ -95,7 +97,7 @@ export function safeProviderErrorBody(
   const maxBodyBytes = options?.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
 
   if (typeof value === "string") {
-    return truncateString(value, maxBodyBytes);
+    return redactSecrets(truncateString(value, maxBodyBytes));
   }
 
   return scrub(value, new WeakSet(), 0, maxStringLength);
