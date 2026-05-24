@@ -21,15 +21,36 @@ function deriveCategory(code: unknown): ErrorCategory | undefined {
 export class LlmExeError<
   C extends ErrorCodes = "unknown.unclassified",
 > extends Error {
-  readonly name = "LlmExeError" as const;
-  readonly isLlmExeError = true as const;
-  readonly [LLM_EXE_ERROR_SYMBOL] = true as const;
+  declare readonly name: "LlmExeError";
+  declare readonly isLlmExeError: true;
+  declare readonly [LLM_EXE_ERROR_SYMBOL]: true;
   readonly category!: CategoryFor<C>;
   readonly code!: C;
   readonly context?: ErrorContextByCode[C];
 
   constructor(message: string, options: LlmExeErrorOptions<C>) {
     super(message);
+
+    Object.defineProperties(this, {
+      name: {
+        value: "LlmExeError",
+        configurable: true,
+        writable: false,
+        enumerable: false,
+      },
+      isLlmExeError: {
+        value: true,
+        configurable: false,
+        writable: false,
+        enumerable: false,
+      },
+      [LLM_EXE_ERROR_SYMBOL]: {
+        value: true,
+        configurable: false,
+        writable: false,
+        enumerable: false,
+      },
+    });
 
     const providedCode = options ? options.code : undefined;
     const category = deriveCategory(providedCode);
@@ -70,3 +91,8 @@ export class LlmExeError<
     return serializeLlmExeError(this) as LlmExeErrorJson<C>;
   }
 }
+
+Object.defineProperty(LlmExeError, "name", {
+  value: "LlmExeError",
+  configurable: true,
+});

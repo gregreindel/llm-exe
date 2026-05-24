@@ -239,7 +239,7 @@ export function createParser<
       return new StringParser();
     default:
       throw new LlmExeError(
-        `Invalid parser type: "${type}". Valid types are: json, string, boolean, number, stringExtract, listToArray, listToJson, listToKeyValue, replaceStringTemplate, markdownCodeBlock, markdownCodeBlocks`,
+        `Invalid parser type: "${type}"`,
         {
           code: "parser.invalid_type",
           context: {

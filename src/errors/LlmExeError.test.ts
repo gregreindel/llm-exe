@@ -12,6 +12,14 @@ describe("LlmExeError", () => {
     expect(err.name).toBe("LlmExeError");
   });
 
+  it("does not expose name in enumerable error output", () => {
+    const err = new LlmExeError("boom", { code: "parser.invalid_type" });
+    expect(Object.keys(err)).not.toContain("name");
+    expect(Object.prototype.propertyIsEnumerable.call(err, "name")).toBe(
+      false
+    );
+  });
+
   it("preserves message", () => {
     const err = new LlmExeError("the message", { code: "parser.invalid_type" });
     expect(err.message).toBe("the message");
@@ -60,11 +68,27 @@ describe("LlmExeError", () => {
     expect(err.isLlmExeError).toBe(true);
   });
 
+  it("does not expose isLlmExeError marker in enumerable error output", () => {
+    const err = new LlmExeError("x", { code: "parser.invalid_type" });
+    expect(Object.keys(err)).not.toContain("isLlmExeError");
+    expect(
+      Object.prototype.propertyIsEnumerable.call(err, "isLlmExeError")
+    ).toBe(false);
+  });
+
   it("exposes Symbol.for('llm-exe.error') marker", () => {
     const err = new LlmExeError("x", { code: "parser.invalid_type" });
     expect((err as unknown as Record<symbol, unknown>)[LLM_EXE_ERROR_SYMBOL]).toBe(
       true
     );
+  });
+
+  it("does not expose Symbol.for('llm-exe.error') marker in enumerable error output", () => {
+    const err = new LlmExeError("x", { code: "parser.invalid_type" });
+    expect(Object.getOwnPropertySymbols(err)).toContain(LLM_EXE_ERROR_SYMBOL);
+    expect(
+      Object.prototype.propertyIsEnumerable.call(err, LLM_EXE_ERROR_SYMBOL)
+    ).toBe(false);
   });
 
   it("converts invalid code to internal.invariant_failed", () => {
