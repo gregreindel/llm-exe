@@ -1,8 +1,13 @@
 import { BaseParserWithJson } from "../_base";
-import { JSONSchema } from "json-schema-to-ts";
-import { JsonParserOptions, ParserOutput } from "@/types";
+import { FromSchema, JSONSchema } from "json-schema-to-ts";
+import { JsonParserOptions } from "@/types";
 import { enforceParserSchema, validateParserSchema } from "../_utils";
 import { LlmExeError } from "@/utils/modules/errors";
+
+export type JsonParserInput = string | Record<string, unknown> | unknown[];
+type JsonParserOutput<S extends JSONSchema | undefined> = S extends JSONSchema
+  ? FromSchema<S>
+  : Record<string, any>;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -31,7 +36,7 @@ function normalizeWholeResponseJsonText(input: string) {
 
 export class JsonParser<
   S extends JSONSchema | undefined = undefined
-> extends BaseParserWithJson<S> {
+> extends BaseParserWithJson<S, JsonParserOutput<S>, JsonParserInput> {
   private shouldValidateSchema: boolean;
 
   constructor(options: JsonParserOptions<S> = {}) {
@@ -51,9 +56,9 @@ export class JsonParser<
    *
    */
   parse(
-    text: unknown,
+    text: JsonParserInput,
     _attributes?: Record<string, any>
-  ): ParserOutput<BaseParserWithJson<S>> {
+  ): JsonParserOutput<S> {
     let parsed: unknown;
     let inputLength: number | undefined;
 
@@ -123,8 +128,8 @@ export class JsonParser<
         }
       }
       const enforce = enforceParserSchema(this.schema, parsed);
-      return enforce as ParserOutput<BaseParserWithJson<S>>;
+      return enforce as JsonParserOutput<S>;
     }
-    return parsed as ParserOutput<BaseParserWithJson<S>>;
+    return parsed as JsonParserOutput<S>;
   }
 }

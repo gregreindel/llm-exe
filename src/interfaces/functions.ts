@@ -6,7 +6,8 @@ import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
 
 export type ListenerFunction = (...args: any[]) => void;
 
-export type ParserOutput<P> = P extends BaseParser<infer T> ? T : never;
+export type ParserOutput<P> = P extends BaseParser<infer T, any> ? T : never;
+export type ParserInput<P> = P extends BaseParser<any, infer T> ? T : never;
 export type PromptInput<P> = P extends BasePrompt<infer T> ? T : never;
 
 export interface ExecutorWithLlmOptions<Llm, Prompt, Parser, State> {

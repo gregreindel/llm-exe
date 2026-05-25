@@ -1,12 +1,10 @@
-import { JsonParserOptions, OutputResult } from "@/types";
+import { JsonParserOptions } from "@/types";
 import { FromSchema, JSONSchema } from "json-schema-to-ts";
-
-export type ParserInput = string | OutputResult;
 
 /**
  * BaseParser is an abstract class for parsing text and enforcing JSON schema on the parsed data.
  */
-export abstract class BaseParser<T = any> {
+export abstract class BaseParser<T = any, TInput = string> {
   public name: string;
   public target: "text" | "function_call" = "text";
   /**
@@ -26,13 +24,14 @@ export abstract class BaseParser<T = any> {
    * @param [attributes] - Optional attributes to use during parsing.
    * @returns The parsed data.
    */
-  abstract parse(text: ParserInput, attributes?: Record<string, any>): T;
+  abstract parse(text: TInput, attributes?: Record<string, any>): T;
 }
 
 export abstract class BaseParserWithJson<
   S extends JSONSchema | undefined = undefined,
   T = S extends JSONSchema ? FromSchema<S> : Record<string, any>,
-> extends BaseParser<T> {
+  TInput = string,
+> extends BaseParser<T, TInput> {
   public schema: S;
   public validateSchema: boolean;
 

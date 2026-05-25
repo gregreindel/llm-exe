@@ -1,6 +1,6 @@
 import { camelCase } from "@/utils/modules/camelCase";
 import { ListToJsonParserOptions, ParserOutput } from "@/types";
-import { BaseParserWithJson, ParserInput } from "../_base";
+import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
 import { enforceParserSchema, validateParserSchema } from "../_utils";
 import { LlmExeError } from "@/utils/modules/errors";
@@ -25,7 +25,7 @@ export class ListToJsonParser<
    * overwrite data.
    *
    */
-  parse(text: ParserInput): ParserOutput<BaseParserWithJson<S>> {
+  parse(text: string): ParserOutput<BaseParserWithJson<S>> {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,

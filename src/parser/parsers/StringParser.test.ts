@@ -1,5 +1,12 @@
 import { BaseParser, StringParser } from "@/parser";
 import { LlmExeError } from "@/utils/modules/errors";
+import { OutputResult } from "@/types";
+
+function assertStringParserInputTypes(parser: StringParser, output: OutputResult) {
+  // @ts-expect-error StringParser only accepts string input at compile time.
+  parser.parse(output);
+}
+void assertStringParserInputTypes;
 
 /**
  * Tests the StringParser class
