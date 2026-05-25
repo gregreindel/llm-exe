@@ -6,6 +6,15 @@ import { BaseParser } from "../_base";
  * @template I The expected type of the input
  * @template O The type of the parsed value (output)
  * @extends {BaseParser<T>}
+ *
+ * v3 parser contract:
+ * Category: pass-through extension point
+ * Mode: user-defined
+ *
+ * Calls the user parser function with text and executor context.
+ * Returns the user parser result exactly.
+ * Does not wrap user parser errors.
+ *
  */
 export class CustomParser<O = any> extends BaseParser<O> {
   /**

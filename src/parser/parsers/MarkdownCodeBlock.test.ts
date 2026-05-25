@@ -1,4 +1,5 @@
 import { BaseParser, MarkdownCodeBlockParser } from "@/parser";
+import { LlmExeError } from "@/utils/modules/errors";
 
 /**
  * Tests the MarkdownCodeBlock class
@@ -20,9 +21,56 @@ describe("llm-exe:parser/MarkdownCodeBlock", () => {
     expect(parser.parse(markdown)).toEqual({ code, language });
   });
 
-  it("returns correct structure if nothing found", () => {
+  it("throws parser.parse_failed if nothing found", () => {
     const parser = new MarkdownCodeBlockParser();
     const markdown = `nothing here`;
-    expect(parser.parse(markdown)).toEqual({ code: "", language: "" });
+    try {
+      parser.parse(markdown)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toEqual({
+        operation: "MarkdownCodeBlockParser.parse",
+        parser: "markdownCodeBlock",
+        reason: "no_code_block",
+        inputLength: 12,
+      })
+    }
+  });
+  it("parses untyped block with empty language", () => {
+    const parser = new MarkdownCodeBlockParser();
+    expect(parser.parse("```\ntext\n```")).toEqual({
+      code: "text\n",
+      language: "",
+    });
+  });
+  it("throws parser.parse_failed for multiple blocks", () => {
+    const parser = new MarkdownCodeBlockParser();
+    const markdown = "```ts\nx\n```\n```js\ny\n```";
+    try {
+      parser.parse(markdown)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toEqual({
+        operation: "MarkdownCodeBlockParser.parse",
+        parser: "markdownCodeBlock",
+        reason: "multiple_code_blocks",
+        inputLength: 23,
+        matchCount: 2,
+      })
+    }
+  });
+  it("throws parser.parse_failed for empty input", () => {
+    const parser = new MarkdownCodeBlockParser();
+    expect(() => parser.parse("")).toThrow(LlmExeError);
+  });
+  it("throws parser.parse_failed for malformed fences", () => {
+    const parser = new MarkdownCodeBlockParser();
+    expect(() => parser.parse("```ts\nconst x = 1;")).toThrow(LlmExeError);
+  });
+  it("throws parser.parse_failed for invalid input type", () => {
+    const parser = new MarkdownCodeBlockParser();
+    expect(() => parser.parse(null as any)).toThrow(LlmExeError);
   });
 });

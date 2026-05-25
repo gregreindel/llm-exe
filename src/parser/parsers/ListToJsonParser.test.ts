@@ -1,6 +1,7 @@
 
 import { BaseParser, ListToJsonParser } from "@/parser";
 import { defineSchema } from "@/utils/modules/defineSchema";
+import { LlmExeError } from "@/utils/modules/errors";
 
 /**
  * Tests the ListToJsonParser class
@@ -90,5 +91,67 @@ describe("llm-exe:parser/ListToJsonParser", () => {
     const input = `Name: Greg\n`
     expect(() => parser.parse(input)).toThrowError("is not of a type(s) string")
   });
+  it('accepts empty values', () => {
+    const parser = new ListToJsonParser()
+    expect(parser.parse("Name:")).toEqual({ name: "" })
+  });
+  it('strips shared list markers', () => {
+    const parser = new ListToJsonParser()
+    const input = `- Name: Greg\n* Occupation: developer`
+    expect(parser.parse(input)).toEqual({ name: "Greg", occupation: "developer" })
+  });
+  it('throws parser.parse_failed for malformed lines', () => {
+    const parser = new ListToJsonParser()
+    try {
+      parser.parse("Name Greg")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "ListToJsonParser.parse",
+        parser: "listToJson",
+        reason: "malformed_line",
+      })
+    }
+  });
+  it('throws parser.parse_failed for empty keys', () => {
+    const parser = new ListToJsonParser()
+    try {
+      parser.parse(": Greg")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "ListToJsonParser.parse",
+        parser: "listToJson",
+        reason: "empty_key",
+      })
+    }
+  });
+  it('throws parser.parse_failed for duplicate keys', () => {
+    const parser = new ListToJsonParser()
+    try {
+      parser.parse("Name: Greg\nName: Bob")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "ListToJsonParser.parse",
+        parser: "listToJson",
+        reason: "duplicate_key",
+      })
+    }
+  });
+  it('throws parser.parse_failed for mixed marked and unmarked lines', () => {
+    const parser = new ListToJsonParser()
+    expect(() => parser.parse("- Name: Greg\nOccupation: developer")).toThrow(LlmExeError)
+  });
+  it('throws parser.parse_failed for empty input', () => {
+    const parser = new ListToJsonParser()
+    expect(() => parser.parse("")).toThrow(LlmExeError)
+  });
+  it('throws parser.parse_failed for invalid input type', () => {
+    const parser = new ListToJsonParser()
+    expect(() => parser.parse(null as any)).toThrow(LlmExeError)
+  });
 });
-

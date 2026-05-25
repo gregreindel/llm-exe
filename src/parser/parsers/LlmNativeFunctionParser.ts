@@ -60,6 +60,14 @@ export class LlmNativeFunctionParser<
     this.parser = options.parser;
   }
   parse(text: OutputResult, _options?: Record<string, any>) {
+    if (typeof text === "string") {
+      return this.parser.parse(text) as ParserOutput<T>;
+    }
+
+    if (typeof (text as any)?.text === "string") {
+      return this.parser.parse((text as any).text) as ParserOutput<T>;
+    }
+
     const { content } = text;
     const functionUse = content?.find((a) => a.type === "function_use");
     if (functionUse && "name" in functionUse && "input" in functionUse) {
@@ -69,7 +77,10 @@ export class LlmNativeFunctionParser<
       };
     }
 
-    return this.parser.parse((text as any)?.text ?? text) as ParserOutput<T>;
+    const textContent = content?.find(
+      (item) => item.type === "text" && typeof item.text === "string"
+    );
+    return this.parser.parse(textContent?.text as any) as ParserOutput<T>;
   }
 }
 

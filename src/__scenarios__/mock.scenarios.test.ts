@@ -369,8 +369,7 @@ describe("Scenario: Parser with mock outputs", () => {
 
   it("MarkdownCodeBlockParser extracts code", () => {
     const parser = createParser("markdownCodeBlock");
-    const result = parser.parse(PARSER_INPUTS.multipleCodeBlocks);
-    // Returns {language, code} object for the first code block found
+    const result = parser.parse('```python\nprint("hello")\n```');
     expect(result).toEqual({
       language: "python",
       code: 'print("hello")\n',
