@@ -36,6 +36,7 @@ describe("llm-exe:parser/NumberParser", () => {
     const parser = new NumberParser()
     expect(parser.parse("1e3")).toEqual(1000)
     expect(parser.parse("-2.5e2")).toEqual(-250)
+    expect(parser.parse("1.5e10")).toEqual(15000000000)
   });
   it('parses leading decimals', () => {
     const parser = new NumberParser()
@@ -117,10 +118,24 @@ describe("llm-exe:parser/NumberParser", () => {
       });
     }
   });
+  it('rejects Indian-style comma grouping instead of partially parsing it', () => {
+    const parser = new NumberParser()
+    try {
+      parser.parse("1,00,000")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "no_numeric_value",
+        match: "extract",
+      })
+    }
+  });
   it('throws parser.parse_failed for runtime number input', () => {
     const parser = new NumberParser()
     try {
-      parser.parse(42 as any);
+      // @ts-expect-error runtime contract: parser rejects non-string input.
+      parser.parse(42);
       fail("Expected an error to be thrown");
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError);
@@ -135,7 +150,26 @@ describe("llm-exe:parser/NumberParser", () => {
   });
   it('throws parser.parse_failed for null input', () => {
     const parser = new NumberParser()
-    expect(() => parser.parse(null as any)).toThrow(LlmExeError)
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects null input.
+      parser.parse(null)
+    }).toThrow(LlmExeError)
+  });
+  it('describes array invalid input type in parser context', () => {
+    const parser = new NumberParser()
+    try {
+      // @ts-expect-error runtime contract: parser rejects array input.
+      parser.parse([])
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "NumberParser.parse",
+        parser: "number",
+        reason: "invalid_input_type",
+        received: "array",
+      })
+    }
   });
 
   describe("match: whole", () => {
@@ -171,6 +205,15 @@ describe("llm-exe:parser/NumberParser", () => {
     it("rejects multiple numbers", () => {
       const parser = new NumberParser({ match: "whole" })
       expect(() => parser.parse("1 2")).toThrow(LlmExeError)
+    })
+    it("rejects currency and unit text", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(() => parser.parse("$5")).toThrow(LlmExeError)
+      expect(() => parser.parse("5 dollars")).toThrow(LlmExeError)
+    })
+    it("rejects invalid comma grouping", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(() => parser.parse("1,00,000")).toThrow(LlmExeError)
     })
   })
 });

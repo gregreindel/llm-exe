@@ -81,14 +81,16 @@ describe("createParser", () => {
   });
 
   it("throws for an invalid parser type", () => {
-    expect(() => createParser("invalid" as any)).toThrow(
-      /Invalid parser type: "invalid"/
-    );
+    expect(() => {
+      // @ts-expect-error runtime contract: invalid parser type throws.
+      createParser("invalid");
+    }).toThrow(/Invalid parser type: "invalid"/);
   });
 
   it("error message includes all valid types", () => {
     try {
-      createParser("bad" as any);
+      // @ts-expect-error runtime contract: invalid parser type throws.
+      createParser("bad");
     } catch (e: any) {
       expect(e.message).toContain("json");
       expect(e.message).toContain("string");

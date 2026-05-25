@@ -102,6 +102,29 @@ describe("llm-exe:parser/ListToJsonParser", () => {
       })
     }
   });
+  it('throws by default when schema required fields are missing', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new ListToJsonParser({ schema })
+    try {
+      parser.parse(`Age: 82`)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.schema_validation_failed")
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "ListToJsonParser.parse",
+        parser: "listToJson",
+        reason: "schema_validation_failed",
+      })
+    }
+  });
   it('coerces schema-typed scalar values before validation', () => {
     const schema = defineSchema({
       type: "object",
@@ -132,6 +155,24 @@ describe("llm-exe:parser/ListToJsonParser", () => {
       fail("Expected an error to be thrown")
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.schema_validation_failed")
+    }
+  });
+  it('rejects uncoercible numeric schema values after coercion', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        age: { type: "number" },
+      },
+      required: ["age"],
+      additionalProperties: false,
+    });
+    const parser = new ListToJsonParser({ schema })
+    expect(() => parser.parse(`Age: hello`)).toThrow(LlmExeError)
+    try {
+      parser.parse(`Age: hello`)
+      fail("Expected an error to be thrown")
+    } catch (e) {
       expect((e as LlmExeError).code).toEqual("parser.schema_validation_failed")
     }
   });
@@ -224,6 +265,37 @@ describe("llm-exe:parser/ListToJsonParser", () => {
   });
   it('throws parser.parse_failed for invalid input type', () => {
     const parser = new ListToJsonParser()
-    expect(() => parser.parse(null as any)).toThrow(LlmExeError)
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects null input.
+      parser.parse(null)
+    }).toThrow(LlmExeError)
+  });
+  it('describes array invalid input type in parser context', () => {
+    const parser = new ListToJsonParser()
+    try {
+      // @ts-expect-error runtime contract: parser rejects array input.
+      parser.parse([])
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "array",
+      })
+    }
+  });
+  it('describes object invalid input type in parser context', () => {
+    const parser = new ListToJsonParser()
+    try {
+      // @ts-expect-error runtime contract: parser rejects object input.
+      parser.parse({})
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "object",
+      })
+    }
   });
 });

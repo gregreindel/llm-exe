@@ -169,10 +169,26 @@ describe("llm-exe:parser/BooleanParser", () => {
       })
     }
   })
+  it('includes an untruncated input excerpt when debug mode is enabled for short input', () => {
+    process.env.LLM_EXE_DEBUG = "true"
+    const parser = new BooleanParser()
+    try {
+      parser.parse("maybe")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        inputLength: 5,
+        inputExcerpt: "maybe",
+        inputExcerptTruncated: false,
+      })
+    }
+  })
   it('throws parser.parse_failed for runtime boolean input', () => {
     const parser = new BooleanParser()
     try {
-      parser.parse(true as any)
+      // @ts-expect-error runtime contract: parser rejects non-string input.
+      parser.parse(true)
       fail("Expected an error to be thrown")
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError)
@@ -188,10 +204,16 @@ describe("llm-exe:parser/BooleanParser", () => {
   })
   it('throws parser.parse_failed for null input', () => {
     const parser = new BooleanParser()
-    expect(() => parser.parse(null as any)).toThrow(LlmExeError)
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects null input.
+      parser.parse(null)
+    }).toThrow(LlmExeError)
   })
   it('throws parser.parse_failed for undefined input', () => {
     const parser = new BooleanParser()
-    expect(() => parser.parse(undefined as any)).toThrow(LlmExeError)
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects undefined input.
+      parser.parse(undefined)
+    }).toThrow(LlmExeError)
   })
 });

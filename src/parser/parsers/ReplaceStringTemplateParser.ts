@@ -54,6 +54,11 @@ export class ReplaceStringTemplateParser extends BaseParser<string> {
     try {
       return replaceTemplateString(text, attributes);
     } catch (cause) {
+      let received: string = typeof cause;
+      /* istanbul ignore else -- Handlebars/template failures throw Error instances; non-Error throwables are defensive. */
+      if (cause instanceof Error) {
+        received = cause.name;
+      }
       const error = new LlmExeError(
         `Template replacement failed.`,
         "parser.parse_failed",
@@ -62,7 +67,7 @@ export class ReplaceStringTemplateParser extends BaseParser<string> {
           parser: "replaceStringTemplate",
           reason: "template_replacement_failed",
           inputLength: text.length,
-          received: cause instanceof Error ? cause.name : typeof cause,
+          received,
         }
       );
       (error as Error & { cause?: unknown }).cause = cause;

@@ -42,6 +42,11 @@ describe("llm-exe:parser/StringExtractParser", () => {
     }
   });
 
+  it("word mode rejects configured values embedded inside larger words", () => {
+    const parser = new StringExtractParser({ enum: ["yes"] });
+    expect(() => parser.parse("ayesha")).toThrow(LlmExeError);
+  });
+
   it("does not match substrings of larger numbers by default", () => {
     const parser = new StringExtractParser({ enum: ["1"] });
     expect(() => parser.parse("12")).toThrow(LlmExeError);
@@ -74,6 +79,13 @@ describe("llm-exe:parser/StringExtractParser", () => {
     const badValue = ["Hello"] as unknown as string;
     expect(() => parser.parse(badValue)).toThrow(
       "Invalid input. Expected string. Received array."
+    );
+  });
+
+  it("throws for null input", () => {
+    const parser = new StringExtractParser({ enum: ["Hello"] });
+    expect(() => parser.parse(null as any)).toThrow(
+      "Invalid input. Expected string. Received null."
     );
   });
 
@@ -187,9 +199,34 @@ describe("llm-exe:parser/StringExtractParser", () => {
     }
   });
 
+  it("deduplicates repeated matches of the same enum value", () => {
+    const parser = new StringExtractParser({ enum: ["yes"] });
+    expect(parser.parse("yes, yes, yes")).toEqual("yes");
+  });
+
   it("does not let empty enum value match non-empty input", () => {
     const parser = new StringExtractParser({ enum: ["", "yes"] });
     expect(parser.parse("yes")).toEqual("yes");
+  });
+
+  it("does not treat whitespace-only input as an empty string match", () => {
+    const parser = new StringExtractParser({ enum: [""] });
+    try {
+      parser.parse("   ");
+      fail("Expected an error to be thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError);
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "no_enum_match",
+        inputLength: 3,
+      });
+    }
+  });
+
+  it("uses unicode-aware word boundaries", () => {
+    const parser = new StringExtractParser({ enum: ["café"] });
+    expect(parser.parse("café!")).toEqual("café");
+    expect(() => parser.parse("decaféinated")).toThrow(LlmExeError);
   });
 
   describe("match: substring (legacy opt-in)", () => {
@@ -199,6 +236,32 @@ describe("llm-exe:parser/StringExtractParser", () => {
         match: "substring",
       });
       expect(parser.parse("nope")).toEqual("no");
+    });
+
+    it("matches configured values inside unrelated words", () => {
+      const parser = new StringExtractParser({
+        enum: ["yes"],
+        match: "substring",
+      });
+      expect(parser.parse("ayesha")).toEqual("yes");
+    });
+
+    it("respects ignoreCase: false in substring mode", () => {
+      const parser = new StringExtractParser({
+        enum: ["Yes"],
+        match: "substring",
+        ignoreCase: false,
+      });
+      expect(parser.parse("Say Yes")).toEqual("Yes");
+      expect(() => parser.parse("say yes")).toThrow(LlmExeError);
+    });
+
+    it("does not let empty enum value match by substring", () => {
+      const parser = new StringExtractParser({
+        enum: ["", "yes"],
+        match: "substring",
+      });
+      expect(parser.parse("yes")).toEqual("yes");
     });
 
     it("still throws when no enum value appears", () => {
@@ -249,6 +312,14 @@ describe("llm-exe:parser/StringExtractParser", () => {
           match: "whole",
         });
       }
+    });
+
+    it("does not let empty enum value match in whole mode", () => {
+      const parser = new StringExtractParser({
+        enum: ["", "yes"],
+        match: "whole",
+      });
+      expect(parser.parse("yes")).toEqual("yes");
     });
 
     it("respects ignoreCase: false in whole mode", () => {

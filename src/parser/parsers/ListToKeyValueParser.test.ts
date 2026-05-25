@@ -77,7 +77,38 @@ describe("llm-exe:parser/ListToKeyValueParser", () => {
   })
   it('throws parser.parse_failed for invalid input type', () => {
     const parser = new ListToKeyValueParser()
-    expect(() => parser.parse({} as any)).toThrow(LlmExeError)
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects object input.
+      parser.parse({})
+    }).toThrow(LlmExeError)
+  })
+  it('describes null invalid input type in parser context', () => {
+    const parser = new ListToKeyValueParser()
+    try {
+      // @ts-expect-error runtime contract: parser rejects null input.
+      parser.parse(null)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "null",
+      })
+    }
+  })
+  it('describes array invalid input type in parser context', () => {
+    const parser = new ListToKeyValueParser()
+    try {
+      // @ts-expect-error runtime contract: parser rejects array input.
+      parser.parse([])
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "array",
+      })
+    }
   })
 
   describe("keyTransform option", () => {

@@ -71,6 +71,37 @@ describe("llm-exe:parser/MarkdownCodeBlock", () => {
   });
   it("throws parser.parse_failed for invalid input type", () => {
     const parser = new MarkdownCodeBlockParser();
-    expect(() => parser.parse(null as any)).toThrow(LlmExeError);
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects null input.
+      parser.parse(null)
+    }).toThrow(LlmExeError);
+  });
+  it("describes array invalid input type in parser context", () => {
+    const parser = new MarkdownCodeBlockParser();
+    try {
+      // @ts-expect-error runtime contract: parser rejects array input.
+      parser.parse([])
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "array",
+      })
+    }
+  });
+  it("describes object invalid input type in parser context", () => {
+    const parser = new MarkdownCodeBlockParser();
+    try {
+      // @ts-expect-error runtime contract: parser rejects object input.
+      parser.parse({})
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "object",
+      })
+    }
   });
 });

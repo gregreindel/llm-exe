@@ -111,6 +111,11 @@ export function applyParserSchemaDefaultsAndFilter<
       return parsed as T;
     }
 
+    const keepAdditionalProperties = (schema as any).additionalProperties !== false;
+    const initialOutput = keepAdditionalProperties
+      ? { ...(parsed as Record<string, any>) }
+      : {};
+
     return Object.keys(properties).reduce((output, key) => {
       const propertySchema = properties[key];
       const value = (parsed as any)[key];
@@ -124,7 +129,7 @@ export function applyParserSchemaDefaultsAndFilter<
 
       output[key] = applyParserSchemaDefaultsAndFilter(propertySchema, value);
       return output;
-    }, {} as Record<string, any>) as T;
+    }, initialOutput as Record<string, any>) as T;
   }
 
   if (type === "array" && Array.isArray(parsed) && (schema as any).items) {

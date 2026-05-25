@@ -1,10 +1,11 @@
 import {
   BaseParser,
   LlmNativeFunctionParser,
+  OpenAiFunctionParser,
   StringParser,
   JsonParser,
 } from "@/parser";
-import { LlmFunctionParser, OpenAiFunctionParser } from "./LlmNativeFunctionParser";
+import { LlmFunctionParser } from "./LlmNativeFunctionParser";
 import { OutputResult } from "@/interfaces";
 import { mockOutputResultObject } from "../../../utils/mock.helpers";
 

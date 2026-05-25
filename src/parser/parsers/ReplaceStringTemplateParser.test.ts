@@ -42,6 +42,32 @@ describe("llm-exe:parser/ReplaceStringTemplateParser", () => {
       })
     }
   });
+  it("describes array invalid input type in parser context", () => {
+    const parser = new ReplaceStringTemplateParser()
+    try {
+      parser.parse([] as any)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "array",
+      })
+    }
+  });
+  it("describes number invalid input type in parser context", () => {
+    const parser = new ReplaceStringTemplateParser()
+    try {
+      parser.parse(42 as any)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_input_type",
+        received: "number",
+      })
+    }
+  });
   it("throws parser.parse_failed for invalid attributes", () => {
     const parser = new ReplaceStringTemplateParser()
     try {
@@ -55,6 +81,32 @@ describe("llm-exe:parser/ReplaceStringTemplateParser", () => {
         reason: "invalid_attributes",
         expected: "object",
         received: "null",
+      })
+    }
+  });
+  it("describes array invalid attributes in parser context", () => {
+    const parser = new ReplaceStringTemplateParser()
+    try {
+      parser.parse("Hello {{ name }}", [] as any)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_attributes",
+        received: "array",
+      })
+    }
+  });
+  it("describes primitive invalid attributes in parser context", () => {
+    const parser = new ReplaceStringTemplateParser()
+    try {
+      parser.parse("Hello {{ name }}", "Greg" as any)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        reason: "invalid_attributes",
+        received: "string",
       })
     }
   });

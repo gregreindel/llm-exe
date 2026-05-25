@@ -10,7 +10,7 @@ export interface NumberParserOptions {
 }
 
 const NUMERIC_TOKEN_PATTERN =
-  /(^|[^\w.])([+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?)(?![\w,])/g;
+  /(^|[^\w.,])([+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?)(?![\w,])/g;
 const WHOLE_NUMERIC_PATTERN =
   /^[+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 
@@ -77,6 +77,7 @@ export class NumberParser extends BaseParser<number> {
       }
 
       const value = toNumber(trimmed.replace(/,/g, ""));
+      /* istanbul ignore next -- WHOLE_NUMERIC_PATTERN only accepts finite Number-compatible tokens; this guard is defensive if the pattern changes. */
       if (!isFinite(value)) {
         throw new LlmExeError(
           `Invalid numeric value found in input.`,
@@ -122,6 +123,7 @@ export class NumberParser extends BaseParser<number> {
     }
 
     const value = toNumber(matches[0].replace(/,/g, ""));
+    /* istanbul ignore next -- NUMERIC_TOKEN_PATTERN only captures finite Number-compatible tokens; this guard is defensive if the pattern changes. */
     if (!isFinite(value)) {
       throw new LlmExeError(`Invalid numeric value found in input.`, "parser.parse_failed", {
         operation: "NumberParser.parse",

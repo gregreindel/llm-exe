@@ -10,6 +10,7 @@ export function maskApiKeys(log: string): string {
     /\b(Bearer\s+[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+|Bearer\s+[A-Za-z0-9\-_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[A-Z0-9]{16}|[A-Za-z0-9]{32,})\b/g,
     (match) => {
       // Keep first 4 and last 4 characters
+      /* istanbul ignore next -- Every regex alternative above produces matches longer than 8 chars; this is defensive if patterns are relaxed. */
       if (match.length <= 8) return match;
 
       const prefix = match.substring(0, 4);
