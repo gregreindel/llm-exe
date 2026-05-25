@@ -1,5 +1,5 @@
 import { BaseParser, StringExtractParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the StringExtractParser class

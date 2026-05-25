@@ -1,5 +1,5 @@
 import { BaseParser } from "../_base";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 export type StringExtractMatch = "word" | "whole" | "substring";
 
@@ -56,29 +56,30 @@ export class StringExtractParser<
       const received = describeType(text);
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${received}.`,
-        "parser.parse_failed",
         {
-          operation: "StringExtractParser.parse",
-          parser: "stringExtract",
-          reason: "invalid_input_type",
-          expected: "string",
-          received,
+          code: "parser.invalid_input",
+          context: {
+            operation: "StringExtractParser.parse",
+            parser: "stringExtract",
+            reason: "invalid_input_type",
+            expected: "string",
+            received,
+          },
         }
       );
     }
 
     if (this.enum.length === 0) {
-      throw new LlmExeError(
-        `No enum values configured.`,
-        "parser.parse_failed",
-        {
+      throw new LlmExeError(`No enum values configured.`, {
+        code: "parser.parse_failed",
+        context: {
           operation: "StringExtractParser.parse",
           parser: "stringExtract",
           reason: "no_enum_values",
           expected: "non-empty enum",
           inputLength: text.length,
-        }
-      );
+        },
+      });
     }
 
     if (text.length === 0) {
@@ -86,17 +87,16 @@ export class StringExtractParser<
         return "" as E[number];
       }
 
-      throw new LlmExeError(
-        `No matching enum value found in input.`,
-        "parser.parse_failed",
-        {
+      throw new LlmExeError(`No matching enum value found in input.`, {
+        code: "parser.parse_failed",
+        context: {
           operation: "StringExtractParser.parse",
           parser: "stringExtract",
           reason: "empty_input",
           expected: this.enum,
           inputLength: text.length,
-        }
-      );
+        },
+      });
     }
 
     const matches = this.findMatches(text);
@@ -107,10 +107,9 @@ export class StringExtractParser<
     }
 
     if (uniqueMatches.length > 1) {
-      throw new LlmExeError(
-        `Multiple enum values found in input.`,
-        "parser.parse_failed",
-        {
+      throw new LlmExeError(`Multiple enum values found in input.`, {
+        code: "parser.parse_failed",
+        context: {
           operation: "StringExtractParser.parse",
           parser: "stringExtract",
           reason: "ambiguous_enum_match",
@@ -118,22 +117,21 @@ export class StringExtractParser<
           match: this.match,
           inputLength: text.length,
           matchCount: uniqueMatches.length,
-        }
-      );
+        },
+      });
     }
 
-    throw new LlmExeError(
-      `No matching enum value found in input.`,
-      "parser.parse_failed",
-      {
+    throw new LlmExeError(`No matching enum value found in input.`, {
+      code: "parser.parse_failed",
+      context: {
         operation: "StringExtractParser.parse",
         parser: "stringExtract",
         reason: "no_enum_match",
         expected: this.enum,
         match: this.match,
         inputLength: text.length,
-      }
-    );
+      },
+    });
   }
 
   private findMatches(text: string): string[] {

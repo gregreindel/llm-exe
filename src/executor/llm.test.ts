@@ -4,6 +4,7 @@ import { BaseLlmOutput } from "@/llm/output/base";
 import { JsonParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
 import { defineSchema } from "@/utils/modules/defineSchema";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests LlmExecutor
@@ -101,6 +102,22 @@ describe("llm-exe:executor/LlmExecutor", () => {
       await executor.execute({ input: "input-value" });
     } catch (e: any) {
       expect(e.message).toEqual("Missing prompt");
+    }
+  });
+
+  it("throws LlmExeError with executor.missing_prompt when no prompt is configured", async () => {
+    const executor = new LlmExecutor({ llm, prompt: undefined } as any);
+    try {
+      await executor.execute({ input: "input-value" });
+      throw new Error("Expected an error to be thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError);
+      expect((e as LlmExeError).code).toBe("executor.missing_prompt");
+      expect((e as LlmExeError).category).toBe("executor");
+      const ctx = (e as LlmExeError).context as Record<string, unknown>;
+      expect(ctx.operation).toBe("LlmExecutor.getHandlerInput");
+      expect(ctx.executorName).toBeDefined();
+      expect(ctx.executorType).toBe("llm-executor");
     }
   });
   it("MockExecutor returns metadata", async () => {

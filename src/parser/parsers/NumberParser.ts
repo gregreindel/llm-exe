@@ -1,7 +1,7 @@
 import { BaseParser } from "../_base";
 import { isFinite } from "@/utils/modules/isFinite";
 import { toNumber } from "@/utils/modules/toNumber";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 export type NumberParserMatch = "extract" | "whole";
 
@@ -24,7 +24,8 @@ const WHOLE_NUMERIC_PATTERN =
  * no surrounding prose.
  *
  * Throws LlmExeError(parser.parse_failed) for empty input, no numeric token,
- * multiple numeric tokens, invalid conversion, or invalid input type.
+ * multiple numeric tokens, invalid conversion. Invalid input type throws
+ * LlmExeError(parser.invalid_input).
  */
 export class NumberParser extends BaseParser<number> {
   private match: NumberParserMatch;
@@ -38,59 +39,62 @@ export class NumberParser extends BaseParser<number> {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "NumberParser.parse",
-          parser: "number",
-          reason: "invalid_input_type",
-          expected: "string",
-          received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "NumberParser.parse",
+            parser: "number",
+            reason: "invalid_input_type",
+            expected: "string",
+            received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          },
         }
       );
     }
 
     if (text.trim() === "") {
-      throw new LlmExeError(`No numeric value found in input.`, "parser.parse_failed", {
-        operation: "NumberParser.parse",
-        parser: "number",
-        reason: "empty_input",
-        expected: "number",
-        inputLength: text.length,
+      throw new LlmExeError(`No numeric value found in input.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "NumberParser.parse",
+          parser: "number",
+          reason: "empty_input",
+          expected: "number",
+          inputLength: text.length,
+        },
       });
     }
 
     if (this.match === "whole") {
       const trimmed = text.trim();
       if (!WHOLE_NUMERIC_PATTERN.test(trimmed)) {
-        throw new LlmExeError(
-          `Input is not a whole numeric value.`,
-          "parser.parse_failed",
-          {
+        throw new LlmExeError(`Input is not a whole numeric value.`, {
+          code: "parser.parse_failed",
+          context: {
             operation: "NumberParser.parse",
             parser: "number",
             reason: "no_numeric_value",
             expected: "whole number",
             match: this.match,
             inputLength: text.length,
-          }
-        );
+          },
+        });
       }
 
       const value = toNumber(trimmed.replace(/,/g, ""));
       /* istanbul ignore next -- WHOLE_NUMERIC_PATTERN only accepts finite Number-compatible tokens; this guard is defensive if the pattern changes. */
       if (!isFinite(value)) {
-        throw new LlmExeError(
-          `Invalid numeric value found in input.`,
-          "parser.parse_failed",
-          {
+        throw new LlmExeError(`Invalid numeric value found in input.`, {
+          code: "parser.parse_failed",
+          context: {
             operation: "NumberParser.parse",
             parser: "number",
             reason: "invalid_number",
             expected: "finite number",
             match: this.match,
             inputLength: text.length,
-          }
-        );
+          },
+        });
       }
       return value;
     }
@@ -100,38 +104,47 @@ export class NumberParser extends BaseParser<number> {
     );
 
     if (matches.length === 0) {
-      throw new LlmExeError(`No numeric value found in input.`, "parser.parse_failed", {
-        operation: "NumberParser.parse",
-        parser: "number",
-        reason: "no_numeric_value",
-        expected: "number",
-        match: this.match,
-        inputLength: text.length,
+      throw new LlmExeError(`No numeric value found in input.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "NumberParser.parse",
+          parser: "number",
+          reason: "no_numeric_value",
+          expected: "number",
+          match: this.match,
+          inputLength: text.length,
+        },
       });
     }
 
     if (matches.length > 1) {
-      throw new LlmExeError(`Multiple numeric values found in input.`, "parser.parse_failed", {
-        operation: "NumberParser.parse",
-        parser: "number",
-        reason: "ambiguous_number",
-        expected: "one numeric value",
-        match: this.match,
-        inputLength: text.length,
-        matchCount: matches.length,
+      throw new LlmExeError(`Multiple numeric values found in input.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "NumberParser.parse",
+          parser: "number",
+          reason: "ambiguous_number",
+          expected: "one numeric value",
+          match: this.match,
+          inputLength: text.length,
+          matchCount: matches.length,
+        },
       });
     }
 
     const value = toNumber(matches[0].replace(/,/g, ""));
     /* istanbul ignore next -- NUMERIC_TOKEN_PATTERN only captures finite Number-compatible tokens; this guard is defensive if the pattern changes. */
     if (!isFinite(value)) {
-      throw new LlmExeError(`Invalid numeric value found in input.`, "parser.parse_failed", {
-        operation: "NumberParser.parse",
-        parser: "number",
-        reason: "invalid_number",
-        expected: "finite number",
-        match: this.match,
-        inputLength: text.length,
+      throw new LlmExeError(`Invalid numeric value found in input.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "NumberParser.parse",
+          parser: "number",
+          reason: "invalid_number",
+          expected: "finite number",
+          match: this.match,
+          inputLength: text.length,
+        },
       });
     }
 

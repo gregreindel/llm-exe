@@ -5,6 +5,7 @@ import {
   JsonParserOptions,
   ListToJsonParserOptions,
 } from "@/types";
+import { LlmExeError } from "@/errors";
 import { StringParser } from "./parsers/StringParser";
 import { BooleanParser } from "./parsers/BooleanParser";
 import { NumberParser } from "./parsers/NumberParser";
@@ -120,8 +121,30 @@ export function createParser<const A extends CreateParserArgs>(
     case "string":
       return new StringParser() as CreateParserReturn<A>;
     default:
-      throw new Error(
-        `Invalid parser type: "${type}". Valid types are: json, string, boolean, number, stringExtract, listToArray, listToJson, listToKeyValue, replaceStringTemplate, markdownCodeBlock, markdownCodeBlocks`
+      throw new LlmExeError(
+        `Invalid parser type: "${type}"`,
+        {
+          code: "parser.invalid_type",
+          context: {
+            operation: "createParser",
+            parser: type,
+            availableParsers: [
+              "json",
+              "string",
+              "boolean",
+              "number",
+              "stringExtract",
+              "listToArray",
+              "listToJson",
+              "listToKeyValue",
+              "replaceStringTemplate",
+              "markdownCodeBlock",
+              "markdownCodeBlocks",
+            ],
+            resolution:
+              "Use a registered parser type, or define a custom parser.",
+          },
+        }
       );
   }
 }

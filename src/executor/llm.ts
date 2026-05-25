@@ -15,6 +15,7 @@ import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { BaseExecutor } from "./_base";
 import { isPromise } from "@/utils/modules/isPromise";
+import { LlmExeError } from "@/errors";
 
 /**
  * Core Executor With LLM
@@ -91,7 +92,17 @@ export class LlmExecutor<
         return prompt.format(_input);
       }
     }
-    throw new Error("Missing prompt");
+    throw new LlmExeError("Missing prompt", {
+      code: "executor.missing_prompt",
+      context: {
+        operation: "LlmExecutor.getHandlerInput",
+        executorName: this.name,
+        executorType: this.type,
+        traceId: this.getTraceId() ?? undefined,
+        resolution:
+          "Provide a prompt (or prompt factory) when constructing the LLM executor.",
+      },
+    });
   }
 
   getHandlerOutput(

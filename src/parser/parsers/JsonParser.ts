@@ -6,7 +6,7 @@ import {
   enforceParserSchema,
   validateParserSchema,
 } from "../_utils";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 export type JsonParserInput = string | Record<string, unknown> | unknown[];
 type JsonParserOutput<S extends JSONSchema | undefined> = S extends JSONSchema
@@ -69,52 +69,62 @@ export class JsonParser<
     if (typeof text === "string") {
       inputLength = text.length;
       if (text.trim() === "") {
-        throw new LlmExeError(`No JSON value found in input.`, "parser.parse_failed", {
-          operation: "JsonParser.parse",
-          parser: "json",
-          reason: "empty_input",
-          expected: "JSON object or array",
-          inputLength,
+        throw new LlmExeError(`No JSON value found in input.`, {
+          code: "parser.parse_failed",
+          context: {
+            operation: "JsonParser.parse",
+            parser: "json",
+            reason: "empty_input",
+            expected: "JSON object or array",
+            inputLength,
+          },
         });
       }
 
       try {
         parsed = JSON.parse(normalizeWholeResponseJsonText(text));
       } catch (cause) {
-        const error = new LlmExeError(`Invalid JSON input.`, "parser.parse_failed", {
-          operation: "JsonParser.parse",
-          parser: "json",
-          reason: "invalid_json",
-          expected: "JSON object or array",
-          inputLength,
+        throw new LlmExeError(`Invalid JSON input.`, {
+          code: "parser.parse_failed",
+          context: {
+            operation: "JsonParser.parse",
+            parser: "json",
+            reason: "invalid_json",
+            expected: "JSON object or array",
+            inputLength,
+          },
+          cause,
         });
-        (error as Error & { cause?: unknown }).cause = cause;
-        throw error;
       }
     } else if (Array.isArray(text) || isPlainObject(text)) {
       parsed = text;
     } else {
       throw new LlmExeError(
         `Invalid input. Expected JSON string, plain object, or array. Received ${text === null ? "null" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "JsonParser.parse",
-          parser: "json",
-          reason: "invalid_input_type",
-          expected: "JSON string, plain object, or array",
-          received: text === null ? "null" : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "JsonParser.parse",
+            parser: "json",
+            reason: "invalid_input_type",
+            expected: "JSON string, plain object, or array",
+            received: text === null ? "null" : typeof text,
+          },
         }
       );
     }
 
     if (!Array.isArray(parsed) && !isPlainObject(parsed)) {
-      throw new LlmExeError(`Invalid JSON root type.`, "parser.parse_failed", {
-        operation: "JsonParser.parse",
-        parser: "json",
-        reason: "invalid_json_root_type",
-        expected: "JSON object or array",
-        received: parsed === null ? "null" : typeof parsed,
-        inputLength,
+      throw new LlmExeError(`Invalid JSON root type.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "JsonParser.parse",
+          parser: "json",
+          reason: "invalid_json_root_type",
+          expected: "JSON object or array",
+          received: parsed === null ? "null" : typeof parsed,
+          inputLength,
+        },
       });
     }
 
@@ -122,12 +132,13 @@ export class JsonParser<
       if (this.shouldValidateSchema) {
         const valid = validateParserSchema(this.schema, parsed as any);
         if (valid && valid.length) {
-          throw new LlmExeError(valid[0].message, "parser.schema_validation_failed", {
-            operation: "JsonParser.parse",
-            parser: "json",
-            reason: "schema_validation_failed",
-            schemaErrors: valid.map((error) => error.message),
-            inputLength,
+          throw new LlmExeError(valid[0].message, {
+            code: "parser.schema_validation_failed",
+            context: {
+              operation: "JsonParser.parse",
+              parser: "json",
+              schemaErrors: valid.map((error) => error.message),
+            },
           });
         }
       }

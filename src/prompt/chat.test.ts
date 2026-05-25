@@ -789,6 +789,23 @@ describe("llm-exe:prompt/ChatPrompt", () => {
     );
   });
 
+  it("throws LlmExeError with prompt.missing_input when format() is called with null", () => {
+    const { LlmExeError } = require("@/errors");
+    const prompt = new ChatPrompt<{ name: string }>("Hello {{name}}");
+    try {
+      (prompt as any).format(null);
+      fail("Expected an error to be thrown");
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(LlmExeError);
+      expect(e.code).toBe("prompt.missing_input");
+      expect(e.category).toBe("prompt");
+      expect(e.context.operation).toBe("BasePrompt.getReplacements");
+      expect(e.context.promptType).toBe("chat");
+      expect(e.context.expected).toBe("object");
+      expect(e.context.received).toBe("null");
+    }
+  });
+
   it("handles assistant message with function_call but no content", () => {
     const prompt = new ChatPrompt("Hello");
     prompt.addFromHistory([

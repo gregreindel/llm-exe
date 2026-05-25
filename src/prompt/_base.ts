@@ -9,6 +9,7 @@ import {
   IPromptMessages,
   IPromptChatMessages,
 } from "@/types";
+import { LlmExeError } from "@/errors";
 
 /**
  * BasePrompt should be extended.
@@ -184,8 +185,18 @@ export abstract class BasePrompt<I extends Record<string, any>> {
 
   getReplacements(values: I) {
     if (values === undefined || values === null) {
-      throw new Error(
-        "format() requires an input object. Did you forget to pass arguments?"
+      throw new LlmExeError(
+        "format() requires an input object. Did you forget to pass arguments?",
+        {
+          code: "prompt.missing_input",
+          context: {
+            operation: "BasePrompt.getReplacements",
+            promptType: this.type,
+            expected: "object",
+            received: values === null ? "null" : "undefined",
+            resolution: "Pass an object of template values to format().",
+          },
+        }
       );
     }
     const { input = "", ...restOfValues } = values;
