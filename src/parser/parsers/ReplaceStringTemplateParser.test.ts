@@ -72,6 +72,7 @@ describe("llm-exe:parser/ReplaceStringTemplateParser", () => {
         reason: "template_replacement_failed",
         inputLength: 18,
       })
+      expect((e as Error & { cause?: unknown }).cause).toBeInstanceOf(Error)
     }
   });
 });

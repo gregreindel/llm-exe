@@ -2,7 +2,11 @@ import { camelCase } from "@/utils/modules/camelCase";
 import { ListToJsonParserOptions, ParserOutput } from "@/types";
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
-import { enforceParserSchema, validateParserSchema } from "../_utils";
+import {
+  applyParserSchemaDefaultsAndFilter,
+  coerceParserSchemaValues,
+  validateParserSchema,
+} from "../_utils";
 import { LlmExeError } from "@/utils/modules/errors";
 import { normalizeListLines } from "../_listBoundary";
 
@@ -10,9 +14,12 @@ export class ListToJsonParser<
   S extends JSONSchema | undefined = undefined
 > extends BaseParserWithJson<S> {
   private keyTransform: "camelCase" | "preserve";
+  private shouldValidateSchema: boolean;
+
   constructor(options: ListToJsonParserOptions<S> = {}) {
     super("listToJson", options);
     this.keyTransform = options.keyTransform ?? "camelCase";
+    this.shouldValidateSchema = !!options.schema && options.validateSchema !== false;
   }
 
   /**
@@ -80,18 +87,20 @@ export class ListToJsonParser<
       output[transformedKey] = line.slice(colonIndex + 1).trim();
     });
     if (this.schema) {
-      const parsed = enforceParserSchema(this.schema, output);
-      if (this?.validateSchema) {
-        const valid = validateParserSchema(this.schema, parsed);
+      const coerced = coerceParserSchemaValues(this.schema, output);
+      if (this.shouldValidateSchema) {
+        const valid = validateParserSchema(this.schema, coerced);
         if (valid && valid.length) {
-          throw new LlmExeError(valid[0].message, "parser", {
-            parser: "json",
-            output: parsed,
-            error: valid[0].message,
+          throw new LlmExeError(valid[0].message, "parser.schema_validation_failed", {
+            operation: "ListToJsonParser.parse",
+            parser: "listToJson",
+            reason: "schema_validation_failed",
+            schemaErrors: valid.map((error) => error.message),
+            inputLength: text.length,
           });
         }
       }
-      return parsed;
+      return applyParserSchemaDefaultsAndFilter(this.schema, coerced);
     }
     return output;
   }

@@ -1,7 +1,11 @@
 import { BaseParserWithJson } from "../_base";
 import { FromSchema, JSONSchema } from "json-schema-to-ts";
 import { JsonParserOptions } from "@/types";
-import { enforceParserSchema, validateParserSchema } from "../_utils";
+import {
+  applyParserSchemaDefaultsAndFilter,
+  enforceParserSchema,
+  validateParserSchema,
+} from "../_utils";
 import { LlmExeError } from "@/utils/modules/errors";
 
 export type JsonParserInput = string | Record<string, unknown> | unknown[];
@@ -127,8 +131,13 @@ export class JsonParser<
           });
         }
       }
-      const enforce = enforceParserSchema(this.schema, parsed);
-      return enforce as JsonParserOutput<S>;
+      if (this.shouldValidateSchema) {
+        return applyParserSchemaDefaultsAndFilter(
+          this.schema,
+          parsed
+        ) as JsonParserOutput<S>;
+      }
+      return enforceParserSchema(this.schema, parsed) as JsonParserOutput<S>;
     }
     return parsed as JsonParserOutput<S>;
   }

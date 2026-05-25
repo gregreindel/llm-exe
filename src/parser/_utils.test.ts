@@ -1,6 +1,11 @@
 
 
-import { enforceParserSchema, validateParserSchema } from "@/parser/_utils";
+import {
+  applyParserSchemaDefaultsAndFilter,
+  coerceParserSchemaValues,
+  enforceParserSchema,
+  validateParserSchema,
+} from "@/parser/_utils";
 import { defineSchema } from "@/utils/modules/defineSchema";
 
 /**
@@ -42,6 +47,62 @@ describe("llm-exe:parser/_utils/enforceParserSchema", () => {
     const obj = { name: "greg", age: "82"}
     const enforce = enforceParserSchema(null as any, obj);
     expect(enforce).toEqual(obj)
+  });
+});
+
+describe("llm-exe:parser/_utils/coerceParserSchemaValues", () => {
+  it("coerces number and boolean strings using schema types", () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        age: { type: "integer" },
+        score: { type: "number" },
+        active: { type: "boolean" },
+      },
+      additionalProperties: false,
+    });
+
+    expect(
+      coerceParserSchemaValues(schema, {
+        age: "82",
+        score: "9.5",
+        active: "false",
+      })
+    ).toEqual({ age: 82, score: 9.5, active: false });
+  });
+
+  it("leaves invalid coercion candidates for schema validation", () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        active: { type: "boolean" },
+      },
+      additionalProperties: false,
+    });
+
+    expect(coerceParserSchemaValues(schema, { active: "maybe" })).toEqual({
+      active: "maybe",
+    });
+  });
+});
+
+describe("llm-exe:parser/_utils/applyParserSchemaDefaultsAndFilter", () => {
+  it("applies defaults and filters unknown properties without coercing values", () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "unknown" },
+        active: { type: "boolean" },
+      },
+      additionalProperties: false,
+    });
+
+    expect(
+      applyParserSchemaDefaultsAndFilter(schema, {
+        active: "false",
+        extra: "removed",
+      })
+    ).toEqual({ name: "unknown", active: "false" });
   });
 });
 
