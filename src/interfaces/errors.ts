@@ -33,7 +33,7 @@ export type ErrorContextMap = {
     inputExcerptTruncated?: boolean;
     inputLength?: number;
     matchCount?: number;
-    match?: "word" | "whole" | "substring";
+    match?: "word" | "whole" | "substring" | "extract";
     received?: unknown;
   };
   "parser.schema_validation_failed": {

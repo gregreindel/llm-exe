@@ -1,5 +1,4 @@
 import {
-  BaseParserOptions,
   OutputResult,
   OutputResultContent,
   ParserOutput,
@@ -8,8 +7,7 @@ import { BaseParser } from "../_base";
 
 import { maybeParseJSON } from "@/utils";
 
-export interface LlmNativeFunctionParserOptions<T extends BaseParser<any>>
-  extends BaseParserOptions {
+export interface LlmNativeFunctionParserOptions<T extends BaseParser<any>> {
   parser: T;
 }
 
@@ -20,7 +18,7 @@ export class LlmFunctionParser<T extends BaseParser<any>> extends BaseParser<
 
   constructor(options: LlmNativeFunctionParserOptions<T>) {
     // pass the `function_call` target through so the executor knows
-    super("functionCall", options, "function_call");
+    super("functionCall", "function_call");
     this.parser = options.parser;
   }
   parse(text: OutputResult, _options?: Record<string, any>) {
@@ -41,11 +39,6 @@ export class LlmFunctionParser<T extends BaseParser<any>> extends BaseParser<
   }
 }
 
-export interface LlmNativeFunctionParserOptions<T extends BaseParser<any>>
-  extends BaseParserOptions {
-  parser: T;
-}
-
 /**
  * @deprecated Use `LlmFunctionParser` instead.
  */
@@ -56,7 +49,7 @@ export class LlmNativeFunctionParser<
 
   constructor(options: LlmNativeFunctionParserOptions<T>) {
     // pass the `function_call` target through so the executor knows
-    super("openAiFunction", options, "function_call");
+    super("openAiFunction", "function_call");
     this.parser = options.parser;
   }
   parse(text: OutputResult, _options?: Record<string, any>) {

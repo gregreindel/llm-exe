@@ -1,8 +1,6 @@
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
-import { BaseParser, ParserInput } from "../_base";
-import { BaseParserOptions } from "@/types";
+import { BaseParser } from "../_base";
 import { LlmExeError } from "@/utils/modules/errors";
-export interface ReplaceStringTemplateParserOptions extends BaseParserOptions {}
 
 /**
  * v3 parser contract:
@@ -16,10 +14,10 @@ export interface ReplaceStringTemplateParserOptions extends BaseParserOptions {}
  *
  */
 export class ReplaceStringTemplateParser extends BaseParser<string> {
-  constructor(options?: ReplaceStringTemplateParserOptions) {
-    super("replaceStringTemplate", options);
+  constructor() {
+    super("replaceStringTemplate");
   }
-  parse(text: ParserInput, attributes?: Record<string, any>) {
+  parse(text: string, attributes?: Record<string, any>) {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,

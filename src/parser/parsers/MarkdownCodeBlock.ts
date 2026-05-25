@@ -1,9 +1,6 @@
-import { BaseParserOptions } from "@/types";
 import { MarkdownCodeBlocksParser } from "./MarkdownCodeBlocks";
-import { BaseParser, ParserInput } from "../_base";
+import { BaseParser } from "../_base";
 import { LlmExeError } from "@/utils/modules/errors";
-
-export interface MarkdownCodeBlockParserOptions extends BaseParserOptions {}
 
 /**
  * v3 parser contract:
@@ -20,10 +17,10 @@ export class MarkdownCodeBlockParser extends BaseParser<{
   language: string;
   code: string;
 }> {
-  constructor(options?: MarkdownCodeBlockParserOptions) {
-    super("markdownCodeBlock", options);
+  constructor() {
+    super("markdownCodeBlock");
   }
-  parse(input: ParserInput) {
+  parse(input: string, _attributes?: Record<string, any>) {
     if (typeof input !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${input === null ? "null" : Array.isArray(input) ? "array" : typeof input}.`,

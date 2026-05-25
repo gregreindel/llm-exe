@@ -1,33 +1,22 @@
-import {
-  BaseParserOptions,
-  BaseParserOptionsWithSchema,
-  OutputResult,
-} from "@/types";
+import { JsonParserOptions, OutputResult } from "@/types";
 import { FromSchema, JSONSchema } from "json-schema-to-ts";
 
 export type ParserInput = string | OutputResult;
+
 /**
  * BaseParser is an abstract class for parsing text and enforcing JSON schema on the parsed data.
  */
 export abstract class BaseParser<T = any> {
   public name: string;
-  public options: BaseParserOptions;
   public target: "text" | "function_call" = "text";
   /**
    * Create a new BaseParser.
    * @param name - The name of the parser.
-   * @param  options - options
+   * @param target - Whether the parser consumes text or function-call output.
    */
-  constructor(
-    name: string,
-    options: BaseParserOptions = {},
-    target: "text" | "function_call" = "text"
-  ) {
+  constructor(name: string, target: "text" | "function_call" = "text") {
     this.name = name;
     this.target = target;
-    if (options) {
-      this.options = options;
-    }
   }
 
   /**
@@ -46,12 +35,8 @@ export abstract class BaseParserWithJson<
 > extends BaseParser<T> {
   public schema: S;
   public validateSchema: boolean;
-  /**
-   * Create a new BaseParser.
-   * @param name - The name of the parser.
-   * @param  options - options
-   */
-  constructor(name: string, options: BaseParserOptionsWithSchema<S>) {
+
+  constructor(name: string, options: JsonParserOptions<S>) {
     super(name);
 
     const { schema, validateSchema } = options;

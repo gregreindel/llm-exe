@@ -74,6 +74,7 @@ describe("llm-exe:parser/NumberParser", () => {
         parser: "number",
         reason: "no_numeric_value",
         expected: "number",
+        match: "extract",
         inputLength: 12,
       });
     }
@@ -110,6 +111,7 @@ describe("llm-exe:parser/NumberParser", () => {
         parser: "number",
         reason: "ambiguous_number",
         expected: "one numeric value",
+        match: "extract",
         inputLength: 12,
         matchCount: 2,
       });
@@ -135,4 +137,40 @@ describe("llm-exe:parser/NumberParser", () => {
     const parser = new NumberParser()
     expect(() => parser.parse(null as any)).toThrow(LlmExeError)
   });
+
+  describe("match: whole", () => {
+    it("accepts a bare integer", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(parser.parse("42")).toEqual(42)
+    })
+    it("accepts a bare decimal", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(parser.parse("3.14")).toEqual(3.14)
+    })
+    it("accepts a comma-grouped number", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(parser.parse("1,000")).toEqual(1000)
+    })
+    it("accepts a value after trim", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(parser.parse("  42  ")).toEqual(42)
+    })
+    it("rejects a number embedded in prose", () => {
+      const parser = new NumberParser({ match: "whole" })
+      try {
+        parser.parse("The answer is 42.")
+        fail("Expected an error to be thrown")
+      } catch (e) {
+        expect(e).toBeInstanceOf(LlmExeError)
+        expect((e as LlmExeError).context).toMatchObject({
+          reason: "no_numeric_value",
+          match: "whole",
+        })
+      }
+    })
+    it("rejects multiple numbers", () => {
+      const parser = new NumberParser({ match: "whole" })
+      expect(() => parser.parse("1 2")).toThrow(LlmExeError)
+    })
+  })
 });

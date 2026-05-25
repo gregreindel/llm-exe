@@ -1,6 +1,6 @@
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
-import { BaseParserOptionsWithSchema, ParserOutput } from "@/types";
+import { JsonParserOptions, ParserOutput } from "@/types";
 import { enforceParserSchema, validateParserSchema } from "../_utils";
 import { LlmExeError } from "@/utils/modules/errors";
 
@@ -34,7 +34,7 @@ export class JsonParser<
 > extends BaseParserWithJson<S> {
   private shouldValidateSchema: boolean;
 
-  constructor(options: BaseParserOptionsWithSchema<S> = {}) {
+  constructor(options: JsonParserOptions<S> = {}) {
     super("json", options);
     this.shouldValidateSchema = !!options.schema && options.validateSchema !== false;
   }

@@ -102,12 +102,19 @@ export class LlmExecutor<
   ): ParserOutput<Parser> {
     // depending on out parser type, and result obj (out)
     // we should use different methods here
+    // Cast through BaseParser to recover the wide ParserInput signature.
+    // Each concrete parser narrows its public parse() signature, but the
+    // executor is the polymorphic dispatcher and must pass either string
+    // or OutputResult depending on the parser's target.
+    const parse = (this.parser as BaseParser<ParserOutput<Parser>>).parse.bind(
+      this.parser
+    );
     if (this.parser.target === "function_call") {
       const outToStr = out.getResult();
-      return this.parser.parse(outToStr, _metadata);
+      return parse(outToStr, _metadata);
     } else {
       const outToStr = out.getResultText();
-      return this.parser.parse(outToStr, _metadata);
+      return parse(outToStr, _metadata);
     }
   }
 

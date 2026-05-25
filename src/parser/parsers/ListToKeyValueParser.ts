@@ -1,15 +1,20 @@
-import { BaseParserOptions } from "@/types";
-import { BaseParser, ParserInput } from "../_base";
+import { BaseParser } from "../_base";
 import { LlmExeError } from "@/utils/modules/errors";
 import { normalizeListLines } from "../_listBoundary";
+import { camelCase } from "@/utils/modules/camelCase";
 
-export interface ListToKeyValueParserOptions extends BaseParserOptions {}
+export interface ListToKeyValueParserOptions {
+  keyTransform?: "preserve" | "camelCase";
+}
 
 export class ListToKeyValueParser extends BaseParser<
   Array<{ key: string; value: string }>
 > {
+  private keyTransform: "preserve" | "camelCase";
+
   constructor(options?: ListToKeyValueParserOptions) {
-    super("listToKeyValue", options);
+    super("listToKeyValue");
+    this.keyTransform = options?.keyTransform ?? "preserve";
   }
   /**
    * v3 parser contract:
@@ -18,10 +23,11 @@ export class ListToKeyValueParser extends BaseParser<
    *
    * Uses the shared list boundary. Parses normalized lines as key/value pairs
    * split at the first colon. Preserves duplicate keys because output is an
-   * ordered array.
+   * ordered array. Keys are returned as written by default; pass
+   * keyTransform: "camelCase" to match listToJson's key normalization.
    *
    */
-  parse(text: ParserInput) {
+  parse(text: string, _attributes?: Record<string, any>) {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
@@ -53,8 +59,8 @@ export class ListToKeyValueParser extends BaseParser<
         });
       }
 
-      const key = line.slice(0, colonIndex).trim();
-      if (!key) {
+      const rawKey = line.slice(0, colonIndex).trim();
+      if (!rawKey) {
         throw new LlmExeError(`Empty key in key/value line.`, "parser.parse_failed", {
           operation: "ListToKeyValueParser.parse",
           parser: "listToKeyValue",
@@ -63,6 +69,8 @@ export class ListToKeyValueParser extends BaseParser<
         });
       }
 
+      const key =
+        this.keyTransform === "camelCase" ? camelCase(rawKey) : rawKey;
       res.push({ key, value: line.slice(colonIndex + 1).trim() });
     }
     return res;

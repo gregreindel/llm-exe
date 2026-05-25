@@ -1,9 +1,6 @@
 import { BaseParser } from "../_base";
-import { BaseParserOptions } from "@/types";
 import { LlmExeError } from "@/utils/modules/errors";
 import { isDebugEnabled } from "@/utils/modules/debug";
-
-export interface BooleanParserOptions extends BaseParserOptions {}
 
 const BOOLEAN_VALUES = ["true", "false", "yes", "no", "y", "n", "1", "0"];
 const TRUTHY_VALUES = new Set(["true", "yes", "y", "1"]);
@@ -23,8 +20,8 @@ const MAX_ERROR_INPUT_EXCERPT_LENGTH = 500;
  *
  */
 export class BooleanParser extends BaseParser<boolean> {
-  constructor(options?: BooleanParserOptions) {
-    super("boolean", options);
+  constructor() {
+    super("boolean");
   }
 
   private getInputErrorContext(text: string) {
@@ -47,7 +44,7 @@ export class BooleanParser extends BaseParser<boolean> {
     return context;
   }
 
-  parse(text: string) {
+  parse(text: string, _attributes?: Record<string, any>) {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : typeof text}.`,

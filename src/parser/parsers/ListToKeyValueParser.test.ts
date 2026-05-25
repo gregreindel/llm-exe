@@ -79,4 +79,26 @@ describe("llm-exe:parser/ListToKeyValueParser", () => {
     const parser = new ListToKeyValueParser()
     expect(() => parser.parse({} as any)).toThrow(LlmExeError)
   })
+
+  describe("keyTransform option", () => {
+    it("defaults to preserve (keys returned as written)", () => {
+      const parser = new ListToKeyValueParser()
+      expect(parser.parse("First Name: Greg")).toEqual([
+        { key: "First Name", value: "Greg" },
+      ])
+    })
+    it("camelCases keys when keyTransform is camelCase", () => {
+      const parser = new ListToKeyValueParser({ keyTransform: "camelCase" })
+      expect(parser.parse("First Name: Greg\nLast Name: R")).toEqual([
+        { key: "firstName", value: "Greg" },
+        { key: "lastName", value: "R" },
+      ])
+    })
+    it("preserves keys explicitly when preserve is set", () => {
+      const parser = new ListToKeyValueParser({ keyTransform: "preserve" })
+      expect(parser.parse("First Name: Greg")).toEqual([
+        { key: "First Name", value: "Greg" },
+      ])
+    })
+  })
 });

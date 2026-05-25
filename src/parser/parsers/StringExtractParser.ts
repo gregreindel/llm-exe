@@ -1,11 +1,12 @@
-import { BaseParser, ParserInput } from "../_base";
-import { BaseParserOptions } from "@/types";
+import { BaseParser } from "../_base";
 import { LlmExeError } from "@/utils/modules/errors";
 
 export type StringExtractMatch = "word" | "whole" | "substring";
 
-export interface StringExtractParserOptions extends BaseParserOptions {
-  enum: string[];
+export interface StringExtractParserOptions<
+  E extends readonly string[] = readonly string[],
+> {
+  enum: E;
   ignoreCase?: boolean;
   match?: StringExtractMatch;
 }
@@ -23,13 +24,15 @@ function describeType(value: unknown): string {
   return typeof value;
 }
 
-export class StringExtractParser extends BaseParser<string> {
+export class StringExtractParser<
+  E extends readonly string[] = readonly string[],
+> extends BaseParser<E[number]> {
   private enum: string[] = [];
   private ignoreCase: boolean;
   private match: StringExtractMatch;
 
-  constructor(options?: StringExtractParserOptions) {
-    super("stringExtract", options);
+  constructor(options?: StringExtractParserOptions<E>) {
+    super("stringExtract");
     if (options?.enum) {
       this.enum.push(...options.enum);
     }
@@ -47,9 +50,8 @@ export class StringExtractParser extends BaseParser<string> {
    * match: "substring" for legacy contains() behavior. Case-insensitive by
    * default.
    *
-   * Contract source: docs/misc/parser-v3-audit.md#parser-stringextract
    */
-  parse(text: ParserInput) {
+  parse(text: string, _attributes?: Record<string, any>): E[number] {
     if (typeof text !== "string") {
       const received = describeType(text);
       throw new LlmExeError(
@@ -81,7 +83,7 @@ export class StringExtractParser extends BaseParser<string> {
 
     if (text.length === 0) {
       if (this.enum.includes("")) {
-        return "";
+        return "" as E[number];
       }
 
       throw new LlmExeError(
@@ -101,7 +103,7 @@ export class StringExtractParser extends BaseParser<string> {
     const uniqueMatches = Array.from(new Set(matches));
 
     if (uniqueMatches.length === 1) {
-      return uniqueMatches[0];
+      return uniqueMatches[0] as E[number];
     }
 
     if (uniqueMatches.length > 1) {

@@ -1,4 +1,4 @@
-import { BaseParser, ParserInput } from "../_base";
+import { BaseParser } from "../_base";
 import { normalizeListLines } from "../_listBoundary";
 import { LlmExeError } from "@/utils/modules/errors";
 
@@ -16,7 +16,7 @@ export class ListToArrayParser extends BaseParser<string[]> {
   constructor() {
     super("listToArray");
   }
-  parse(text: ParserInput) {
+  parse(text: string, _attributes?: Record<string, any>) {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
