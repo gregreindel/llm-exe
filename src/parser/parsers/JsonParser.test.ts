@@ -1,6 +1,7 @@
 
 import { BaseParser, JsonParser } from "@/parser";
 import { defineSchema } from "@/utils/modules/defineSchema";
+import { LlmExeError } from "@/utils/modules/errors";
 
 /**
  * Tests the JsonParser class
@@ -17,6 +18,21 @@ describe("llm-exe:parser/JsonParser", () => {
     const parser = new JsonParser()
     const input = JSON.stringify({ name: "Greg", occupation: "developer"})
     expect(parser.parse(input)).toEqual(JSON.parse(input))
+  });
+  it('parses array JSON correctly', () => {
+    const parser = new JsonParser()
+    const input = JSON.stringify([{ name: "Greg" }])
+    expect(parser.parse(input)).toEqual(JSON.parse(input))
+  });
+  it('parses already-parsed plain object input', () => {
+    const parser = new JsonParser()
+    const input = { name: "Greg" }
+    expect(parser.parse(input as any)).toBe(input)
+  });
+  it('parses already-parsed array input', () => {
+    const parser = new JsonParser()
+    const input = [{ name: "Greg" }]
+    expect(parser.parse(input as any)).toBe(input)
   });
   it('parses simple string correctly', () => {
     const schema = defineSchema({
@@ -63,6 +79,235 @@ describe("llm-exe:parser/JsonParser", () => {
     const input = JSON.stringify({ name: "Greg", occupation: 0})
     expect(() => parser.parse(input)).toThrowError("is not of a type(s) string")
   });
+  it('validates schema by default when schema is provided', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema })
+    try {
+      parser.parse(JSON.stringify({ age: 25 }))
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.schema_validation_failed")
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "schema_validation_failed",
+      })
+    }
+  });
+  it('preserves schema filter/default-only behavior when validateSchema is false', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "unknown" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema, validateSchema: false })
+    expect(parser.parse(JSON.stringify({ age: 25 }))).toEqual({ name: "unknown" })
+  });
+  it('throws when a required field with a default is missing', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string", default: "unknown" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema })
+    expect(() => parser.parse("{}")).toThrow(LlmExeError)
+    try {
+      parser.parse("{}")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect((e as LlmExeError).code).toEqual("parser.schema_validation_failed")
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "schema_validation_failed",
+      })
+    }
+  });
+  it('throws when a required numeric field with a default is missing', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        count: { type: "number", default: 0 },
+      },
+      required: ["count"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema })
+    expect(() => parser.parse("{}")).toThrow(LlmExeError)
+  });
+  it('does not coerce string values before schema validation', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        count: { type: "number" },
+        active: { type: "boolean" },
+      },
+      required: ["count", "active"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema })
+    expect(() =>
+      parser.parse(JSON.stringify({ count: "42", active: "false" }))
+    ).toThrow(LlmExeError)
+  });
+  it('rejects additional properties before filtering when additionalProperties is false', () => {
+    const schema = defineSchema({
+      type: "object",
+      properties: {
+        name: { type: "string" },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    });
+    const parser = new JsonParser({ schema })
+    expect(() =>
+      parser.parse(JSON.stringify({ name: "Greg", age: 25 }))
+    ).toThrow(LlmExeError)
+  });
+  it('preserves additional properties when schema allows them', () => {
+    const schema = {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+      },
+      required: ["name"],
+      additionalProperties: true,
+    } as const;
+    const parser = new JsonParser({ schema })
+    expect(parser.parse(JSON.stringify({ name: "Greg", age: 25 }))).toEqual({
+      name: "Greg",
+      age: 25,
+    })
+  });
+  it('preserves additional properties when additionalProperties is omitted', () => {
+    const schema = {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+      },
+      required: ["name"],
+    } as const;
+    const parser = new JsonParser({ schema })
+    expect(parser.parse(JSON.stringify({ name: "Greg", age: 25 }))).toEqual({
+      name: "Greg",
+      age: 25,
+    })
+  });
+  it('throws parser.parse_failed for invalid JSON', () => {
+    const parser = new JsonParser()
+    try {
+      parser.parse("This is not JSON at all")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).context).toEqual({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "invalid_json",
+        expected: "JSON object or array",
+        inputLength: 23,
+      })
+      expect((e as any).cause).toBeInstanceOf(SyntaxError)
+    }
+  });
+  it('throws parser.parse_failed for empty input', () => {
+    const parser = new JsonParser()
+    try {
+      parser.parse("")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toEqual({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "empty_input",
+        expected: "JSON object or array",
+        inputLength: 0,
+      })
+    }
+  });
+  it('throws parser.parse_failed for JSON primitives', () => {
+    const parser = new JsonParser()
+    try {
+      parser.parse("42")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toEqual({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "invalid_json_root_type",
+        expected: "JSON object or array",
+        received: "number",
+        inputLength: 2,
+      })
+    }
+  });
+  it('throws parser.parse_failed for JSON null root', () => {
+    const parser = new JsonParser()
+    try {
+      parser.parse("null")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "invalid_json_root_type",
+        received: "null",
+      })
+    }
+  });
+  it('parses whole-response json fences case-insensitively', () => {
+    const parser = new JsonParser()
+    expect(parser.parse("```JSON\n{\"name\":\"Greg\"}\n```")).toEqual({ name: "Greg" })
+    expect(parser.parse("```\n[{\"name\":\"Greg\"}]\n```")).toEqual([{ name: "Greg" }])
+  });
+  it('does not extract fenced JSON from prose', () => {
+    const parser = new JsonParser()
+    expect(() => parser.parse("Here is JSON:\n```json\n{\"name\":\"Greg\"}\n```")).toThrow(LlmExeError)
+  });
+  it('rejects whole-response non-json fenced blocks as invalid JSON', () => {
+    const parser = new JsonParser()
+    try {
+      parser.parse("```ts\n{\"name\":\"Greg\"}\n```")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).context).toMatchObject({
+        operation: "JsonParser.parse",
+        parser: "json",
+        reason: "invalid_json",
+      })
+      expect((e as Error & { cause?: unknown }).cause).toBeInstanceOf(SyntaxError)
+    }
+  });
+  it('throws parser.parse_failed for runtime null', () => {
+    const parser = new JsonParser()
+    expect(() => parser.parse(null as any)).toThrow(LlmExeError)
+  });
+  it('throws parser.parse_failed for runtime class instances', () => {
+    class Example {
+      value = "x";
+    }
+    const parser = new JsonParser()
+    expect(() => parser.parse(new Example() as any)).toThrow(LlmExeError)
+  });
 
 });
-

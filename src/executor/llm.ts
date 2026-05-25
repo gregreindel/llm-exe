@@ -8,6 +8,7 @@ import {
   LlmExecutorHooks,
   LlmExecutorExecuteOptions,
   BaseLlCall,
+  OutputResult,
 } from "@/types";
 import { BaseParser, JsonParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
@@ -21,7 +22,7 @@ import { isPromise } from "@/utils/modules/isPromise";
 export class LlmExecutor<
   Llm extends BaseLlm<any>,
   Prompt extends BasePrompt<Record<string, any>>,
-  Parser extends BaseParser,
+  Parser extends BaseParser<any, any>,
   State extends BaseState,
 > extends BaseExecutor<
   PromptInput<Prompt>,
@@ -102,12 +103,17 @@ export class LlmExecutor<
   ): ParserOutput<Parser> {
     // depending on out parser type, and result obj (out)
     // we should use different methods here
+    // The executor is the polymorphic dispatcher. Text parsers receive
+    // getResultText(), while function-call parsers receive getResult().
+    const parse = (
+      this.parser as BaseParser<ParserOutput<Parser>, string | OutputResult>
+    ).parse.bind(this.parser);
     if (this.parser.target === "function_call") {
       const outToStr = out.getResult();
-      return this.parser.parse(outToStr, _metadata);
+      return parse(outToStr, _metadata);
     } else {
       const outToStr = out.getResultText();
-      return this.parser.parse(outToStr, _metadata);
+      return parse(outToStr, _metadata);
     }
   }
 

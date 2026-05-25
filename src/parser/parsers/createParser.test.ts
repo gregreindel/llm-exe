@@ -14,7 +14,7 @@ describe("llm-exe:parser/createParser", () => {
     expect(parser.name).toEqual("string")
   })
   it('creates stringExtract parser', () => {
-    const parser = createParser("stringExtract");
+    const parser = createParser("stringExtract", { enum: ["yes", "no"] });
     expect(parser).toBeInstanceOf(BaseParser)
     expect(parser).toBeInstanceOf(StringExtractParser)
     expect(parser).toHaveProperty("name")

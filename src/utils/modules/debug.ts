@@ -1,9 +1,18 @@
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { maskApiKeys } from "./maskApiKeysInDebug";
 
-export function debug(...args: any[]) {
+export function isDebugEnabled() {
   const debugValue = getEnvironmentVariable("LLM_EXE_DEBUG");
 
+  return (
+    typeof debugValue === "string" &&
+    debugValue !== "" &&
+    debugValue.toLowerCase() !== "undefined" &&
+    debugValue.toLowerCase() !== "null"
+  );
+}
+
+export function debug(...args: any[]) {
   const logs = [];
 
   for (const arg of args) {
@@ -47,12 +56,7 @@ export function debug(...args: any[]) {
       logs.push(arg);
     }
   }
-  if (
-    typeof debugValue === "string" &&
-    debugValue !== "" &&
-    debugValue.toLowerCase() !== "undefined" &&
-    debugValue.toLowerCase() !== "null"
-  ) {
+  if (isDebugEnabled()) {
     console.debug(...logs);
   }
 }

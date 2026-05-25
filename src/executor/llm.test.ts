@@ -1,5 +1,6 @@
 import { LlmExecutor } from "@/executor";
 import { useLlm } from "@/llm";
+import { BaseLlmOutput } from "@/llm/output/base";
 import { JsonParser } from "@/parser";
 import { createChatPrompt } from "@/prompt";
 import { defineSchema } from "@/utils/modules/defineSchema";
@@ -191,7 +192,11 @@ describe("llm-exe:executor/LlmExecutor", () => {
     });
     const parser = new JsonParser({ schema });
     const executor = new LlmExecutor({ llm, prompt, parser });
-    jest.spyOn(executor, "handler");
+    jest.spyOn(executor, "handler").mockResolvedValue(BaseLlmOutput({
+      stopReason: "stop",
+      usage: { input_tokens: 0, output_tokens: 0, total_tokens: 0 },
+      content: [{ type: "text", text: '[{"name":"Greg","age":1}]' }],
+    }));
 
     const input = { input: "input-value" };
     await executor.execute(input);
@@ -224,6 +229,11 @@ describe("llm-exe:executor/LlmExecutor", () => {
 
     const parser = new JsonParser({ schema });
     const executor = new LlmExecutor({ llm, prompt: _prompt, parser });
+    jest.spyOn(executor, "handler").mockResolvedValue(BaseLlmOutput({
+      stopReason: "stop",
+      usage: { input_tokens: 0, output_tokens: 0, total_tokens: 0 },
+      content: [{ type: "text", text: '[{"name":"Greg","age":1}]' }],
+    }));
     jest.spyOn(_prompt, "format");
 
     const input = { input: "input-value" };
