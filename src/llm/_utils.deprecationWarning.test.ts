@@ -89,6 +89,21 @@ describe("_utils.deprecationWarning", () => {
       emitDeprecationWarning(config);
       expect(warningSpy).toHaveBeenCalledTimes(1);
     });
+
+    it("silently no-ops when process.emitWarning is unavailable (non-Node runtime)", () => {
+      const original = process.emitWarning;
+      // @ts-expect-error simulating a runtime without process.emitWarning
+      delete process.emitWarning;
+      try {
+        const config = makeConfig("google.chat.v1", {
+          shorthand: "google.gemini-2.5-flash",
+          message: "Deprecated",
+        });
+        expect(() => emitDeprecationWarning(config)).not.toThrow();
+      } finally {
+        process.emitWarning = original;
+      }
+    });
   });
 
   describe("deprecateShorthand", () => {

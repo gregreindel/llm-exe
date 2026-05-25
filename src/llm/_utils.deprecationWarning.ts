@@ -15,6 +15,12 @@ export class LlmExeDeprecationWarning extends Error {
 
 export function emitDeprecationWarning(config: Config<any>): void {
   if (!config.deprecated) return;
+  if (
+    typeof process !== "object" ||
+    typeof process?.emitWarning !== "function"
+  ) {
+    return;
+  }
   const { shorthand, message } = config.deprecated;
   if (warned.has(shorthand)) return;
   warned.add(shorthand);
