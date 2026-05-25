@@ -133,30 +133,37 @@ describe("createOpenAiCompatibleConfiguration", () => {
   });
 
   describe("effort transform", () => {
-    it("should return effort value for supported models", () => {
+    const baseOverrides = {
+      key: "custom.chat.v1",
+      provider: "custom.chat",
+      endpoint: "https://api.custom.com/v1/chat",
+      apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"] as [string, string],
+    };
+
+    it("forwards effort when the supplied predicate matches", () => {
       const config = createOpenAiCompatibleConfiguration({
-        key: "custom.chat.v1",
-        provider: "custom.chat",
-        endpoint: "https://api.custom.com/v1/chat",
-        apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
+        ...baseOverrides,
+        isReasoningModel: (m) =>
+          m.startsWith("gpt-5") || m.startsWith("o3") || m.startsWith("o4"),
       });
 
       const transform = config.mapBody.effort.transform as (
         v: any,
         s: any
       ) => any;
-      expect(transform("low", { model: "gpt-5" })).toBe("low");
-      expect(transform("medium", { model: "gpt-5" })).toBe("medium");
-      expect(transform("high", { model: "gpt-5" })).toBe("high");
-      expect(transform("minimal", { model: "gpt-5" })).toBe("minimal");
+      expect(transform("low", { model: "gpt-5.2" })).toBe("low");
+      expect(transform("medium", { model: "gpt-5-mini" })).toBe("medium");
+      expect(transform("high", { model: "gpt-5-nano" })).toBe("high");
+      expect(transform("minimal", { model: "gpt-5.2" })).toBe("minimal");
+      expect(transform("low", { model: "o3" })).toBe("low");
+      expect(transform("high", { model: "o4-mini" })).toBe("high");
     });
 
-    it("should return undefined for unsupported models", () => {
+    it("drops effort when the predicate rejects the model", () => {
       const config = createOpenAiCompatibleConfiguration({
-        key: "custom.chat.v1",
-        provider: "custom.chat",
-        endpoint: "https://api.custom.com/v1/chat",
-        apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
+        ...baseOverrides,
+        isReasoningModel: (m) =>
+          m.startsWith("gpt-5") || m.startsWith("o3") || m.startsWith("o4"),
       });
 
       const transform = config.mapBody.effort.transform as (
@@ -164,22 +171,46 @@ describe("createOpenAiCompatibleConfiguration", () => {
         s: any
       ) => any;
       expect(transform("high", { model: "gpt-4o" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4.1" })).toBeUndefined();
+      expect(transform("high", { model: "gpt-4.1-mini" })).toBeUndefined();
     });
 
-    it("should return undefined for invalid effort values", () => {
+    it("drops effort for every model when no predicate is supplied", () => {
+      const config = createOpenAiCompatibleConfiguration(baseOverrides);
+
+      const transform = config.mapBody.effort.transform as (
+        v: any,
+        s: any
+      ) => any;
+      expect(transform("high", { model: "gpt-5.2" })).toBeUndefined();
+      expect(transform("low", { model: "o3" })).toBeUndefined();
+    });
+
+    it("returns undefined for invalid effort values", () => {
       const config = createOpenAiCompatibleConfiguration({
-        key: "custom.chat.v1",
-        provider: "custom.chat",
-        endpoint: "https://api.custom.com/v1/chat",
-        apiKeyMapping: ["customApiKey", "CUSTOM_API_KEY"],
+        ...baseOverrides,
+        isReasoningModel: () => true,
       });
 
       const transform = config.mapBody.effort.transform as (
         v: any,
         s: any
       ) => any;
-      expect(transform("invalid", { model: "gpt-5" })).toBeUndefined();
-      expect(transform(123, { model: "gpt-5" })).toBeUndefined();
+      expect(transform("invalid", { model: "gpt-5.2" })).toBeUndefined();
+      expect(transform(123, { model: "o3" })).toBeUndefined();
+    });
+
+    it("returns undefined when model is not a string", () => {
+      const config = createOpenAiCompatibleConfiguration({
+        ...baseOverrides,
+        isReasoningModel: () => true,
+      });
+
+      const transform = config.mapBody.effort.transform as (
+        v: any,
+        s: any
+      ) => any;
+      expect(transform("high", { model: undefined })).toBeUndefined();
     });
   });
 

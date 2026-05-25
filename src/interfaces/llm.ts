@@ -118,7 +118,7 @@ export interface Claude3Response {
       }
   )[];
   model: string;
-  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal";
+  stop_reason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal" | "model_context_window_exceeded";
   stop_sequence: null | string;
   usage: {
     input_tokens: number;
@@ -407,6 +407,23 @@ export interface AmazonEmbeddingOptions extends GenericEmbeddingOptions {
   awsAccessKey?: string;
 }
 
+export interface CohereBedrockEmbeddingOptions
+  extends AmazonEmbeddingOptions {
+  inputType?:
+    | "search_document"
+    | "search_query"
+    | "classification"
+    | "clustering";
+  truncate?: "NONE" | "START" | "END" | "LEFT" | "RIGHT";
+}
+
+export interface CohereBedrockEmbeddingApiResponseOutput {
+  id?: string;
+  response_type?: string;
+  embeddings: number[][];
+  texts?: string[];
+}
+
 // theirs
 export interface OpenAiEmbeddingApiRequestInput {
   input: string;
@@ -459,6 +476,15 @@ export interface OpenAiRequest extends GenericLLm {
   useJson?: boolean;
 }
 
+export interface XAiRequest extends GenericLLm {
+  model: string;
+  frequencyPenalty?: number;
+  logitBias?: Record<string, any> | null;
+  responseFormat?: Record<string, any>;
+  xAiApiKey?: string;
+  useJson?: boolean;
+}
+
 export interface AmazonBedrockRequest extends GenericLLm {
   model: string;
   awsRegion?: string;
@@ -497,6 +523,9 @@ export type AllEmbedding = {
   "amazon.embedding.v1": {
     input: AmazonEmbeddingOptions;
   };
+  "amazon:cohere.embedding.v1": {
+    input: CohereBedrockEmbeddingOptions;
+  };
 };
 
 export type AllLlm = {
@@ -525,7 +554,7 @@ export type AllLlm = {
   //   // output: OpenAiRequest;
   // };
   "xai.chat.v1": {
-    input: GenericLLm;
+    input: XAiRequest;
     // output: OpenAiRequest;
   };
   "ollama.chat.v1": {
@@ -567,12 +596,9 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.o3": {
     input: Omit<OpenAiRequest, "model">;
   };
-  "openai.o4-mini": {
-    input: Omit<OpenAiRequest, "model">;
-  };
   // OpenAI - GPT-4o family
   "openai.gpt-4": {
-    input: OpenAiRequest;
+    input: Omit<OpenAiRequest, "model">;
   };
   "openai.gpt-4o": {
     input: Omit<OpenAiRequest, "model">;
@@ -580,25 +606,36 @@ export type AllUseLlmOptions = AllLlm & {
   "openai.gpt-4o-mini": {
     input: Omit<OpenAiRequest, "model">;
   };
+  // OpenAI - Deprecated
+  "openai.o4-mini": {
+    input: Omit<OpenAiRequest, "model">;
+  };
 
-  // Anthropic - Claude 4.6 models
-  "anthropic.claude-opus-4-6": {
+  // Anthropic - Claude 4.7 models
+  "anthropic.claude-opus-4-7": {
     input: Omit<AnthropicRequest, "model">;
   };
+
+  // Anthropic - Claude 4.6 models
   "anthropic.claude-sonnet-4-6": {
     input: Omit<AnthropicRequest, "model">;
   };
+
   // Anthropic - Claude 4.5 models
-  "anthropic.claude-haiku-4-5": {
+  "anthropic.claude-opus-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-opus-4-5": {
+  "anthropic.claude-haiku-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
   "anthropic.claude-sonnet-4-5": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Claude 4 models
+  
+  // Anthropic - Deprecated
+  "anthropic.claude-opus-4-6": {
+    input: Omit<AnthropicRequest, "model">;
+  };
   "anthropic.claude-opus-4-1": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -614,7 +651,6 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-opus-4": {
     input: Omit<AnthropicRequest, "model">;
   };
-  // Anthropic - Deprecated
   "anthropic.claude-3-7-sonnet": {
     input: Omit<AnthropicRequest, "model">;
   };
@@ -627,48 +663,51 @@ export type AllUseLlmOptions = AllLlm & {
   "anthropic.claude-3-opus": {
     input: Omit<AnthropicRequest, "model">;
   };
-  "anthropic.claude-3-haiku": {
-    input: Omit<AnthropicRequest, "model">;
-  };
-
   // Google
-  "google.gemini-2.5-pro-exp-03-25": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash": {
-    input: Omit<GeminiRequest, "model">;
-  };
-  "google.gemini-2.0-flash-lite": {
-    input: Omit<GeminiRequest, "model">;
-  };
   "google.gemini-2.5-flash": {
     input: Omit<GeminiRequest, "model">;
   };
   "google.gemini-2.5-flash-lite": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-1.5-pro": {
+  "google.gemini-2.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
-  "google.gemini-2.5-pro": {
+  "google.gemini-3.1-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  // Google - Deprecated
+  "google.gemini-2.0-flash": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-2.0-flash-lite": {
+    input: Omit<GeminiRequest, "model">;
+  };
+  "google.gemini-1.5-pro": {
     input: Omit<GeminiRequest, "model">;
   };
 
   // xAI
   "xai.grok-2": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-3-mini": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4": {
-    input: OpenAiRequest;
+    input: Omit<XAiRequest, "model">;
   };
   "xai.grok-4-fast": {
-    input: Omit<OpenAiRequest, "model">;
+    input: Omit<XAiRequest, "model">;
+  };
+  "xai.grok-4-1-fast": {
+    input: Omit<XAiRequest, "model">;
+  };
+  "xai.grok-4.3": {
+    input: Omit<XAiRequest, "model">;
   };
 
   // Ollama

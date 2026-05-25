@@ -38,4 +38,71 @@ describe("openai configuration", () => {
       expect(transformUseJson(false)).toBe("text");
     });
   });
+
+  describe("xai.grok-4-1-fast", () => {
+    const config = xai["xai.grok-4-1-fast"] as Config;
+
+    it("should have the correct default model", () => {
+      expect(config.options.model.default).toBe("grok-4-1-fast-non-reasoning");
+    });
+
+    it("should have the correct key, provider, endpoint, and method", () => {
+      expect(config.key).toBe("xai.chat.v1");
+      expect(config.provider).toBe("xai.chat");
+      expect(config.endpoint).toBe("https://api.x.ai/v1/chat/completions");
+      expect(config.method).toBe("POST");
+    });
+  });
+
+  describe("xai.grok-4.3", () => {
+    const config = xai["xai.grok-4.3"] as Config;
+
+    it("should have the correct default model", () => {
+      expect(config.options.model.default).toBe("grok-4.3");
+    });
+
+    it("should have the correct key, provider, endpoint, and method", () => {
+      expect(config.key).toBe("xai.chat.v1");
+      expect(config.provider).toBe("xai.chat");
+      expect(config.endpoint).toBe("https://api.x.ai/v1/chat/completions");
+      expect(config.method).toBe("POST");
+    });
+  });
+
+  describe("effort transform", () => {
+    const transform = xai["xai.chat.v1"].mapBody.effort.transform as (
+      v: any,
+      s: any
+    ) => any;
+
+    it("drops effort for non-reasoning xAI models", () => {
+      for (const model of [
+        "grok-2-latest",
+        "grok-3",
+        "grok-3-mini",
+        "grok-4",
+        "grok-4-fast-non-reasoning",
+        "grok-4-1-fast-non-reasoning",
+      ]) {
+        expect(transform("low", { model })).toBeUndefined();
+        expect(transform("high", { model })).toBeUndefined();
+      }
+    });
+
+    it("passes through valid effort values for grok-4.3", () => {
+      for (const value of ["low", "medium", "high"]) {
+        expect(transform(value, { model: "grok-4.3" })).toBe(value);
+      }
+    });
+
+    it("passes through minimal effort for grok-4.3", () => {
+      expect(transform("minimal", { model: "grok-4.3" })).toBe("minimal");
+    });
+
+    it("drops invalid effort values for grok-4.3", () => {
+      expect(transform("none", { model: "grok-4.3" })).toBeUndefined();
+      expect(transform("xhigh", { model: "grok-4.3" })).toBeUndefined();
+      expect(transform(123, { model: "grok-4.3" })).toBeUndefined();
+    });
+  });
 });

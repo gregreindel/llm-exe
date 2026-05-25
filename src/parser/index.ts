@@ -10,6 +10,7 @@ import { ListToArrayParser } from "./parsers/ListToArrayParser";
 import { ReplaceStringTemplateParser } from "./parsers/ReplaceStringTemplateParser";
 import { MarkdownCodeBlockParser } from "./parsers/MarkdownCodeBlock";
 import { MarkdownCodeBlocksParser } from "./parsers/MarkdownCodeBlocks";
+import { StringExtractParser } from "./parsers/StringExtractParser";
 import { createCustomParser, createParser } from "./_functions";
 import {
   LlmNativeFunctionParser,
@@ -31,6 +32,7 @@ export {
   OpenAiFunctionParser,
   MarkdownCodeBlockParser,
   MarkdownCodeBlocksParser,
+  StringExtractParser,
   CustomParser,
   createParser,
   createCustomParser,

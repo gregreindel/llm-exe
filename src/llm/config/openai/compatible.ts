@@ -11,9 +11,11 @@ export function createOpenAiCompatibleConfiguration<
   provider: string;
   endpoint: string;
   apiKeyMapping: [string, string];
+  isReasoningModel?: (model: string) => boolean;
   transformResponse?: any;
 }) {
   const [apiKeyPropertyKey, apiKeyPropertyValue] = overrides.apiKeyMapping;
+  const isReasoningModel = overrides.isReasoningModel ?? (() => false);
 
   const config: Config = {
     key: overrides.key as K,
@@ -69,8 +71,8 @@ export function createOpenAiCompatibleConfiguration<
         key: "reasoning_effort",
         transform: (v, _s) => {
           if (
-            // only supported reasoning models
-            ["gpt-5"].includes(_s.model) &&
+            typeof _s.model === "string" &&
+            isReasoningModel(_s.model) &&
             typeof v === "string" &&
             ["minimal", "low", "medium", "high"].includes(v)
           ) {

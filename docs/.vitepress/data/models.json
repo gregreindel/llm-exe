@@ -10,6 +10,7 @@
       "gpt-4.1-nano",
       "o3",
       "o4-mini",
+      "gpt-4",
       "gpt-4o",
       "gpt-4o-mini"
     ]
@@ -17,9 +18,9 @@
   "anthropic": {
     "name": "Anthropic",
     "models": [
+      "claude-opus-4-7",
       "claude-opus-4-6",
       "claude-sonnet-4-6",
-      "claude-opus-4-5",
       "claude-sonnet-4-5",
       "claude-haiku-4-5",
       "claude-opus-4-1",
@@ -28,8 +29,7 @@
       "claude-3-7-sonnet",
       "claude-3-5-sonnet",
       "claude-3-5-haiku",
-      "claude-3-opus",
-      "claude-3-haiku"
+      "claude-3-opus"
     ]
   },
   "google": {
@@ -45,11 +45,11 @@
   },
   "ollama": {
     "name": "Ollama",
-    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq"]
+    "models": ["deepseek-r1", "llama3.3", "llama3.2", "llama3.1", "qwq", "gemma3", "mistral", "qwen2.5", "qwen3"]
   },
   "xai": {
     "name": "xAI",
-    "models": ["grok-2", "grok-3", "grok-3-mini", "grok-4", "grok-4-fast"]
+    "models": ["grok-2", "grok-3", "grok-3-mini", "grok-4", "grok-4-fast", "grok-4-1-fast"]
   },
   "amazon:anthropic": {
     "name": "Amazon Bedrock - Anthropic",

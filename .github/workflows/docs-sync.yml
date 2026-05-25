@@ -1,0 +1,180 @@
+name: Agent / Docs Sync
+
+# Keeps the workflow deep-dive markdown files in sync with the workflow YAML
+# and its dependencies. Always invoked via workflow_dispatch — either manually
+# or by docs-sync-trigger.yml which handles the push detection.
+#
+# claude-code-action@v1 does not support the push event type, so push
+# detection is separated into docs-sync-trigger.yml which dispatches this
+# workflow with the changed file list pre-computed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Comma-separated paths to sync docs for. Leave empty to diff HEAD against its parent."
+        required: false
+        type: string
+      full_refresh:
+        description: "Refresh ALL docs regardless of recent changes. Overrides target."
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: docs-sync
+  cancel-in-progress: false
+
+permissions:
+  # Minimum needed:
+  #   contents: write - push the agent branch with doc updates
+  #   pull-requests: write - gh pr create the doc-sync PR against development
+  #   issues: write - the agent may file an issue if it spots a real bug
+  #                   while reading the changed source (it does NOT fix code)
+  # We do NOT request id-token:write (no OIDC).
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.bot-token.outputs.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "llm-exe-bot[bot]"
+          git config user.email "${{ secrets.APP_ID }}+llm-exe-bot[bot]@users.noreply.github.com"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Detect changed files
+        id: detect
+        run: |
+          if [ "${{ inputs.full_refresh }}" = "true" ]; then
+            # Full-refresh mode: list every tracked source file so the agent
+            # audits all deep dives for drift, not just recently changed ones.
+            {
+              find .github/workflows -maxdepth 1 -name '*.yml' | sort
+              find .github/actions   -name '*.yml'              | sort
+              find .github/vitals    -type f                     | sort
+              echo scripts/maintain.sh
+              echo scripts/agents/config.sh
+              find scripts/agents/prompts -type f               | sort
+              echo package.json
+            } | grep -v '^$' > /tmp/changed-files.txt
+
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
+            echo "${{ inputs.target }}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' > /tmp/changed-files.txt
+
+          else
+            base="${{ github.event.before }}"
+            if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+              base="HEAD~1"
+            fi
+            # Only look at paths we care about. The diff against an earlier commit
+            # is safe even when the trigger was filtered by paths: GitHub already
+            # confirmed at least one matching file is in the range.
+            git diff --name-only "$base" HEAD -- \
+              '.github/workflows/' \
+              '.github/actions/' \
+              '.github/vitals/' \
+              'scripts/maintain.sh' \
+              'scripts/agents/config.sh' \
+              'scripts/agents/prompts/' \
+              'package.json' \
+              > /tmp/changed-files.txt
+          fi
+
+          count=$(wc -l < /tmp/changed-files.txt | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+          echo "::notice::Detected $count changed source file(s)"
+          echo "Changed files:"
+          cat /tmp/changed-files.txt
+
+      - name: Skip if nothing relevant changed
+        if: steps.detect.outputs.count == '0'
+        run: |
+          echo "::notice::No relevant files changed. Exiting without running the agent."
+
+      - name: Build prompt
+        id: prompt
+        if: steps.detect.outputs.count != '0'
+        run: |
+          source ./scripts/agents/config.sh
+
+          branch=$(create_agent_branch "docs-sync")
+          log_file=$(clock_in "docs-sync" "$branch")
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "log_file=$log_file" >> "$GITHUB_OUTPUT"
+
+          prompt_file="./scripts/agents/prompts/docs-sync.md"
+          prompt=$(sed -e "s|\$BRANCH|$branch|g" -e "s|\$LOG_FILE|$log_file|g" "$prompt_file")
+          prior_context=$(build_prior_context "docs-sync" "$log_file" 2>/dev/null || true)
+          prompt="${prompt}${prior_context}"
+
+          deadline="$(date -u -d "+600 seconds" +%H:%M)"
+          prompt="${prompt}
+
+          ## Time Budget
+          You started at $(date -u +%H:%M) UTC. You have 10 minutes - wrap up by ${deadline} UTC.
+          Run \`date -u +%H:%M\` periodically to check how much time you have left.
+          If you're running low on time, commit what you have, update your log file, and stop. A partial result is better than getting killed mid-work.
+
+          ## Changed Source Files 
+          The following files changed in the triggering commit range. Map each to the affected deep-dive(s) using the table in your prompt, then update those docs:
+
+          $(cat /tmp/changed-files.txt)"
+
+          echo "$prompt" > /tmp/agent-prompt.txt
+
+      - name: Run docs-sync agent
+        if: steps.detect.outputs.count != '0'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.bot-token.outputs.token }}
+          display_report: "false"
+          allowed_bots: "llm-exe-bot[bot]"
+          prompt: |
+            Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exactly.
+          claude_args: |
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch"
+            --max-turns 80
+            --model claude-opus-4-6
+
+      - name: Upload agent prompt
+        if: steps.prompt.outputs.log_file != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-prompt-${{ github.run_id }}
+          path: /tmp/agent-prompt.txt
+          retention-days: 7
+
+      - name: Clock out
+        if: always() && steps.prompt.outputs.log_file != ''
+        run: |
+          source ./scripts/agents/config.sh
+          clock_out "${{ steps.prompt.outputs.log_file }}" "${{ job.status == 'success' && '0' || '1' }}"

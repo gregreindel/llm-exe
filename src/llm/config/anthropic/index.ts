@@ -7,6 +7,24 @@ import { cleanJsonSchemaFor } from "@/llm/output/_utils/cleanJsonSchemaFor";
 
 const ANTHROPIC_VERSION = "2023-06-01";
 
+// Models that 400 if temperature / top_p / top_k are set to non-default values.
+const MODELS_REJECTING_SAMPLING_PARAMS = ["claude-opus-4-7"];
+
+// Claude 4.x rejects requests that set both temperature and top_p; keep temperature.
+const isClaude4x = (model: string) =>
+  /^claude-(opus|sonnet|haiku)-4-/.test(model);
+
+const dropIfModelRejectsSamplingParams = (
+  v: any,
+  body: Record<string, any>
+) => (MODELS_REJECTING_SAMPLING_PARAMS.includes(body.model) ? undefined : v);
+
+const topPTransform = (v: any, body: Record<string, any>) => {
+  if (MODELS_REJECTING_SAMPLING_PARAMS.includes(body.model)) return undefined;
+  if (isClaude4x(body.model) && body.temperature !== undefined) return undefined;
+  return v;
+};
+
 const anthropicChatV1: Config = {
   key: "anthropic.chat.v1",
   provider: "anthropic.chat",
@@ -40,12 +58,15 @@ const anthropicChatV1: Config = {
     },
     temperature: {
       key: "temperature",
+      transform: dropIfModelRejectsSamplingParams,
     },
     topP: {
       key: "top_p",
+      transform: topPTransform,
     },
     topK: {
       key: "top_k",
+      transform: dropIfModelRejectsSamplingParams,
     },
     stopSequences: {
       key: "stop_sequences",
@@ -83,29 +104,37 @@ const anthropicChatV1: Config = {
 
 export const anthropic = {
   "anthropic.chat.v1": anthropicChatV1,
-  // Claude 4.6 models
-  "anthropic.claude-opus-4-6": withDefaultModel(
+  // Claude 4.7 models
+  "anthropic.claude-opus-4-7": withDefaultModel(
     anthropicChatV1,
-    "claude-opus-4-6"
+    "claude-opus-4-7"
   ),
+
+  // Claude 4.6 models
   "anthropic.claude-sonnet-4-6": withDefaultModel(
     anthropicChatV1,
     "claude-sonnet-4-6"
   ),
+
   // Claude 4.5 models
-  "anthropic.claude-haiku-4-5": withDefaultModel(
-    anthropicChatV1,
-    "claude-haiku-4-5-20251001"
-  ),
   "anthropic.claude-opus-4-5": withDefaultModel(
     anthropicChatV1,
-    "claude-opus-4-5-20251101"
+    "claude-opus-4-5"
+  ),
+  "anthropic.claude-haiku-4-5": withDefaultModel(
+    anthropicChatV1,
+    "claude-haiku-4-5"
   ),
   "anthropic.claude-sonnet-4-5": withDefaultModel(
     anthropicChatV1,
-    "claude-sonnet-4-5-20250929"
+    "claude-sonnet-4-5"
   ),
-  // Claude 4 models
+
+  // Deprecated
+  "anthropic.claude-opus-4-6": withDefaultModel(
+    anthropicChatV1,
+    "claude-opus-4-6"
+  ),
   "anthropic.claude-opus-4-1": withDefaultModel(
     anthropicChatV1,
     "claude-opus-4-1-20250805"
@@ -118,8 +147,6 @@ export const anthropic = {
     anthropicChatV1,
     "claude-opus-4-0"
   ),
-
-  // Deprecated
   "anthropic.claude-3-7-sonnet": withDefaultModel(
     anthropicChatV1,
     "claude-3-7-sonnet-20250219"
@@ -135,9 +162,5 @@ export const anthropic = {
   "anthropic.claude-3-opus": withDefaultModel(
     anthropicChatV1,
     "claude-3-opus-20240229"
-  ),
-  "anthropic.claude-3-haiku": withDefaultModel(
-    anthropicChatV1,
-    "claude-3-haiku-20240307"
   ),
 };

@@ -11,4 +11,7 @@
 | metadata        | object  | undefined         | Maps to metadata. See Anthropic Docs                                             |
 | serviceTier     | string  | undefined         | Maps to service_tier. See Anthropic Docs                                         |
 
+> [!NOTE]
+> **Sampling parameter restrictions:** `claude-opus-4-7` rejects requests that include `temperature`, `topP`, or `topK` — llm-exe silently drops these for that model. For other Claude 4.x models, `topP` is silently dropped when `temperature` is also set, because the Anthropic API does not allow both simultaneously.
+
 Anthropic Docs: [link](https://docs.anthropic.com/en/api/messages)

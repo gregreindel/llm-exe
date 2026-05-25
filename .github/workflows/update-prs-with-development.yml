@@ -1,14 +1,13 @@
-name: Update Open PRs with Development
+name: CI / Update PRs
 
 on:
-  schedule:
-    - cron: "0 8 * * 1-5"  # Weekdays 8am UTC (3am CT)
+  # push:
+  #   branches: [development]
   workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
   update-prs:
@@ -40,6 +39,11 @@ jobs:
           fi
 
           for PR in $PR_NUMBERS; do
+            IS_DRAFT=$(gh pr view "$PR" --json isDraft --jq '.isDraft')
+            if [ "$IS_DRAFT" = "true" ]; then
+              echo "PR #$PR is a draft - skipping."
+              continue
+            fi
             echo "Attempting to update PR #$PR..."
             if gh pr update-branch "$PR" 2>&1; then
               echo "PR #$PR updated successfully."

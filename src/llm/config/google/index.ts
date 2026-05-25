@@ -74,18 +74,13 @@ const googleGeminiChatV1: Config = {
 
 export const google = {
   "google.chat.v1": googleGeminiChatV1,
-  "google.gemini-2.0-flash": withDefaultModel(
+
+  "google.gemini-3.1-flash-lite": withDefaultModel(
     googleGeminiChatV1,
-    "gemini-2.0-flash"
+    "gemini-3.1-flash-lite"
   ),
-  "google.gemini-2.0-flash-lite": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-2.0-flash-lite"
-  ),
-  "google.gemini-1.5-pro": withDefaultModel(
-    googleGeminiChatV1,
-    "gemini-1.5-pro"
-  ),
+
+  // Deprecated
   ...deprecateShorthand("google.gemini-2.5-flash", {
     config: withDefaultModel(googleGeminiChatV1, "gemini-2.5-flash"),
     message:
@@ -101,4 +96,16 @@ export const google = {
     message:
       'Model "google.gemini-2.5-pro" is deprecated and will shut down on 2026-06-17.',
   }),
+  "google.gemini-2.0-flash": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.0-flash"
+  ),
+  "google.gemini-2.0-flash-lite": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-2.0-flash-lite"
+  ),
+  "google.gemini-1.5-pro": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-1.5-pro"
+  ),
 };

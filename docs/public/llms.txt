@@ -3,7 +3,7 @@
 > A lightweight, modular TypeScript toolkit for building LLM-powered applications. Core pattern: Prompt → LLM → Parser → Typed Result.
 
 - Website: https://llm-exe.com
-- GitHub: https://github.com/gregreindel/llm-exe
+- GitHub: https://github.com/llm-exe/llm-exe
 - npm: https://www.npmjs.com/package/llm-exe
 
 ## Docs
@@ -43,14 +43,16 @@
 
 ### Executor
 - [LLM Executor](https://llm-exe.com/executor/index.html)
+- [Executor Options](https://llm-exe.com/executor/options.html)
 - [Tool Calling Executor](https://llm-exe.com/executor/openai-functions.html)
 - [Callable Executor](https://llm-exe.com/callable/index.html)
-- [hooks](https://llm-exe.com/executor/hooks.html)
+- [Hooks](https://llm-exe.com/executor/hooks.html)
 
 ### Embeddings
 - [Embeddings](https://llm-exe.com/embeddings/index.html)
 - [OpenAI Embeddings](https://llm-exe.com/embeddings/openai.html)
 - [Amazon Embeddings](https://llm-exe.com/embeddings/amazon.html)
+- [Cohere Embeddings (via Bedrock)](https://llm-exe.com/embeddings/cohere.html)
 
 ### Callable
 - [Callable Executors](https://llm-exe.com/callable/index.html)

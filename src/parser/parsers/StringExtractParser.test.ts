@@ -1,5 +1,4 @@
-import { BaseParser,  } from "@/parser";
-import { StringExtractParser } from "@/parser/parsers/StringExtractParser";
+import { BaseParser, StringExtractParser } from "@/parser";
 import { LlmExeError } from "@/utils/modules/errors";
 
 /**

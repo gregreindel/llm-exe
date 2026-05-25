@@ -8,7 +8,7 @@ describe("llmUsingToolsSimple", () => {
   });
 
   const prompt =
-    "Hello what is the weather at longitude 30.278044 and latitude -96.675568?";
+    "Hello what is the weather at longitude -96.675568 and latitude 30.278044?";
 
   /**
    * This simple test will check if the function as-is is working as expected
@@ -24,8 +24,8 @@ describe("llmUsingToolsSimple", () => {
     expect(guards.isFunctionCall(fnCall)).toBe(true);
     expect(guards.isFunctionCall(fnCall) && fnCall.name).toBe("getWeather");
     expect(guards.isFunctionCall(fnCall) && fnCall.input).toEqual({
-      longitude: 30.278044,
-      latitude: -96.675568,
+      longitude: -96.675568,
+      latitude: 30.278044,
     });
   });
 
@@ -35,20 +35,27 @@ describe("llmUsingToolsSimple", () => {
   itWithUseLlmMocked(
     "handle this simple instruction",
     [
-      "anthropic.claude-opus-4",
+      "anthropic.claude-opus-4-7",
       "google.gemini-2.5-flash",
       "xai.grok-3",
       "deepseek.chat",
+      {
+        key: "amazon:anthropic.chat.v1",
+        model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      },
     ],
     async (config: any) => {
       jest.resetModules();
 
-      // clone exe and mock useLlm
+      // clone exe and mock useLlm. Bump the per-call timeout — reasoning
+      // models routinely take longer than llm-exe's 30s default for tool-use
+      // prompts.
       jest.doMock("llm-exe", () => {
         const real = jest.requireActual("llm-exe");
         return {
           ...real,
-          useLlm: (_orig: string) => real.useLlm(config.key, config),
+          useLlm: (_orig: string) =>
+            real.useLlm(config.key, { ...config, timeout: 120000 }),
         };
       });
 
@@ -63,8 +70,8 @@ describe("llmUsingToolsSimple", () => {
       expect(guards.isFunctionCall(fnCall)).toBe(true);
       expect(guards.isFunctionCall(fnCall) && fnCall.name).toBe("getWeather");
       expect(guards.isFunctionCall(fnCall) && fnCall.input).toEqual({
-        longitude: 30.278044,
-        latitude: -96.675568,
+        longitude: -96.675568,
+        latitude: 30.278044,
       });
     }
   );

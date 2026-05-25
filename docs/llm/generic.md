@@ -8,7 +8,7 @@ llm-exe attempts to normalize the inputs for various llm vendors, providing a si
 | ------------- | ---------------- | --------- | ---------------------------------------------------------------------------------------------------------- |
 | timeout       | number           | 30000     | Max execution time of API call to the LLM, in milliseconds.                                                |
 | maxDelay      | number           | 5000      | Used for retry back-off. Max time to wait between attempts when timeout has been reached, in milliseconds. |
-| numOfAttempts | number           | 0         | Used for retry. How many attempts should be made before throwing error                                     |
+| numOfAttempts | number           | 2         | Used for retry. How many attempts should be made before throwing error                                     |
 | jitter        | "none" \| "full" | none      | Used for retry back-off.                                                                                   |
 | temperature   | number           | undefined | Maps to provider-specific temperature parameter.                                                           |
 | maxTokens     | number           | undefined | Maps to provider-specific max tokens parameter.                                                            |

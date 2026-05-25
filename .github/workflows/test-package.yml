@@ -1,9 +1,7 @@
-name: Test Package
+name: CI / Test Package
 
 on:
   workflow_dispatch:
-  # pull_request:
-  #   branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,13 +15,16 @@ jobs:
   test-package:
     runs-on: ubuntu-latest
     environment: Examples Test
-    if: ${{ !(github.event.pull_request.base.ref == 'development' && github.event.pull_request.head.ref == 'bump-version-branch') || (github.event_name == 'workflow_dispatch' && github.event.sender.login == 'gregreindel') }}
+    if: github.event.sender.login == 'gregreindel'
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
