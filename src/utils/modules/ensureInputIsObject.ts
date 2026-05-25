@@ -1,18 +1,16 @@
 import { ObjectArray, PlainObject } from "@/interfaces";
 
 /**
- * Coerces non-object inputs into a `{ input: value }` envelope so that
- * prompt templates and handlers that expect an object can still receive
- * primitives, arrays, `null`, and `undefined` without additional wrapping.
+ * Coerces non-object inputs into a `{ input: value }` envelope.
  *
  * - Plain objects pass through unchanged.
  * - Arrays, strings, numbers, `null`, and `undefined` are wrapped as
  *   `{ input: value }`.
  *
  * Used internally by {@link BaseExecutor.getHandlerInput} and by tool/function
- * callables, which forward raw string arguments from tool calls into an
- * executor. `BaseExecutor.execute` guards against `null`/`undefined`
- * before this helper is reached.
+ * callables, which forward raw arguments from tool calls into an executor.
+ * Public executor calls reject `null` and `undefined` before this helper is
+ * reached; direct helper callers may still use its wrapping behavior.
  */
 export function ensureInputIsObject<T extends ObjectArray>(
   input: T

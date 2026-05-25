@@ -56,17 +56,22 @@ describe("llm-exe:executor/BaseExecutor", () => {
     expect(response).toEqual({ result: "Success" });
   });
 
-  it("execute throws TypeError when input is null (issue #410)", async () => {
+  it("execute throws TypeError when input is null or undefined (issue #410)", async () => {
     const executor = new MockExecutor("named-executor");
     await expect(executor.execute(null as any)).rejects.toThrow(TypeError);
     await expect(executor.execute(null as any)).rejects.toThrow(
-      /"named-executor" received null as input/
+      /"named-executor" received null or undefined as input/
+    );
+    await expect(executor.execute(undefined as any)).rejects.toThrow(TypeError);
+    await expect(executor.execute(undefined as any)).rejects.toThrow(
+      /"named-executor" received null or undefined as input/
     );
   });
 
   it("execute still coerces non-null primitives via ensureInputIsObject", async () => {
     // Primitives and arrays are intentionally coerced to { input: value }
-    // for compatibility with tool/function callables. Only null is rejected.
+    // for compatibility with tool/function callables. Only null/undefined are
+    // rejected by the public executor contract.
     // This test locks in that contract.
     const executor = new MockExecutor();
     const response = await executor.execute("a string" as any);

@@ -254,17 +254,16 @@ describe("llm-exe:executor/LlmExecutor", () => {
     const executor = new LlmExecutor({ llm, prompt });
     await expect(executor.execute(null as any)).rejects.toThrow(TypeError);
     await expect(executor.execute(null as any)).rejects.toThrow(
-      /received null as input/
+      /received null or undefined as input/
     );
   });
 
-  it("treats undefined input as an empty object for no-variable prompts", async () => {
-    // Calling execute() with no args (implicit undefined) is a documented
-    // convenience for prompts that declare no template variables. This must
-    // continue to work even after the null guard added for issue #410.
+  it("throws TypeError when execute is called with undefined (issue #410)", async () => {
     const executor = new LlmExecutor({ llm, prompt });
-    const result = await executor.execute(undefined as any);
-    expect(result).toBeDefined();
+    await expect(executor.execute(undefined as any)).rejects.toThrow(TypeError);
+    await expect(executor.execute(undefined as any)).rejects.toThrow(
+      /received null or undefined as input/
+    );
   });
 
   it("getHandlerOutput uses getResult when parser target is function_call", async () => {
