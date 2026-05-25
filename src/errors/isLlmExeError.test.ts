@@ -45,7 +45,7 @@ describe("isLlmExeError", () => {
   it("narrows on a single code", () => {
     const err = new LlmExeError("x", { code: "parser.invalid_type" });
     expect(isLlmExeError(err, "parser.invalid_type")).toBe(true);
-    expect(isLlmExeError(err, "parser.number_parse_failed")).toBe(false);
+    expect(isLlmExeError(err, "parser.parse_failed")).toBe(false);
   });
 
   it("narrows on a code array", () => {
@@ -53,13 +53,13 @@ describe("isLlmExeError", () => {
     expect(
       isLlmExeError(err, [
         "parser.invalid_type",
-        "parser.number_parse_failed",
+        "parser.parse_failed",
       ] as const)
     ).toBe(true);
     expect(
       isLlmExeError(err, [
-        "parser.number_parse_failed",
-        "parser.enum_extract_failed",
+        "parser.parse_failed",
+        "parser.invalid_input",
       ] as const)
     ).toBe(false);
   });

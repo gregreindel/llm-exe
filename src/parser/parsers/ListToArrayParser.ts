@@ -1,6 +1,6 @@
 import { BaseParser } from "../_base";
 import { normalizeListLines } from "../_listBoundary";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * v3 parser contract:
@@ -20,13 +20,15 @@ export class ListToArrayParser extends BaseParser<string[]> {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "ListToArrayParser.parse",
-          parser: "listToArray",
-          reason: "invalid_input_type",
-          expected: "string",
-          received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "ListToArrayParser.parse",
+            parser: "listToArray",
+            reason: "invalid_input_type",
+            expected: "string",
+            received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          },
         }
       );
     }
@@ -37,11 +39,14 @@ export class ListToArrayParser extends BaseParser<string[]> {
     });
 
     if (!normalized.marked && normalized.lines.length === 1) {
-      throw new LlmExeError(`Input is not list-like.`, "parser.parse_failed", {
-        operation: "ListToArrayParser.parse",
-        parser: "listToArray",
-        reason: "not_list_like",
-        inputLength: text.length,
+      throw new LlmExeError(`Input is not list-like.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "ListToArrayParser.parse",
+          parser: "listToArray",
+          reason: "not_list_like",
+          inputLength: text.length,
+        },
       });
     }
 

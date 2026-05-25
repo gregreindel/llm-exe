@@ -1,6 +1,6 @@
 
 import { BaseParser, ReplaceStringTemplateParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the ReplaceStringTemplateParser class
@@ -25,14 +25,14 @@ describe("llm-exe:parser/ReplaceStringTemplateParser", () => {
     const parser = new ReplaceStringTemplateParser()
     expect(parser.parse("   ")).toEqual("   ")
   });
-  it("throws parser.parse_failed for invalid input type", () => {
+  it("throws parser.invalid_input for invalid input type", () => {
     const parser = new ReplaceStringTemplateParser()
     try {
       parser.parse(null as any)
       fail("Expected an error to be thrown")
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError)
-      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).code).toEqual("parser.invalid_input")
       expect((e as LlmExeError).context).toEqual({
         operation: "ReplaceStringTemplateParser.parse",
         parser: "replaceStringTemplate",

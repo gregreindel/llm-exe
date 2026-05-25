@@ -1,5 +1,5 @@
 import { BaseParser } from "../_base";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 import { normalizeListLines } from "../_listBoundary";
 import { camelCase } from "@/utils/modules/camelCase";
 
@@ -31,13 +31,15 @@ export class ListToKeyValueParser extends BaseParser<
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "ListToKeyValueParser.parse",
-          parser: "listToKeyValue",
-          reason: "invalid_input_type",
-          expected: "string",
-          received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "ListToKeyValueParser.parse",
+            parser: "listToKeyValue",
+            reason: "invalid_input_type",
+            expected: "string",
+            received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          },
         }
       );
     }
@@ -51,21 +53,27 @@ export class ListToKeyValueParser extends BaseParser<
     for (const line of lines) {
       const colonIndex = line.indexOf(":");
       if (colonIndex === -1) {
-        throw new LlmExeError(`Malformed key/value line.`, "parser.parse_failed", {
-          operation: "ListToKeyValueParser.parse",
-          parser: "listToKeyValue",
-          reason: "malformed_line",
-          inputLength: text.length,
+        throw new LlmExeError(`Malformed key/value line.`, {
+          code: "parser.parse_failed",
+          context: {
+            operation: "ListToKeyValueParser.parse",
+            parser: "listToKeyValue",
+            reason: "malformed_line",
+            inputLength: text.length,
+          },
         });
       }
 
       const rawKey = line.slice(0, colonIndex).trim();
       if (!rawKey) {
-        throw new LlmExeError(`Empty key in key/value line.`, "parser.parse_failed", {
-          operation: "ListToKeyValueParser.parse",
-          parser: "listToKeyValue",
-          reason: "empty_key",
-          inputLength: text.length,
+        throw new LlmExeError(`Empty key in key/value line.`, {
+          code: "parser.parse_failed",
+          context: {
+            operation: "ListToKeyValueParser.parse",
+            parser: "listToKeyValue",
+            reason: "empty_key",
+            inputLength: text.length,
+          },
         });
       }
 

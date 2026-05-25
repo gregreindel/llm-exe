@@ -11,8 +11,7 @@ import {
   StringExtractParser,
   StringParser,
 } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
-import { isLlmExeError } from "@/utils/modules/errors.isLlmExeError";
+import { LlmExeError, isLlmExeError } from "@/errors";
 
 describe("llm-exe:parser/error contract", () => {
   const parseFailures: Array<{
@@ -56,15 +55,21 @@ describe("llm-exe:parser/error contract", () => {
       parse: () => new ReplaceStringTemplateParser().parse("Hello {{#if name}}"),
     },
     {
+      name: "stringExtract",
+      parse: () => new StringExtractParser({ enum: ["yes"] }).parse("maybe"),
+    },
+  ];
+
+  const invalidInputs: Array<{
+    name: string;
+    parse: () => unknown;
+  }> = [
+    {
       name: "string",
       parse: () => {
         // @ts-expect-error runtime contract: parser rejects non-string input.
         new StringParser().parse(42);
       },
-    },
-    {
-      name: "stringExtract",
-      parse: () => new StringExtractParser({ enum: ["yes"] }).parse("maybe"),
     },
   ];
 
@@ -76,6 +81,17 @@ describe("llm-exe:parser/error contract", () => {
       expect(error).toBeInstanceOf(LlmExeError);
       expect((error as LlmExeError).code).toEqual("parser.parse_failed");
       expect(isLlmExeError(error, "parser.parse_failed")).toBe(true);
+    }
+  });
+
+  it.each(invalidInputs)("$name throws parser.invalid_input as LlmExeError", ({ parse }) => {
+    try {
+      parse();
+      fail("Expected an error to be thrown");
+    } catch (error) {
+      expect(error).toBeInstanceOf(LlmExeError);
+      expect((error as LlmExeError).code).toEqual("parser.invalid_input");
+      expect(isLlmExeError(error, "parser.invalid_input")).toBe(true);
     }
   });
 

@@ -1,5 +1,5 @@
 import { BaseParser } from "../_base";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * v3 parser contract:
@@ -23,13 +23,15 @@ export class MarkdownCodeBlocksParser extends BaseParser<
     if (typeof input !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${input === null ? "null" : Array.isArray(input) ? "array" : typeof input}.`,
-        "parser.parse_failed",
         {
-          operation: "MarkdownCodeBlocksParser.parse",
-          parser: "markdownCodeBlocks",
-          reason: "invalid_input_type",
-          expected: "string",
-          received: input === null ? "null" : Array.isArray(input) ? "array" : typeof input,
+          code: "parser.invalid_input",
+          context: {
+            operation: "MarkdownCodeBlocksParser.parse",
+            parser: "markdownCodeBlocks",
+            reason: "invalid_input_type",
+            expected: "string",
+            received: input === null ? "null" : Array.isArray(input) ? "array" : typeof input,
+          },
         }
       );
     }
@@ -38,16 +40,15 @@ export class MarkdownCodeBlocksParser extends BaseParser<
 
     const fenceCount = input.match(/```/g)?.length ?? 0;
     if (fenceCount % 2 !== 0) {
-      throw new LlmExeError(
-        `Malformed markdown code block.`,
-        "parser.parse_failed",
-        {
+      throw new LlmExeError(`Malformed markdown code block.`, {
+        code: "parser.parse_failed",
+        context: {
           operation: "MarkdownCodeBlocksParser.parse",
           parser: "markdownCodeBlocks",
           reason: "malformed_code_block",
           inputLength: input.length,
-        }
-      );
+        },
+      });
     }
 
     const regex = input.matchAll(new RegExp(/```(\w*)\n([\s\S]*?)```/, "g"));

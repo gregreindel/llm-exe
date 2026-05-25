@@ -1,5 +1,5 @@
 import { BaseParser } from "../_base";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * v3 parser contract:
@@ -21,18 +21,20 @@ export class StringParser extends BaseParser<string> {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "StringParser.parse",
-          parser: "string",
-          reason: "invalid_input_type",
-          expected: "string",
-          received:
-            text === null
-              ? "null"
-              : Array.isArray(text)
-                ? "array"
-                : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "StringParser.parse",
+            parser: "string",
+            reason: "invalid_input_type",
+            expected: "string",
+            received:
+              text === null
+                ? "null"
+                : Array.isArray(text)
+                  ? "array"
+                  : typeof text,
+          },
         }
       );
     }

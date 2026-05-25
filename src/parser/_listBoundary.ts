@@ -1,4 +1,4 @@
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 const LIST_MARKER_PATTERN = /^(?:[-*]\s+|\d+\.\s+|•\s*)/;
 
@@ -24,11 +24,14 @@ export function normalizeListLines(
     .filter((line) => line.length > 0);
 
   if (lines.length === 0) {
-    throw new LlmExeError(`No list items found in input.`, "parser.parse_failed", {
-      operation: context.operation,
-      parser: context.parser,
-      reason: "empty_input",
-      inputLength: input.length,
+    throw new LlmExeError(`No list items found in input.`, {
+      code: "parser.parse_failed",
+      context: {
+        operation: context.operation,
+        parser: context.parser,
+        reason: "empty_input",
+        inputLength: input.length,
+      },
     });
   }
 
@@ -37,11 +40,14 @@ export function normalizeListLines(
   const hasUnmarked = markedStates.some((marked) => !marked);
 
   if (hasMarked && hasUnmarked) {
-    throw new LlmExeError(`Mixed marked and unmarked list items found.`, "parser.parse_failed", {
-      operation: context.operation,
-      parser: context.parser,
-      reason: "mixed_list_markers",
-      inputLength: input.length,
+    throw new LlmExeError(`Mixed marked and unmarked list items found.`, {
+      code: "parser.parse_failed",
+      context: {
+        operation: context.operation,
+        parser: context.parser,
+        reason: "mixed_list_markers",
+        inputLength: input.length,
+      },
     });
   }
 

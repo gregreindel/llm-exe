@@ -43,7 +43,7 @@ export type {
   InvalidHeadersContext,
   ParserInvalidTypeContext,
   ParserSchemaValidationContext,
-  ParserOutputContext,
+  ParserParseFailedContext,
   PromptInputContext,
   PromptMessagesContext,
   EmbeddingDimensionsContext,

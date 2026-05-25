@@ -1,6 +1,6 @@
 
 import { BaseParser, ListToArrayParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the ListToArrayParser class

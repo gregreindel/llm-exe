@@ -1,5 +1,5 @@
 import { BaseParser } from "../_base";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 import { isDebugEnabled } from "@/utils/modules/debug";
 
 const BOOLEAN_VALUES = ["true", "false", "yes", "no", "y", "n", "1", "0"];
@@ -48,25 +48,30 @@ export class BooleanParser extends BaseParser<boolean> {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "BooleanParser.parse",
-          parser: "boolean",
-          reason: "invalid_input_type",
-          expected: "string",
-          received: text === null ? "null" : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "BooleanParser.parse",
+            parser: "boolean",
+            reason: "invalid_input_type",
+            expected: "string",
+            received: text === null ? "null" : typeof text,
+          },
         }
       );
     }
 
     const clean = text.toLowerCase().trim();
     if (!clean) {
-      throw new LlmExeError(`No boolean value found in input.`, "parser.parse_failed", {
-        operation: "BooleanParser.parse",
-        parser: "boolean",
-        reason: "empty_input",
-        expected: BOOLEAN_VALUES,
-        ...this.getInputErrorContext(text),
+      throw new LlmExeError(`No boolean value found in input.`, {
+        code: "parser.parse_failed",
+        context: {
+          operation: "BooleanParser.parse",
+          parser: "boolean",
+          reason: "empty_input",
+          expected: BOOLEAN_VALUES,
+          ...this.getInputErrorContext(text),
+        },
       });
     }
 
@@ -77,12 +82,15 @@ export class BooleanParser extends BaseParser<boolean> {
       return false;
     }
 
-    throw new LlmExeError(`No boolean value found in input.`, "parser.parse_failed", {
-      operation: "BooleanParser.parse",
-      parser: "boolean",
-      reason: "unrecognized_boolean",
-      expected: BOOLEAN_VALUES,
-      ...this.getInputErrorContext(text),
+    throw new LlmExeError(`No boolean value found in input.`, {
+      code: "parser.parse_failed",
+      context: {
+        operation: "BooleanParser.parse",
+        parser: "boolean",
+        reason: "unrecognized_boolean",
+        expected: BOOLEAN_VALUES,
+        ...this.getInputErrorContext(text),
+      },
     });
   }
 }

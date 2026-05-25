@@ -1,6 +1,6 @@
 import { replaceTemplateString } from "@/utils/modules/replaceTemplateString";
 import { BaseParser } from "../_base";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * v3 parser contract:
@@ -21,13 +21,15 @@ export class ReplaceStringTemplateParser extends BaseParser<string> {
     if (typeof text !== "string") {
       throw new LlmExeError(
         `Invalid input. Expected string. Received ${text === null ? "null" : Array.isArray(text) ? "array" : typeof text}.`,
-        "parser.parse_failed",
         {
-          operation: "ReplaceStringTemplateParser.parse",
-          parser: "replaceStringTemplate",
-          reason: "invalid_input_type",
-          expected: "string",
-          received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          code: "parser.invalid_input",
+          context: {
+            operation: "ReplaceStringTemplateParser.parse",
+            parser: "replaceStringTemplate",
+            reason: "invalid_input_type",
+            expected: "string",
+            received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
+          },
         }
       );
     }
@@ -38,17 +40,16 @@ export class ReplaceStringTemplateParser extends BaseParser<string> {
         typeof attributes !== "object" ||
         Array.isArray(attributes))
     ) {
-      throw new LlmExeError(
-        `Invalid attributes. Expected object.`,
-        "parser.parse_failed",
-        {
+      throw new LlmExeError(`Invalid attributes. Expected object.`, {
+        code: "parser.invalid_input",
+        context: {
           operation: "ReplaceStringTemplateParser.parse",
           parser: "replaceStringTemplate",
           reason: "invalid_attributes",
           expected: "object",
           received: attributes === null ? "null" : Array.isArray(attributes) ? "array" : typeof attributes,
-        }
-      );
+        },
+      });
     }
 
     try {
@@ -59,19 +60,17 @@ export class ReplaceStringTemplateParser extends BaseParser<string> {
       if (cause instanceof Error) {
         received = cause.name;
       }
-      const error = new LlmExeError(
-        `Template replacement failed.`,
-        "parser.parse_failed",
-        {
+      throw new LlmExeError(`Template replacement failed.`, {
+        code: "parser.parse_failed",
+        context: {
           operation: "ReplaceStringTemplateParser.parse",
           parser: "replaceStringTemplate",
           reason: "template_replacement_failed",
           inputLength: text.length,
           received,
-        }
-      );
-      (error as Error & { cause?: unknown }).cause = cause;
-      throw error;
+        },
+        cause,
+      });
     }
   }
 }

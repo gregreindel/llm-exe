@@ -1,5 +1,5 @@
 import { BaseParser, StringParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 import { OutputResult } from "@/types";
 
 function assertStringParserInputTypes(parser: StringParser, output: OutputResult) {
@@ -35,7 +35,7 @@ describe("llm-exe:parser/StringParser", () => {
     const parser = new StringParser()
     expect(parser.parse("a\nb")).toEqual("a\nb")
   })
-  it('throws parser.parse_failed for array input', () => {
+  it('throws parser.invalid_input for array input', () => {
     const parser = new StringParser();
     const badValue = ["Hello"] as unknown as string;
     try {
@@ -43,7 +43,7 @@ describe("llm-exe:parser/StringParser", () => {
       fail("Expected an error to be thrown")
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError)
-      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).code).toEqual("parser.invalid_input")
       expect((e as LlmExeError).context).toEqual({
         operation: "StringParser.parse",
         parser: "string",
@@ -53,7 +53,7 @@ describe("llm-exe:parser/StringParser", () => {
       })
     }
   })
-  it('throws parser.parse_failed for object input', () => {
+  it('throws parser.invalid_input for object input', () => {
     const parser = new StringParser();
     const badValue = {hello: "world"} as unknown as string;
     try {
@@ -61,7 +61,7 @@ describe("llm-exe:parser/StringParser", () => {
       fail("Expected an error to be thrown")
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError)
-      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).code).toEqual("parser.invalid_input")
       expect((e as LlmExeError).context).toEqual({
         operation: "StringParser.parse",
         parser: "string",

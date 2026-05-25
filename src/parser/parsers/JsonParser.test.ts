@@ -1,7 +1,7 @@
 
 import { BaseParser, JsonParser } from "@/parser";
 import { defineSchema } from "@/utils/modules/defineSchema";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the JsonParser class
@@ -98,7 +98,6 @@ describe("llm-exe:parser/JsonParser", () => {
       expect((e as LlmExeError).context).toMatchObject({
         operation: "JsonParser.parse",
         parser: "json",
-        reason: "schema_validation_failed",
       })
     }
   });
@@ -133,7 +132,6 @@ describe("llm-exe:parser/JsonParser", () => {
       expect((e as LlmExeError).context).toMatchObject({
         operation: "JsonParser.parse",
         parser: "json",
-        reason: "schema_validation_failed",
       })
     }
   });

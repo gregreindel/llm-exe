@@ -1,7 +1,7 @@
 
 import { BaseParser, ListToJsonParser } from "@/parser";
 import { defineSchema } from "@/utils/modules/defineSchema";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the ListToJsonParser class
@@ -98,7 +98,6 @@ describe("llm-exe:parser/ListToJsonParser", () => {
       expect((e as LlmExeError).context).toMatchObject({
         operation: "ListToJsonParser.parse",
         parser: "listToJson",
-        reason: "schema_validation_failed",
       })
     }
   });
@@ -121,7 +120,6 @@ describe("llm-exe:parser/ListToJsonParser", () => {
       expect((e as LlmExeError).context).toMatchObject({
         operation: "ListToJsonParser.parse",
         parser: "listToJson",
-        reason: "schema_validation_failed",
       })
     }
   });

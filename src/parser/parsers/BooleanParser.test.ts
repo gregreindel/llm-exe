@@ -1,5 +1,5 @@
 import { BaseParser, BooleanParser } from "@/parser";
-import { LlmExeError } from "@/utils/modules/errors";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the BooleanParser class
@@ -184,7 +184,7 @@ describe("llm-exe:parser/BooleanParser", () => {
       })
     }
   })
-  it('throws parser.parse_failed for runtime boolean input', () => {
+  it('throws parser.invalid_input for runtime boolean input', () => {
     const parser = new BooleanParser()
     try {
       // @ts-expect-error runtime contract: parser rejects non-string input.
@@ -192,7 +192,7 @@ describe("llm-exe:parser/BooleanParser", () => {
       fail("Expected an error to be thrown")
     } catch (e) {
       expect(e).toBeInstanceOf(LlmExeError)
-      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).code).toEqual("parser.invalid_input")
       expect((e as LlmExeError).context).toEqual({
         operation: "BooleanParser.parse",
         parser: "boolean",
