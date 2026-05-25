@@ -1,5 +1,5 @@
 import { withDefaultModel } from "@/llm/_utils.withDefaultModel";
-import { withDeprecation } from "@/llm/_utils.deprecationWarning";
+import { deprecateShorthand } from "@/llm/_utils.deprecationWarning";
 import { Config } from "@/types";
 import { getEnvironmentVariable } from "@/utils/modules/getEnvironmentVariable";
 import { googleGeminiPromptSanitize } from "./promptSanitize";
@@ -82,32 +82,23 @@ export const google = {
     googleGeminiChatV1,
     "gemini-2.0-flash-lite"
   ),
-  "google.gemini-2.5-flash": withDeprecation(
-    withDefaultModel(googleGeminiChatV1, "gemini-2.5-flash"),
-    {
-      message:
-        'Model "google.gemini-2.5-flash" is deprecated and will shut down on 2026-06-17. Use useLlm("google.chat.v1", { model: "..." }) with a supported model.',
-      shutdownDate: "2026-06-17",
-    }
-  ),
-  "google.gemini-2.5-flash-lite": withDeprecation(
-    withDefaultModel(googleGeminiChatV1, "gemini-2.5-flash-lite"),
-    {
-      message:
-        'Model "google.gemini-2.5-flash-lite" is deprecated and will shut down on 2026-07-22. Use useLlm("google.chat.v1", { model: "..." }) with a supported model.',
-      shutdownDate: "2026-07-22",
-    }
-  ),
   "google.gemini-1.5-pro": withDefaultModel(
     googleGeminiChatV1,
     "gemini-1.5-pro"
   ),
-  "google.gemini-2.5-pro": withDeprecation(
-    withDefaultModel(googleGeminiChatV1, "gemini-2.5-pro"),
-    {
-      message:
-        'Model "google.gemini-2.5-pro" is deprecated and will shut down on 2026-06-17. Use useLlm("google.chat.v1", { model: "..." }) with a supported model.',
-      shutdownDate: "2026-06-17",
-    }
-  ),
+  ...deprecateShorthand("google.gemini-2.5-flash", {
+    config: withDefaultModel(googleGeminiChatV1, "gemini-2.5-flash"),
+    message:
+      'Model "google.gemini-2.5-flash" is deprecated and will shut down on 2026-06-17.',
+  }),
+  ...deprecateShorthand("google.gemini-2.5-flash-lite", {
+    config: withDefaultModel(googleGeminiChatV1, "gemini-2.5-flash-lite"),
+    message:
+      'Model "google.gemini-2.5-flash-lite" is deprecated and will shut down on 2026-07-22.',
+  }),
+  ...deprecateShorthand("google.gemini-2.5-pro", {
+    config: withDefaultModel(googleGeminiChatV1, "gemini-2.5-pro"),
+    message:
+      'Model "google.gemini-2.5-pro" is deprecated and will shut down on 2026-06-17.',
+  }),
 };

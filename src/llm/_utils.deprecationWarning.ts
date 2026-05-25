@@ -2,23 +2,41 @@ import { Config } from "@/types";
 
 const warned = new Set<string>();
 
-export function emitDeprecationWarning(config: Config<any>): void {
-  if (!config.deprecated) return;
-  if (warned.has(config.key)) return;
-  warned.add(config.key);
-
-  const { message } = config.deprecated;
-  process.emitWarning(message, {
-    type: "DeprecationWarning",
-    code: `LLM_EXE_DEPRECATED_${config.key}`,
-  });
+export class LlmExeDeprecationWarning extends Error {
+  readonly code: string;
+  readonly shorthand: string;
+  constructor(opts: { message: string; shorthand: string }) {
+    super(opts.message);
+    this.name = "DeprecationWarning";
+    this.code = "LLM_EXE_DEPRECATED";
+    this.shorthand = opts.shorthand;
+  }
 }
 
-export function withDeprecation(
-  config: Config<any>,
-  deprecated: { message: string; shutdownDate?: string }
-): Config<any> {
-  return { ...config, deprecated };
+export function emitDeprecationWarning(config: Config<any>): void {
+  if (!config.deprecated) return;
+  const { shorthand, message } = config.deprecated;
+  if (warned.has(shorthand)) return;
+  warned.add(shorthand);
+
+  process.emitWarning(new LlmExeDeprecationWarning({ message, shorthand }));
+}
+
+export function deprecateShorthand<K extends string>(
+  shorthand: K,
+  args: {
+    config: Config<any>;
+    message: string;
+  }
+): Record<K, Config<any>> {
+  const entry: Config<any> = {
+    ...args.config,
+    deprecated: Object.freeze({
+      shorthand,
+      message: args.message,
+    }),
+  };
+  return { [shorthand]: entry } as Record<K, Config<any>>;
 }
 
 export function _resetDeprecationWarnings(): void {

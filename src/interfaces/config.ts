@@ -150,7 +150,7 @@ export interface Config<Pk = LlmProviderKey> {
    * deprecation warning to inform users about upcoming model shutdowns.
    */
   deprecated?: {
+    shorthand: string;
     message: string;
-    shutdownDate?: string;
   };
 }
