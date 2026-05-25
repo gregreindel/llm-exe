@@ -277,16 +277,20 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(result).toEqual(["formatted"]);
   });
 
-  it("handles null input in execute method", async () => {
+  it("throws TypeError when execute is called with null (issue #410)", async () => {
     const executor = new LlmExecutor({ llm, prompt });
-    const result = await executor.execute(null as any);
-    expect(result).toBeDefined();
+    await expect(executor.execute(null as any)).rejects.toThrow(TypeError);
+    await expect(executor.execute(null as any)).rejects.toThrow(
+      /received null or undefined as input/
+    );
   });
 
-  it("handles undefined input in execute method", async () => {
+  it("throws TypeError when execute is called with undefined (issue #410)", async () => {
     const executor = new LlmExecutor({ llm, prompt });
-    const result = await executor.execute(undefined as any);
-    expect(result).toBeDefined();
+    await expect(executor.execute(undefined as any)).rejects.toThrow(TypeError);
+    await expect(executor.execute(undefined as any)).rejects.toThrow(
+      /received null or undefined as input/
+    );
   });
 
   it("getHandlerOutput uses getResult when parser target is function_call", async () => {
