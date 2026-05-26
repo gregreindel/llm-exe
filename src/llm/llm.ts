@@ -1,6 +1,7 @@
 import { configs, getLlmConfig } from "@/llm/config";
 import { useLlm_call } from "@/llm/llm.call";
 import { apiRequestWrapper } from "@/utils/modules/requestWrapper";
+import { emitDeprecationWarning } from "@/llm/_utils.deprecationWarning";
 import { AllUseLlmOptions, BaseLlm, Config } from "@/types";
 
 export function useLlm<T extends keyof typeof configs>(
@@ -8,6 +9,7 @@ export function useLlm<T extends keyof typeof configs>(
   options: AllUseLlmOptions[T]["input"] = {}
 ): BaseLlm {
   const config = getLlmConfig(provider);
+  emitDeprecationWarning(config);
   return apiRequestWrapper(config, options, useLlm_call);
 }
 
