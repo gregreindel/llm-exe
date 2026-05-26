@@ -84,6 +84,26 @@ describe("_templateValidation", () => {
       expect(paths(refs)).toEqual(["items"]);
     });
 
+    it("ignores @-prefixed data variables outside #each", () => {
+      // {{@root}} should not be collected as input — it's a Handlebars data var.
+      const refs = collectTemplateInputReferences("{{@root}}");
+      expect(paths(refs)).toEqual([]);
+    });
+
+    it("ignores `this` references (empty parts)", () => {
+      // Handlebars strips `this` from parts; bare {{this}} has zero parts.
+      const refs = collectTemplateInputReferences("{{this}}");
+      expect(paths(refs)).toEqual([]);
+    });
+
+    it("ignores parent-scope (../) paths", () => {
+      // ../parent is a depth>0 reference that we don't validate against root input.
+      const refs = collectTemplateInputReferences(
+        "{{#each users as |user|}}{{../title}}{{/each}}"
+      );
+      expect(paths(refs)).toEqual(["users"]);
+    });
+
     it("respects block params introduced by as |item|", () => {
       const refs = collectTemplateInputReferences(
         "{{#each users as |user|}}{{user.name}}{{/each}}"
@@ -191,6 +211,12 @@ describe("_templateValidation", () => {
       expect(hasInputPath(42, "a")).toBe(false);
     });
 
+    it("returns false when descending into a non-object intermediate", () => {
+      // a is a string, so a.length-style nesting is not traversable.
+      expect(hasInputPath({ a: "string" }, "a.length")).toBe(false);
+      expect(hasInputPath({ a: null }, "a.foo")).toBe(false);
+    });
+
     it("does not traverse inherited properties", () => {
       class Parent {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -266,6 +292,18 @@ describe("_templateValidation", () => {
       expect(paths(result.missingVariables)).toEqual(["a"]);
     });
 
+    it("dedupes missing variables across different reference sources", () => {
+      // Same path 'a' missing from both a mustache and a helper-param source —
+      // collected as two distinct references (different `source`), but missing
+      // variables are deduped by path.
+      const result = validateTemplateInputReferences(
+        "{{a}} {{formatDate a}}",
+        {},
+        { helpers: { formatDate: () => "" } }
+      );
+      expect(paths(result.missingVariables)).toEqual(["a"]);
+    });
+
     it("does not require inner each paths without block params", () => {
       const result = validateTemplateInputReferences(
         "{{#each items}}{{name}}{{/each}}",
@@ -280,6 +318,36 @@ describe("_templateValidation", () => {
         { users: [] }
       );
       expect(result.missingVariables).toEqual([]);
+    });
+
+    it("returns no refs and no missing on unparseable templates", () => {
+      // Mismatched/invalid handlebars syntax — parser throws and we bail.
+      const result = validateTemplateInputReferences(
+        "{{#if a}}no closing",
+        {}
+      );
+      expect(result.references).toEqual([]);
+      expect(result.missingHelpers).toEqual([]);
+      expect(result.missingVariables).toEqual([]);
+    });
+
+    it("reports unknown helper used as block (#)", () => {
+      const result = validateTemplateInputReferences(
+        "{{#unknownBlock items}}{{name}}{{/unknownBlock}}",
+        { items: [], name: "x" }
+      );
+      expect(result.missingHelpers).toEqual(["unknownBlock"]);
+      expect(result.missingVariables).toEqual([]);
+    });
+
+    it("walks partial invocation params and hash", () => {
+      // Partial named 'card' invoked with arg + hash. We don't recurse into the
+      // partial body, but we do validate the invocation's params/hash.
+      const result = validateTemplateInputReferences(
+        '{{> card user title=heading}}',
+        { user: { name: "a" } }
+      );
+      expect(paths(result.missingVariables).sort()).toEqual(["heading"]);
     });
   });
 });

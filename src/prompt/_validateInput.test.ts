@@ -220,6 +220,48 @@ describe("Prompt.validate(input) (v3)", () => {
     });
   });
 
+  describe("error message", () => {
+    it("reports both missing variables and helpers in a single error", () => {
+      const prompt = new TextPrompt("{{name}} {{unknownHelper x}}");
+      let caught: any;
+      try {
+        prompt.validate({} as any);
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught.message).toMatch(/Missing variables: /);
+      expect(caught.message).toMatch(/Missing helpers: /);
+      expect(caught.context.missingVariables.sort()).toEqual(["name", "x"]);
+      expect(caught.context.missingHelpers).toEqual(["unknownHelper"]);
+    });
+  });
+
+  describe("ChatPrompt with array content", () => {
+    it("skips array-content messages in validation (initial v3 scope)", () => {
+      const prompt = new ChatPrompt("System {{a}}");
+      // Manually push a message with array content (e.g. a multimodal-style block).
+      prompt.messages.push({
+        role: "user",
+        content: [{ type: "text", text: "User {{b}}" }],
+      } as any);
+      // Only the string-content system message is validated; array content is
+      // not walked in this initial scope, so `b` is not reported missing.
+      let caught: any;
+      try {
+        prompt.validate({} as any);
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught.context.missingVariables).toEqual(["a"]);
+    });
+
+    it("skips messages with empty content", () => {
+      const prompt = new ChatPrompt("System {{a}}");
+      prompt.messages.push({ role: "user", content: "" } as any);
+      expect(() => prompt.validate({ a: 1 } as any)).not.toThrow();
+    });
+  });
+
   describe("regression: helpers with side effects", () => {
     it("does not call registered helpers during validate()", () => {
       const sideEffect = jest.fn(() => "rendered");

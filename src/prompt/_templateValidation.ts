@@ -34,7 +34,6 @@ interface PathNode {
   parts: string[];
   depth: number;
   data: boolean;
-  this?: boolean;
 }
 
 interface HashPair {
@@ -111,10 +110,9 @@ function isKnownHelper(
 }
 
 function pathRootSegment(path: PathNode): string | null {
-  if (path.depth && path.depth > 0) return null;
+  if (path.depth > 0) return null;
   if (path.data) return null;
-  if (path.this) return null;
-  if (!path.parts || path.parts.length === 0) return null;
+  if (path.parts.length === 0) return null;
   return path.parts[0];
 }
 
@@ -135,7 +133,6 @@ function collectFromPath(
   if (!root) return;
   if (locals.has(root)) return;
   const collected = pathToCollectedString(path);
-  if (!collected) return;
   const dedupKey = `${source}::${collected}`;
   if (seen.has(dedupKey)) return;
   seen.add(dedupKey);
@@ -155,7 +152,6 @@ function collectFromExpression(
   missingHelpers: Set<string>,
   seen: Set<string>
 ): void {
-  if (!expr) return;
   if (expr.type === "PathExpression") {
     collectFromPath(expr, source, locals, options, references, seen);
     return;
@@ -209,7 +205,8 @@ function walkCall(
   seen: Set<string>
 ): void {
   const root = pathRootSegment(path);
-  const hasArgs = (params && params.length > 0) || (hash && hash.pairs && hash.pairs.length > 0);
+  const hasArgs =
+    params.length > 0 || (hash !== undefined && hash.pairs.length > 0);
 
   if (hasArgs) {
     if (root) {
@@ -218,7 +215,7 @@ function walkCall(
         missingHelpers.add(path.original);
       }
     }
-    for (const param of params || []) {
+    for (const param of params) {
       collectFromExpression(
         param,
         "helper-param",
@@ -249,9 +246,9 @@ function walkProgram(
   missingHelpers: Set<string>,
   seen: Set<string>
 ): void {
-  if (!program || !program.body) return;
+  if (!program) return;
   const locals = new Set(parentLocals);
-  if (program.blockParams && program.blockParams.length > 0) {
+  if (program.blockParams) {
     for (const bp of program.blockParams) {
       locals.add(bp);
     }
@@ -269,25 +266,14 @@ function walkStatement(
   missingHelpers: Set<string>,
   seen: Set<string>
 ): void {
-  if (!node) return;
   switch (node.type) {
     case "MustacheStatement": {
       const m = node as MustacheStatementNode;
-      if (m.path && m.path.type === "PathExpression") {
+      if (m.path.type === "PathExpression") {
         walkCall(
           m.path as PathNode,
-          m.params || [],
+          m.params,
           m.hash,
-          locals,
-          options,
-          references,
-          missingHelpers,
-          seen
-        );
-      } else if (m.path && m.path.type === "SubExpression") {
-        collectFromExpression(
-          m.path,
-          "mustache",
           locals,
           options,
           references,
@@ -299,14 +285,11 @@ function walkStatement(
     }
     case "BlockStatement": {
       const b = node as BlockStatementNode;
-      // helper path: tag args + collect params/hash
-      if (b.path && b.path.type === "PathExpression") {
-        const root = pathRootSegment(b.path);
-        if (root && !isKnownHelper(b.path.original, options.helpers) && !locals.has(root)) {
-          missingHelpers.add(b.path.original);
-        }
+      const root = pathRootSegment(b.path);
+      if (root && !isKnownHelper(b.path.original, options.helpers) && !locals.has(root)) {
+        missingHelpers.add(b.path.original);
       }
-      for (const param of b.params || []) {
+      for (const param of b.params) {
         collectFromExpression(
           param,
           "block-param",
@@ -321,7 +304,7 @@ function walkStatement(
 
       // Special handling for `#each` without explicit block params:
       // bare paths inside refer to current item, not root input.
-      const isEach = b.path && (b.path as PathNode).original === "each";
+      const isEach = b.path.original === "each";
       const hasBlockParams =
         (b.program?.blockParams && b.program.blockParams.length > 0) ||
         (b.inverse?.blockParams && b.inverse.blockParams.length > 0);
@@ -346,7 +329,7 @@ function walkStatement(
       // is registered separately; its variable requirements are not validated here.
       // Helper-style args on the partial invocation are still walked.
       const p = node as PartialStatementNode;
-      for (const param of p.params || []) {
+      for (const param of p.params) {
         collectFromExpression(
           param,
           "helper-param",
@@ -360,28 +343,7 @@ function walkStatement(
       walkHash(p.hash, locals, options, references, missingHelpers, seen);
       return;
     }
-    default:
-      return;
   }
-}
-
-export function collectTemplateInputReferences(
-  template: string,
-  options: CollectOptions = {}
-): TemplateInputReference[] {
-  const references: TemplateInputReference[] = [];
-  if (!template) return references;
-  let ast: ProgramNode;
-  try {
-    ast = (hbs.handlebars as any).parse(template) as ProgramNode;
-  } catch {
-    // Invalid Handlebars syntax — bail; rendering will surface the parse error.
-    return references;
-  }
-  const missingHelpers = new Set<string>();
-  const seen = new Set<string>();
-  walkProgram(ast, new Set(), options, references, missingHelpers, seen);
-  return references;
 }
 
 function collectAll(
@@ -390,16 +352,23 @@ function collectAll(
 ): { references: TemplateInputReference[]; missingHelpers: string[] } {
   const references: TemplateInputReference[] = [];
   const missingHelpers = new Set<string>();
-  if (!template) return { references, missingHelpers: [] };
   let ast: ProgramNode;
   try {
     ast = (hbs.handlebars as any).parse(template) as ProgramNode;
   } catch {
+    // Invalid Handlebars syntax — bail; rendering will surface the parse error.
     return { references, missingHelpers: [] };
   }
   const seen = new Set<string>();
   walkProgram(ast, new Set(), options, references, missingHelpers, seen);
   return { references, missingHelpers: Array.from(missingHelpers) };
+}
+
+export function collectTemplateInputReferences(
+  template: string,
+  options: CollectOptions = {}
+): TemplateInputReference[] {
+  return collectAll(template, options).references;
 }
 
 export function hasInputPath(input: unknown, path: string): boolean {
