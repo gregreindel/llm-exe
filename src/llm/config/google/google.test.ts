@@ -80,10 +80,16 @@ describe("google configuration", () => {
       );
     });
 
-    it("should work with gemini-2.5-light model", () => {
-      expect(effortTransform("medium", { model: "gemini-2.5-light" })).toBe(
-        8192
-      );
+    it("should work with gemini-2.5-flash-lite model", () => {
+      expect(
+        effortTransform("medium", { model: "gemini-2.5-flash-lite" })
+      ).toBe(8192);
+    });
+
+    it("should return undefined for gemini-2.5-light (not a valid model ID)", () => {
+      expect(
+        effortTransform("medium", { model: "gemini-2.5-light" })
+      ).toBeUndefined();
     });
   });
 
