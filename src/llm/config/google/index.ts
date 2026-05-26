@@ -29,7 +29,7 @@ const googleGeminiChatV1: Config = {
       transform: (v, _s) => {
         if (
           // only supported reasoning models
-          ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-light"].includes(
+          ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"].includes(
             _s.model
           ) &&
           typeof v === "string" &&
@@ -84,6 +84,10 @@ export const google = {
   "google.gemini-2.5-pro": withDefaultModel(
     googleGeminiChatV1,
     "gemini-2.5-pro"
+  ),
+  "google.gemini-3.1-flash-lite": withDefaultModel(
+    googleGeminiChatV1,
+    "gemini-3.1-flash-lite"
   ),
 
   // Deprecated
