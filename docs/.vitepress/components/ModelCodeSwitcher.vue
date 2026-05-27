@@ -23,6 +23,14 @@
         <span class="provider-name">{{ provider.name }}</span>
       </button>
     </div>
+    <!--
+      ARIA tabs pattern: provider and model tabs each form a tablist, the
+      code area below is the single tabpanel. The panel is labelled by the
+      currently selected model tab (the model selection determines what is
+      rendered). Keyboard arrow-key navigation between tabs is a known gap;
+      tabs are reachable via Tab and activated with Enter/Space. Follow-up
+      tracked separately.
+    -->
     <div
       v-if="
         providers.length > 0 && providers[activeProviderIdx]?.models?.length > 0
@@ -36,6 +44,8 @@
         :key="model"
         type="button"
         role="tab"
+        :id="`msw-model-tab-${idx}`"
+        aria-controls="msw-code-panel"
         :class="['model-tab', { active: idx === activeModelIdx }]"
         :aria-selected="idx === activeModelIdx"
         :tabindex="idx === activeModelIdx ? 0 : -1"
@@ -44,7 +54,13 @@
         <span>{{ model }}</span>
       </button>
     </div>
-    <div class="code-area">
+    <div
+      class="code-area"
+      id="msw-code-panel"
+      role="tabpanel"
+      :aria-labelledby="codePanelLabelledBy"
+      :aria-label="codePanelLabelledBy ? undefined : 'Code example'"
+    >
       <div class="code-actions">
         <button
           type="button"
@@ -127,6 +143,16 @@ const providers = ref(getProviders(props.providerModels));
 const activeProviderIdx = ref(0);
 const activeModelIdx = ref(0);
 const copied = ref(false);
+
+// Returns the DOM id of the currently selected model tab so the code panel
+// can reference it via aria-labelledby. Returns undefined when no models
+// are available for the active provider so the template can fall back to
+// an aria-label instead.
+const codePanelLabelledBy = computed<string | undefined>(() => {
+  const provider = providers.value[activeProviderIdx.value];
+  if (!provider?.models?.length) return undefined;
+  return `msw-model-tab-${activeModelIdx.value}`;
+});
 
 const apiKeyMap = {
   openai: { prop: "openAiApiKey", env: "OPENAI_API_KEY" },
