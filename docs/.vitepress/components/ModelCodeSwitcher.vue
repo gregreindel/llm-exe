@@ -1,17 +1,25 @@
 <template>
   <div class="switcher-root">
-    <div v-if="providers.length > 0" class="provider-tabs">
+    <div
+      v-if="providers.length > 0"
+      class="provider-tabs"
+      role="tablist"
+      aria-label="LLM provider"
+    >
       <button
         v-for="(provider, idx) in providers"
         :key="provider.key"
+        type="button"
+        role="tab"
         :class="['provider-tab', { active: idx === activeProviderIdx }]"
+        :aria-selected="idx === activeProviderIdx"
+        :tabindex="idx === activeProviderIdx ? 0 : -1"
         @click="
           activeProviderIdx = idx;
           activeModelIdx = 0;
         "
-        :aria-label="provider.name"
       >
-        <span class="provider-logo" v-html="provider.logo" />
+        <span class="provider-logo" aria-hidden="true" v-html="provider.logo" />
         <span class="provider-name">{{ provider.name }}</span>
       </button>
     </div>
@@ -20,11 +28,17 @@
         providers.length > 0 && providers[activeProviderIdx]?.models?.length > 0
       "
       class="model-tabs"
+      role="tablist"
+      aria-label="Model"
     >
       <button
         v-for="(model, idx) in providers[activeProviderIdx].models"
         :key="model"
+        type="button"
+        role="tab"
         :class="['model-tab', { active: idx === activeModelIdx }]"
+        :aria-selected="idx === activeModelIdx"
+        :tabindex="idx === activeModelIdx ? 0 : -1"
         @click="activeModelIdx = idx"
       >
         <span>{{ model }}</span>
@@ -33,13 +47,24 @@
     <div class="code-area">
       <div class="code-actions">
         <button
+          type="button"
           class="copy-btn"
           :class="{ copied }"
           @click="copyCode"
-          :aria-label="copied ? 'Copied!' : 'Copy'"
+          :aria-label="copied ? 'Code copied to clipboard' : 'Copy code to clipboard'"
         >
-          <span v-if="!copied" class="copy-icon" v-html="clipboardIcon" />
-          <span v-else class="copy-icon copied" v-html="checkIcon" />
+          <span
+            v-if="!copied"
+            class="copy-icon"
+            aria-hidden="true"
+            v-html="clipboardIcon"
+          />
+          <span
+            v-else
+            class="copy-icon copied"
+            aria-hidden="true"
+            v-html="checkIcon"
+          />
         </button>
       </div>
       <pre
