@@ -29,7 +29,7 @@ This Code of Conduct applies in all project spaces (issues, pull requests, discu
 
 ## Enforcement
 
-Reports of unacceptable behavior should be sent to the maintainers at **conduct@llm-exe.com**. All reports will be reviewed and investigated promptly and fairly.
+Reports of unacceptable behavior should be sent to the maintainers at **help@llm-exe.com**. All reports will be reviewed and investigated promptly and fairly.
 
 Maintainers are responsible for clarifying the standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior they deem inappropriate, threatening, offensive, or harmful.
 
