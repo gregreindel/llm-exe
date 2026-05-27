@@ -1,7 +1,6 @@
 import {
   emitDeprecationWarning,
   deprecateShorthand,
-  LlmExeDeprecationWarning,
   _resetDeprecationWarnings,
 } from "./_utils.deprecationWarning";
 import { configs } from "@/llm/config";
@@ -43,19 +42,49 @@ describe("_utils.deprecationWarning", () => {
       expect(warningSpy).not.toHaveBeenCalled();
     });
 
-    it("emits a structured LlmExeDeprecationWarning instance", () => {
+    it("emits a structured deprecation warning with JSON detail", () => {
       const config = makeConfig("google.chat.v1", {
         shorthand: "google.gemini-2.5-pro",
         message: "This model is deprecated",
       });
+      config.options.model = { default: "gemini-2.5-pro" };
       emitDeprecationWarning(config);
       expect(warningSpy).toHaveBeenCalledTimes(1);
-      const emitted = warningSpy.mock.calls[0][0];
-      expect(emitted).toBeInstanceOf(LlmExeDeprecationWarning);
-      expect(emitted.name).toBe("DeprecationWarning");
-      expect(emitted.code).toBe("LLM_EXE_DEPRECATED");
-      expect(emitted.message).toBe("This model is deprecated");
-      expect(emitted.shorthand).toBe("google.gemini-2.5-pro");
+      const [message, options] = warningSpy.mock.calls[0];
+      expect(message).toBe("This model is deprecated");
+      expect(options.type).toBe("DeprecationWarning");
+      expect(options.code).toBe("LLM_EXE_DEPRECATED");
+      expect(JSON.parse(options.detail)).toEqual({
+        shorthand: "google.gemini-2.5-pro",
+        model: "gemini-2.5-pro",
+        provider: "google.chat",
+      });
+    });
+
+    it("emits with model undefined when config has no default model", () => {
+      const config = makeConfig("google.chat.v1", {
+        shorthand: "google.gemini-2.5-pro",
+        message: "Deprecated",
+      });
+      emitDeprecationWarning(config);
+      const detail = JSON.parse(warningSpy.mock.calls[0][1].detail);
+      expect(detail.model).toBeUndefined();
+      expect(detail.shorthand).toBe("google.gemini-2.5-pro");
+      expect(detail.provider).toBe("google.chat");
+    });
+
+    it("includes executorName and traceId from context when provided", () => {
+      const config = makeConfig("google.chat.v1", {
+        shorthand: "google.gemini-2.5-pro",
+        message: "Deprecated",
+      });
+      emitDeprecationWarning(config, {
+        executorName: "summarizer",
+        traceId: "trace-xyz",
+      });
+      const detail = JSON.parse(warningSpy.mock.calls[0][1].detail);
+      expect(detail.executorName).toBe("summarizer");
+      expect(detail.traceId).toBe("trace-xyz");
     });
 
     it("dedups by shorthand, not by config.key", () => {
@@ -71,12 +100,12 @@ describe("_utils.deprecationWarning", () => {
       emitDeprecationWarning(flash);
       emitDeprecationWarning(pro);
       expect(warningSpy).toHaveBeenCalledTimes(2);
-      expect(warningSpy.mock.calls[0][0].shorthand).toBe(
-        "google.gemini-2.5-flash"
-      );
-      expect(warningSpy.mock.calls[1][0].shorthand).toBe(
-        "google.gemini-2.5-pro"
-      );
+      expect(
+        JSON.parse(warningSpy.mock.calls[0][1].detail).shorthand
+      ).toBe("google.gemini-2.5-flash");
+      expect(
+        JSON.parse(warningSpy.mock.calls[1][1].detail).shorthand
+      ).toBe("google.gemini-2.5-pro");
     });
 
     it("only warns once per shorthand across repeated calls", () => {
@@ -198,7 +227,9 @@ describe("_utils.deprecationWarning", () => {
       emitDeprecationWarning(pro);
       emitDeprecationWarning(flash);
       expect(warningSpy).toHaveBeenCalledTimes(2);
-      const shorthands = warningSpy.mock.calls.map((c) => c[0].shorthand);
+      const shorthands = warningSpy.mock.calls.map(
+        (c) => JSON.parse(c[1].detail).shorthand
+      );
       expect(shorthands).toContain("google.gemini-2.5-pro");
       expect(shorthands).toContain("google.gemini-2.5-flash");
     });
