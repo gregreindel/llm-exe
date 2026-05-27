@@ -11,7 +11,6 @@ export {
   useLlm,
   useLlmConfiguration,
   createOpenAiCompatibleConfiguration,
-  LlmExeDeprecationWarning,
 } from "./llm";
 export { createEmbedding } from "./embedding/embedding";
 

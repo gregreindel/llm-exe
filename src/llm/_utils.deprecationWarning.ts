@@ -2,18 +2,15 @@ import { Config } from "@/types";
 
 const warned = new Set<string>();
 
-export class LlmExeDeprecationWarning extends Error {
-  readonly code: string;
-  readonly shorthand: string;
-  constructor(opts: { message: string; shorthand: string }) {
-    super(opts.message);
-    this.name = "DeprecationWarning";
-    this.code = "LLM_EXE_DEPRECATED";
-    this.shorthand = opts.shorthand;
-  }
+export interface DeprecationContext {
+  executorName?: string;
+  traceId?: string;
 }
 
-export function emitDeprecationWarning(config: Config<any>): void {
+export function emitDeprecationWarning(
+  config: Config<any>,
+  context?: DeprecationContext
+): void {
   if (!config.deprecated) return;
   if (
     typeof process !== "object" ||
@@ -25,7 +22,19 @@ export function emitDeprecationWarning(config: Config<any>): void {
   if (warned.has(shorthand)) return;
   warned.add(shorthand);
 
-  process.emitWarning(new LlmExeDeprecationWarning({ message, shorthand }));
+  const detail = JSON.stringify({
+    shorthand,
+    model: config.options?.model?.default,
+    provider: config.provider,
+    executorName: context?.executorName,
+    traceId: context?.traceId,
+  });
+
+  process.emitWarning(message, {
+    type: "DeprecationWarning",
+    code: "LLM_EXE_DEPRECATED",
+    detail,
+  });
 }
 
 export function deprecateShorthand<K extends string>(
