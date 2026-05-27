@@ -6,7 +6,8 @@ import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
 
 export type ListenerFunction = (...args: any[]) => void;
 
-export type ParserOutput<P> = P extends BaseParser<infer T> ? T : never;
+export type ParserOutput<P> = P extends BaseParser<infer T, any> ? T : never;
+export type ParserInput<P> = P extends BaseParser<any, infer T> ? T : never;
 export type PromptInput<P> = P extends BasePrompt<infer T> ? T : never;
 
 export interface ExecutorWithLlmOptions<Llm, Prompt, Parser, State> {
@@ -39,6 +40,19 @@ export interface ExecutorMetadata {
   metadata?: Record<string, any>;
 }
 
+export interface HookErrorRecord {
+  hook: string;
+  // The raw thrown value, preserved verbatim. this is the only place 
+  // a non-LlmExe hook failure (stack/name/etc.) is recoverable. 
+  // Consumers can `instanceof Error`-check or pull fields.
+  error: unknown;
+  errorMessage: string;
+  errorCategory?: string;
+  errorCode?: string;
+  errorContext?: unknown;
+  errorCause?: unknown;
+}
+
 export interface ExecutorExecutionMetadata<I = any, O = any> {
   start: null | number;
   end: null | number;
@@ -48,6 +62,15 @@ export interface ExecutorExecutionMetadata<I = any, O = any> {
   output?: O;
   errorMessage?: string;
   error?: Error;
+  // Structured fields populated when the caught error is an LlmExeError.
+  // `error` and `errorMessage` are preserved for back-compat.
+  errorCategory?: string;
+  errorCode?: string;
+  errorContext?: unknown;
+  errorCause?: unknown;
+  // Captured failures from user-supplied hook callbacks (onSuccess, onError).
+  // onComplete-hook failures cannot land here because nothing runs after them.
+  hookErrors?: HookErrorRecord[];
   metadata?: null | ExecutorMetadata;
 }
 
@@ -61,6 +84,11 @@ export type ExecutorExecutionMetadataProperties = Pick<
   | "output"
   | "errorMessage"
   | "error"
+  | "errorCategory"
+  | "errorCode"
+  | "errorContext"
+  | "errorCause"
+  | "hookErrors"
   | "metadata"
 >;
 

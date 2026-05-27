@@ -1,5 +1,4 @@
 import {
-  BaseParserOptions,
   OutputResult,
   OutputResultContent,
   ParserOutput,
@@ -8,19 +7,19 @@ import { BaseParser } from "../_base";
 
 import { maybeParseJSON } from "@/utils";
 
-export interface LlmNativeFunctionParserOptions<T extends BaseParser<any>>
-  extends BaseParserOptions {
+export interface LlmNativeFunctionParserOptions<T extends BaseParser<any, any>> {
   parser: T;
 }
 
-export class LlmFunctionParser<T extends BaseParser<any>> extends BaseParser<
-  ParserOutput<T> | OutputResultContent[]
+export class LlmFunctionParser<T extends BaseParser<any, any>> extends BaseParser<
+  ParserOutput<T> | OutputResultContent[],
+  OutputResult | string
 > {
   public parser: T;
 
   constructor(options: LlmNativeFunctionParserOptions<T>) {
     // pass the `function_call` target through so the executor knows
-    super("functionCall", options, "function_call");
+    super("functionCall", "function_call");
     this.parser = options.parser;
   }
   parse(text: OutputResult, _options?: Record<string, any>) {
@@ -41,25 +40,28 @@ export class LlmFunctionParser<T extends BaseParser<any>> extends BaseParser<
   }
 }
 
-export interface LlmNativeFunctionParserOptions<T extends BaseParser<any>>
-  extends BaseParserOptions {
-  parser: T;
-}
-
 /**
  * @deprecated Use `LlmFunctionParser` instead.
  */
 export class LlmNativeFunctionParser<
-  T extends BaseParser<any>,
-> extends BaseParser<ParserOutput<T> | { name: any; arguments: any }> {
+  T extends BaseParser<any, any>,
+> extends BaseParser<ParserOutput<T> | { name: any; arguments: any }, OutputResult | string> {
   public parser: T;
 
   constructor(options: LlmNativeFunctionParserOptions<T>) {
     // pass the `function_call` target through so the executor knows
-    super("openAiFunction", options, "function_call");
+    super("openAiFunction", "function_call");
     this.parser = options.parser;
   }
   parse(text: OutputResult, _options?: Record<string, any>) {
+    if (typeof text === "string") {
+      return this.parser.parse(text) as ParserOutput<T>;
+    }
+
+    if (typeof (text as any)?.text === "string") {
+      return this.parser.parse((text as any).text) as ParserOutput<T>;
+    }
+
     const { content } = text;
     const functionUse = content?.find((a) => a.type === "function_use");
     if (functionUse && "name" in functionUse && "input" in functionUse) {
@@ -69,7 +71,10 @@ export class LlmNativeFunctionParser<
       };
     }
 
-    return this.parser.parse((text as any)?.text ?? text) as ParserOutput<T>;
+    const textContent = content?.find(
+      (item) => item.type === "text" && typeof item.text === "string"
+    );
+    return this.parser.parse(textContent?.text as any) as ParserOutput<T>;
   }
 }
 

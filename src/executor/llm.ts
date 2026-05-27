@@ -8,12 +8,14 @@ import {
   LlmExecutorHooks,
   LlmExecutorExecuteOptions,
   BaseLlCall,
+  OutputResult,
 } from "@/types";
 import { BaseParser, JsonParser, StringParser } from "@/parser";
 import { BasePrompt } from "@/prompt";
 import { BaseState } from "@/state";
 import { BaseExecutor } from "./_base";
 import { isPromise } from "@/utils/modules/isPromise";
+import { LlmExeError } from "@/errors";
 
 /**
  * Core Executor With LLM
@@ -21,7 +23,7 @@ import { isPromise } from "@/utils/modules/isPromise";
 export class LlmExecutor<
   Llm extends BaseLlm<any>,
   Prompt extends BasePrompt<Record<string, any>>,
-  Parser extends BaseParser,
+  Parser extends BaseParser<any, any>,
   State extends BaseState,
 > extends BaseExecutor<
   PromptInput<Prompt>,
@@ -55,17 +57,30 @@ export class LlmExecutor<
     }
   }
 
+  /**
+   * Runs the executor against the configured LLM and prompt.
+   *
+   * `null` and `undefined` are rejected with a `TypeError`: the declared
+   * input type requires an object, and silently coercing missing input hides a
+   * clear contract violation. Use `{}` for prompts that declare no template
+   * variables. See issue #410.
+   */
   async execute(
     _input: PromptInput<Prompt>,
     _options?: LlmExecutorExecuteOptions
   ): Promise<ParserOutput<Parser>> {
-    const input = _input ?? {};
+    if (_input === null || typeof _input === "undefined") {
+      throw new TypeError(
+        `[llm-exe] Executor "${this.name}" received null or undefined as input. ` +
+          `execute() expects an object matching the prompt's input type.`
+      );
+    }
     if (this?.parser instanceof JsonParser && this.parser.schema) {
       _options = Object.assign(_options || {}, {
         jsonSchema: this.parser.schema,
       });
     }
-    return super.execute(input, _options);
+    return super.execute(_input, _options);
   }
 
   async handler(_input: PromptInput<Prompt>, ..._args: any[]) {
@@ -90,7 +105,17 @@ export class LlmExecutor<
         return prompt.format(_input);
       }
     }
-    throw new Error("Missing prompt");
+    throw new LlmExeError("Missing prompt", {
+      code: "executor.missing_prompt",
+      context: {
+        operation: "LlmExecutor.getHandlerInput",
+        executorName: this.name,
+        executorType: this.type,
+        traceId: this.getTraceId() ?? undefined,
+        resolution:
+          "Provide a prompt (or prompt factory) when constructing the LLM executor.",
+      },
+    });
   }
 
   getHandlerOutput(
@@ -102,12 +127,17 @@ export class LlmExecutor<
   ): ParserOutput<Parser> {
     // depending on out parser type, and result obj (out)
     // we should use different methods here
+    // The executor is the polymorphic dispatcher. Text parsers receive
+    // getResultText(), while function-call parsers receive getResult().
+    const parse = (
+      this.parser as BaseParser<ParserOutput<Parser>, string | OutputResult>
+    ).parse.bind(this.parser);
     if (this.parser.target === "function_call") {
       const outToStr = out.getResult();
-      return this.parser.parse(outToStr, _metadata);
+      return parse(outToStr, _metadata);
     } else {
       const outToStr = out.getResultText();
-      return this.parser.parse(outToStr, _metadata);
+      return parse(outToStr, _metadata);
     }
   }
 

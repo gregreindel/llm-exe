@@ -1,9 +1,25 @@
 import { BaseParser, BooleanParser } from "@/parser";
+import { LlmExeError } from "@/errors";
 
 /**
  * Tests the BooleanParser class
  */
 describe("llm-exe:parser/BooleanParser", () => {
+  let originalDebugEnv: string | undefined;
+
+  beforeEach(() => {
+    originalDebugEnv = process.env.LLM_EXE_DEBUG;
+    delete process.env.LLM_EXE_DEBUG;
+  });
+
+  afterEach(() => {
+    if (originalDebugEnv === undefined) {
+      delete process.env.LLM_EXE_DEBUG;
+    } else {
+      process.env.LLM_EXE_DEBUG = originalDebugEnv;
+    }
+  });
+
   it('creates class with expected properties', () => {
     const parser = new BooleanParser()
     expect(parser).toBeInstanceOf(BaseParser)
@@ -55,5 +71,149 @@ describe("llm-exe:parser/BooleanParser", () => {
     const parser = new BooleanParser()
     expect(parser.parse("  yes  ")).toEqual(true)
   })
+  it('throws parser.parse_failed for empty input', () => {
+    const parser = new BooleanParser()
+    try {
+      parser.parse("")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).context).toEqual({
+        operation: "BooleanParser.parse",
+        parser: "boolean",
+        reason: "empty_input",
+        expected: ["true", "false", "yes", "no", "y", "n", "1", "0"],
+        inputLength: 0,
+      })
+    }
+  })
+  it('throws parser.parse_failed for whitespace-only input', () => {
+    const parser = new BooleanParser()
+    try {
+      parser.parse("   ")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).context).toEqual({
+        operation: "BooleanParser.parse",
+        parser: "boolean",
+        reason: "empty_input",
+        expected: ["true", "false", "yes", "no", "y", "n", "1", "0"],
+        inputLength: 3,
+      })
+    }
+  })
+  it('throws parser.parse_failed for unrecognized boolean text', () => {
+    const parser = new BooleanParser()
+    try {
+      parser.parse("maybe")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).context).toEqual({
+        operation: "BooleanParser.parse",
+        parser: "boolean",
+        reason: "unrecognized_boolean",
+        expected: ["true", "false", "yes", "no", "y", "n", "1", "0"],
+        inputLength: 5,
+      })
+    }
+  })
+  it('throws parser.parse_failed instead of extracting boolean values from prose', () => {
+    const parser = new BooleanParser()
+    expect(() => parser.parse("The answer is true.")).toThrow(LlmExeError)
+  })
+  it('throws parser.parse_failed instead of treating conflicting prose as ambiguous extraction', () => {
+    const parser = new BooleanParser()
+    try {
+      parser.parse("true and false")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.parse_failed")
+      expect((e as LlmExeError).context).toEqual({
+        operation: "BooleanParser.parse",
+        parser: "boolean",
+        reason: "unrecognized_boolean",
+        expected: ["true", "false", "yes", "no", "y", "n", "1", "0"],
+        inputLength: 14,
+      })
+    }
+  })
+  it('does not include input excerpts in error context by default', () => {
+    const parser = new BooleanParser()
+    try {
+      parser.parse("sensitive output")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).not.toHaveProperty("inputExcerpt")
+    }
+  })
+  it('includes a bounded input excerpt when debug mode is enabled', () => {
+    process.env.LLM_EXE_DEBUG = "true"
+    const parser = new BooleanParser()
+    const input = "x".repeat(600)
+    try {
+      parser.parse(input)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        inputLength: 600,
+        inputExcerpt: "x".repeat(500),
+        inputExcerptTruncated: true,
+      })
+    }
+  })
+  it('includes an untruncated input excerpt when debug mode is enabled for short input', () => {
+    process.env.LLM_EXE_DEBUG = "true"
+    const parser = new BooleanParser()
+    try {
+      parser.parse("maybe")
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).context).toMatchObject({
+        inputLength: 5,
+        inputExcerpt: "maybe",
+        inputExcerptTruncated: false,
+      })
+    }
+  })
+  it('throws parser.invalid_input for runtime boolean input', () => {
+    const parser = new BooleanParser()
+    try {
+      // @ts-expect-error runtime contract: parser rejects non-string input.
+      parser.parse(true)
+      fail("Expected an error to be thrown")
+    } catch (e) {
+      expect(e).toBeInstanceOf(LlmExeError)
+      expect((e as LlmExeError).code).toEqual("parser.invalid_input")
+      expect((e as LlmExeError).context).toEqual({
+        operation: "BooleanParser.parse",
+        parser: "boolean",
+        reason: "invalid_input_type",
+        expected: "string",
+        received: "boolean",
+      })
+    }
+  })
+  it('throws parser.parse_failed for null input', () => {
+    const parser = new BooleanParser()
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects null input.
+      parser.parse(null)
+    }).toThrow(LlmExeError)
+  })
+  it('throws parser.parse_failed for undefined input', () => {
+    const parser = new BooleanParser()
+    expect(() => {
+      // @ts-expect-error runtime contract: parser rejects undefined input.
+      parser.parse(undefined)
+    }).toThrow(LlmExeError)
+  })
 });
-

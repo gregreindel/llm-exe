@@ -151,4 +151,12 @@ export interface Config<Pk = LlmProviderKey> {
    * `getEmbeddingOutputParser` instead.
    */
   transformResponse?: (result: any, _config?: Config<any>) => OutputResult;
+  /**
+   * Marks this config as deprecated. When set, useLlm() will emit a one-time
+   * deprecation warning to inform users about upcoming model shutdowns.
+   */
+  deprecated?: {
+    shorthand: string;
+    message: string;
+  };
 }
