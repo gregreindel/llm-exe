@@ -86,10 +86,18 @@
       </div>
     </div>
     <div class="grid-right-side">
+      <!--
+        ARIA tabs pattern. The panel below is labelled by the active tab via
+        aria-labelledby. Keyboard arrow-key navigation between tabs is a
+        known gap; tabs are reachable via Tab and activated with Enter/Space.
+        Follow-up tracked separately.
+      -->
       <div class="tabs-labels" role="tablist" aria-label="Playground output">
         <button
           type="button"
           role="tab"
+          id="pp2-tab-messages"
+          aria-controls="pp2-tabpanel"
           :aria-selected="activeTab === 'messages'"
           :tabindex="activeTab === 'messages' ? 0 : -1"
           style="padding: 2px 3px; cursor: pointer"
@@ -102,6 +110,8 @@
         <button
           type="button"
           role="tab"
+          id="pp2-tab-options"
+          aria-controls="pp2-tabpanel"
           :aria-selected="activeTab === 'options'"
           :tabindex="activeTab === 'options' ? 0 : -1"
           style="padding: 2px 3px; cursor: pointer"
@@ -114,6 +124,8 @@
         <button
           type="button"
           role="tab"
+          id="pp2-tab-prompt"
+          aria-controls="pp2-tabpanel"
           :aria-selected="activeTab === 'prompt'"
           :tabindex="activeTab === 'prompt' ? 0 : -1"
           style="padding: 2px 3px; cursor: pointer"
@@ -125,7 +137,9 @@
         </button>
       </div>
       <div
+        id="pp2-tabpanel"
         role="tabpanel"
+        :aria-labelledby="`pp2-tab-${activeTab}`"
         style="padding: 32px; border: 1px solid #333; background-color: black"
       >
         <pre v-if="activeTab === 'options'">{{ options }}</pre>
