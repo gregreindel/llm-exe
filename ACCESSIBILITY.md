@@ -34,7 +34,6 @@ This document states our goals, the standards we hold ourselves to, and how to r
 
 ## Known limitations
 
-<!-- - The two interactive playground components (`PromptPlayground.vue`, `PromptPlayground2.vue`) are not currently linked from the published sidebar. They have been updated to use labeled controls and native buttons, but they have not been audited end-to-end with a screen reader. -->
 - Code blocks in the docs site rely on syntax-highlighting colors. Each example also includes a textual explanation so the meaning does not depend on the colors. If you find an example that does not, it is a bug.
 - The library is text-in / text-out. We do not ship image, audio, or video features, so the relevant subset of WCAG (alt text, captions, audio descriptions) only applies to docs media, not to the library surface.
 
