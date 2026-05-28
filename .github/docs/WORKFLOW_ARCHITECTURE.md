@@ -181,7 +181,7 @@ flowchart LR
     APP[APP_ID + APP_PRIVATE_KEY<br/>repo secrets]:::sec
     MINT[actions/create-github-app-token@v1]:::tok
     BOT[llm-exe-bot[bot] token<br/>short-lived]:::tok
-    CCA[anthropics/claude-code-action@v1<br/>opus-4-6 or sonnet-4-6]:::rt
+    CCA[anthropics/claude-code-action@v1<br/>vars.ANTHROPIC_OPUS_LATEST or sonnet-4-6]:::rt
     CFG[scripts/agents/config.sh<br/>shared bash helpers]:::rt
     PROMPT[scripts/agents/prompts/*.md]:::rt
     LOG[scripts/agents/logs/&lt;role&gt;/*.md<br/>committed run ledger]:::rt
@@ -250,7 +250,7 @@ Every system outside this repository that one or more workflows depend on at run
 | Dependency | Used by | Authentication | Purpose |
 |------------|---------|----------------|---------|
 | GitHub API (REST and GraphQL) | every workflow that talks to issues, PRs, releases, caches | Either the workflow-default `GITHUB_TOKEN`, an App-generated `llm-exe-bot[bot]` token, or the dedicated `llm-exe-review-bot[bot]` token | Creating PRs, listing issues, posting comments, reviewing PRs, creating releases, deleting cache entries |
-| Anthropic Claude API | `agent-run`, `coder-run`, `personas-run`, `agent-review-pr`, `agent-digest`, `bot-respond` | `CLAUDE_CODE_OAUTH_TOKEN` secret passed to `anthropics/claude-code-action@v1` | Runs the agent. Models used: `claude-opus-4-6` for all task agents, persona runners, curator, reviewer, and bot responder; `claude-sonnet-4-6` for the weekly digest. |
+| Anthropic Claude API | `agent-run`, `coder-run`, `personas-run`, `agent-review-pr`, `agent-digest`, `bot-respond`, `docs-sync` | `CLAUDE_CODE_OAUTH_TOKEN` secret passed to `anthropics/claude-code-action@v1` | Runs the agent. Model is configurable via the `vars.ANTHROPIC_OPUS_LATEST` repository variable (default: `claude-opus-4-6`) for all task agents, persona runners, curator, reviewer, bot responder, and docs-sync; `claude-sonnet-4-6` for the weekly digest. |
 | `anthropics/claude-code-action@v1` Marketplace action | every agent workflow | OAuth token above plus an App-generated GitHub token | The harness that executes Claude with a constrained tool allowlist and a `--max-turns` budget. |
 | `actions/create-github-app-token@v1` | every agent workflow plus the release and hygiene workflows that need write access beyond `GITHUB_TOKEN` | `APP_ID`/`APP_PRIVATE_KEY`, or `LLM_EXE_REVIEW_BOT_APP_ID`/`LLM_EXE_REVIEW_BOT_PRIVATE_KEY` for reviews | Mints short-lived GitHub App installation tokens. The main bot authors work and triggers downstream workflows; the review bot posts reviews and approvals. |
 | npm registry (`registry.npmjs.org`) | `publish-release.yml` | NPM token configured via `NODE_AUTH_TOKEN` env var (set by `registry-url`); both publish scripts pass `--provenance` explicitly, which requires OIDC `id-token: write` | Publishing the `llm-exe` package on every release. |
@@ -297,6 +297,7 @@ Stored under repository or organization variables:
 
 | Variable | Where it is used |
 |----------|------------------|
+| `ANTHROPIC_OPUS_LATEST` | Every agent workflow that invokes `claude-code-action@v1` (except `agent-digest.yml` which uses sonnet). Falls back to `claude-opus-4-6` if unset. Allows upgrading all agents to a newer Opus model by changing one variable. |
 | `AWS_ROLE_DEPLOY_ARN`, `AWS_REGION`, `AWS_S3_BUCKET`, `AWS_CLOUDFRONT_DISTRIBUTION_ID` | `deploy-docs.yml` |
 
 ### Permission expectations of the GitHub App
@@ -417,7 +418,7 @@ sequenceDiagram
     participant Prompt as scripts/agents/prompts/&lt;role&gt;.md
     participant Logs as scripts/agents/logs/&lt;role&gt;/
     participant CCA as anthropics/claude-code-action@v1
-    participant Claude as Anthropic API (claude-opus-4-6)
+    participant Claude as Anthropic API (configurable model)
     participant GH as GitHub API
 
     Cron->>Runner: dispatch event
@@ -435,7 +436,7 @@ sequenceDiagram
     Cfg->>Prompt: sed -e 's|$BRANCH|...|g' -e 's|$LOG_FILE|...|g'
     Cfg->>Logs: build_prior_context cat last 3 logs (excluding current)
     Cfg->>Runner: write /tmp/agent-prompt.txt = template + prior context + Time Budget + Maintainer Instructions
-    Runner->>CCA: run with --allowedTools "..." --max-turns N --model claude-opus-4-6 (50 default, 80 docs-sync, 30 reviewer)
+    Runner->>CCA: run with --allowedTools "..." --max-turns N --model vars.ANTHROPIC_OPUS_LATEST or claude-opus-4-6
     CCA->>Claude: streaming inference
     Claude-->>CCA: tool calls (Bash, Read, Write, Edit, etc.)
     CCA->>GH: gh api (issues, PRs, comments) using bot token
@@ -470,15 +471,15 @@ Read the file /tmp/agent-prompt.txt for your full instructions. Follow them exac
 
 | Agent | `--allowedTools` | `--max-turns` | Model |
 |-------|------------------|---------------|-------|
-| docs | `Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch` | 50 | `claude-opus-4-6` |
-| tester | same | 50 | `claude-opus-4-6` |
-| coder | same | 50 | `claude-opus-4-6` |
-| scout | same | 50 | `claude-opus-4-6` |
-| personas (each) | same | 40 | `claude-opus-4-6` |
-| curator | same | 40 | `claude-opus-4-6` |
-| reviewer | `Bash,Read,Glob,Grep,WebFetch` (read-only set) | 30 | `claude-opus-4-6` |
-| bot-respond | `Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch` | 30 | `claude-opus-4-6` |
-| docs-sync | `Bash,Read,Write,Edit,Glob,Grep,WebFetch` | 80 | `claude-opus-4-6` |
+| docs | `Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch` | 50 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| tester | same | 50 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| coder | same | 50 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| scout | same | 50 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| personas (each) | same | 40 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| curator | same | 40 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| reviewer | `Bash,Read,Glob,Grep,WebFetch` (read-only set) | 30 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| bot-respond | `Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch` | 30 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
+| docs-sync | `Bash,Read,Write,Edit,Glob,Grep,WebFetch` | 80 | `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
 | digest | `Bash,Read,Glob,Grep,Write` | 15 | `claude-sonnet-4-6` |
 
 The reviewer is intentionally read-only at the tool level; it expresses its verdict via the `gh` CLI which is still routed through `Bash`. The digest writes only `/tmp/digest.html` and the subsequent step posts it via Microsoft Graph.
@@ -620,7 +621,7 @@ flowchart LR
     I -->|no| K[use inputs.agent]
     J --> L[Build prompt step]
     K --> L
-    L --> M[Run agent step\nclaude-code-action@v1\nopus-4-6 max-turns 50]
+    L --> M[Run agent step\nclaude-code-action@v1\nmodel configurable, max-turns 50]
     M --> N[Clock out\nstatus from job.status]
 ```
 
@@ -678,7 +679,7 @@ Four jobs: `gate`, `pick-personas`, `run-persona` (matrix), `run-curator`.
 |-------|-------|
 | Triggers | `workflow_dispatch` with `count` choice (`1|2|3|4`, default `2`); cron `0 6 * * 0` (Sunday) |
 | Selection | `pick-personas` shuffles `beginner harsh-critic speed-runner enterprise` and takes `count` of them. Output is a JSON array consumed by the matrix. |
-| Persona matrix | `max-parallel: 1`, 20-minute timeout per leg, opus-4-6, 40 turns. Each persona writes only its own log file; it does not commit code. |
+| Persona matrix | `max-parallel: 1`, 20-minute timeout per leg, `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6`, 40 turns. Each persona writes only its own log file; it does not commit code. |
 | Curator job | Depends on `gate` and `run-persona`. Runs even if some persona matrix legs failed, as long as the matrix was not cancelled: `if: always() && needs.gate.outputs.proceed == 'true' && needs.run-persona.result != 'cancelled'`. The curator reads `scripts/agents/logs/personas/*/` and files GitHub issues. |
 | Output | Persona log files committed to `scripts/agents/logs/personas/<persona>/`, one curator log in `scripts/agents/logs/curator/`, and zero or more GitHub issues (with deduplication against `/tmp/all-issues.json`). |
 
@@ -691,7 +692,7 @@ Three jobs: `tests`, `review`, `decide`. Tests and review run in parallel; decid
 | Triggers | `pull_request` `opened` and `synchronize` on `main` or `development`; `workflow_dispatch` with `pr_number`, `base_ref`, `head_ref` inputs (dispatched by `bot-respond.yml` for re-review) |
 | Job filters | `tests`: `base_ref == 'development'` OR dispatch with `inputs.base_ref == 'development'`. `review`: `(base_ref == 'development' && action == 'opened')` OR dispatch with `inputs.base_ref == 'development'`. `decide`: `always() && (base_ref == 'development'` OR dispatch equivalent`)`. |
 | Tests job | Node 18/20/22/24 matrix, mirrors `tests.yml`. Timeout 20m. Runs on opened, synchronize, and dispatch. On `workflow_dispatch`, an extra `gh pr checkout` step checks out the PR code. |
-| Review job | Auth via `llm-exe-review-bot[bot]` App token (`LLM_EXE_REVIEW_BOT_APP_ID`/`LLM_EXE_REVIEW_BOT_PRIVATE_KEY`). `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
+| Review job | Auth via `llm-exe-review-bot[bot]` App token (`LLM_EXE_REVIEW_BOT_APP_ID`/`LLM_EXE_REVIEW_BOT_PRIVATE_KEY`). `allowed_bots: "llm-exe-bot[bot]"`. Tools: `Bash,Read,Glob,Grep,WebFetch` (read-only). Model: `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6`. Verdict written to `/tmp/review-verdict.txt` and exposed as job output. Timeout 15m, 30 max-turns. |
 | Decide job | Reads review verdict and tests result. Approves only when `verdict == approve AND tests == success`. Mints its own review bot token for `--approve` and a regular bot App token (`APP_ID`/`APP_PRIVATE_KEY`) only for `gh pr ready`. Only promotes draft to ready for `agent/*` branches. Timeout 5m. |
 | Prompt substitutions | `$PR_NUMBER`, `$LOG_FILE`, `$PR_CONTEXT` (bot agent vs human contributor, computed from head_ref prefix). Substitution uses `perl -0pe` with env vars (not `sed`). |
 | Output | Exactly one of: `gh pr review --approve` (with optional `gh pr ready`), `gh pr review --request-changes`, `gh pr close`. Plus a log file in `scripts/agents/logs/reviewer/`. |
@@ -733,7 +734,7 @@ Body must be HTML fragment (no `<html>` / `<body>` tags) and must be the only th
 | Trigger | `issue_comment` `created` |
 | Filter | Comment body contains `@llm-exe-bot`, comment author is not the bot itself, and author association is `OWNER`, `MEMBER`, or `COLLABORATOR`. Public users cannot summon the bot. |
 | Timeout | 20 minutes |
-| Tools | Full write set (`Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch`); 30 turns; opus-4-6 |
+| Tools | Full write set (`Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch`); 30 turns; `vars.ANTHROPIC_OPUS_LATEST` or `claude-opus-4-6` |
 | Rules baked into the prompt | Three modes: (1) dispatch review pipeline via `gh workflow run agent-review-pr.yml` when a review is requested, (2) read-only Q-and-A, (3) write-mode revision. Write mode is allowed only on explicit ask. Must check out the existing PR branch with `gh pr checkout <N>`, must push to that branch, must NOT create new PRs or branches, must NOT add `Co-Authored-By` lines, must run `npm test` and `npm run typecheck` before committing. |
 
 ### 9.7. `tests.yml` - Jest matrix on PRs
@@ -1168,7 +1169,7 @@ In every agent workflow, the call looks like this (use as a literal template):
     claude_args: |
       --allowedTools "<comma-separated tool list>"
       --max-turns <int>
-      --model claude-opus-4-6
+      --model ${{ vars.ANTHROPIC_OPUS_LATEST || 'claude-opus-4-6' }}
 ```
 
 For the reviewer, pass the dedicated review-bot token as `github_token` and also pass `allowed_bots: "<your-work-bot>[bot]"` so the action does not refuse to operate on bot-authored PRs.
