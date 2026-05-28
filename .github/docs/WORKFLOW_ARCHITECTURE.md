@@ -209,7 +209,7 @@ Every workflow, every event it accepts, every cron expression, and every job-lev
 | `agent-review-pr.yml` | yes, with `pr_number`, `base_ref`, `head_ref` string inputs (dispatched by `bot-respond.yml` for re-review) | none | `opened, synchronize` on `main` or `development`; job-level filter `base_ref == 'development'`; review gated to `opened` and dispatch only | none | none |
 | `agent-digest.yml` | yes, no inputs | `0 11 * * 1` Monday morning | none | none | none |
 | `bot-respond.yml` | no | none | none | none | `issue_comment` `created`; filter requires `@llm-exe-bot` mention plus `OWNER`/`MEMBER`/`COLLABORATOR` association and excludes bot self-comments |
-| `tests.yml` | yes, no inputs | none | `pull_request` on `main` only | none | bypass when head branch is `bump-version-branch` |
+| `tests.yml` | yes, no inputs | none | `pull_request` on `main` only | none | `push` on `main` (to produce a Coveralls upload tagged for `main` so the docs-site badge renders); bypass when head branch is `bump-version-branch` |
 | `test-package.yml` | yes, no inputs | none | none | none | guarded by `gregreindel` actor check on dispatch |
 | `pack-package.yml` | yes, no inputs | none | `pull_request` `closed` on `development` (skips `bump-version-branch`) | none | none |
 | `cache-cleanup.yml` | yes, with `branch` optional input | none | `pull_request` `closed` | `published` | none |
@@ -741,8 +741,9 @@ Body must be HTML fragment (no `<html>` / `<body>` tags) and must be the only th
 
 | Field | Value |
 |-------|-------|
-| Trigger | `pull_request` on `main` only, plus dispatch |
-| Bypass | Skip when head ref is `bump-version-branch` (the version-bump PR is auto-generated and intentionally trivial) |
+| Triggers | `pull_request` on `main`, `push` on `main`, plus dispatch |
+| Push rationale | Coverage upload is gated to Node 24.x. Without a `push` event on `main`, every Coveralls record is tagged with the source PR head branch (development / feature branches), so the docs-site badge that filters with `?branch=main` renders "unknown". The `push` trigger on `main` (always reached via `auto-merge-main-pr.yml`) produces a Coveralls record tagged for `main`. |
+| Bypass | Job-level `if` skips when `pull_request.base.ref == 'development' && pull_request.head.ref == 'bump-version-branch'`. On `push` and `workflow_dispatch` `pull_request` is null, so the bypass is false and the matrix runs. |
 | Matrix | Node 18, 20, 22, 24 |
 | Steps | `actions/checkout@v4` -> `actions/setup-node@v4` with `cache: npm` -> reusable cache action -> `npm install` -> `npm run test` -> coverage upload on Node 24 only |
 
