@@ -347,7 +347,7 @@ The minimal tree, annotated with why each path exists. A replica must reproduce 
 │   │   ├── draft-main-pr.yml             on PR closed to development or on release published: bumps patch if package.json is behind, creates or updates a draft PR from development to main
 │   │   ├── create-draft-release.yml      on PR merged to main: wipes existing drafts and creates a fresh draft release
 │   │   ├── auto-merge-main-pr.yml        on Release / Check Semver success or PR sync: waits for checks, merges development to main with admin merge
-│   │   ├── publish-release.yml           on release published from main: npm publish (beta or main script chosen by version string); on failure reverts release to draft and re-attaches a warning banner
+│   │   ├── publish-release.yml           on release published from main: npm publish (stable script for no-suffix versions, --tag $CHANNEL for any -beta.X / -rc.X / -alpha.X pre-release; refuses pre-releases with no alphabetic channel); on failure reverts release to draft and re-attaches a warning banner
 │   │   ├── deploy-docs.yml               on release published from main or manual dispatch from development or main: builds VitePress docs, ships to S3 versioned folder, rotates CloudFront OriginPath, invalidates /*
 │   │   ├── docs-sync-trigger.yml        detects workflow/script changes on push to development, dispatches docs-sync.yml
 │   │   ├── docs-sync.yml                keeps workflow deep-dive markdown in sync with source; invoked by trigger or manual dispatch
@@ -848,7 +848,7 @@ PR body truncation: capped at 65000 characters.
 | Pre-checks | Release must target `main`; dispatch actor must equal `gregreindel`. |
 | Examples tests | New `run-examples-tests` job runs before publish. Uses the `Examples Test` environment with real provider keys (OpenAI, Anthropic, Gemini, xAI, DeepSeek, AWS). Builds, packs, extracts tarball, replaces dist/, installs examples deps, runs `npm run test-examples`. |
 | Build | `npm install` then `npm run build:package`. |
-| Publish step | Reads `package.json .version`; if it contains the literal substring `beta`, runs `npm run publish-beta`; otherwise `npm run publish-main`. |
+| Publish step | Reads `package.json .version`. If the version has no `-` suffix, runs `npm run publish-main` (stable, `latest` dist-tag). If the version has a `-CHANNEL` suffix where CHANNEL starts with letters (e.g. `-beta.0`, `-rc.1`, `-alpha.2`), runs `npm publish --provenance --tag $CHANNEL` directly. If the version has a `-` but no alphabetic channel (e.g. `3.0.0-1234`), the step exits 1 to refuse silently clobbering the `latest` dist-tag. |
 | Failure rollback | Separate `revert-to-draft` job: `if: always() && github.event_name == 'release' && (needs.run-examples-tests.result == 'failure' \|\| needs.publish-npm-package.result == 'failure')`. Mints its own bot token, patches the release back to `draft: true`, and prepends a warning banner with the specific failure reason and workflow URL. |
 
 ### 9.17. `deploy-docs.yml` - VitePress to S3 plus CloudFront
@@ -1017,7 +1017,7 @@ flowchart LR
 | 2. Verify | PR on `main` | Blocks if `package.json .version` is not strictly greater than the latest `v*` tag. | Version not bumped. |
 | 3. Merge | `workflow_run` on stage 2 success, or PR sync on `main` | Polls non-`auto-merge` checks (up to 10 x 30s), then `gh pr merge --admin`. | Any non-`auto-merge` check fails. |
 | 4. Stage | PR merged to `main` | Wipes existing drafts, creates a fresh draft release with cleaned auto-notes. | Empty draft list is OK; PATCH failure logs a warning only. |
-| 5. Publish | release published, target `main` | `npm publish --provenance` (beta or main script chosen by version string). OIDC attestation is explicitly requested. | Wrong branch, wrong actor (only `gregreindel`), npm error, OIDC token failure. |
+| 5. Publish | release published, target `main` | `npm publish --provenance`. Stable versions go to the `latest` dist-tag via `npm run publish-main`; pre-release versions with an alphabetic channel (e.g. `-beta.0`, `-rc.1`, `-alpha.2`) are published with `--tag $CHANNEL`; pre-releases with no alphabetic channel are refused. OIDC attestation is explicitly requested. | Wrong branch, wrong actor (only `gregreindel`), npm error, OIDC token failure, pre-release version with no alphabetic channel. |
 | 6. Deploy | release published, target `main` | Builds VitePress docs, ships to S3, rotates CloudFront OriginPath, invalidates `/*`. | Branch guard, OIDC denied, stale ETag on CloudFront. |
 
 ### 11.3. Failure paths
