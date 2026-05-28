@@ -86,11 +86,11 @@ flowchart LR
 
 | Workflow | Triggers | Purpose | Deep dive |
 |----------|----------|---------|-----------|
-| [draft-main-pr.yml](../workflows/draft-main-pr.yml) | PR closed to development + release published | Maintains the development to main draft PR; auto-bumps patch version | [DRAFT_MAIN_PR_DEEP_DIVE.md](DRAFT_MAIN_PR_DEEP_DIVE.md) |
+| [draft-main-pr.yml](../workflows/draft-main-pr.yml) | PR closed to development + release published | Maintains the development to main draft PR; auto-bumps patch on stable versions, skips auto-bump entirely on pre-release versions (-beta.X, -rc.X, ...) | [DRAFT_MAIN_PR_DEEP_DIVE.md](DRAFT_MAIN_PR_DEEP_DIVE.md) |
 | [check-semantic-versioning.yml](../workflows/check-semantic-versioning.yml) | PR on main | Blocks PR if package.json version is not greater than latest tag | [CHECK_SEMVER_DEEP_DIVE.md](CHECK_SEMVER_DEEP_DIVE.md) |
 | [auto-merge-main-pr.yml](../workflows/auto-merge-main-pr.yml) | workflow_run on semver-check + PR events | Waits for checks, merges development to main with --admin | [AUTO_MERGE_MAIN_PR_DEEP_DIVE.md](AUTO_MERGE_MAIN_PR_DEEP_DIVE.md) |
-| [create-draft-release.yml](../workflows/create-draft-release.yml) | PR merged to main + dispatch | Wipes existing drafts and creates a fresh draft release with cleaned notes | [CREATE_DRAFT_RELEASE_DEEP_DIVE.md](CREATE_DRAFT_RELEASE_DEEP_DIVE.md) |
-| [publish-release.yml](../workflows/publish-release.yml) | release published + dispatch | npm publish (beta or main based on version string); failure rolls release back to draft | [PUBLISH_RELEASE_DEEP_DIVE.md](PUBLISH_RELEASE_DEEP_DIVE.md) |
+| [create-draft-release.yml](../workflows/create-draft-release.yml) | PR merged to main + dispatch | Wipes existing drafts and creates a fresh draft release with cleaned notes; marks GitHub release as `prerelease` (and skips `make_latest`) when package.json version has a -suffix | [CREATE_DRAFT_RELEASE_DEEP_DIVE.md](CREATE_DRAFT_RELEASE_DEEP_DIVE.md) |
+| [publish-release.yml](../workflows/publish-release.yml) | release published + dispatch | npm publish: stable to `latest`, pre-releases with alphabetic channel routed to `--tag $CHANNEL` (beta, rc, alpha, ...); failure rolls release back to draft | [PUBLISH_RELEASE_DEEP_DIVE.md](PUBLISH_RELEASE_DEEP_DIVE.md) |
 | [deploy-docs.yml](../workflows/deploy-docs.yml) | release published + dispatch | Builds VitePress docs, ships to S3, rotates CloudFront OriginPath, invalidates | [DEPLOY_DOCS_DEEP_DIVE.md](DEPLOY_DOCS_DEEP_DIVE.md) |
 
 ## CI hygiene
