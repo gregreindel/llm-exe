@@ -34,6 +34,7 @@ const anthropicChatV1: Config = {
   options: {
     prompt: {},
     system: {},
+    effort: {},
     maxTokens: {
       required: [true, "maxTokens required"],
       default: 4096,
@@ -78,7 +79,58 @@ const anthropicChatV1: Config = {
       key: "metadata",
     },
     serviceTier: {
-      key: "service_tier", // Map camelCase to snake_case
+      key: "service_tier",
+    },
+    effort: {
+      key: "output_config.effort",
+      transform: (
+        v: unknown,
+        _s: Record<string, any>,
+        _output: Record<string, any>
+      ) => {
+        if (
+          typeof v !== "string" ||
+          !["minimal", "low", "medium", "high"].includes(v)
+        ) {
+          return undefined;
+        }
+
+        const model: string = _s.model || "";
+
+        const isAdaptive =
+          model.startsWith("claude-opus-4-7") ||
+          model.startsWith("claude-opus-4-6") ||
+          model.startsWith("claude-sonnet-4-6");
+
+        if (isAdaptive) {
+          _output.thinking = { type: "adaptive" };
+          const map: Record<string, string> = {
+            minimal: "low",
+            low: "low",
+            medium: "medium",
+            high: model.startsWith("claude-opus-4-7") ? "xhigh" : "high",
+          };
+          return map[v];
+        }
+
+        const isLegacy =
+          model.startsWith("claude-opus-4-5") ||
+          model.startsWith("claude-sonnet-4-5") ||
+          model.startsWith("claude-haiku-4-5");
+
+        if (isLegacy) {
+          const budgetMap: Record<string, number> = {
+            minimal: 1024,
+            low: 4096,
+            medium: 10240,
+            high: 32768,
+          };
+          _output.thinking = { type: "enabled", budget_tokens: budgetMap[v] };
+          return undefined;
+        }
+
+        return undefined;
+      },
     },
   },
   mapOptions: {
