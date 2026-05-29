@@ -410,4 +410,83 @@ describe("llm-exe:executor/BaseExecutor", () => {
     });
   });
 
+  describe("execute() input validation", () => {
+    it("throws TypeError when called with a string", async () => {
+      const executor = new MockExecutor();
+      await expect(executor.execute("just a string" as any)).rejects.toThrow(
+        TypeError
+      );
+      await expect(executor.execute("just a string" as any)).rejects.toThrow(
+        /received string input/
+      );
+    });
+
+    it("throws TypeError when called with a number", async () => {
+      const executor = new MockExecutor();
+      await expect(executor.execute(42 as any)).rejects.toThrow(TypeError);
+      await expect(executor.execute(42 as any)).rejects.toThrow(
+        /received number input/
+      );
+    });
+
+    it("throws TypeError when called with a boolean", async () => {
+      const executor = new MockExecutor();
+      await expect(executor.execute(true as any)).rejects.toThrow(TypeError);
+      await expect(executor.execute(true as any)).rejects.toThrow(
+        /received boolean input/
+      );
+    });
+
+    it("throws TypeError when called with null", async () => {
+      const executor = new MockExecutor();
+      await expect(executor.execute(null as any)).rejects.toThrow(TypeError);
+      await expect(executor.execute(null as any)).rejects.toThrow(
+        /received null input/
+      );
+    });
+
+    it("throws TypeError when called with an array", async () => {
+      const executor = new MockExecutor();
+      await expect(executor.execute([1, 2, 3] as any)).rejects.toThrow(
+        TypeError
+      );
+      await expect(executor.execute([1, 2, 3] as any)).rejects.toThrow(
+        /received array input/
+      );
+    });
+
+    it("identifies the executor name and type in the error message", async () => {
+      const executor = new MockExecutor("my-executor", "mock");
+      await expect(executor.execute("bad" as any)).rejects.toThrow(
+        /mock "my-executor"/
+      );
+    });
+
+    it("does not increment execution count when validation fails", async () => {
+      const executor = new MockExecutor();
+      const before = executor.executions;
+      await expect(executor.execute("bad" as any)).rejects.toThrow(TypeError);
+      // executions should not advance for an input that never ran the handler
+      expect(executor.executions).toBe(before);
+    });
+
+    it("treats undefined input as an empty object", async () => {
+      const executor = new MockExecutor();
+      const result = await executor.execute(undefined as any);
+      expect(result).toEqual({ result: "Success" });
+    });
+
+    it("accepts a plain object input without coercion", async () => {
+      const executor = new MockExecutor();
+      jest.spyOn(executor, "getHandlerInput");
+      const input = { foo: "bar" };
+      await executor.execute(input);
+      expect(executor.getHandlerInput).toHaveBeenCalledWith(
+        input,
+        expect.any(Object),
+        undefined
+      );
+    });
+  });
+
 });

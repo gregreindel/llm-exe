@@ -262,6 +262,17 @@ describe("llm-exe:executor/LlmExecutor", () => {
     expect(result).toBeDefined();
   });
 
+  it("throws TypeError when execute is called with a primitive (issue #410)", async () => {
+    const promptWithVar = createChatPrompt<{ text: string }>(
+      "Summarize: {{text}}"
+    );
+    const executor = new LlmExecutor({ llm, prompt: promptWithVar });
+    await expect(executor.execute("just a string" as any)).rejects.toThrow(
+      TypeError
+    );
+    await expect(executor.execute(42 as any)).rejects.toThrow(TypeError);
+  });
+
   it("getHandlerOutput uses getResult when parser target is function_call", async () => {
     const mockParser = {
       target: "function_call",

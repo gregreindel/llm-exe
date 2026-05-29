@@ -8,7 +8,6 @@ import {
   BaseExecutorHooks,
 } from "@/types";
 import { pick } from "@/utils/modules/pick";
-import { ensureInputIsObject } from "@/utils/modules/ensureInputIsObject";
 import { uuid } from "@/utils/modules/uuid";
 import { createMetadataState } from "./_metadata";
 import { hookOnComplete, hookOnError, hookOnSuccess } from "@/utils/const";
@@ -95,7 +94,7 @@ export abstract class BaseExecutor<
     _metadata: ExecutorExecutionMetadata<I, any>,
     _options?: any
   ): Promise<any> {
-    return ensureInputIsObject(_input);
+    return _input;
   }
 
   /**
@@ -118,15 +117,16 @@ export abstract class BaseExecutor<
    * @returns handler output
    */
   async execute(_input: I, _options?: any): Promise<O> {
+    const validatedInput = this.validateInput(_input);
     this.executions++;
     const _metadata = createMetadataState({
       start: new Date().getTime(),
-      input: _input,
+      input: validatedInput,
     });
 
     try {
       const input = await this.getHandlerInput(
-        _input,
+        validatedInput,
         _metadata.asPlainObject(),
         _options
       );
@@ -154,6 +154,37 @@ export abstract class BaseExecutor<
       _metadata.setItem({ end: new Date().getTime() });
       this.runHook("onComplete", _metadata.asPlainObject());
     }
+  }
+
+  /**
+   * Validates that the input matches the declared object shape.
+   *
+   * The executor's declared input type extends `PlainObject`. Treating
+   * primitives, arrays, or `null` as valid input would silently coerce
+   * shapes the type signature forbids, hiding caller bugs from JS users
+   * and TS users casting through `as any`.
+   *
+   * - `undefined` is allowed and treated as an empty object (convenience
+   *   for executors whose prompt takes no variables).
+   * - Plain objects pass through unchanged.
+   * - Anything else throws a `TypeError` that names the actual runtime type.
+   */
+  protected validateInput(_input: I): I {
+    if (typeof _input === "undefined") {
+      return {} as I;
+    }
+    if (
+      _input === null ||
+      Array.isArray(_input) ||
+      typeof _input !== "object"
+    ) {
+      const received =
+        _input === null ? "null" : Array.isArray(_input) ? "array" : typeof _input;
+      throw new TypeError(
+        `[llm-exe] ${this.type} "${this.name}" received ${received} input, but execute() requires a plain object matching the declared input shape.`
+      );
+    }
+    return _input;
   }
 
   metadata(): Record<string, any> {
