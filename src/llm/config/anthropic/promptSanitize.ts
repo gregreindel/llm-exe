@@ -1,6 +1,34 @@
 import { IChatMessage, IChatMessages } from "@/types";
 import { anthropicPromptMessageCallback } from "./promptSanitizeMessageCallback";
 
+const PREFILL_UNSUPPORTED_MODELS = [
+  "claude-opus-4-6",
+  "claude-opus-4-7",
+  "claude-sonnet-4-6",
+];
+
+function modelBlocksPrefill(model: string | undefined): boolean {
+  if (!model) return false;
+  return PREFILL_UNSUPPORTED_MODELS.some(
+    (prefix) => model === prefix || model.startsWith(`${prefix}-`)
+  );
+}
+
+function warnIfTrailingAssistantMessage(
+  messages: Record<string, any>[],
+  model: string | undefined
+): void {
+  if (messages.length === 0) return;
+  const last = messages[messages.length - 1];
+  if (last.role === "assistant" && modelBlocksPrefill(model)) {
+    console.warn(
+      `[llm-exe] The model "${model}" does not support assistant message prefills. ` +
+        `The last message in the messages array has role "assistant", which will cause a 400 error from the Anthropic API. ` +
+        `Remove the trailing assistant message or use a model that supports prefills.`
+    );
+  }
+}
+
 /**
  * Merge consecutive messages with the same role when both have array content.
  * This handles parallel tool calls (multiple assistant tool_use blocks) and
@@ -61,28 +89,34 @@ export function anthropicPromptSanitize(
   //   - and return the rest of the messages
   if (first.role === "system" && messages.length > 0) {
     _outputObj.system = first.content;
-    const result = (
-      messages.map((m) => {
-        if (m.role === "system") {
-          return { ...m, role: "user" };
-        }
-        return m;
-      }) as IChatMessage[]
-    ).map(anthropicPromptMessageCallback);
-    return mergeConsecutiveSameRole(result);
+    const result = mergeConsecutiveSameRole(
+      (
+        messages.map((m) => {
+          if (m.role === "system") {
+            return { ...m, role: "user" };
+          }
+          return m;
+        }) as IChatMessage[]
+      ).map(anthropicPromptMessageCallback)
+    );
+    warnIfTrailingAssistantMessage(result, _inputBodyObj.model);
+    return result;
   }
 
   // otherwise, don't make assumptions?
-  const result = (
-    [
-      first,
-      ...messages.map((m) => {
-        if (m.role === "system") {
-          return { ...m, role: "user" };
-        }
-        return m;
-      }),
-    ] as IChatMessage[]
-  ).map(anthropicPromptMessageCallback);
-  return mergeConsecutiveSameRole(result);
+  const result = mergeConsecutiveSameRole(
+    (
+      [
+        first,
+        ...messages.map((m) => {
+          if (m.role === "system") {
+            return { ...m, role: "user" };
+          }
+          return m;
+        }),
+      ] as IChatMessage[]
+    ).map(anthropicPromptMessageCallback)
+  );
+  warnIfTrailingAssistantMessage(result, _inputBodyObj.model);
+  return result;
 }
