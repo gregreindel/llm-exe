@@ -7,6 +7,8 @@ export type CreateParserType =
   | "number"
   | "stringExtract"
   | "listToArray"
+  | "listToEntries"
+  | "listToObject"
   | "listToJson"
   | "listToKeyValue"
   | "replaceStringTemplate"

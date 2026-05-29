@@ -2,8 +2,10 @@ import {
   BooleanParser,
   JsonParser,
   ListToArrayParser,
+  ListToEntriesParser,
   ListToJsonParser,
   ListToKeyValueParser,
+  ListToObjectParser,
   MarkdownCodeBlockParser,
   MarkdownCodeBlocksParser,
   NumberParser,
@@ -37,6 +39,14 @@ describe("llm-exe:parser/error contract", () => {
     {
       name: "listToKeyValue",
       parse: () => new ListToKeyValueParser().parse("Name Greg"),
+    },
+    {
+      name: "listToEntries",
+      parse: () => new ListToEntriesParser().parse("Name Greg"),
+    },
+    {
+      name: "listToObject",
+      parse: () => new ListToObjectParser().parse("Name Greg"),
     },
     {
       name: "markdownCodeBlock",

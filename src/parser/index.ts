@@ -5,6 +5,8 @@ import { NumberParser } from "./parsers/NumberParser";
 import { JsonParser } from "./parsers/JsonParser";
 import { ListToJsonParser } from "./parsers/ListToJsonParser";
 import { ListToKeyValueParser } from "./parsers/ListToKeyValueParser";
+import { ListToEntriesParser } from "./parsers/ListToEntriesParser";
+import { ListToObjectParser } from "./parsers/ListToObjectParser";
 import { CustomParser } from "./parsers/CustomParser";
 import { ListToArrayParser } from "./parsers/ListToArrayParser";
 import { ReplaceStringTemplateParser } from "./parsers/ReplaceStringTemplateParser";
@@ -26,6 +28,8 @@ export {
   JsonParser,
   ListToJsonParser,
   ListToKeyValueParser,
+  ListToEntriesParser,
+  ListToObjectParser,
   ListToArrayParser,
   ReplaceStringTemplateParser,
   LlmNativeFunctionParser,

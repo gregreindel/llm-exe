@@ -1,4 +1,4 @@
-import { BaseParser, BooleanParser, JsonParser, ListToArrayParser, ListToJsonParser, ListToKeyValueParser, MarkdownCodeBlockParser, MarkdownCodeBlocksParser, NumberParser, ReplaceStringTemplateParser, StringParser, createParser } from "@/parser";
+import { BaseParser, BooleanParser, JsonParser, ListToArrayParser, ListToEntriesParser, ListToJsonParser, ListToKeyValueParser, ListToObjectParser, MarkdownCodeBlockParser, MarkdownCodeBlocksParser, NumberParser, ReplaceStringTemplateParser, StringParser, createParser } from "@/parser";
 import { StringExtractParser } from "@/parser/parsers/StringExtractParser";
 import { defineSchema } from "@/utils/modules/defineSchema";
 
@@ -78,6 +78,18 @@ describe("llm-exe:parser/createParser", () => {
     expect(parser).toBeInstanceOf(ListToKeyValueParser)
     expect(parser).toHaveProperty("name")
     expect(parser.name).toEqual("listToKeyValue")
+  })
+  it('creates listToEntries parser', () => {
+    const parser = createParser("listToEntries");
+    expect(parser).toBeInstanceOf(BaseParser)
+    expect(parser).toBeInstanceOf(ListToEntriesParser)
+    expect(parser.name).toEqual("listToEntries")
+  })
+  it('creates listToObject parser', () => {
+    const parser = createParser("listToObject");
+    expect(parser).toBeInstanceOf(BaseParser)
+    expect(parser).toBeInstanceOf(ListToObjectParser)
+    expect(parser.name).toEqual("listToObject")
   })
   it('creates replaceStringTemplate parser', () => {
     const parser = createParser("replaceStringTemplate");

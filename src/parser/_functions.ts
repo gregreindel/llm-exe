@@ -12,6 +12,14 @@ import { NumberParser } from "./parsers/NumberParser";
 import { JsonParser } from "./parsers/JsonParser";
 import { ListToJsonParser } from "./parsers/ListToJsonParser";
 import { ListToKeyValueParser } from "./parsers/ListToKeyValueParser";
+import {
+  ListToEntriesParser,
+  ListToEntriesParserOptions,
+} from "./parsers/ListToEntriesParser";
+import {
+  ListToObjectParser,
+  ListToObjectParserOptions,
+} from "./parsers/ListToObjectParser";
 import { CustomParser } from "./parsers/CustomParser";
 import { ListToArrayParser } from "./parsers/ListToArrayParser";
 import { ReplaceStringTemplateParser } from "./parsers/ReplaceStringTemplateParser";
@@ -30,11 +38,13 @@ export type ParserMap<S extends JSONSchema | undefined = undefined> = {
   number: NumberParser;
   listToArray: ListToArrayParser;
   listToKeyValue: ListToKeyValueParser;
+  listToEntries: ListToEntriesParser;
   replaceStringTemplate: ReplaceStringTemplateParser;
   markdownCodeBlock: MarkdownCodeBlockParser;
   markdownCodeBlocks: MarkdownCodeBlocksParser;
   stringExtract: StringExtractParser;
   listToJson: ListToJsonParser<S>;
+  listToObject: ListToObjectParser<S>;
   json: JsonParser<S>;
 };
 
@@ -54,10 +64,15 @@ export type CreateParserArgs =
   | [type: "replaceStringTemplate", options?: never]
   | [type: "number", options?: NumberParserOptions]
   | [type: "listToKeyValue", options?: ListToKeyValueParserOptions]
+  | [type: "listToEntries", options?: ListToEntriesParserOptions]
   | [type: "json", options?: JsonParserOptions<JSONSchema | undefined>]
   | [
       type: "listToJson",
       options?: ListToJsonParserOptions<JSONSchema | undefined>,
+    ]
+  | [
+      type: "listToObject",
+      options?: ListToObjectParserOptions<JSONSchema | undefined>,
     ]
   | [type: "stringExtract", options: StringExtractParserOptions<readonly string[]>];
 
@@ -72,6 +87,7 @@ export type CreateParserReturn<A extends readonly unknown[]> =
   : A extends readonly ["number", ...unknown[]] ? NumberParser
   : A extends readonly ["listToArray", ...unknown[]] ? ListToArrayParser
   : A extends readonly ["listToKeyValue", ...unknown[]] ? ListToKeyValueParser
+  : A extends readonly ["listToEntries", ...unknown[]] ? ListToEntriesParser
   : A extends readonly ["markdownCodeBlock", ...unknown[]]
     ? MarkdownCodeBlockParser
   : A extends readonly ["markdownCodeBlocks", ...unknown[]]
@@ -85,6 +101,10 @@ export type CreateParserReturn<A extends readonly unknown[]> =
     ? ListToJsonParser<undefined>
   : A extends readonly ["listToJson", ListToJsonParserOptions<infer S>]
     ? ListToJsonParser<S>
+  : A extends readonly ["listToObject"] | readonly ["listToObject", undefined]
+    ? ListToObjectParser<undefined>
+  : A extends readonly ["listToObject", ListToObjectParserOptions<infer S>]
+    ? ListToObjectParser<S>
   : A extends readonly [
       "stringExtract",
       StringExtractParserOptions<infer E extends readonly string[]>,
@@ -102,6 +122,8 @@ export function createParser<const A extends CreateParserArgs>(
       return new JsonParser(options) as CreateParserReturn<A>;
     case "listToJson":
       return new ListToJsonParser(options) as CreateParserReturn<A>;
+    case "listToObject":
+      return new ListToObjectParser(options) as CreateParserReturn<A>;
     case "stringExtract":
       return new StringExtractParser(options) as CreateParserReturn<A>;
     case "markdownCodeBlocks":
@@ -112,6 +134,8 @@ export function createParser<const A extends CreateParserArgs>(
       return new ListToArrayParser() as CreateParserReturn<A>;
     case "listToKeyValue":
       return new ListToKeyValueParser(options) as CreateParserReturn<A>;
+    case "listToEntries":
+      return new ListToEntriesParser(options) as CreateParserReturn<A>;
     case "replaceStringTemplate":
       return new ReplaceStringTemplateParser() as CreateParserReturn<A>;
     case "boolean":
@@ -135,6 +159,8 @@ export function createParser<const A extends CreateParserArgs>(
               "number",
               "stringExtract",
               "listToArray",
+              "listToEntries",
+              "listToObject",
               "listToJson",
               "listToKeyValue",
               "replaceStringTemplate",

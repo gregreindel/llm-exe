@@ -1,5 +1,5 @@
 import { camelCase } from "@/utils/modules/camelCase";
-import { ListToJsonParserOptions, ParserOutput } from "@/types";
+import { ParserOutput } from "@/types";
 import { BaseParserWithJson } from "../_base";
 import { JSONSchema } from "json-schema-to-ts";
 import {
@@ -9,24 +9,24 @@ import {
 } from "../_utils";
 import { LlmExeError } from "@/errors";
 import { normalizeListLines } from "../_listBoundary";
-import { emitParserDeprecationWarning } from "../_deprecationWarning";
+import { JsonParserOptions } from "@/interfaces";
 
-/**
- * @deprecated Use `ListToObjectParser` instead. The new parser preserves
- * keys as-written by default (no surprising camelCase transformation). This
- * class will be removed in v4.0.
- */
-export class ListToJsonParser<
+export interface ListToObjectParserOptions<
+  S extends JSONSchema | undefined = undefined,
+> extends JsonParserOptions<S> {
+  keyTransform?: "preserve" | "camelCase";
+}
+
+export class ListToObjectParser<
   S extends JSONSchema | undefined = undefined
 > extends BaseParserWithJson<S> {
-  private keyTransform: "camelCase" | "preserve";
+  private keyTransform: "preserve" | "camelCase";
   private shouldValidateSchema: boolean;
 
-  constructor(options: ListToJsonParserOptions<S> = {}) {
-    super("listToJson", options);
-    this.keyTransform = options.keyTransform ?? "camelCase";
+  constructor(options: ListToObjectParserOptions<S> = {}) {
+    super("listToObject", options);
+    this.keyTransform = options.keyTransform ?? "preserve";
     this.shouldValidateSchema = !!options.schema && options.validateSchema !== false;
-    emitParserDeprecationWarning("listToJson", "listToObject");
   }
 
   /**
@@ -35,9 +35,10 @@ export class ListToJsonParser<
    * Mode: line-oriented format conversion
    *
    * Uses the shared list boundary. Parses normalized lines as key/value pairs
-   * split at the first colon. Duplicate keys throw because object output would
-   * overwrite data.
-   *
+   * split at the first colon. Returns a Record<string, string>. Throws on
+   * duplicate keys (object output would silently lose data). Keys are
+   * preserved as written by default; pass keyTransform: "camelCase" for the
+   * legacy listToJson behavior.
    */
   parse(text: string): ParserOutput<BaseParserWithJson<S>> {
     if (typeof text !== "string") {
@@ -46,8 +47,8 @@ export class ListToJsonParser<
         {
           code: "parser.invalid_input",
           context: {
-            operation: "ListToJsonParser.parse",
-            parser: "listToJson",
+            operation: "ListToObjectParser.parse",
+            parser: "listToObject",
             reason: "invalid_input_type",
             expected: "string",
             received: text === null ? "null" : Array.isArray(text) ? "array" : typeof text,
@@ -57,8 +58,8 @@ export class ListToJsonParser<
     }
 
     const { lines } = normalizeListLines(text, {
-      operation: "ListToJsonParser.parse",
-      parser: "listToJson",
+      operation: "ListToObjectParser.parse",
+      parser: "listToObject",
     });
 
     const output: any = {};
@@ -68,8 +69,8 @@ export class ListToJsonParser<
         throw new LlmExeError(`Malformed key/value line.`, {
           code: "parser.parse_failed",
           context: {
-            operation: "ListToJsonParser.parse",
-            parser: "listToJson",
+            operation: "ListToObjectParser.parse",
+            parser: "listToObject",
             reason: "malformed_line",
             inputLength: text.length,
           },
@@ -81,21 +82,22 @@ export class ListToJsonParser<
         throw new LlmExeError(`Empty key in key/value line.`, {
           code: "parser.parse_failed",
           context: {
-            operation: "ListToJsonParser.parse",
-            parser: "listToJson",
+            operation: "ListToObjectParser.parse",
+            parser: "listToObject",
             reason: "empty_key",
             inputLength: text.length,
           },
         });
       }
 
-      const transformedKey = this.keyTransform === "preserve" ? key : camelCase(key);
+      const transformedKey =
+        this.keyTransform === "camelCase" ? camelCase(key) : key;
       if (Object.prototype.hasOwnProperty.call(output, transformedKey)) {
         throw new LlmExeError(`Duplicate key in key/value input.`, {
           code: "parser.parse_failed",
           context: {
-            operation: "ListToJsonParser.parse",
-            parser: "listToJson",
+            operation: "ListToObjectParser.parse",
+            parser: "listToObject",
             reason: "duplicate_key",
             inputLength: text.length,
           },
@@ -112,8 +114,8 @@ export class ListToJsonParser<
           throw new LlmExeError(valid[0].message, {
             code: "parser.schema_validation_failed",
             context: {
-              operation: "ListToJsonParser.parse",
-              parser: "listToJson",
+              operation: "ListToObjectParser.parse",
+              parser: "listToObject",
               schemaErrors: valid.map((error) => error.message),
             },
           });
