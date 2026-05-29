@@ -80,10 +80,16 @@ describe("google configuration", () => {
       );
     });
 
-    it("should work with gemini-2.5-light model", () => {
-      expect(effortTransform("medium", { model: "gemini-2.5-light" })).toBe(
-        8192
-      );
+    it("should work with gemini-2.5-flash-lite model", () => {
+      expect(
+        effortTransform("medium", { model: "gemini-2.5-flash-lite" })
+      ).toBe(8192);
+    });
+
+    it("should return undefined for gemini-2.5-light (not a valid model ID)", () => {
+      expect(
+        effortTransform("medium", { model: "gemini-2.5-light" })
+      ).toBeUndefined();
     });
   });
 
@@ -136,6 +142,48 @@ describe("google configuration", () => {
             ],
           },
         ],
+      });
+    });
+  });
+
+  describe("gemini-3.1-flash-lite", () => {
+    const googleGemini31FlashLite = google[
+      "google.gemini-3.1-flash-lite"
+    ] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(googleGemini31FlashLite.endpoint).toEqual(googleChatV1.endpoint);
+      expect(googleGemini31FlashLite.method).toEqual(googleChatV1.method);
+      expect(googleGemini31FlashLite.headers).toEqual(googleChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gemini-3.1-flash-lite", () => {
+      expect(googleGemini31FlashLite.mapBody.model).toEqual({
+        default: "gemini-3.1-flash-lite",
+        key: "model",
+      });
+      expect(googleGemini31FlashLite.options.model).toEqual({
+        default: "gemini-3.1-flash-lite",
+      });
+    });
+  });
+
+  describe("gemini-3.5-flash", () => {
+    const googleGemini35Flash = google["google.gemini-3.5-flash"] as Config;
+
+    it("should be based on googleChatV1 configuration", () => {
+      expect(googleGemini35Flash.endpoint).toEqual(googleChatV1.endpoint);
+      expect(googleGemini35Flash.method).toEqual(googleChatV1.method);
+      expect(googleGemini35Flash.headers).toEqual(googleChatV1.headers);
+    });
+
+    it("should override model in mapBody and options as gemini-3.5-flash", () => {
+      expect(googleGemini35Flash.mapBody.model).toEqual({
+        default: "gemini-3.5-flash",
+        key: "model",
+      });
+      expect(googleGemini35Flash.options.model).toEqual({
+        default: "gemini-3.5-flash",
       });
     });
   });
