@@ -64,7 +64,7 @@ flowchart LR
 
     subgraph X["External"]
         gh["GitHub API\n(issue/PR diff, view, comment)"]:::ext
-        ant["Anthropic Claude\nclaude-opus-4-6"]:::ext
+        ant["Anthropic Claude\nvars.ANTHROPIC_OPUS_LATEST\n(default: claude-opus-4-6)"]:::ext
     end
 
     subgraph O["Outputs"]
@@ -156,7 +156,7 @@ flowchart TB
         s3["Checkout fetch-depth: 0\nwith bot token"]:::step
         s4["actions/setup-node@v4\nnode-version: 20, cache: npm"]:::step
         s5["npm ci"]:::step
-        s6["Respond step\nclaude-code-action@v1\nmax-turns 30, model claude-opus-4-6"]:::step
+        s6["Respond step\nclaude-code-action@v1\nmax-turns 30, model configurable"]:::step
         s1 --> s2 --> s3 --> s4 --> s5 --> s6
     end
 ```
@@ -368,7 +368,7 @@ flowchart LR
     end
 
     subgraph During["While the bot runs"]
-        d1["api.anthropic.com\nauth: CLAUDE_CODE_OAUTH_TOKEN\nwhy: model inference (claude-opus-4-6)\ncost meter: --max-turns 30"]:::llm
+        d1["api.anthropic.com\nauth: CLAUDE_CODE_OAUTH_TOKEN\nwhy: model inference (vars.ANTHROPIC_OPUS_LATEST or claude-opus-4-6)\ncost meter: --max-turns 30"]:::llm
         d2["api.github.com (gh CLI)\nauth: bot token\nwhy: pr view, pr diff, pr checkout,\nissue comment, /pulls/N/reviews"]:::gh
         d3["origin remote (git push)\nauth: bot token\nwhy: push commits to existing PR branch\n(write mode only)"]:::gh
     end
@@ -383,7 +383,7 @@ Tool allowlist passed to `claude-code-action@v1`:
 ```
 --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
 --max-turns 30
---model claude-opus-4-6
+--model ${{ vars.ANTHROPIC_OPUS_LATEST || 'claude-opus-4-6' }}
 ```
 
 Same allowlist as `agent-run.yml`, lower turn budget (30 vs 50) because conversational replies should be tight.
@@ -582,7 +582,7 @@ flowchart LR
     K5["Timeout"]:::k --- V5["20 minutes"]:::v
     K6["Concurrency"]:::k --- V6["none declared (parallel mentions allowed)"]:::v
     K7["Identity"]:::k --- V7["llm-exe-bot[bot] via App token"]:::v
-    K8["Model"]:::k --- V8["claude-opus-4-6"]:::v
+    K8["Model"]:::k --- V8["vars.ANTHROPIC_OPUS_LATEST or claude-opus-4-6"]:::v
     K9["Max turns"]:::k --- V9["30"]:::v
     K10["Tool allowlist"]:::k --- V10["Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch"]:::v
     K11["Prompt source"]:::k --- V11["inline in yml (no template file)"]:::v

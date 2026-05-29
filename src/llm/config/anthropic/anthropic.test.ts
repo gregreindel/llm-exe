@@ -200,6 +200,7 @@ describe("anthropic config", () => {
 
   describe("deprecated shorthands still resolve", () => {
     it.each([
+      ["anthropic.claude-opus-4-6", "claude-opus-4-6"],
       ["anthropic.claude-sonnet-4", "claude-sonnet-4-0"],
       ["anthropic.claude-opus-4", "claude-opus-4-0"],
       ["anthropic.claude-3-7-sonnet", "claude-3-7-sonnet-20250219"],
@@ -219,13 +220,11 @@ describe("anthropic config", () => {
   describe("active shorthands", () => {
     it.each([
       ["anthropic.claude-opus-4-7", "claude-opus-4-7"],
-      ["anthropic.claude-opus-4-6", "claude-opus-4-6"],
       ["anthropic.claude-sonnet-4-6", "claude-sonnet-4-6"],
+      ["anthropic.claude-opus-4-5", "claude-opus-4-5"],
       ["anthropic.claude-haiku-4-5", "claude-haiku-4-5"],
       ["anthropic.claude-sonnet-4-5", "claude-sonnet-4-5"],
       ["anthropic.claude-opus-4-1", "claude-opus-4-1-20250805"],
-      ["anthropic.claude-sonnet-4", "claude-sonnet-4-0"],
-      ["anthropic.claude-opus-4", "claude-opus-4-0"],
     ] as const)(
       "%s should resolve to %s",
       (shorthand, expectedModel) => {
